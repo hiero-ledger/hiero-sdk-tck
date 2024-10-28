@@ -76,12 +76,13 @@ npm run format
 
 ## Contributing
 
-Contributions are welcome.
-Please read our [contributing guide]([https://github.com/hashgraph/.github/blob/main/CONTRIBUTING.md](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md)) to see how you can get involved.
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
 ## Code of Conduct
 
-Hiero uses the Linux FOundation Decentralised Trust [Code of Conduct]([https://github.com/hashgraph/.github/blob/main/CODE_OF_CONDUCT.md](https://www.lfdecentralizedtrust.org/code-of-conduct)).
+Hiero uses the Linux FOundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 ## License
 
