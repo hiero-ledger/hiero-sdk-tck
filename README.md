@@ -2,7 +2,7 @@
 
 A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification.
 The TCK aims to verify compliant implementations of a Hiero SDK.
-It will encompass tests that validate the implmentation of consensus node software transactions and queries, performance and longevity testing.
+It will encompass tests that validate the implementation of consensus node software transactions and queries, performance and longevity testing.
 
 ## Setup
 
