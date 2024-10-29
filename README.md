@@ -82,7 +82,7 @@ Please read our [contributing guide](https://github.com/hiero-ledger/.github/blo
 
 ## Code of Conduct
 
-Hiero uses the Linux FOundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 ## License
 
