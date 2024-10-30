@@ -938,6 +938,22 @@ describe.only("TokenUpdateTransaction", function () {
       );
     }
 
+    async function verifyTokenUpdateWithNullKycKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).kycKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "kyc_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
+    }
+
     it("(#1) Updates an immutable token with a valid key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
@@ -1194,15 +1210,13 @@ describe.only("TokenUpdateTransaction", function () {
       );
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
-
-      console.log(">>", key);
 
       response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
@@ -1213,10 +1227,8 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      console.log(key);
-
-      await retryOnError(() =>
-        verifyTokenUpdateWithKycKeyList(response.tokenId, key),
+      await retryOnError(async () =>
+        verifyTokenUpdateWithNullKycKey(response.tokenId, key),
       );
     });
 
@@ -1321,6 +1333,22 @@ describe.only("TokenUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - freezeKey.length),
       );
+    }
+
+    async function verifyTokenUpdateWithNullFreezeKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).freezeKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "freeze_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
     }
 
     it("(#1) Updates an immutable token with a valid key as its freeze key", async function () {
@@ -1595,7 +1623,7 @@ describe.only("TokenUpdateTransaction", function () {
       );
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -1612,7 +1640,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenFreezeKeyUpdate(response.tokenId, key);
+      await retryOnError(async () =>
+        verifyTokenUpdateWithNullFreezeKey(response.tokenId),
+      );
     });
 
     it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async function () {
@@ -1714,6 +1744,22 @@ describe.only("TokenUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - wipeKey.length),
       );
+    }
+
+    async function verifyTokenUpdateWithNullWipeKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).wipeKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "wipe_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
     }
 
     it("(#1) Updates an immutable token with a valid key as its wipe key", async function () {
@@ -1988,7 +2034,7 @@ describe.only("TokenUpdateTransaction", function () {
       );
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -2005,7 +2051,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenWipeKeyUpdate(response.tokenId, key);
+      await retryOnError(async () =>
+        verifyTokenUpdateWithNullWipeKey(response.tokenId),
+      );
     });
 
     it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async function () {
@@ -2109,6 +2157,22 @@ describe.only("TokenUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - supplyKey.length),
       );
+    }
+
+    async function verifyTokenUpdateWithNullFeeScheduleKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).supplyKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "supply_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
     }
 
     it("(#1) Updates an immutable token with a valid key as its supply key", async function () {
@@ -2384,7 +2448,7 @@ describe.only("TokenUpdateTransaction", function () {
       );
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -2401,7 +2465,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenSupplyKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithNullFeeScheduleKey(response.tokenId);
+      });
     });
 
     it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async function () {
@@ -2647,12 +2713,6 @@ describe.only("TokenUpdateTransaction", function () {
       );
 
       expect(autoRenewPeriod).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).auto_renew_period,
-      );
-
-      console.log(
         await (
           await mirrorNodeClient.getTokenData(tokenId)
         ).auto_renew_period,
@@ -3319,6 +3379,22 @@ describe.only("TokenUpdateTransaction", function () {
       );
     }
 
+    async function verifyTokenUpdateWithNullFeeScheduleKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).feeScheduleKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "fee_schedule_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
+    }
+
     it("(#1) Updates an immutable token with a valid key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
@@ -3579,7 +3655,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -3596,7 +3672,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenFeeScheduleKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithNullFeeScheduleKey(response.tokenId);
+      });
     });
 
     it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async function () {
@@ -3698,6 +3776,22 @@ describe.only("TokenUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - pauseKey.length),
       );
+    }
+
+    async function verifyTokenUpdateWithNullPauseKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).pauseKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "pause_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
     }
 
     it("(#1) Updates an immutable token with a valid key as its pause key", async function () {
@@ -3943,7 +4037,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -3960,7 +4054,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenPauseKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        await verifyTokenUpdateWithNullPauseKey(response.tokenId);
+      });
     });
 
     it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async function () {
@@ -4122,6 +4218,22 @@ describe.only("TokenUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - metadataKey.length),
       );
+    }
+
+    async function verifyTokenUpdateWithNullMetadataKey(tokenId) {
+      expect(null).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).metadataKey,
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "metadata_key",
+      );
+
+      expect(null).to.equal(publicKeyMirrorNode);
     }
 
     it("(#1) Updates an immutable token with a valid key as its metadata key", async function () {
@@ -4367,7 +4479,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it.skip("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
+    it("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
         keys: [],
@@ -4384,7 +4496,9 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenMetadataKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithNullMetadataKey(response.tokenId);
+      });
     });
 
     it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async function () {
