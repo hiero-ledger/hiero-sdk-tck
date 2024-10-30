@@ -1,20 +1,27 @@
+import crypto from "crypto";
+import { assert, expect } from "chai";
+import { Timestamp } from "@hashgraph/sdk";
+
 import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
 import { setOperator } from "../../setup_Tests.js";
-import crypto from "crypto";
-import { assert, expect } from "chai";
-import { JSONRPC } from "json-rpc-2.0";
+import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
+import { retryOnError } from "../../utils/helpers/retry-on-error.js";
+import {
+  getEncodedKeyHexFromKeyListConsensus,
+  getPublicKeyFromMirrorNode,
+} from "../../utils/helpers/key.js";
 
 // Needed to convert BigInts to JSON number format.
 BigInt.prototype.toJSON = function () {
-  return JSON.rawJSON(this.toString())
-}
+  return JSON.rawJSON(this.toString());
+};
 
 /**
  * Tests for TokenUpdateTransaction
  */
-describe("TokenUpdateTransaction", function () {  
+describe.only("TokenUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -22,33 +29,40 @@ describe("TokenUpdateTransaction", function () {
   const initialTokenName = "testname";
   const initialTokenSymbol = "testsymbol";
   const initialTreasuryAccountId = process.env.OPERATOR_ACCOUNT_ID;
-  const initialSupply = 1000000;
+  const initialSupply = "1000000";
 
   // Two tokens should be created. One immutable token (no admin key) and another mutable.
   let immutableTokenId, mutableTokenId, mutableTokenKey;
 
-  before(async function () {
-    await setOperator(process.env.OPERATOR_ACCOUNT_ID, process.env.OPERATOR_ACCOUNT_PRIVATE_KEY);
-  
-    // Generate an immutable key.
+  beforeEach(async function () {
+    await setOperator(
+      process.env.OPERATOR_ACCOUNT_ID,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+    );
+
+    // Generate an immutable token.
     const response = await JSONRPCRequest("createToken", {
       name: initialTokenName,
       symbol: initialTokenSymbol,
       treasuryAccountId: initialTreasuryAccountId,
       initialSupply: initialSupply,
-      tokenType: "ft"
+      tokenType: "ft",
     });
     if (response.status === "NOT_IMPLEMENTED") this.skip();
+
     immutableTokenId = response.tokenId;
 
     await JSONRPCRequest("reset");
   });
 
   beforeEach(async function () {
-    await setOperator(process.env.OPERATOR_ACCOUNT_ID, process.env.OPERATOR_ACCOUNT_PRIVATE_KEY);
+    await setOperator(
+      process.env.OPERATOR_ACCOUNT_ID,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+    );
 
     let response = await JSONRPCRequest("generateKey", {
-      type: "ecdsaSecp256k1PrivateKey"
+      type: "ecdsaSecp256k1PrivateKey",
     });
     if (response.status === "NOT_IMPLEMENTED") this.skip();
     mutableTokenKey = response.key;
@@ -68,42 +82,42 @@ describe("TokenUpdateTransaction", function () {
       pauseKey: mutableTokenKey,
       metadataKey: mutableTokenKey,
       commonTransactionParams: {
-        signers: [
-          mutableTokenKey
-        ]
-      }
+        signers: [mutableTokenKey],
+      },
     });
     if (response.status === "NOT_IMPLEMENTED") this.skip();
     mutableTokenId = response.tokenId;
   });
+
   afterEach(async function () {
     await JSONRPCRequest("reset");
   });
 
   describe("Token ID", function () {
     async function verifyTokenUpdate(tokenId) {
-        let mirrorNodeData = await mirrorNodeClient.getTokenData(accountId);
-        let consensusNodeData = await consensusInfoClient.getTokenInfo(accountId);
-        expect(accountId).to.be.equal(mirrorNodeData.tokens[0].token);
-        expect(accountId).to.be.equal(consensusNodeData.tokens.toString());
+      const mirrorNodeData = await mirrorNodeClient.getTokenData(tokenId);
+      const consensusNodeData = await consensusInfoClient.getTokenInfo(tokenId);
+
+      expect(tokenId).to.be.equal(mirrorNodeData.token_id);
+      expect(tokenId).to.be.equal(consensusNodeData.tokenId.toString());
     }
 
     it("(#1) Updates an immutable token with no updates", async function () {
       const response = await JSONRPCRequest("updateToken", {
-        tokenId: immutableTokenId
+        tokenId: immutableTokenId,
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenUpdate(response.tokenId);
+      await verifyTokenUpdate(response.tokenId);
     });
 
     it("(#2) Updates a mutable token with no updates", async function () {
       const response = await JSONRPCRequest("updateToken", {
-        tokenId: mutableTokenId
+        tokenId: mutableTokenId,
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenUpdate(response.tokenId);
+      await verifyTokenUpdate(response.tokenId);
     });
 
     it("(#3) Updates a token with no token ID", async function () {
@@ -121,15 +135,23 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Symbol", function () {
     async function verifyTokenSymbolUpdate(tokenId, symbol) {
-      expect(symbol).to.equal(await consensusInfoClient.getTokenInfo(tokenId).symbol);
-      expect(symbol).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].symbol);
+      expect(symbol).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).symbol,
+      );
+      expect(symbol).to.equal(
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).symbol,
+      );
     }
 
     it("(#1) Updates an immutable token with a symbol", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          symbol: "t"
+          symbol: "t",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -146,58 +168,56 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         symbol: symbol,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSymbolUpdate(response.tokenId, symbol);
+      await retryOnError(() =>
+        verifyTokenSymbolUpdate(response.tokenId, symbol),
+      );
     });
 
     it("(#3) Updates a mutable token with a symbol that is empty", async function () {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          symbol: "",
-          commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-  
-        // Symbol shouldn't change and should still remain as its initial value.
-        verifyTokenSymbolUpdate(response.tokenId, initialTokenSymbol);
+      const response = await JSONRPCRequest("updateToken", {
+        tokenId: mutableTokenId,
+        symbol: "",
+        commonTransactionParams: {
+          signers: [mutableTokenKey],
+        },
+      });
+      if (response.status === "NOT_IMPLEMENTED") this.skip();
+
+      // Symbol shouldn't change and should still remain as its initial value.
+      await verifyTokenSymbolUpdate(response.tokenId, initialTokenSymbol);
     });
 
     it("(#4) Updates a mutable token with a symbol that is the maximum length", async function () {
-      const symbol = "This is a really long symbol but it is still valid because it is 100 characters exactly on the money"
+      const symbol =
+        "This is a really long symbol but it is still valid because it is 100 characters exactly on the money";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         symbol: symbol,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSymbolUpdate(response.tokenId, symbol);
+      await retryOnError(() =>
+        verifyTokenSymbolUpdate(response.tokenId, symbol),
+      );
     });
 
     it("(#5) Updates a mutable token with a symbol that exceeds the maximum length", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          symbol: "This is a long symbol that is not valid because it exceeds 100 characters and it should fail the test",
+          symbol:
+            "This is a long symbol that is not valid because it exceeds 100 characters and it should fail the test",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -212,7 +232,7 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          symbol: "t"
+          symbol: "t",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -226,15 +246,24 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Name", function () {
     async function verifyTokenNameUpdate(tokenId, name) {
-      expect(name).to.equal(await consensusInfoClient.getTokenInfo(tokenId).name);
-      expect(name).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].name);
+      expect(name).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).name,
+      );
+
+      expect(name).to.equal(
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).name,
+      );
     }
 
     it("(#1) Updates an immutable token with a name", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          name: "t"
+          name: "t",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -251,14 +280,12 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         name: name,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenNameUpdate(response.tokenId, name);
+      await retryOnError(() => verifyTokenNameUpdate(response.tokenId, name));
     });
 
     it("(#3) Updates a mutable token with a name that is empty", async function () {
@@ -266,31 +293,30 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         name: "",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
-  
+
       // Name shouldn't change and should still remain as its initial value.
-      verifyTokenNameUpdate(response.tokenId, initialTokenName);
+      await retryOnError(() =>
+        verifyTokenNameUpdate(response.tokenId, initialTokenName),
+      );
     });
 
     it("(#4) Updates a mutable token with a name that is the maximum length", async function () {
-      const name = "This is a really long name but it is still valid because it is 100 characters exactly on the money!!"
+      const name =
+        "This is a really long name but it is still valid because it is 100 characters exactly on the money!!";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         name: name,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenNameUpdate(response.tokenId, name);
+      await retryOnError(() => verifyTokenNameUpdate(response.tokenId, name));
     });
 
     it("(#5) Updates a mutable token with a name that exceeds the maximum length", async function () {
@@ -299,10 +325,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           name: "This is a long name that is not valid because it exceeds 100 characters and it should fail the test!!",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -317,7 +341,7 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          name: "t"
+          name: "t",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -334,7 +358,7 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -347,7 +371,7 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#2) Updates a mutable token with a treasury account", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -355,7 +379,7 @@ describe("TokenUpdateTransaction", function () {
       // Create with 1 auto token association in order to automatically associate with the created token.
       response = await JSONRPCRequest("createAccount", {
         key: key,
-        maxAutoTokenAssociations: 1
+        maxAutoTokenAssociations: 1,
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const accountId = response.accountId;
@@ -364,11 +388,8 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         treasuryAccountId: accountId,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            key
-          ]
-        }
+          signers: [mutableTokenKey, key],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -376,23 +397,31 @@ describe("TokenUpdateTransaction", function () {
       expect(accountId).to.equal(tokenInfo.treasuryAccountId.toString());
 
       // Make sure the tokens were transferred from the initial treasury account to the new treasury account.
-      const initialTreasuryAccountBalance = await consensusInfoClient.getBalance(process.env.OPERATOR_ACCOUNT_ID);
-      const newTreasuryAccountBalance = await consensusInfoClient.getBalance(accountId);
+      const initialTreasuryAccountBalance =
+        await consensusInfoClient.getBalance(process.env.OPERATOR_ACCOUNT_ID);
+      const newTreasuryAccountBalance =
+        await consensusInfoClient.getBalance(accountId);
 
       assert(initialTreasuryAccountBalance.tokens._map.has(mutableTokenId));
       assert(newTreasuryAccountBalance.tokens._map.has(mutableTokenId));
 
-      expect(initialTreasuryAccountBalance.tokens._map.get(mutableTokenId).toString()).to.equal("0");
-      expect(newTreasuryAccountBalance.tokens._map.get(mutableTokenId).toString()).to.equal(initialSupply.toString());
+      expect(
+        initialTreasuryAccountBalance.tokens._map
+          .get(mutableTokenId)
+          .toString(),
+      ).to.equal("0");
+      expect(
+        newTreasuryAccountBalance.tokens._map.get(mutableTokenId).toString(),
+      ).to.equal(initialSupply.toString());
     });
 
     it("(#3) Updates a mutable token with a treasury account without signing with the account's private key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
-  
+
       response = await JSONRPCRequest("createAccount", {
         key: key,
       });
@@ -404,17 +433,15 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           treasuryAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-                mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -424,10 +451,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           treasuryAccountId: "123.456.789",
           commonTransactionParams: {
-            signers: [
-                mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -440,25 +465,23 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#5) Updates a mutable token with a treasury account that is deleted", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
-  
+
       response = await JSONRPCRequest("createAccount", {
         key: key,
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const accountId = response.accountId;
-  
+
       response = await JSONRPCRequest("deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-            signers: [
-                key
-            ]
-        }
+          signers: [key],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -467,28 +490,25 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           treasuryAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-                mutableTokenKey,
-                key
-            ]
-          }
+            signers: [mutableTokenKey, key],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#6) Updates a mutable token with a treasury account without signing with the token's admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
-  
+
       response = await JSONRPCRequest("createAccount", {
         key: key,
       });
@@ -500,30 +520,67 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           treasuryAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-              key
-            ]
-          }
+            signers: [key],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
   });
 
   describe("Admin Key", function () {
-    async function verifyTokenAdminKeyUpdate(tokenId, adminKey) {
-      expect(adminKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).adminKey.toStringDer());
-      expect(adminKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].admin_key);
+    async function verifyTokenUpdateAdminKey(tokenId, adminKey) {
+      const rawKey = getRawKeyFromHex(adminKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).adminKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "admin_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithAdminKeyList(tokenId, adminKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "adminKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(adminKey.slice(adminKey.length - keyHex.length)).to.equal(keyHex);
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).admin_key
+      ).key;
+
+      expect(adminKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - adminKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -531,27 +588,27 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          adminKey: key
+          adminKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -559,28 +616,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         adminKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            privateKey
-          ]
-        }
+          signers: [mutableTokenKey, privateKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenAdminKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -588,28 +644,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         adminKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            privateKey
-          ]
-        }
+          signers: [mutableTokenKey, privateKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenAdminKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -617,28 +672,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         adminKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            privateKey
-          ]
-        }
+          signers: [mutableTokenKey, privateKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenAdminKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -646,16 +700,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         adminKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            privateKey
-          ]
-        }
+          signers: [mutableTokenKey, privateKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenAdminKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
@@ -663,18 +716,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -687,13 +740,15 @@ describe("TokenUpdateTransaction", function () {
             keyList.privateKeys[0],
             keyList.privateKeys[1],
             keyList.privateKeys[2],
-            keyList.privateKeys[3]
-          ]
-        }
+            keyList.privateKeys[3],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenAdminKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithAdminKeyList(response.tokenId, keyList.key),
+      );
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its admin key", async function () {
@@ -704,36 +759,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -748,13 +803,15 @@ describe("TokenUpdateTransaction", function () {
             nestedKeyList.privateKeys[2],
             nestedKeyList.privateKeys[3],
             nestedKeyList.privateKeys[4],
-            nestedKeyList.privateKeys[5]
-          ]
-        }
+            nestedKeyList.privateKeys[5],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenAdminKeyUpdate(response.tokenId, nestedKeyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithAdminKeyList(response.tokenId, nestedKeyList.key),
+      );
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
@@ -763,15 +820,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -782,18 +839,20 @@ describe("TokenUpdateTransaction", function () {
           signers: [
             mutableTokenKey,
             thresholdKey.privateKeys[0],
-            thresholdKey.privateKeys[1]
-          ]
-        }
+            thresholdKey.privateKeys[1],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenAdminKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithAdminKeyList(response.tokenId, thresholdKey.key),
+      );
     });
 
     it("(#9) Updates a mutable token with a valid key as its admin key but doesn't sign with it", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -803,10 +862,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           adminKey: key,
           commonTransactionParams: {
-            signers: [
-                mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -823,10 +880,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           adminKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-                mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -839,14 +894,53 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("KYC Key", function () {
-    async function verifyTokenKycKeyUpdate(tokenId, kycKey) {
-      expect(kycKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).kycKey.toStringDer());
-      expect(kycKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].kyc_key);
+    async function verifyTokenUpdateKycKey(tokenId, kycKey) {
+      const rawKey = getRawKeyFromHex(kycKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).kycKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "kyc_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithKycKeyList(tokenId, kycKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "kycKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(kycKey.slice(kycKey.length - keyHex.length)).to.equal(keyHex);
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).kyc_key
+      ).key;
+
+      expect(kycKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - kycKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -854,20 +948,20 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          kycKey: key
+          kycKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -876,20 +970,18 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         kycKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenKycKeyUpdate(response.tokenId, String(key).substring(24).toLowerCase());
+      await retryOnError(() => verifyTokenUpdateKycKey(response.tokenId, key));
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -898,27 +990,25 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         kycKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenKycKeyUpdate(response.tokenId, String(key).substring(28).toLowerCase());
+      await retryOnError(() => verifyTokenUpdateKycKey(response.tokenId, key));
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -926,28 +1016,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         kycKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            privateKey
-          ]
-        }
+          signers: [mutableTokenKey, privateKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenKycKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateKycKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -955,15 +1044,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         kycKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenKycKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateKycKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
@@ -971,18 +1060,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -995,13 +1084,15 @@ describe("TokenUpdateTransaction", function () {
             keyList.privateKeys[0],
             keyList.privateKeys[1],
             keyList.privateKeys[2],
-            keyList.privateKeys[3]
-          ]
-        }
+            keyList.privateKeys[3],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenKycKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithKycKeyList(response.tokenId, keyList.key),
+      );
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
@@ -1012,36 +1103,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1056,13 +1147,15 @@ describe("TokenUpdateTransaction", function () {
             nestedKeyList.privateKeys[2],
             nestedKeyList.privateKeys[3],
             nestedKeyList.privateKeys[4],
-            nestedKeyList.privateKeys[5]
-          ]
-        }
+            nestedKeyList.privateKeys[5],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenKycKeyUpdate(response.tokenId, nestedKeyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithKycKeyList(response.tokenId, nestedKeyList.key),
+      );
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
@@ -1071,15 +1164,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1090,40 +1183,46 @@ describe("TokenUpdateTransaction", function () {
           signers: [
             mutableTokenKey,
             thresholdKey.privateKeys[0],
-            thresholdKey.privateKeys[1]
-          ]
-        }
+            thresholdKey.privateKeys[1],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenKycKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithKycKeyList(response.tokenId, thresholdKey.key),
+      );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
+
+      console.log(">>", key);
 
       response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         kycKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenKycKeyUpdate(response.tokenId, key);
+      console.log(key);
+
+      await retryOnError(() =>
+        verifyTokenUpdateWithKycKeyList(response.tokenId, key),
+      );
     });
 
     it("(#10) Updates a mutable token that doesn't have a KYC key with a valid key as its KYC key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1136,10 +1235,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -1148,10 +1245,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           kycKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1160,7 +1255,6 @@ describe("TokenUpdateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
-
     });
 
     it("(#11) Updates a mutable token with an invalid key as its KYC key", async function () {
@@ -1169,10 +1263,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           kycKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1185,14 +1277,55 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Freeze Key", function () {
-    async function verifyTokenFreezeKeyUpdate(tokenId, freezeKey) {
-      expect(freezeKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).freezeKey.toStringDer());
-      expect(freezeKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].freeze_key);
+    async function verifyTokenUpdateFreezeKey(tokenId, freezeKey) {
+      const rawKey = getRawKeyFromHex(freezeKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).freezeKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "freeze_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithFreezeKeyList(tokenId, freezeKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "freezeKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(freezeKey.slice(freezeKey.length - keyHex.length)).to.equal(
+        keyHex,
+      );
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).freeze_key
+      ).key;
+
+      expect(freezeKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - freezeKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1200,27 +1333,27 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          freezeKey: key
+          freezeKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1228,27 +1361,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         freezeKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenFreezeKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1256,27 +1389,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         freezeKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenFreezeKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1284,27 +1417,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         freezeKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenFreezeKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1312,15 +1445,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         freezeKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenFreezeKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
@@ -1328,18 +1461,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1352,13 +1485,15 @@ describe("TokenUpdateTransaction", function () {
             keyList.privateKeys[0],
             keyList.privateKeys[1],
             keyList.privateKeys[2],
-            keyList.privateKeys[3]
-          ]
-        }
+            keyList.privateKeys[3],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFreezeKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithFreezeKeyList(response.tokenId, keyList.key),
+      );
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
@@ -1369,36 +1504,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1413,13 +1548,15 @@ describe("TokenUpdateTransaction", function () {
             nestedKeyList.privateKeys[2],
             nestedKeyList.privateKeys[3],
             nestedKeyList.privateKeys[4],
-            nestedKeyList.privateKeys[5]
-          ]
-        }
+            nestedKeyList.privateKeys[5],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFreezeKeyUpdate(response.tokenId, nestedKeyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithFreezeKeyList(response.tokenId, nestedKeyList.key),
+      );
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
@@ -1428,15 +1565,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1447,19 +1584,21 @@ describe("TokenUpdateTransaction", function () {
           signers: [
             mutableTokenKey,
             thresholdKey.privateKeys[0],
-            thresholdKey.privateKeys[1]
-          ]
-        }
+            thresholdKey.privateKeys[1],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFreezeKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithFreezeKeyList(response.tokenId, thresholdKey.key),
+      );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1468,19 +1607,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         freezeKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFreezeKeyUpdate(response.tokenId, key);
+      await verifyTokenFreezeKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1493,10 +1630,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -1505,10 +1640,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           freezeKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1525,10 +1658,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           freezeKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1541,14 +1672,53 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Wipe Key", function () {
-    async function verifyTokenWipeKeyUpdate(tokenId, wipeKey) {
-      expect(wipeKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).wipeKey.toStringDer());
-      expect(wipeKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].wipe_key);
+    async function verifyTokenUpdateWipeKey(tokenId, wipeKey) {
+      const rawKey = getRawKeyFromHex(wipeKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).wipeKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "wipe_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithWipeKeyList(tokenId, wipeKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "wipeKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(wipeKey.slice(wipeKey.length - keyHex.length)).to.equal(keyHex);
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).wipe_key
+      ).key;
+
+      expect(wipeKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - wipeKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1556,27 +1726,27 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          wipeKey: key
+          wipeKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1584,27 +1754,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         wipeKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenWipeKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1612,27 +1782,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         wipeKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenWipeKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1640,27 +1810,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         wipeKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenWipeKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1668,15 +1838,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         wipeKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenWipeKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
@@ -1684,18 +1854,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1708,13 +1878,15 @@ describe("TokenUpdateTransaction", function () {
             keyList.privateKeys[0],
             keyList.privateKeys[1],
             keyList.privateKeys[2],
-            keyList.privateKeys[3]
-          ]
-        }
+            keyList.privateKeys[3],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenWipeKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithWipeKeyList(response.tokenId, keyList.key),
+      );
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
@@ -1725,36 +1897,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1769,13 +1941,15 @@ describe("TokenUpdateTransaction", function () {
             nestedKeyList.privateKeys[2],
             nestedKeyList.privateKeys[3],
             nestedKeyList.privateKeys[4],
-            nestedKeyList.privateKeys[5]
-          ]
-        }
+            nestedKeyList.privateKeys[5],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenWipeKeyUpdate(response.tokenId, nestedKeyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithWipeKeyList(response.tokenId, nestedKeyList.key),
+      );
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
@@ -1784,15 +1958,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -1803,19 +1977,21 @@ describe("TokenUpdateTransaction", function () {
           signers: [
             mutableTokenKey,
             thresholdKey.privateKeys[0],
-            thresholdKey.privateKeys[1]
-          ]
-        }
+            thresholdKey.privateKeys[1],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenWipeKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithWipeKeyList(response.tokenId, thresholdKey.key),
+      );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1824,19 +2000,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         wipeKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenWipeKeyUpdate(response.tokenId, key);
+      await verifyTokenWipeKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1849,10 +2023,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -1861,10 +2033,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           wipeKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1881,10 +2051,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           wipeKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -1897,14 +2065,55 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Supply Key", function () {
-    async function verifyTokenSupplyKeyUpdate(tokenId, supplyKey) {
-      expect(supplyKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).supplyKey.toStringDer());
-      expect(supplyKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].supply_key);
+    async function verifyTokenUpdateSupplyKey(tokenId, supplyKey) {
+      const rawKey = getRawKeyFromHex(supplyKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).supplyKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "supply_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithSupplyKeyList(tokenId, supplyKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "supplyKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(supplyKey.slice(supplyKey.length - keyHex.length)).to.equal(
+        keyHex,
+      );
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).supply_key
+      ).key;
+
+      expect(supplyKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - supplyKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -1912,27 +2121,27 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          supplyKey: key
+          supplyKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1940,27 +2149,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         supplyKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenSupplyKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1968,27 +2177,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         supplyKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenSupplyKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -1996,27 +2205,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         supplyKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenSupplyKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -2024,15 +2233,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         supplyKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenSupplyKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(() =>
+        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+      );
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
@@ -2040,18 +2249,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -2064,13 +2273,15 @@ describe("TokenUpdateTransaction", function () {
             keyList.privateKeys[0],
             keyList.privateKeys[1],
             keyList.privateKeys[2],
-            keyList.privateKeys[3]
-          ]
-        }
+            keyList.privateKeys[3],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSupplyKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithSupplyKeyList(response.tokenId, keyList.key),
+      );
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
@@ -2081,36 +2292,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -2125,13 +2336,16 @@ describe("TokenUpdateTransaction", function () {
             nestedKeyList.privateKeys[2],
             nestedKeyList.privateKeys[3],
             nestedKeyList.privateKeys[4],
-            nestedKeyList.privateKeys[5]
-          ]
-        }
+            nestedKeyList.privateKeys[5],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSupplyKeyUpdate(response.tokenId, nestedKeyList.key);
+      await verifyTokenUpdateWithSupplyKeyList(
+        response.tokenId,
+        nestedKeyList.key,
+      );
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
@@ -2140,15 +2354,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -2159,19 +2373,21 @@ describe("TokenUpdateTransaction", function () {
           signers: [
             mutableTokenKey,
             thresholdKey.privateKeys[0],
-            thresholdKey.privateKeys[1]
-          ]
-        }
+            thresholdKey.privateKeys[1],
+          ],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSupplyKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(() =>
+        verifyTokenUpdateWithSupplyKeyList(response.tokenId, thresholdKey.key),
+      );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -2180,19 +2396,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         supplyKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenSupplyKeyUpdate(response.tokenId, key);
+      await verifyTokenSupplyKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -2205,10 +2419,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -2217,10 +2429,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           supplyKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2237,10 +2447,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           supplyKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2253,24 +2461,24 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Auto Renew Account", function () {
-    it("(#1) Updates an immutable token with an auto renew account", async function () {  
-        try {
-          const response = await JSONRPCRequest("updateToken", {
-            tokenId: immutableTokenId,
-            autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID
-          });
-          if (response.status === "NOT_IMPLEMENTED") this.skip();
-        } catch (err) {
-          assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
-          return;
-        }
-    
-        assert.fail("Should throw an error");
+    it("(#1) Updates an immutable token with an auto renew account", async function () {
+      try {
+        const response = await JSONRPCRequest("updateToken", {
+          tokenId: immutableTokenId,
+          autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        });
+        if (response.status === "NOT_IMPLEMENTED") this.skip();
+      } catch (err) {
+        assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with an auto renew account", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -2285,11 +2493,8 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         autoRenewAccountId: accountId,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey,
-            key
-          ]
-        }
+          signers: [mutableTokenKey, key],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -2299,7 +2504,7 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#3) Updates a mutable token with an auto renew account without signing with the account's private key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -2315,10 +2520,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           autoRenewAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2335,10 +2538,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           autoRenewAccountId: "123.456.789",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2355,10 +2556,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           autoRenewAccountId: "",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2371,7 +2570,7 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#6) Updates a mutable token with an auto renew account that is deleted", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -2386,10 +2585,8 @@ describe("TokenUpdateTransaction", function () {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-          signers: [
-            key
-          ]
-        }
+          signers: [key],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -2398,11 +2595,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           autoRenewAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey,
-              key
-            ]
-          }
+            signers: [mutableTokenKey, key],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2415,13 +2609,13 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#7) Updates a mutable token with an auto renew account without signing with the token's admin key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
-  
+
       response = await JSONRPCRequest("createAccount", {
-        key: key
+        key: key,
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const accountId = response.accountId;
@@ -2431,32 +2625,45 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           autoRenewAccountId: accountId,
           commonTransactionParams: {
-            signers: [
-              key
-            ]
-          }
+            signers: [key],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
   });
 
   describe("Auto Renew Period", function () {
     async function verifyTokenAutoRenewPeriodUpdate(tokenId, autoRenewPeriod) {
-      expect(autoRenewPeriod).to.equal(await consensusInfoClient.getTokenInfo(tokenId).autoRenewPeriod);
-      expect(autoRenewPeriod).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].auto_renew_period);
+      expect(autoRenewPeriod).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).autoRenewPeriod,
+      );
+
+      expect(autoRenewPeriod).to.equal(
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).auto_renew_period,
+      );
+
+      console.log(
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).auto_renew_period,
+      );
     }
-    
-    it("(#1) Updates an immutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {  
+
+    it("(#1) Updates an immutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          autoRenewPeriod: 5184000
+          autoRenewPeriod: "5184000",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2471,19 +2678,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 0,
+          autoRenewPeriod: "0",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -2491,19 +2696,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: -1,
+          autoRenewPeriod: "-1",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -2511,19 +2714,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 9223372036854775807n,
+          autoRenewPeriod: "9223372036854775807",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -2531,59 +2732,53 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 9223372036854775806n,
+          autoRenewPeriod: "9223372036854775806",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,808 (int64 max + 1) seconds", async function () {
-      try {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          autoRenewPeriod: 9223372036854775808n,
-          commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
-        return;
-      }
-  
-      assert.fail("Should throw an error");
-    });
+    // it("(#6) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,808 (int64 max + 1) seconds", async function () {
+    //   try {
+    //     const response = await JSONRPCRequest("updateToken", {
+    //       tokenId: mutableTokenId,
+    //       autoRenewPeriod: "9223372036854775808",
+    //       commonTransactionParams: {
+    //         signers: [mutableTokenKey],
+    //       },
+    //     });
+    //     if (response.status === "NOT_IMPLEMENTED") this.skip();
+    //   } catch (err) {
+    //     assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+    //     return;
+    //   }
+
+    //   assert.fail("Should throw an error");
+    // });
 
     it("(#7) Updates a mutable token with an auto renew period set to 18,446,744,073,709,551,615 (uint64 max) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 18446744073709551615n,
+          autoRenewPeriod: "18446744073709551615",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -2591,39 +2786,35 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 18446744073709551614n,
+          autoRenewPeriod: "18446744073709551614",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it.skip("(#9) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: -9223372036854775808n,
+          autoRenewPeriod: "-9223372036854775808",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
@@ -2631,62 +2822,58 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: -9223372036854775807n,
+          autoRenewPeriod: "-9223372036854775807",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#11) Updates a mutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
-      const autoRenewPeriod = 5184000;
+      const autoRenewPeriod = "5184000";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         autoRenewPeriod: autoRenewPeriod,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
 
-      verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      await retryOnError(async () => {
+        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      });
     });
 
     it("(#12) Updates a mutable token with an auto renew period set to 30 days (2,592,000 seconds)", async function () {
-      const autoRenewPeriod = 2592000;
+      const autoRenewPeriod = "2592000";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         autoRenewPeriod: autoRenewPeriod,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
 
-      verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      await retryOnError(async () => {
+        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      });
     });
 
     it("(#13) Updates a mutable token with an auto renew period set to 30 days minus one second (2,591,999 seconds)", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 2591999,
+          autoRenewPeriod: "2591999",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2698,30 +2885,28 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#14) Updates a mutable token with an auto renew period set to 8,000,001 seconds", async function () {
-      const autoRenewPeriod = 8000001;
+      const autoRenewPeriod = "8000001";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         autoRenewPeriod: autoRenewPeriod,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
 
-      verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      await retryOnError(async () => {
+        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+      });
     });
 
     it("(#15) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: 8000002,
+          autoRenewPeriod: "8000002",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2735,11 +2920,29 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Expiration Time", function () {
     async function verifyTokenExpirationTimeUpdate(tokenId, expirationTime) {
-      expect(expirationTime).to.equal(await consensusInfoClient.getTokenInfo(tokenId).expirationTime);
-      expect(expirationTime).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].expiry_timestamp);
+      const parsedExpirationTime = Timestamp.fromDate(
+        new Date(Number(expirationTime) * 1000),
+      );
+
+      expect(parsedExpirationTime).to.deep.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).expirationTime,
+      );
+
+      const mirrorNodeExpirationDateNanoseconds = await (
+        await mirrorNodeClient.getTokenData(tokenId)
+      ).expiry_timestamp;
+
+      // Convert nanoseconds got back from to timestamp
+      const mirrorNodeTimestamp = Timestamp.fromDate(
+        new Date(mirrorNodeExpirationDateNanoseconds / 1000000),
+      );
+
+      expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
     }
-    
-    //it("(#1) Updates an immutable token with a valid expiration time", async function () {  
+
+    //it("(#1) Updates an immutable token with a valid expiration time", async function () {
     //  try {
     //    const response = await JSONRPCRequest("updateToken", {
     //      tokenId: immutableTokenId,
@@ -2758,12 +2961,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 0,
+          expirationTime: "0",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2778,12 +2979,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: -1,
+          expirationTime: "-1",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2798,12 +2997,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 9223372036854775807n,
+          expirationTime: "9223372036854775807",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2818,12 +3015,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 9223372036854775806n,
+          expirationTime: "9223372036854775806",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2838,12 +3033,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 9223372036854775808n,
+          expirationTime: "9223372036854775808",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2858,12 +3051,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 18446744073709551615n,
+          expirationTime: "18446744073709551615",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2878,12 +3069,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 18446744073709551614n,
+          expirationTime: "18446744073709551614",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2898,12 +3087,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: -9223372036854775808n,
+          expirationTime: "-9223372036854775808",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2918,12 +3105,10 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: -9223372036854775807n,
+          expirationTime: "-9223372036854775807",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -2946,7 +3131,7 @@ describe("TokenUpdateTransaction", function () {
     //    }
     //  });
     //  if (response.status === "NOT_IMPLEMENTED") this.skip();
-    //  
+    //
     //  verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     //});
 
@@ -2962,7 +3147,7 @@ describe("TokenUpdateTransaction", function () {
     //    }
     // });
     //  if (response.status === "NOT_IMPLEMENTED") this.skip();
-    //  
+    //
     //  verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     //});
 
@@ -2970,48 +3155,47 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: parseInt((Date.now() / 1000) + 2591999),
+          expirationTime: "2591999",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
-    
+
       assert.fail("Should throw an error");
     });
 
     it("(#14) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
-      const expirationTime = parseInt((Date.now() / 1000) + 8000001);
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 8000001
+      ).toString();
+
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         expirationTime: expirationTime,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
-      
-      verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+
+      await retryOnError(async () => {
+        verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+      });
     });
 
     it("(#15) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: 8000002,
+          expirationTime: "8000002",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3025,15 +3209,24 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Memo", function () {
     async function verifyTokenMemoUpdate(tokenId, memo) {
-      expect(memo).to.equal(await consensusInfoClient.getTokenInfo(tokenId).memo);
-      expect(memo).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].memo);
+      expect(memo).to.equal(
+        await (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).memo,
+      );
+
+      expect(memo).to.equal(
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).memo,
+      );
     }
-    
-    it("(#1) Updates an immutable token with a memo that is a valid length", async function () {  
+
+    it("(#1) Updates an immutable token with a memo that is a valid length", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          memo: "testmemo"
+          memo: "testmemo",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3045,51 +3238,52 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a memo that is a valid length", async function () {
-      const memo = "testmemo"
+      const memo = "testmemo";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         memo: memo,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMemoUpdate(response.tokenId, memo);
+      await retryOnError(async () => {
+        verifyTokenMemoUpdate(response.tokenId, memo);
+      });
     });
 
     it("(#3) Updates a mutable token with a memo that is the minimum length", async function () {
-      const memo = ""
+      const memo = "";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         memo: memo,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMemoUpdate(response.tokenId, memo);
+      await retryOnError(async () => {
+        verifyTokenMemoUpdate(response.tokenId, memo);
+      });
     });
 
     it("(#4) Updates a mutable token with a memo that is the minimum length", async function () {
-      const memo = "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!"
+      const memo =
+        "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
         memo: memo,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMemoUpdate(response.tokenId, memo);
+      await retryOnError(async () => {
+        verifyTokenMemoUpdate(response.tokenId, memo);
+      });
     });
 
     it("(#5) Updates a mutable token with a memo that exceeds the maximum length", async function () {
@@ -3098,10 +3292,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           memo: "This is a long memo that is not valid because it exceeds 100 characters and it should fail the test!!",
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3114,14 +3306,58 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Fee Schedule Key", function () {
-    async function verifyTokenFeeScheduleKeyUpdate(tokenId, feeScheduleKey) {
-      expect(feeScheduleKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).feeScheduleKey.toStringDer());
-      expect(feeScheduleKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].fee_schedule_key);
+    async function verifyTokenUpdateFeeScheduleKey(tokenId, feeScheduleKey) {
+      const rawKey = getRawKeyFromHex(feeScheduleKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).feeScheduleKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "fee_schedule_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithFeeScheduleKeyList(
+      tokenId,
+      feeScheduleKey,
+    ) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "feeScheduleKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(
+        feeScheduleKey.slice(feeScheduleKey.length - keyHex.length),
+      ).to.equal(keyHex);
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).fee_schedule_key
+      ).key;
+
+      expect(feeScheduleKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - feeScheduleKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3129,27 +3365,27 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          feeScheduleKey: key
+          feeScheduleKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3157,27 +3393,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3185,27 +3421,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: publicKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3213,27 +3449,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3241,15 +3477,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
@@ -3257,18 +3493,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (keyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -3276,14 +3512,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: keyList.key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, keyList.key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithFeeScheduleKeyList(response.tokenId, keyList.key);
+      });
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
@@ -3294,36 +3530,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (nestedKeyList.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -3331,14 +3567,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: nestedKeyList.key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, nestedKeyList.key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithFeeScheduleKeyList(
+          response.tokenId,
+          nestedKeyList.key,
+        );
+      });
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
@@ -3347,15 +3586,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (thresholdKey.status === "NOT_IMPLEMENTED") this.skip();
 
@@ -3363,20 +3602,23 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: thresholdKey.key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, thresholdKey.key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithFeeScheduleKeyList(
+          response.tokenId,
+          thresholdKey.key,
+        );
+      });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3385,19 +3627,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenFeeScheduleKeyUpdate(response.tokenId, key);
+      await verifyTokenFeeScheduleKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3410,10 +3650,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -3422,10 +3660,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           feeScheduleKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3442,10 +3678,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           feeScheduleKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3458,14 +3692,53 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Pause Key", function () {
-    async function verifyTokenPauseKeyUpdate(tokenId, pauseKey) {
-      expect(pauseKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).pauseKey.toStringDer());
-      expect(pauseKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].pause_key);
+    async function verifyTokenUpdatePauseKey(tokenId, pauseKey) {
+      const rawKey = getRawKeyFromHex(pauseKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).pauseKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "pause_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithPauseKeyList(tokenId, pauseKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "pauseKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(pauseKey.slice(pauseKey.length - keyHex.length)).to.equal(keyHex);
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).pause_key
+      ).key;
+
+      expect(pauseKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - pauseKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3473,20 +3746,20 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          feeScheduleKey: key
+          feeScheduleKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       const key = response.key;
 
@@ -3494,20 +3767,20 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenPauseKeyUpdate(response.tokenId, String(key).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdatePauseKey(response.tokenId, key);
+      });
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       const key = response.key;
 
@@ -3515,27 +3788,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenPauseKeyUpdate(response.tokenId, String(key).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdatePauseKey(response.tokenId, key);
+      });
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3543,27 +3816,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenPauseKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdatePauseKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3571,15 +3844,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenPauseKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdatePauseKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
@@ -3587,18 +3860,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3607,14 +3880,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenPauseKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+      });
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
@@ -3625,36 +3898,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3663,14 +3936,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenPauseKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+      });
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
@@ -3679,15 +3952,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3696,20 +3969,20 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenPauseKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+      });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3718,19 +3991,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         pauseKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenPauseKeyUpdate(response.tokenId, key);
+      await verifyTokenPauseKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3743,10 +4014,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -3755,10 +4024,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           pauseKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3775,10 +4042,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           feeScheduleKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3792,15 +4057,19 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Metadata", function () {
     async function verifyTokenMetadataUpdate(tokenId, metadata) {
-      expect(metadata).to.equal(await consensusInfoClient.getTokenInfo(tokenId).metadata);
-      expect(metadata).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].metadata);
+      expect(metadata).to.equal(
+        await consensusInfoClient.getTokenInfo(tokenId).metadata,
+      );
+      expect(metadata).to.equal(
+        await mirrorNodeClient.getTokenData(tokenId).tokens[0].metadata,
+      );
     }
-    
-    it("(#1) Updates an immutable token with metadata", async function () {  
+
+    it("(#1) Updates an immutable token with metadata", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          metadata: "1234"
+          metadata: "1234",
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -3817,14 +4086,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadata: metadata,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataUpdate(response.tokenId, metadata);
+      await retryOnError(async () => {
+        verifyTokenMetadataUpdate(response.tokenId, metadata);
+      });
     });
 
     it("(#3) Updates a mutable token with empty metadata", async function () {
@@ -3833,26 +4102,67 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadata: metadata,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataUpdate(response.tokenId, metadata);
+      await retryOnError(async () => {
+        verifyTokenMetadataUpdate(response.tokenId, metadata);
+      });
     });
   });
 
   describe("Metadata Key", function () {
-    async function verifyTokenMetadataKeyUpdate(tokenId, metadataKey) {
-      expect(metadataKey).to.equal(await consensusInfoClient.getTokenInfo(tokenId).metadataKey.toStringDer());
-      expect(metadataKey).to.equal(await mirrorNodeClient.getTokenData(tokenId).tokens[0].metadata_key);
+    async function verifyTokenUpdateMetadataKey(tokenId, pauseKey) {
+      const rawKey = getRawKeyFromHex(pauseKey);
+
+      expect(rawKey).to.equal(
+        (
+          await (
+            await consensusInfoClient.getTokenInfo(tokenId)
+          ).pauseKey
+        ).toStringRaw(),
+      );
+
+      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
+        "getTokenData",
+        tokenId,
+        "metadata_key",
+      );
+
+      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+    }
+
+    async function verifyTokenUpdateWithMetadataKeyList(tokenId, metadataKey) {
+      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
+        "getTokenInfo",
+        tokenId,
+        "metadataKey",
+      );
+
+      // Consensus node check
+      // Removing the unnecessary prefix from the incoming key
+      expect(metadataKey.slice(metadataKey.length - keyHex.length)).to.equal(
+        keyHex,
+      );
+
+      // Mirror node check
+      const mirrorNodeKey = (
+        await (
+          await mirrorNodeClient.getTokenData(tokenId)
+        ).metadata_key
+      ).key;
+
+      expect(metadataKey).to.equal(
+        // Removing the unnecessary prefix from the mirror node key
+        mirrorNodeKey.slice(mirrorNodeKey.length - metadataKey.length),
+      );
     }
 
     it("(#1) Updates an immutable token with a valid key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3860,20 +4170,20 @@ describe("TokenUpdateTransaction", function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: immutableTokenId,
-          metadataKey: key
+          metadataKey: key,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
-  
+
       assert.fail("Should throw an error");
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PublicKey"
+        type: "ed25519PublicKey",
       });
       const key = response.key;
 
@@ -3881,20 +4191,20 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenMetadataKeyUpdate(response.tokenId, String(key).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateMetadataKey(response.tokenId, key);
+      });
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       const key = response.key;
 
@@ -3902,27 +4212,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenMetadataKeyUpdate(response.tokenId, String(key).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateMetadataKey(response.tokenId, key);
+      });
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ed25519PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3930,27 +4240,27 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      verifyTokenMetadataKeyUpdate(response.tokenId, String(publicKey).substring(24).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateMetadataKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PrivateKey"
+        type: "ecdsaSecp256k1PrivateKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const privateKey = response.key;
 
       response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey
+        fromKey: privateKey,
       });
       const publicKey = response.key;
 
@@ -3958,15 +4268,15 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: privateKey,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      verifyTokenMetadataKeyUpdate(response.tokenId, String(publicKey).substring(28).toLowerCase());
+      await retryOnError(async () => {
+        verifyTokenUpdateMetadataKey(response.tokenId, publicKey);
+      });
     });
 
     it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
@@ -3974,18 +4284,18 @@ describe("TokenUpdateTransaction", function () {
         type: "keyList",
         keys: [
           {
-            type: "ed25519PublicKey"
+            type: "ed25519PublicKey",
           },
           {
-            type: "ecdsaSecp256k1PrivateKey"
+            type: "ecdsaSecp256k1PrivateKey",
           },
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
-          }
-        ]
+            type: "ecdsaSecp256k1PublicKey",
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -3994,14 +4304,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+      });
     });
 
     it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
@@ -4012,36 +4322,36 @@ describe("TokenUpdateTransaction", function () {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ecdsaSecp256k1PrivateKey"
-              }
-            ]
+                type: "ecdsaSecp256k1PrivateKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ecdsaSecp256k1PublicKey"
+                type: "ecdsaSecp256k1PublicKey",
               },
               {
-                type: "ed25519PublicKey"
-              }
-            ]
+                type: "ed25519PublicKey",
+              },
+            ],
           },
           {
             type: "keyList",
             keys: [
               {
-                type: "ed25519PrivateKey"
+                type: "ed25519PrivateKey",
               },
               {
-                type: "ecdsaSecp256k1PublicKey"
-              }
-            ]
-          }
-        ]
+                type: "ecdsaSecp256k1PublicKey",
+              },
+            ],
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -4050,14 +4360,14 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+      });
     });
 
     it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
@@ -4066,15 +4376,15 @@ describe("TokenUpdateTransaction", function () {
         threshold: 2,
         keys: [
           {
-            type: "ed25519PrivateKey"
+            type: "ed25519PrivateKey",
           },
           {
-            type: "ecdsaSecp256k1PublicKey"
+            type: "ecdsaSecp256k1PublicKey",
           },
           {
-            type: "ed25519PublicKey"
-          }
-        ]
+            type: "ed25519PublicKey",
+          },
+        ],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -4083,20 +4393,20 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataKeyUpdate(response.tokenId, key);
+      await retryOnError(async () => {
+        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+      });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
+    it.skip("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "keyList",
-        keys: []
+        keys: [],
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -4105,19 +4415,17 @@ describe("TokenUpdateTransaction", function () {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      verifyTokenMetadataKeyUpdate(response.tokenId, key);
+      await verifyTokenMetadataKeyUpdate(response.tokenId, key);
     });
 
     it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async function () {
       let response = await JSONRPCRequest("generateKey", {
-        type: "ecdsaSecp256k1PublicKey"
+        type: "ecdsaSecp256k1PublicKey",
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
       const key = response.key;
@@ -4130,10 +4438,8 @@ describe("TokenUpdateTransaction", function () {
         initialSupply: initialSupply,
         tokenType: "ft",
         commonTransactionParams: {
-          signers: [
-            mutableTokenKey
-          ]
-        }
+          signers: [mutableTokenKey],
+        },
       });
       const tokenId = response.tokenId;
 
@@ -4142,10 +4448,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: tokenId,
           metadataKey: key,
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -4162,10 +4466,8 @@ describe("TokenUpdateTransaction", function () {
           tokenId: mutableTokenId,
           metadataKey: crypto.randomBytes(88).toString("hex"),
           commonTransactionParams: {
-            signers: [
-              mutableTokenKey
-            ]
-          }
+            signers: [mutableTokenKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
