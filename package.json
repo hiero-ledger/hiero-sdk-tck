@@ -1,7 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "@hashgraph/sdk": "^2.49.2",
+    "@hashgraph/sdk": "^v2.51.0",
     "axios": "^1.6.0",
     "chai": "^4.3.6",
     "dotenv": "^16.0.1",

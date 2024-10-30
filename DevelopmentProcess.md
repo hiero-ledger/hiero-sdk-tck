@@ -108,4 +108,4 @@ Once the development of the SDK server is complete, it should be tested against 
 
 ### Step 3: Merge Pull Requests
 
-Once the development work for the TCK and the SDK servers is complete and all tests pass on all SDK servers, ALL pull requests in all SDK repos, as well as the TCK pull request, can be merged. This will mark the completion of the development work for this specific Hedera request.
+Once the development work for the TCK and the SDK servers is complete, three approvals from the SDK leads will be required for any pull requests to be merged. This is a new improvement, to merge PRs early enough while waiting for all the tests to pass on all SDK servers simultaneously. This will then mark the completion of the development work for this specific Hedera request.

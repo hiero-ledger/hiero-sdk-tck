@@ -1175,7 +1175,9 @@ describe("AccountCreateTransaction", function () {
         ).stakingInfo.declineStakingReward,
       );
       expect(declineRewards).to.equal(
-        await mirrorNodeClient.getAccountData(accountId).decline_reward,
+        await (
+          await mirrorNodeClient.getAccountData(accountId)
+        ).decline_reward,
       );
     }
 
@@ -1199,7 +1201,7 @@ describe("AccountCreateTransaction", function () {
       }
 
       // Verify the account was created with decline staking rewards.
-      verifyAccountCreationWithDeclineRewards(
+      await verifyAccountCreationWithDeclineRewards(
         response.accountId,
         declineStakingReward,
       );
@@ -1225,7 +1227,7 @@ describe("AccountCreateTransaction", function () {
       }
 
       // Verify the account was created without declining staking rewards.
-      verifyAccountCreationWithDeclineRewards(
+      await verifyAccountCreationWithDeclineRewards(
         response.accountId,
         declineStakingReward,
       );

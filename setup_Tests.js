@@ -10,14 +10,3 @@ export async function setOperator(accountId, privateKey) {
     mirrorNetworkIp: process.env.MIRROR_NETWORK,
   });
 }
-
-export async function getNodeType(useNode) {
-  return useNode === "local"
-    ? true
-    : useNode === "testnet"
-      ? false
-      : (() => {
-          console.warn("Uncaught Node Type Error: the argument is not a node");
-          return null;
-        })();
-}

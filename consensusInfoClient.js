@@ -3,7 +3,7 @@ import {
   AccountId,
   AccountInfoQuery,
   Client,
-  TokenInfoQuery
+  TokenInfoQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
