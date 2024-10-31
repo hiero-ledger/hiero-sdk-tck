@@ -108,7 +108,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenUpdate(response.tokenId);
+      await verifyTokenUpdate(immutableTokenId);
     });
 
     it("(#2) Updates a mutable token with no updates", async function () {
@@ -117,7 +117,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenUpdate(response.tokenId);
+      await verifyTokenUpdate(mutableTokenId);
     });
 
     it("(#3) Updates a token with no token ID", async function () {
@@ -173,9 +173,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await retryOnError(() =>
-        verifyTokenSymbolUpdate(response.tokenId, symbol),
-      );
+      await retryOnError(() => verifyTokenSymbolUpdate(mutableTokenId, symbol));
     });
 
     it("(#3) Updates a mutable token with a symbol that is empty", async function () {
@@ -189,7 +187,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Symbol shouldn't change and should still remain as its initial value.
-      await verifyTokenSymbolUpdate(response.tokenId, initialTokenSymbol);
+      await verifyTokenSymbolUpdate(mutableTokenId, initialTokenSymbol);
     });
 
     it("(#4) Updates a mutable token with a symbol that is the maximum length", async function () {
@@ -204,9 +202,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await retryOnError(() =>
-        verifyTokenSymbolUpdate(response.tokenId, symbol),
-      );
+      await retryOnError(() => verifyTokenSymbolUpdate(mutableTokenId, symbol));
     });
 
     it("(#5) Updates a mutable token with a symbol that exceeds the maximum length", async function () {
@@ -285,7 +281,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await retryOnError(() => verifyTokenNameUpdate(response.tokenId, name));
+      await retryOnError(() => verifyTokenNameUpdate(mutableTokenId, name));
     });
 
     it("(#3) Updates a mutable token with a name that is empty", async function () {
@@ -300,7 +296,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Name shouldn't change and should still remain as its initial value.
       await retryOnError(() =>
-        verifyTokenNameUpdate(response.tokenId, initialTokenName),
+        verifyTokenNameUpdate(mutableTokenId, initialTokenName),
       );
     });
 
@@ -316,7 +312,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await retryOnError(() => verifyTokenNameUpdate(response.tokenId, name));
+      await retryOnError(() => verifyTokenNameUpdate(mutableTokenId, name));
     });
 
     it("(#5) Updates a mutable token with a name that exceeds the maximum length", async function () {
@@ -623,7 +619,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+        verifyTokenUpdateAdminKey(mutableTokenId, publicKey),
       );
     });
 
@@ -651,7 +647,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+        verifyTokenUpdateAdminKey(mutableTokenId, publicKey),
       );
     });
 
@@ -679,7 +675,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+        verifyTokenUpdateAdminKey(mutableTokenId, publicKey),
       );
     });
 
@@ -707,7 +703,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateAdminKey(response.tokenId, publicKey),
+        verifyTokenUpdateAdminKey(mutableTokenId, publicKey),
       );
     });
 
@@ -747,7 +743,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithAdminKeyList(response.tokenId, keyList.key),
+        verifyTokenUpdateWithAdminKeyList(mutableTokenId, keyList.key),
       );
     });
 
@@ -810,7 +806,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithAdminKeyList(response.tokenId, nestedKeyList.key),
+        verifyTokenUpdateWithAdminKeyList(mutableTokenId, nestedKeyList.key),
       );
     });
 
@@ -846,7 +842,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithAdminKeyList(response.tokenId, thresholdKey.key),
+        verifyTokenUpdateWithAdminKeyList(mutableTokenId, thresholdKey.key),
       );
     });
 
@@ -992,7 +988,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(() => verifyTokenUpdateKycKey(response.tokenId, key));
+      await retryOnError(() => verifyTokenUpdateKycKey(mutableTokenId, key));
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
@@ -1012,7 +1008,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(() => verifyTokenUpdateKycKey(response.tokenId, key));
+      await retryOnError(() => verifyTokenUpdateKycKey(mutableTokenId, key));
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its KYC key", async function () {
@@ -1039,7 +1035,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateKycKey(response.tokenId, publicKey),
+        verifyTokenUpdateKycKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1067,7 +1063,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateKycKey(response.tokenId, publicKey),
+        verifyTokenUpdateKycKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1107,7 +1103,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithKycKeyList(response.tokenId, keyList.key),
+        verifyTokenUpdateWithKycKeyList(mutableTokenId, keyList.key),
       );
     });
 
@@ -1170,7 +1166,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithKycKeyList(response.tokenId, nestedKeyList.key),
+        verifyTokenUpdateWithKycKeyList(mutableTokenId, nestedKeyList.key),
       );
     });
 
@@ -1206,7 +1202,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithKycKeyList(response.tokenId, thresholdKey.key),
+        verifyTokenUpdateWithKycKeyList(mutableTokenId, thresholdKey.key),
       );
     });
 
@@ -1228,7 +1224,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () =>
-        verifyTokenUpdateWithNullKycKey(response.tokenId, key),
+        verifyTokenUpdateWithNullKycKey(mutableTokenId, key),
       );
     });
 
@@ -1396,7 +1392,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+        verifyTokenUpdateFreezeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1424,7 +1420,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+        verifyTokenUpdateFreezeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1452,7 +1448,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+        verifyTokenUpdateFreezeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1480,7 +1476,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateFreezeKey(response.tokenId, publicKey),
+        verifyTokenUpdateFreezeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1520,7 +1516,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithFreezeKeyList(response.tokenId, keyList.key),
+        verifyTokenUpdateWithFreezeKeyList(mutableTokenId, keyList.key),
       );
     });
 
@@ -1583,7 +1579,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithFreezeKeyList(response.tokenId, nestedKeyList.key),
+        verifyTokenUpdateWithFreezeKeyList(mutableTokenId, nestedKeyList.key),
       );
     });
 
@@ -1619,7 +1615,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithFreezeKeyList(response.tokenId, thresholdKey.key),
+        verifyTokenUpdateWithFreezeKeyList(mutableTokenId, thresholdKey.key),
       );
     });
 
@@ -1641,7 +1637,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () =>
-        verifyTokenUpdateWithNullFreezeKey(response.tokenId),
+        verifyTokenUpdateWithNullFreezeKey(mutableTokenId),
       );
     });
 
@@ -1807,7 +1803,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+        verifyTokenUpdateWipeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1835,7 +1831,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+        verifyTokenUpdateWipeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1863,7 +1859,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+        verifyTokenUpdateWipeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1891,7 +1887,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateWipeKey(response.tokenId, publicKey),
+        verifyTokenUpdateWipeKey(mutableTokenId, publicKey),
       );
     });
 
@@ -1931,7 +1927,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithWipeKeyList(response.tokenId, keyList.key),
+        verifyTokenUpdateWithWipeKeyList(mutableTokenId, keyList.key),
       );
     });
 
@@ -1994,7 +1990,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithWipeKeyList(response.tokenId, nestedKeyList.key),
+        verifyTokenUpdateWithWipeKeyList(mutableTokenId, nestedKeyList.key),
       );
     });
 
@@ -2030,7 +2026,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithWipeKeyList(response.tokenId, thresholdKey.key),
+        verifyTokenUpdateWithWipeKeyList(mutableTokenId, thresholdKey.key),
       );
     });
 
@@ -2052,7 +2048,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () =>
-        verifyTokenUpdateWithNullWipeKey(response.tokenId),
+        verifyTokenUpdateWithNullWipeKey(mutableTokenId),
       );
     });
 
@@ -2220,7 +2216,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+        verifyTokenUpdateSupplyKey(mutableTokenId, publicKey),
       );
     });
 
@@ -2248,7 +2244,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+        verifyTokenUpdateSupplyKey(mutableTokenId, publicKey),
       );
     });
 
@@ -2276,7 +2272,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+        verifyTokenUpdateSupplyKey(mutableTokenId, publicKey),
       );
     });
 
@@ -2304,7 +2300,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(() =>
-        verifyTokenUpdateSupplyKey(response.tokenId, publicKey),
+        verifyTokenUpdateSupplyKey(mutableTokenId, publicKey),
       );
     });
 
@@ -2344,7 +2340,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithSupplyKeyList(response.tokenId, keyList.key),
+        verifyTokenUpdateWithSupplyKeyList(mutableTokenId, keyList.key),
       );
     });
 
@@ -2407,7 +2403,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await verifyTokenUpdateWithSupplyKeyList(
-        response.tokenId,
+        mutableTokenId,
         nestedKeyList.key,
       );
     });
@@ -2444,7 +2440,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(() =>
-        verifyTokenUpdateWithSupplyKeyList(response.tokenId, thresholdKey.key),
+        verifyTokenUpdateWithSupplyKeyList(mutableTokenId, thresholdKey.key),
       );
     });
 
@@ -2466,7 +2462,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithNullFeeScheduleKey(response.tokenId);
+        verifyTokenUpdateWithNullFeeScheduleKey(mutableTokenId);
       });
     });
 
@@ -2889,7 +2885,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
 
       await retryOnError(async () => {
-        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+        verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
@@ -2904,7 +2900,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
 
       await retryOnError(async () => {
-        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+        verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
@@ -2937,7 +2933,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
 
       await retryOnError(async () => {
-        verifyTokenAutoRenewPeriodUpdate(response.tokenId, autoRenewPeriod);
+        verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
@@ -3208,7 +3204,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+        verifyTokenExpirationTimeUpdate(mutableTokenId, expirationTime);
       });
     });
 
@@ -3273,7 +3269,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenMemoUpdate(response.tokenId, memo);
+        verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
@@ -3289,7 +3285,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenMemoUpdate(response.tokenId, memo);
+        verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
@@ -3306,7 +3302,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenMemoUpdate(response.tokenId, memo);
+        verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
@@ -3440,7 +3436,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+        verifyTokenUpdateFeeScheduleKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3468,7 +3464,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+        verifyTokenUpdateFeeScheduleKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3496,7 +3492,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+        verifyTokenUpdateFeeScheduleKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3524,7 +3520,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateFeeScheduleKey(response.tokenId, publicKey);
+        verifyTokenUpdateFeeScheduleKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3558,7 +3554,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithFeeScheduleKeyList(response.tokenId, keyList.key);
+        verifyTokenUpdateWithFeeScheduleKeyList(mutableTokenId, keyList.key);
       });
     });
 
@@ -3614,7 +3610,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       await retryOnError(async () => {
         verifyTokenUpdateWithFeeScheduleKeyList(
-          response.tokenId,
+          mutableTokenId,
           nestedKeyList.key,
         );
       });
@@ -3649,7 +3645,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       await retryOnError(async () => {
         verifyTokenUpdateWithFeeScheduleKeyList(
-          response.tokenId,
+          mutableTokenId,
           thresholdKey.key,
         );
       });
@@ -3673,7 +3669,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithNullFeeScheduleKey(response.tokenId);
+        verifyTokenUpdateWithNullFeeScheduleKey(mutableTokenId);
       });
     });
 
@@ -3832,7 +3828,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdatePauseKey(response.tokenId, key);
+        verifyTokenUpdatePauseKey(mutableTokenId, key);
       });
     });
 
@@ -3853,7 +3849,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdatePauseKey(response.tokenId, key);
+        verifyTokenUpdatePauseKey(mutableTokenId, key);
       });
     });
 
@@ -3881,7 +3877,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdatePauseKey(response.tokenId, publicKey);
+        verifyTokenUpdatePauseKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3909,7 +3905,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdatePauseKey(response.tokenId, publicKey);
+        verifyTokenUpdatePauseKey(mutableTokenId, publicKey);
       });
     });
 
@@ -3944,7 +3940,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+        verifyTokenUpdateWithPauseKeyList(mutableTokenId, key);
       });
     });
 
@@ -4000,7 +3996,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+        verifyTokenUpdateWithPauseKeyList(mutableTokenId, key);
       });
     });
 
@@ -4033,7 +4029,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithPauseKeyList(response.tokenId, key);
+        verifyTokenUpdateWithPauseKeyList(mutableTokenId, key);
       });
     });
 
@@ -4055,7 +4051,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        await verifyTokenUpdateWithNullPauseKey(response.tokenId);
+        await verifyTokenUpdateWithNullPauseKey(mutableTokenId);
       });
     });
 
@@ -4152,7 +4148,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenMetadataUpdate(response.tokenId, metadata);
+        verifyTokenMetadataUpdate(mutableTokenId, metadata);
       });
     });
 
@@ -4168,7 +4164,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenMetadataUpdate(response.tokenId, metadata);
+        verifyTokenMetadataUpdate(mutableTokenId, metadata);
       });
     });
   });
@@ -4274,7 +4270,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateMetadataKey(response.tokenId, key);
+        verifyTokenUpdateMetadataKey(mutableTokenId, key);
       });
     });
 
@@ -4295,7 +4291,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateMetadataKey(response.tokenId, key);
+        verifyTokenUpdateMetadataKey(mutableTokenId, key);
       });
     });
 
@@ -4323,7 +4319,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateMetadataKey(response.tokenId, publicKey);
+        verifyTokenUpdateMetadataKey(mutableTokenId, publicKey);
       });
     });
 
@@ -4351,7 +4347,7 @@ describe.only("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async () => {
-        verifyTokenUpdateMetadataKey(response.tokenId, publicKey);
+        verifyTokenUpdateMetadataKey(mutableTokenId, publicKey);
       });
     });
 
@@ -4386,7 +4382,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+        verifyTokenUpdateWithMetadataKeyList(mutableTokenId, key);
       });
     });
 
@@ -4442,7 +4438,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+        verifyTokenUpdateWithMetadataKeyList(mutableTokenId, key);
       });
     });
 
@@ -4475,7 +4471,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithMetadataKeyList(response.tokenId, key);
+        verifyTokenUpdateWithMetadataKeyList(mutableTokenId, key);
       });
     });
 
@@ -4497,7 +4493,7 @@ describe.only("TokenUpdateTransaction", function () {
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
       await retryOnError(async () => {
-        verifyTokenUpdateWithNullMetadataKey(response.tokenId);
+        verifyTokenUpdateWithNullMetadataKey(mutableTokenId);
       });
     });
 
