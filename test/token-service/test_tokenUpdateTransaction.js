@@ -13,15 +13,10 @@ import {
   getPublicKeyFromMirrorNode,
 } from "../../utils/helpers/key.js";
 
-// Needed to convert BigInts to JSON number format.
-BigInt.prototype.toJSON = function () {
-  return JSON.rawJSON(this.toString());
-};
-
 /**
  * Tests for TokenUpdateTransaction
  */
-describe.only("TokenUpdateTransaction", function () {
+describe("TokenUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -2802,43 +2797,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with an auto renew period set to 18,446,744,073,709,551,615 (uint64 max) seconds", async function () {
-      try {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          autoRenewPeriod: "18446744073709551615",
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
-          },
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#7) Updates a mutable token with an auto renew period set to 18,446,744,073,709,551,614 (uint64 max - 1) seconds", async function () {
-      try {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          autoRenewPeriod: "18446744073709551614",
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
-          },
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it.skip("(#8) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it.skip("(#6) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -2856,7 +2815,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
+    it("(#7) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -2874,7 +2833,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Updates a mutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
+    it("(#8) Updates a mutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
       const autoRenewPeriod = "5184000";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
@@ -2889,7 +2848,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#11) Updates a mutable token with an auto renew period set to 30 days (2,592,000 seconds)", async function () {
+    it("(#9) Updates a mutable token with an auto renew period set to 30 days (2,592,000 seconds)", async function () {
       const autoRenewPeriod = "2592000";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
@@ -2904,7 +2863,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#12) Updates a mutable token with an auto renew period set to 30 days minus one second (2,591,999 seconds)", async function () {
+    it("(#10) Updates a mutable token with an auto renew period set to 30 days minus one second (2,591,999 seconds)", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -2922,7 +2881,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Updates a mutable token with an auto renew period set to 8,000,001 seconds", async function () {
+    it("(#11) Updates a mutable token with an auto renew period set to 8,000,001 seconds", async function () {
       const autoRenewPeriod = "8000001";
       const response = await JSONRPCRequest("updateToken", {
         tokenId: mutableTokenId,
@@ -2937,7 +2896,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#14) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async function () {
+    it("(#12) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -3067,43 +3026,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token to an expiration time of 18,446,744,073,709,551,615 (uint64 max) seconds", async function () {
-      try {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          expirationTime: "18446744073709551615",
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
-          },
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#7) Updates a mutable token to an expiration time of 18,446,744,073,709,551,614 (uint64 max - 1) seconds", async function () {
-      try {
-        const response = await JSONRPCRequest("updateToken", {
-          tokenId: mutableTokenId,
-          expirationTime: "18446744073709551614",
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
-          },
-        });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#8) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it("(#6) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -3121,7 +3044,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates a mutable token to an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
+    it("(#7) Updates a mutable token to an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -3139,7 +3062,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    //it("(#10) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    //it("(#8) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
     //  const expirationTime = parseInt((Date.now() / 1000) + 5184000);
     //  const response = await JSONRPCRequest("updateToken", {
     //    tokenId: mutableTokenId,
@@ -3155,7 +3078,7 @@ describe.only("TokenUpdateTransaction", function () {
     //  verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     //});
 
-    //it("(#11) Updates a mutable token to an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
+    //it("(#9) Updates a mutable token to an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
     //  const expirationTime = parseInt((Date.now() / 1000) + 2592000);
     //  const response = await JSONRPCRequest("updateToken", {
     //    tokenId: mutableTokenId,
@@ -3171,7 +3094,7 @@ describe.only("TokenUpdateTransaction", function () {
     //  verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     //});
 
-    it("(#12) Updates a mutable to an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
+    it("(#10) Updates a mutable to an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,
@@ -3189,7 +3112,7 @@ describe.only("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
+    it("(#11) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -3208,7 +3131,7 @@ describe.only("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#14) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
+    it("(#12) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
       try {
         const response = await JSONRPCRequest("updateToken", {
           tokenId: mutableTokenId,

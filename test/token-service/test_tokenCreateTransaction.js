@@ -17,11 +17,6 @@ import {
 } from "../../utils/helpers/key.js";
 import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 
-// Needed to convert BigInts to JSON number format.
-BigInt.prototype.toJSON = function () {
-  return JSON.rawJSON(this.toString());
-};
-
 /**
  * Tests for TokenCreateTransaction
  */
