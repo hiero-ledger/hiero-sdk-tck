@@ -89,8 +89,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
   describe("Token ID", function () {
     async function verifyTokenFeeScheduleUpdate(tokenId) {
-      console.log(tokenId);
-
       const consensusNodeData = await consensusInfoClient.getTokenInfo(tokenId);
       const mirrorNodeData = await mirrorNodeClient.getTokenData(tokenId);
 
