@@ -595,8 +595,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    // Bug in services
-    it.skip("(#5) Updates a token's fee schedule with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#5) Updates a token's fee schedule with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: fungibleTokenId,
@@ -794,8 +793,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    // Bug in services
-    it.skip("(#11) Updates a token's fee schedule with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#11) Updates a token's fee schedule with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: fungibleTokenId,
@@ -1001,8 +999,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    // Bug in services
-    it.skip("(#17) Updates a token's fee schedule with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#17) Updates a token's fee schedule with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: fungibleTokenId,
@@ -1201,7 +1198,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#23) Updates a token's fee schedule with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#23) Updates a token's fee schedule with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: fungibleTokenId,
@@ -1420,7 +1417,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    it.skip("(#29) Updates a token's fee schedule with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#29) Updates a token's fee schedule with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: fungibleTokenId,
@@ -1600,8 +1597,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Bug in services
-    it.skip("(#35) Updates a NFT's fee schedule with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#35) Updates a NFT's fee schedule with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: nonFungibleTokenId,
@@ -1799,8 +1795,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    // Bug in services
-    it.skip("(#41) Updates a NFT's fee schedule with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#41) Updates a NFT's fee schedule with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: nonFungibleTokenId,
@@ -1998,8 +1993,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       );
     });
 
-    // Bug in services
-    it.skip("(#47) Updates a NFT's fee schedule with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#47) Updates a NFT's fee schedule with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("updateTokenFeeSchedule", {
           tokenId: nonFungibleTokenId,
