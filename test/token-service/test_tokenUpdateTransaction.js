@@ -2397,9 +2397,8 @@ describe("TokenUpdateTransaction", function () {
       });
       if (response.status === "NOT_IMPLEMENTED") this.skip();
 
-      await verifyTokenUpdateWithSupplyKeyList(
-        mutableTokenId,
-        nestedKeyList.key,
+      await retryOnError(async () =>
+        verifyTokenUpdateWithSupplyKeyList(mutableTokenId, nestedKeyList.key),
       );
     });
 
