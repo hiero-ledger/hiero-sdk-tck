@@ -17,15 +17,10 @@ import {
 } from "../../utils/helpers/key.js";
 import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 
-// Needed to convert BigInts to JSON number format.
-BigInt.prototype.toJSON = function () {
-  return JSON.rawJSON(this.toString());
-};
-
 /**
  * Tests for TokenCreateTransaction
  */
-describe.only("TokenCreateTransaction", function () {
+describe("TokenCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -558,7 +553,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
+    it("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -2602,7 +2597,7 @@ describe.only("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -3403,7 +3398,7 @@ describe.only("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
-    it.skip("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
+    it("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -3423,7 +3418,7 @@ describe.only("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
+    it("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -4157,7 +4152,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -4358,7 +4353,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -4566,7 +4561,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -4769,7 +4764,7 @@ describe.only("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -4988,7 +4983,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         const response = await JSONRPCRequest("createToken", {
           name: "testname",
@@ -5214,7 +5209,7 @@ describe.only("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -5478,7 +5473,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -5742,7 +5737,7 @@ describe.only("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest("generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
