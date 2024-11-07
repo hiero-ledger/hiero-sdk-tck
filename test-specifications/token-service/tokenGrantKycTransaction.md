@@ -30,10 +30,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name | Type   | Required/Optional | Description/Notes                            |
-|----------------|--------|-------------------|----------------------------------------------|
-| tokenId        | string | optional          | The ID of the token of which to grant KYC.   |
-| accountId      | string | optional          | The ID of the account to which to grant KYC. |
+| Parameter Name          | Type                                             | Required/Optional | Description/Notes                            |
+|-------------------------|--------------------------------------------------|-------------------|----------------------------------------------|
+| tokenId                 | string                                           | optional          | The ID of the token of which to grant KYC.   |
+| accountId               | string                                           | optional          | The ID of the account to which to grant KYC. |
+| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                              |
 
 ### Output Parameters
 
@@ -63,6 +64,8 @@ The tests contained in this specification will assume that a valid account and a
 | 8       | Grants KYC of a token with no KYC key to an account                          | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>                                                                  | The token KYC grant fails with an TOKEN_HAS_NO_KYC_KEY response code from the network.            | N                 |
 | 9       | Grants KYC of a token to an account that already has KYC                     | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token grants KYC to the account.                                                              | N                 |
 | 10      | Grants KYC of a token to an account that is not associated with the token    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC grant fails with an TOKEN_NOT_ASSOCIATED_TO_ACCOUNT response code from the network. | N                 |
+| 11      | Grants KYC of a paused token to an account                                   | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC grant fails with an TOKEN_IS_PAUSED response code from the network.                 | N                 |
+| 12      | Grants KYC of a token to a frozen account                                    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC grant fails with an ACCOUNT_FROZEN_FOR_TOKEN response code from the network.        | N                 |
 
 #### JSON Request Example
 
