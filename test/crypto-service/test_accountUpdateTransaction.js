@@ -13,8 +13,8 @@ import { retryOnError } from "../../utils/helpers/retry-on-error.js";
 import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 import {
   twoLevelsNestedKeyListParams,
-  oneLevelNestedKeyListFourKeysParams,
-  oneLevelTwoThresholdKeyParams,
+  fourKeysKeyListParams,
+  twoThresholdKeyParams,
 } from "../../utils/helpers/constants/key-list.js";
 
 describe("AccountUpdateTransaction", function () {
@@ -270,7 +270,7 @@ describe("AccountUpdateTransaction", function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       // Attempt to update the key of the account with the new KeyList of ED25519 and ECDSAsecp256k1 private and public keys.
@@ -330,7 +330,7 @@ describe("AccountUpdateTransaction", function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelTwoThresholdKeyParams,
+        twoThresholdKeyParams,
       );
 
       // Attempt to update the key of the account with the new ThresholdKey.

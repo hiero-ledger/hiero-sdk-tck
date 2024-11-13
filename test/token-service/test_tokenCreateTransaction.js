@@ -6,11 +6,12 @@ import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
 import { setOperator } from "../../setup_Tests.js";
+
 import {
-  oneLevelTwoThresholdKeyParams,
+  twoThresholdKeyParams,
   twoLevelsNestedKeyListParams,
   fivePrivateKeysKeyListParams,
-  oneLevelNestedKeyListFourKeysParams,
+  fourKeysKeyListParams,
 } from "../../utils/helpers/constants/key-list.js";
 import {
   verifyTokenKey,
@@ -841,7 +842,7 @@ describe("TokenCreateTransaction", function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const response = await JSONRPCRequest(this, "createToken", {
@@ -1213,7 +1214,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;
@@ -1380,7 +1381,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;
@@ -1547,7 +1548,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;
@@ -2627,7 +2628,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;
@@ -5052,7 +5053,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;
@@ -5090,7 +5091,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelTwoThresholdKeyParams,
+        twoThresholdKeyParams,
       );
 
       const thresholdKey = response.key;
@@ -5252,7 +5253,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListFourKeysParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;

@@ -37,7 +37,7 @@ export const twoLevelsNestedKeyListParams = {
   ],
 };
 
-export const oneLevelNestedKeyListThreeKeysParams = {
+export const threeKeysKeyListParams = {
   type: "keyList",
   keys: [
     {
@@ -52,7 +52,7 @@ export const oneLevelNestedKeyListThreeKeysParams = {
   ],
 };
 
-export const oneLevelNestedKeyListFourKeysParams = {
+export const fourKeysKeyListParams = {
   type: "keyList",
   keys: [
     {
@@ -70,7 +70,7 @@ export const oneLevelNestedKeyListFourKeysParams = {
   ],
 };
 
-export const oneLevelTwoThresholdKeyParams = {
+export const twoThresholdKeyParams = {
   type: "thresholdKey",
   threshold: 2,
   keys: [

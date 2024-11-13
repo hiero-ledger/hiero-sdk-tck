@@ -1,11 +1,12 @@
 import { expect } from "chai";
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
 import {
   CustomFixedFee,
   CustomFractionalFee,
   CustomRoyaltyFee,
 } from "@hashgraph/sdk";
+
+import mirrorNodeClient from "../../mirrorNodeClient.js";
+import consensusInfoClient from "../../consensusInfoClient.js";
 
 async function consensusNodeFeeEqualsCustomFee(
   customFee,

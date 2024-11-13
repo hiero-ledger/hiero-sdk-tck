@@ -1,3 +1,5 @@
+import { expect } from "chai";
+
 import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 import {
   getPublicKeyFromMirrorNode,
@@ -6,14 +8,13 @@ import {
 
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
-import { expect } from "chai";
 
 export async function verifyTokenKey(tokenId, key, keyType) {
   const rawKey = getRawKeyFromHex(key);
 
   // Fetch the token info from the consensus node
   const tokenInfo = await consensusInfoClient.getTokenInfo(tokenId);
-  const tokenKey = tokenInfo[keyType]; // Dynamically access the key from tokenInfo
+  const tokenKey = tokenInfo[keyType];
 
   // Check if the key matches
   expect(rawKey).to.equal(tokenKey.toStringRaw());

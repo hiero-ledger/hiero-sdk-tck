@@ -5,9 +5,10 @@ import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
 import { setOperator } from "../../setup_Tests.js";
+
 import {
   twoLevelsNestedKeyListParams,
-  oneLevelNestedKeyListThreeKeysParams,
+  threeKeysKeyListParams,
 } from "../../utils/helpers/constants/key-list.js";
 
 /**
@@ -111,7 +112,7 @@ describe("AccountCreateTransaction", function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
-        oneLevelNestedKeyListThreeKeysParams,
+        threeKeysKeyListParams,
       );
 
       // Attempt to create an account.
