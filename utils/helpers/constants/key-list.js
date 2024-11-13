@@ -1,4 +1,4 @@
-export const threeLevelsNestedKeyListParams = {
+export const twoLevelsNestedKeyListParams = {
   type: "keyList",
   keys: [
     {
@@ -82,6 +82,27 @@ export const oneLevelTwoThresholdKeyParams = {
     },
     {
       type: "ed25519PublicKey",
+    },
+  ],
+};
+
+export const fivePrivateKeysKeyListParams = {
+  type: "keyList",
+  keys: [
+    {
+      type: "ecdsaSecp256k1PrivateKey",
+    },
+    {
+      type: "ecdsaSecp256k1PrivateKey",
+    },
+    {
+      type: "ecdsaSecp256k1PrivateKey",
+    },
+    {
+      type: "ecdsaSecp256k1PrivateKey",
+    },
+    {
+      type: "ecdsaSecp256k1PrivateKey",
     },
   ],
 };

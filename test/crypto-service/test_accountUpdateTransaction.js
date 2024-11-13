@@ -12,7 +12,7 @@ import {
 import { retryOnError } from "../../utils/helpers/retry-on-error.js";
 import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 import {
-  threeLevelsNestedKeyListParams,
+  twoLevelsNestedKeyListParams,
   oneLevelNestedKeyListFourKeysParams,
   oneLevelTwoThresholdKeyParams,
 } from "../../utils/helpers/constants/key-list.js";
@@ -299,7 +299,7 @@ describe("AccountUpdateTransaction", function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
-        threeLevelsNestedKeyListParams,
+        twoLevelsNestedKeyListParams,
       );
 
       // Attempt to update the key of the account with the new KeyList of nested KeyLists.
