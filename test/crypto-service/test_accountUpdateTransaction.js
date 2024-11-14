@@ -166,7 +166,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated (use raw key for comparison, ED25519 public key DER-encoding has a 12 byte prefix).
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKey(accountId, ed25519PublicKey.key),
       );
     });
@@ -198,7 +198,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated (use raw key for comparison, compressed ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix).
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey.key),
       );
     });
@@ -225,7 +225,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated (use raw key for comparison, ED25519 public key DER-encoding has a 12 byte prefix).
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKey(accountId, ed25519PublicKey.key),
       );
     });
@@ -260,7 +260,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated (use raw key for comparison, compressed ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix).
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey.key),
       );
     });
@@ -320,7 +320,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKeyList(accountId, nestedKeyList.key),
       );
     });
@@ -347,7 +347,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account key was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountUpdateKeyList(accountId, thresholdKey.key),
       );
     });
@@ -435,7 +435,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an auto-renew period set to 60 days.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountAutoRenewPeriodUpdate(autoRenewPeriodSeconds),
       );
     });
@@ -471,7 +471,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an auto-renew period set to 30 days.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountAutoRenewPeriodUpdate(autoRenewPeriodSeconds),
       );
     });
@@ -507,7 +507,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an auto-renew period set to 8,000,001 seconds.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountAutoRenewPeriodUpdate(autoRenewPeriodSeconds),
       );
     });
@@ -563,7 +563,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an expiration time set to 8,000,001 seconds from the current time.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountExpirationTimeUpdate(expirationTimeSeconds),
       );
     });
@@ -571,7 +571,6 @@ describe("AccountUpdateTransaction", function () {
     it("(#2) Updates the expiration time of an account to -1 seconds", async function () {
       try {
         // Attempt to update the expiration time of the account to -1 seconds. The network should respond with an INVALID_EXPIRATION_TIME status.
-
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
           expirationTime: -1,
@@ -663,7 +662,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account receiver signature required policy was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountReceiverSignatureRequiredUpdate(receiverSignatureRequired),
       );
     });
@@ -713,7 +712,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with the memo set to "testmemo".
-      await retryOnError(() => verifyAccountMemoUpdate(memo));
+      await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
     it("(#2) Updates the memo of an account to a memo that is the minimum length", async function () {
@@ -728,7 +727,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an empty memo.
-      await retryOnError(() => verifyAccountMemoUpdate(memo));
+      await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
     it("(#3) Updates the memo of an account to a memo that is the maximum length", async function () {
@@ -744,7 +743,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with the memo set to "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!".
-      await retryOnError(() => verifyAccountMemoUpdate(memo));
+      await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
     it("(#4) Updates the memo of an account to a memo that exceeds the maximum length", async function () {
@@ -801,7 +800,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the max auto token associations of the account was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyMaxAutoTokenAssociationsUpdate(maxAutoTokenAssociations),
       );
     });
@@ -834,7 +833,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify max auto token associations of the account was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyMaxAutoTokenAssociationsUpdate(maxAutoTokenAssociations),
       );
     });
@@ -908,7 +907,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the staked account ID of the account was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyAccountStakedAccountIdUpdate(stakedAccountId),
       );
     });
@@ -925,7 +924,9 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the staked node ID of the account was updated.
-      await retryOnError(() => verifyAccountStakedNodeIdUpdate(stakedNodeId));
+      await retryOnError(async () =>
+        verifyAccountStakedNodeIdUpdate(stakedNodeId),
+      );
     });
 
     it("(#3) Updates the staked account ID of an account to an account ID that doesn't exist", async function () {
@@ -1030,7 +1031,7 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the decline reward policy of the account was updated.
-      await retryOnError(() =>
+      await retryOnError(async () =>
         verifyDeclineRewardUpdate(declineStakingRewards),
       );
     });

@@ -10,7 +10,6 @@ import { setOperator } from "../../setup_Tests.js";
 import {
   twoThresholdKeyParams,
   twoLevelsNestedKeyListParams,
-  fivePrivateKeysKeyListParams,
   fourKeysKeyListParams,
 } from "../../utils/helpers/constants/key-list.js";
 import {
@@ -1046,7 +1045,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
-        fivePrivateKeysKeyListParams,
+        fourKeysKeyListParams,
       );
 
       const keyList = response.key;

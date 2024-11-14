@@ -37,21 +37,6 @@ export const twoLevelsNestedKeyListParams = {
   ],
 };
 
-export const threeKeysKeyListParams = {
-  type: "keyList",
-  keys: [
-    {
-      type: "ed25519PrivateKey",
-    },
-    {
-      type: "ecdsaSecp256k1PublicKey",
-    },
-    {
-      type: "ed25519PublicKey",
-    },
-  ],
-};
-
 export const fourKeysKeyListParams = {
   type: "keyList",
   keys: [
@@ -82,27 +67,6 @@ export const twoThresholdKeyParams = {
     },
     {
       type: "ed25519PublicKey",
-    },
-  ],
-};
-
-export const fivePrivateKeysKeyListParams = {
-  type: "keyList",
-  keys: [
-    {
-      type: "ecdsaSecp256k1PrivateKey",
-    },
-    {
-      type: "ecdsaSecp256k1PrivateKey",
-    },
-    {
-      type: "ecdsaSecp256k1PrivateKey",
-    },
-    {
-      type: "ecdsaSecp256k1PrivateKey",
-    },
-    {
-      type: "ecdsaSecp256k1PrivateKey",
     },
   ],
 };

@@ -8,7 +8,7 @@ import { setOperator } from "../../setup_Tests.js";
 
 import {
   twoLevelsNestedKeyListParams,
-  threeKeysKeyListParams,
+  fourKeysKeyListParams,
 } from "../../utils/helpers/constants/key-list.js";
 
 /**
@@ -112,7 +112,7 @@ describe("AccountCreateTransaction", function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
-        threeKeysKeyListParams,
+        fourKeysKeyListParams,
       );
 
       // Attempt to create an account.
