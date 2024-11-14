@@ -610,17 +610,15 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    /*it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
+    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
       try {
         // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
         const response = await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
           expirationTime: Math.floor(Date.now() / 1000) + 8000002,
           commonTransactionParams: {
-            signers: [
-              accountPrivateKey
-            ]
-          }
+            signers: [accountPrivateKey],
+          },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err) {
@@ -630,7 +628,7 @@ describe("AccountUpdateTransaction", function () {
 
       // The test failed, no error was thrown.
       assert.fail("Should throw an error");
-    });*/
+    });
   });
 
   describe("Receiver Signature Required", async function () {
@@ -679,8 +677,8 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account receiver signature required policy was updated.
-      await verifyAccountReceiverSignatureRequiredUpdate(
-        receiverSignatureRequired,
+      await retryOnError(async () =>
+        verifyAccountReceiverSignatureRequiredUpdate(receiverSignatureRequired),
       );
     });
   });
@@ -817,7 +815,9 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify max auto token associations of the account was updated.
-      await verifyMaxAutoTokenAssociationsUpdate(maxAutoTokenAssociations);
+      await retryOnError(async () =>
+        verifyMaxAutoTokenAssociationsUpdate(maxAutoTokenAssociations),
+      );
     });
 
     it("(#3) Updates the max automatic token associations of an account to the maximum amount", async function () {
@@ -1048,7 +1048,9 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the decline reward policy of the account was updated.
-      await verifyDeclineRewardUpdate(declineStakingRewards);
+      await retryOnError(async () =>
+        verifyDeclineRewardUpdate(declineStakingRewards),
+      );
     });
   });
 
