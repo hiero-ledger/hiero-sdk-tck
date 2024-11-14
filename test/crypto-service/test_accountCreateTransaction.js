@@ -977,18 +977,17 @@ describe("AccountCreateTransaction", function () {
       expect(alias).to.equal(
         await (
           await consensusInfoClient.getAccountInfo(accountId)
-        ).aliasKey,
+        ).contractAccountId,
       );
 
-      expect(alias).to.equal(
+      expect("0x" + alias).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
-        ).alias,
+        ).evm_address,
       );
     }
 
-    // Check with consensus
-    it.skip("(#1) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key", async function () {
+    it("(#1) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -1005,6 +1004,7 @@ describe("AccountCreateTransaction", function () {
         type: "evmAddress",
         fromKey: ecdsaSecp256k1PrivateKey.key,
       });
+      console.log(alias.key);
 
       // Attempt to create an account with the alias.
       const response = await JSONRPCRequest(this, "createAccount", {
