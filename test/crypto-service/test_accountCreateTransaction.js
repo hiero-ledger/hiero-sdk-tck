@@ -1004,7 +1004,6 @@ describe("AccountCreateTransaction", function () {
         type: "evmAddress",
         fromKey: ecdsaSecp256k1PrivateKey.key,
       });
-      console.log(alias.key);
 
       // Attempt to create an account with the alias.
       const response = await JSONRPCRequest(this, "createAccount", {
