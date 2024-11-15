@@ -25,7 +25,7 @@ const JSONRPClient = new JSONRPCClient(async (jsonRPCRequest) => {
   }
 }, createID());
 
-export async function JSONRPCRequest(method, params) {
+export async function JSONRPCRequest(mochaTestContext, method, params) {
   const jsonRPCRequest = {
     jsonrpc: JSONRPC,
     id: createID(),
@@ -35,12 +35,20 @@ export async function JSONRPCRequest(method, params) {
 
   const jsonRPCResponse = await JSONRPClient.requestAdvanced(jsonRPCRequest);
   if (jsonRPCResponse.error) {
-    if (jsonRPCResponse.error.code === -32601) {
+    if (mochaTestContext && jsonRPCResponse.error.code === -32601) {
       console.warn("Method", method, "not found.");
-      return { status: "NOT_IMPLEMENTED" }; // The json-rpc hasn't implemented the method
+
+      mochaTestContext.skip();
     }
+
     throw { name: "Error", ...jsonRPCResponse.error };
   } else {
+    if (
+      mochaTestContext &&
+      jsonRPCResponse.result.error === "NOT_IMPLEMENTED"
+    ) {
+      mochaTestContext.skip();
+    }
     return jsonRPCResponse.result;
   }
 }

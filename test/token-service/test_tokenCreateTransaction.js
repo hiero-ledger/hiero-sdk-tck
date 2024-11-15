@@ -1,26 +1,26 @@
 import crypto from "crypto";
 import { assert, expect } from "chai";
-import {
-  CustomFixedFee,
-  CustomFractionalFee,
-  CustomRoyaltyFee,
-  Timestamp,
-} from "@hashgraph/sdk";
+import { Timestamp } from "@hashgraph/sdk";
 
 import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
 import { setOperator } from "../../setup_Tests.js";
-import {
-  getPublicKeyFromMirrorNode,
-  getEncodedKeyHexFromKeyListConsensus,
-} from "../../utils/helpers/key.js";
-import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
 
-// Needed to convert BigInts to JSON number format.
-BigInt.prototype.toJSON = function () {
-  return JSON.rawJSON(this.toString());
-};
+import {
+  twoThresholdKeyParams,
+  twoLevelsNestedKeyListParams,
+  fourKeysKeyListParams,
+} from "../../utils/helpers/constants/key-list.js";
+import {
+  verifyTokenKey,
+  verifyTokenKeyList,
+} from "../../utils/helpers/verify-token-key.js";
+import {
+  verifyTokenCreationWithFixedFee,
+  verifyTokenCreationWithFractionalFee,
+  verifyTokenCreationWithRoyaltyFee,
+} from "../../utils/helpers/custom-fees.js";
 
 /**
  * Tests for TokenCreateTransaction
@@ -37,7 +37,7 @@ describe("TokenCreateTransaction", function () {
     );
   });
   afterEach(async function () {
-    await JSONRPCRequest("reset");
+    await JSONRPCRequest(this, "reset");
   });
 
   describe("Name", function () {
@@ -56,42 +56,33 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a name that is a valid length", async function () {
       const name = "testname";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: name,
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
     it("(#2) Creates a token with a name that is the minimum length", async function () {
       const name = "t";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: name,
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
     it("(#3) Creates a token with a name that is empty", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
@@ -103,28 +94,22 @@ describe("TokenCreateTransaction", function () {
     it("(#4) Creates a token with a name that is the maximum length", async function () {
       const name =
         "This is a really long name but it is still valid because it is 100 characters exactly on the money!!";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: name,
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
     it("(#5) Creates a token with a name that exceeds the maximum length", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "This is a long name that is not valid because it exceeds 100 characters and it should fail the test!!",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_NAME_TOO_LONG");
         return;
@@ -135,13 +120,10 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with no name", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
@@ -167,28 +149,22 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a symbol that is the minimum length", async function () {
       const symbol = "t";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: symbol,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithSymbol(response.tokenId, symbol);
     });
 
     it("(#2) Creates a token with a symbol that is empty", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "MISSING_TOKEN_SYMBOL");
         return;
@@ -200,29 +176,23 @@ describe("TokenCreateTransaction", function () {
     it("(#3) Creates a token with a symbol that is the maximum length", async function () {
       const symbol =
         "This is a really long symbol but it is still valid because it is 100 characters exactly on the money";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: symbol,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithSymbol(response.tokenId, symbol);
     });
 
     it("(#4) Creates a token with a symbol that exceeds the maximum length", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol:
             "This is a long symbol that is not valid because it exceeds 100 characters and it should fail the test",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_SYMBOL_TOO_LONG");
         return;
@@ -233,13 +203,10 @@ describe("TokenCreateTransaction", function () {
 
     it("(#5) Creates a token with no symbol", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "MISSING_TOKEN_SYMBOL");
         return;
@@ -264,30 +231,24 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a fungible token with 0 decimals", async function () {
       const decimals = 0;
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
     it("(#2) Creates a fungible token with -1 decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: -1,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -298,45 +259,36 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a fungible token with 2,147,483,647 (int32 max) decimals", async function () {
       const decimals = 2147483647;
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
     it("(#4) Creates a fungible token with 2,147,483,646 (int32 max - 1) decimals", async function () {
       const decimals = 2147483646;
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
     it("(#5) Creates a fungible token with 2,147,483,648 (int32 max + 1) decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: 2147483648,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -347,15 +299,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a fungible token with 4,294,967,295 (uint32 max) decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: 4294967295,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -366,15 +315,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a fungible token with 4,294,967,294 (uint32 max - 1) decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: 4294967294,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -385,15 +331,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a fungible token with -2,147,483,648 (int32 min) decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: -2147483648,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -404,15 +347,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a fungible token with -2,147,483,647 (int32 min + 1) decimals", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: -2147483647,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -422,16 +362,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#10) Creates an NFT with a decimal amount of zero", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const decimals = 0;
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
@@ -439,25 +377,19 @@ describe("TokenCreateTransaction", function () {
         supplyKey: key,
         tokenType: "nft",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
     it("(#11) Creates an NFT with a nonzero decimal amount", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           decimals: 3,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -486,15 +418,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a fungible token with 0 initial supply", async function () {
       const initialSupply = "0";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         initialSupply: initialSupply,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -504,15 +433,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a fungible token with -1 initial supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           initialSupply: "-1",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -524,15 +450,12 @@ describe("TokenCreateTransaction", function () {
     it("(#3) Creates a fungible token with 9,223,372,036,854,775,807 (int64 max) initial supply", async function () {
       const initialSupply = "9223372036854775807";
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         initialSupply: initialSupply,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -542,15 +465,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a fungible token with 9,223,372,036,854,775,806 (int64 max - 1) initial supply", async function () {
       const initialSupply = "9223372036854775806";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         initialSupply: initialSupply,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -560,15 +480,12 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           initialSupply: "-9223372036854775808",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -579,15 +496,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a fungible token with -9,223,372,036,854,775,807 (int64 min + 1) initial supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           initialSupply: "-9223372036854775807",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -599,16 +513,13 @@ describe("TokenCreateTransaction", function () {
     it("(#7) Creates a fungible token with a valid initial supply and decimals", async function () {
       const decimals = 2;
       const initialSupply = "1000000";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
         initialSupply: initialSupply,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -619,16 +530,13 @@ describe("TokenCreateTransaction", function () {
     it("(#8) Creates a fungible token with a valid initial supply and more decimals", async function () {
       const decimals = 6;
       const initialSupply = "1000000";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
         initialSupply: initialSupply,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -637,16 +545,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#9) Creates an NFT with an initial supply of zero", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const initialSupply = "0";
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         initialSupply: initialSupply,
@@ -654,9 +560,6 @@ describe("TokenCreateTransaction", function () {
         supplyKey: key,
         tokenType: "nft",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithInitialSupply(
         response.tokenId,
@@ -666,16 +569,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#10) Creates an NFT with an initial supply of zero without a supply key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           initialSupply: "0",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_SUPPLY_KEY");
         return;
@@ -686,16 +586,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#11) Creates an NFT with a nonzero initial supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           initialSupply: "3",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -723,23 +620,19 @@ describe("TokenCreateTransaction", function () {
     }
 
     it("(#1) Creates a token with a treasury account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: accountId,
@@ -747,39 +640,29 @@ describe("TokenCreateTransaction", function () {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithTreasuryAccount(response.tokenId, accountId);
     });
 
     it("(#2) Creates a token with a treasury account without signing with the account's private key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: accountId,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
@@ -791,14 +674,11 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with a treasury account that doesn't exist", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: "123.456.789",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
@@ -809,35 +689,28 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a treasury account that is deleted", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("deleteAccount", {
+      response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: accountId,
@@ -845,9 +718,6 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TREASURY_ACCOUNT_FOR_TOKEN");
         return;
@@ -859,66 +729,20 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Admin Key", function () {
-    async function verifyTokenCreationWithAdminKey(tokenId, adminKey) {
-      const rawKey = getRawKeyFromHex(adminKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).adminKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "admin_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithAdminKeyList(tokenId, adminKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "adminKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(adminKey.slice(adminKey.length - keyHex.length)).to.equal(keyHex);
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).admin_key
-      ).key;
-
-      expect(adminKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - adminKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its admin key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -927,30 +751,25 @@ describe("TokenCreateTransaction", function () {
           signers: [privateKey],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithAdminKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -959,30 +778,25 @@ describe("TokenCreateTransaction", function () {
           signers: [privateKey],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithAdminKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its admin key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -991,30 +805,25 @@ describe("TokenCreateTransaction", function () {
           signers: [privateKey],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithAdminKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1023,37 +832,19 @@ describe("TokenCreateTransaction", function () {
           signers: [privateKey],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithAdminKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
-      const keyList = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (keyList.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      const keyList = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1067,57 +858,18 @@ describe("TokenCreateTransaction", function () {
           ],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithAdminKeyList(response.tokenId, keyList.key);
+      await verifyTokenKeyList(response.tokenId, keyList.key, "adminKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its admin key", async function () {
-      const nestedKeyList = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (nestedKeyList.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      const nestedKeyList = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1133,18 +885,12 @@ describe("TokenCreateTransaction", function () {
           ],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithAdminKeyList(
-        response.tokenId,
-        nestedKeyList.key,
-      );
+      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "adminKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
-      const thresholdKey = await JSONRPCRequest("generateKey", {
+      const thresholdKey = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -1159,11 +905,8 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (thresholdKey.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1172,35 +915,24 @@ describe("TokenCreateTransaction", function () {
           signers: [thresholdKey.privateKeys[0], thresholdKey.privateKeys[1]],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithAdminKeyList(
-        response.tokenId,
-        thresholdKey.key,
-      );
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "adminKey");
     });
 
     it("(#8) Creates a token with a valid key as its admin key but doesn't sign with it", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           adminKey: key,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
@@ -1211,15 +943,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a token with an invalid key as its admin key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           adminKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -1230,245 +959,128 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("KYC Key", function () {
-    async function verifyTokenCreationWithKycKey(tokenId, kycKey) {
-      const rawKey = getRawKeyFromHex(kycKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).kycKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "kyc_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithKycKeyList(tokenId, kycKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "kycKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(kycKey.slice(kycKey.length - keyHex.length)).to.equal(keyHex);
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).kyc_key
-      ).key;
-
-      expect(kycKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - kycKey.length),
-      );
-    }
     it("(#1) Creates a token with a valid ED25519 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithKycKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithKycKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithKycKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithKycKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithKycKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "kycKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithKycKeyList(response.tokenId, nestedKeyList);
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "kycKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -1483,35 +1095,27 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         kycKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithKycKeyList(response.tokenId, thresholdKey);
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "kycKey");
     });
 
     it("(#8) Creates a token with an invalid key as its KYC key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           kycKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -1523,247 +1127,128 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Freeze Key", function () {
-    async function verifyTokenCreationWithFreezeKey(tokenId, freezeKey) {
-      const rawKey = getRawKeyFromHex(freezeKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).freezeKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "freeze_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithFreezeKeyList(tokenId, freezeKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "freezeKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(freezeKey.slice(freezeKey.length - keyHex.length)).to.equal(
-        keyHex,
-      );
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).freeze_key
-      ).key;
-
-      expect(freezeKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - freezeKey.length),
-      );
-    }
     it("(#1) Creates a token with a valid ED25519 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithFreezeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithFreezeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithFreezeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithFreezeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFreezeKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "freezeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFreezeKeyList(
-        response.tokenId,
-        nestedKeyList,
-      );
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "freezeKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -1778,38 +1263,27 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFreezeKeyList(
-        response.tokenId,
-        thresholdKey,
-      );
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "freezeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its freeze key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           freezeKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -1820,243 +1294,128 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Wipe Key", function () {
-    async function verifyTokenCreationWithWipeKey(tokenId, wipeKey) {
-      const rawKey = getRawKeyFromHex(wipeKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).wipeKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "wipe_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithWipeKeyList(tokenId, wipeKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "wipeKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(wipeKey.slice(wipeKey.length - keyHex.length)).to.equal(keyHex);
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).wipe_key
-      ).key;
-
-      expect(wipeKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - wipeKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithWipeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithWipeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithWipeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithWipeKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithWipeKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "wipeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithWipeKeyList(response.tokenId, nestedKeyList);
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "wipeKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -2071,35 +1430,27 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         wipeKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithWipeKeyList(response.tokenId, thresholdKey);
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "wipeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its wipe key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           wipeKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -2110,248 +1461,128 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Supply Key", function () {
-    async function verifyTokenCreationWithSupplyKey(tokenId, supplyKey) {
-      const rawKey = getRawKeyFromHex(supplyKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).supplyKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "supply_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithSupplyKeyList(tokenId, supplyKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "supplyKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(supplyKey.slice(supplyKey.length - keyHex.length)).to.equal(
-        keyHex,
-      );
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).supply_key
-      ).key;
-
-      expect(supplyKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - supplyKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithSupplyKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithSupplyKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithSupplyKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithSupplyKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithSupplyKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "supplyKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithSupplyKeyList(
-        response.tokenId,
-        nestedKeyList,
-      );
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "supplyKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -2366,38 +1597,27 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithSupplyKeyList(
-        response.tokenId,
-        thresholdKey,
-      );
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "supplyKey");
     });
 
     it("(#8) Creates a token with an invalid key as its supply key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -2426,25 +1646,20 @@ describe("TokenCreateTransaction", function () {
     }
 
     it("(#1) Creates a token with a frozen default status", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const freezeDefault = true;
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: key,
         freezeDefault: freezeDefault,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFreezeDefault(
         response.tokenId,
@@ -2454,15 +1669,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with a frozen default status and no freeze key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           freezeDefault: true,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_FREEZE_KEY");
         return;
@@ -2472,25 +1684,20 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with an unfrozen default status", async function () {
-      const responseKey = await JSONRPCRequest("generateKey", {
+      const responseKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (responseKey.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = responseKey.key;
 
       const freezeDefault = false;
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         freezeKey: key,
         freezeDefault: freezeDefault,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFreezeDefault(
         response.tokenId,
@@ -2528,15 +1735,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "0",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2547,15 +1751,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with an expiration time of -1 seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-1",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2566,15 +1767,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "9223372036854775807",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2585,15 +1783,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "9223372036854775806",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2604,15 +1799,12 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-9223372036854775808",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2623,15 +1815,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-9223372036854775807",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2644,16 +1833,12 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         expirationTime: expirationTime,
       });
-
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
     });
 
     it("(#8) Creates a token with an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
@@ -2661,15 +1846,12 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 2592000
       ).toString();
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         expirationTime: expirationTime,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithExpirationTime(
         response.tokenId,
@@ -2679,7 +1861,7 @@ describe("TokenCreateTransaction", function () {
 
     //it("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
     //  try {
-    //    const response = await JSONRPCRequest("createToken", {
+    //    const response = await JSONRPCRequest(this,"createToken", {
     //      name: "testname",
     //      symbol: "testsymbol",
     //      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2699,15 +1881,12 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
 
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         expirationTime: expirationTime,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithExpirationTime(
         response.tokenId,
@@ -2722,15 +1901,12 @@ describe("TokenCreateTransaction", function () {
         ).toString();
 
         // Create the token with the calculated expiration time in ISO format
-        const response = await JSONRPCRequest("createToken", {
+        const response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: expirationTime,
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -2742,23 +1918,19 @@ describe("TokenCreateTransaction", function () {
 
   describe("Auto Renew Account ID", function () {
     it("(#1) Creates a token with an auto renew account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2767,9 +1939,7 @@ describe("TokenCreateTransaction", function () {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const tokenId = response.tokenId;
 
       expect(accountId).to.equal(
@@ -2785,33 +1955,26 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with an auto renew account without signing with the account's key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
       async () => {
         try {
-          response = await JSONRPCRequest("createToken", {
+          response = await JSONRPCRequest(this, "createToken", {
             name: "testname",
             symbol: "testsymbol",
             treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
             autoRenewAccountId: accountId,
           });
-          if (response.status === "NOT_IMPLEMENTED") {
-            this.skip();
-          }
         } catch (err) {
           assert.equal(err.data.status, "INVALID_SIGNATURE");
           return;
@@ -2823,15 +1986,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an auto renew account that doesn't exist", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: "123.456.789",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_AUTORENEW_ACCOUNT");
         return;
@@ -2842,15 +2002,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with the auto renew account not set", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: "",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -2861,35 +2018,28 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with an auto renew account that is deleted", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("deleteAccount", {
+      response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2898,9 +2048,6 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_AUTORENEW_ACCOUNT");
         return;
@@ -2931,16 +2078,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with an auto renew period set to 0 seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "0",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -2951,16 +2095,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with an auto renew period set to -1 seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-1",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -2971,15 +2112,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an auto renew period of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "9223372036854775807",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -2990,15 +2128,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with an auto renew period of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "9223372036854775806",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -3009,15 +2144,12 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a token with an auto renew period of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-9223372036854775808",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -3028,15 +2160,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with an auto renew period of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-9223372036854775807",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -3047,7 +2176,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with an auto renew period of 60 days (5,184,000 seconds)", async function () {
       const autoRenewPeriod = "5184000";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3063,7 +2192,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an auto renew period of 30 days (2,592,000 seconds)", async function () {
       const autoRenewPeriod = "2592000";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3079,16 +2208,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a token with an auto renew period of 30 days minus one second (2,591,999 seconds)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "2591999",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -3099,7 +2225,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#10) Creates a token with an auto renew period set to the maximum period of 8,000,001 seconds", async function () {
       const autoRenewPeriod = "8000001";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3115,16 +2241,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#11) Creates a token with an auto renew period set to the maximum period plus one second (8,000,002 seconds)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "8000002",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
@@ -3150,30 +2273,24 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a memo that is a valid length", async function () {
       const memo = "testmemo";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         memo: memo,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
 
     it("(#2) Creates a token with a memo that is the minimum length", async function () {
       const memo = "";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         memo: memo,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
@@ -3181,30 +2298,24 @@ describe("TokenCreateTransaction", function () {
     it("(#3) Creates a token with a memo that is the maximum length", async function () {
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         memo: memo,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
 
     it("(#4) Creates a token with a memo that exceeds the maximum length", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           memo: "This is a long memo that is not valid because it exceeds 100 characters and it should fail the test!!",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "MEMO_TOO_LONG");
         return;
@@ -3230,15 +2341,12 @@ describe("TokenCreateTransaction", function () {
     }
 
     it("(#1) Creates a fungible token", async function () {
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         tokenType: "ft",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithTokenType(
         response.tokenId,
@@ -3247,24 +2355,19 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates an NFT", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey: key,
         tokenType: "nft",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithTokenType(
         response.tokenId,
@@ -3288,30 +2391,24 @@ describe("TokenCreateTransaction", function () {
     }
 
     it("(#1) Creates a token with a finite supply", async function () {
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyType: "finite",
         maxSupply: "1000000",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithSupplyType(response.tokenId, "FINITE");
     });
 
     it("(#2) Creates a token with an infinite supply", async function () {
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyType: "infinite",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithSupplyType(response.tokenId, "INFINITE");
     });
@@ -3333,16 +2430,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with 0 max supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyType: "finite",
           maxSupply: "0",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
@@ -3353,16 +2447,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with -1 max supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyType: "finite",
           maxSupply: "-1",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
@@ -3373,48 +2464,39 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with 9,223,372,036,854,775,807 (int64 max) max supply", async function () {
       const maxSupply = "9223372036854775807";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyType: "finite",
         maxSupply: maxSupply,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
     it("(#4) Creates a token with 9,223,372,036,854,775,806 (int64 max - 1) max supply", async function () {
       const maxSupply = "9223372036854775806";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyType: "finite",
         maxSupply: maxSupply,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
     it.skip("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyType: "finite",
           maxSupply: "-9223372036854775808",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
@@ -3425,16 +2507,13 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyType: "finite",
           maxSupply: "-9223372036854775807",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
@@ -3445,16 +2524,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with a max supply and an infinite supply type", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyType: "infinite",
           maxSupply: "1000000",
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
@@ -3465,257 +2541,132 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Fee Schedule Key", function () {
-    async function verifyTokenCreationWithFeeScheduleKey(
-      tokenId,
-      feeScheduleKey,
-    ) {
-      const rawKey = getRawKeyFromHex(feeScheduleKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).feeScheduleKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "fee_schedule_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithFeeScheduleKeyList(
-      tokenId,
-      feeScheduleKey,
-    ) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "feeScheduleKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(
-        feeScheduleKey.slice(feeScheduleKey.length - keyHex.length),
-      ).to.equal(keyHex);
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).fee_schedule_key
-      ).key;
-
-      expect(feeScheduleKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - feeScheduleKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithFeeScheduleKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithFeeScheduleKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithFeeScheduleKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithFeeScheduleKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFeeScheduleKeyList(
-        response.tokenId,
-        keyList,
-      );
+      await verifyTokenKeyList(response.tokenId, keyList, "feeScheduleKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFeeScheduleKeyList(
+      await verifyTokenKeyList(
         response.tokenId,
         nestedKeyList,
+        "feeScheduleKey",
       );
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -3730,38 +2681,31 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         feeScheduleKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithFeeScheduleKeyList(
+      await verifyTokenKeyList(
         response.tokenId,
         thresholdKey,
+        "feeScheduleKey",
       );
     });
 
     it("(#8) Creates a token with an invalid key as its fee schedule key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           feeScheduleKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -3772,280 +2716,9 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Custom Fees", function () {
-    async function consensusNodeFeeEqualsCustomFee(
-      customFee,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-    ) {
-      return (
-        feeCollectorAccountId === customFee.feeCollectorAccountId.toString() &&
-        feeCollectorsExempt === customFee.allCollectorsAreExempt
-      );
-    }
-
-    async function consensusNodeFeeEqualsCustomFixedFee(
-      customFixedFee,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      amount,
-    ) {
-      return (
-        consensusNodeFeeEqualsCustomFee(
-          customFixedFee,
-          feeCollectorAccountId,
-          feeCollectorsExempt,
-        ) && amount === customFixedFee.amount
-      );
-    }
-
-    async function consensusNodeFeeEqualsCustomFractionalFee(
-      customFractionalFee,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      numerator,
-      denominator,
-      minAmount,
-      maxAmount,
-      assessmentMethod,
-    ) {
-      return (
-        consensusNodeFeeEqualsCustomFee(
-          customFractionalFee,
-          feeCollectorAccountId,
-          feeCollectorsExempt,
-        ) &&
-        numerator === customFractionalFee.numerator &&
-        denominator === customFractionalFee.denominator &&
-        minAmount === customFractionalFee.minimumAmount &&
-        maxAmount === customFractionalFee.maximumAmount &&
-        assessmentMethod ===
-          customFractionalFee.assessmentMethod.toString().toLowerCase()
-      );
-    }
-
-    async function consensusNodeFeeEqualsCustomRoyaltyFee(
-      customRoyaltyFee,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      numerator,
-      denominator,
-      fixedFeeAmount,
-    ) {
-      return (
-        consensusNodeFeeEqualsCustomFee(
-          customRoyaltyFee,
-          feeCollectorAccountId,
-          feeCollectorsExempt,
-        ) &&
-        numerator === customRoyaltyFee.numerator &&
-        denominator === customRoyaltyFee.denominator &&
-        fixedFeeAmount === customRoyaltyFee.fixedFeeAmount
-      );
-    }
-
-    async function mirrorNodeFeeEqualsCustomFixedFee(
-      customFixedFee,
-      feeCollectorAccountId,
-      amount,
-    ) {
-      return (
-        feeCollectorAccountId === customFixedFee.collector_account_id &&
-        amount === customFixedFee.amount
-      );
-    }
-
-    async function mirrorNodeFeeEqualsCustomFractionalFee(
-      customFractionalFee,
-      feeCollectorAccountId,
-      numerator,
-      denominator,
-      minAmount,
-      maxAmount,
-      assessmentMethod,
-    ) {
-      return (
-        feeCollectorAccountId === customFractionalFee.collector_account_id &&
-        numerator === customFractionalFee.amount.numerator &&
-        denominator === customFractionalFee.amount.denominator &&
-        minAmount === customFractionalFee.minimum &&
-        maxAmount === customFractionalFee.maximum &&
-        (assessmentMethod === "exclusive") ===
-          customFractionalFee.net_of_transfer
-      );
-    }
-
-    async function mirrorNodeFeeEqualsCustomRoyaltyFee(
-      customRoyaltyFee,
-      feeCollectorAccountId,
-      numerator,
-      denominator,
-      fixedFeeAmount,
-    ) {
-      return (
-        feeCollectorAccountId === customRoyaltyFee.collector_account_id &&
-        numerator === customRoyaltyFee.amount.numerator &&
-        denominator === customRoyaltyFee.amount.denominator &&
-        fixedFeeAmount === customRoyaltyFee.fallback_fee.amount
-      );
-    }
-
-    async function verifyTokenCreationWithFixedFee(
-      tokenId,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      amount,
-    ) {
-      const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
-      const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
-
-      let foundConsensusNodeFee = false;
-      let foundMirrorNodeFee = false;
-
-      for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
-        if (
-          consensusNodeInfo.customFees[i] instanceof CustomFixedFee &&
-          consensusNodeFeeEqualsCustomFixedFee(
-            consensusNodeInfo.customFees[i],
-            feeCollectorAccountId,
-            feeCollectorsExempt,
-            amount,
-          )
-        ) {
-          foundConsensusNodeFee = true;
-          break;
-        }
-      }
-
-      for (let i = 0; i < mirrorNodeInfo.custom_fees.fixed_fees.length; i++) {
-        if (
-          mirrorNodeFeeEqualsCustomFixedFee(
-            mirrorNodeInfo.custom_fees.fixed_fees[i],
-            feeCollectorAccountId,
-            amount,
-          )
-        ) {
-          foundMirrorNodeFee = true;
-          break;
-        }
-      }
-
-      expect(foundConsensusNodeFee).to.be.true;
-      expect(foundMirrorNodeFee).to.be.true;
-    }
-
-    async function verifyTokenCreationWithFractionalFee(
-      tokenId,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      numerator,
-      denominator,
-      minAmount,
-      maxAmount,
-      assessmentMethod,
-    ) {
-      const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
-      const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
-
-      let foundConsensusNodeFee = false;
-      let foundMirrorNodeFee = false;
-
-      for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
-        if (
-          consensusNodeInfo.customFees[i] instanceof CustomFractionalFee &&
-          consensusNodeFeeEqualsCustomFractionalFee(
-            consensusNodeInfo.customFees[i],
-            feeCollectorAccountId,
-            feeCollectorsExempt,
-            numerator,
-            denominator,
-            minAmount,
-            maxAmount,
-            assessmentMethod,
-          )
-        ) {
-          foundConsensusNodeFee = true;
-          break;
-        }
-      }
-
-      for (
-        let i = 0;
-        i < mirrorNodeInfo.custom_fees.fractional_fees.length;
-        i++
-      ) {
-        if (
-          mirrorNodeFeeEqualsCustomFractionalFee(
-            mirrorNodeInfo.custom_fees.fractional_fees[i],
-            feeCollectorAccountId,
-            numerator,
-            denominator,
-            minAmount,
-            maxAmount,
-            assessmentMethod,
-          )
-        ) {
-          foundMirrorNodeFee = true;
-          break;
-        }
-      }
-
-      expect(foundConsensusNodeFee).to.be.true;
-      expect(foundMirrorNodeFee).to.be.true;
-    }
-
-    async function verifyTokenCreationWithRoyaltyFee(
-      tokenId,
-      feeCollectorAccountId,
-      feeCollectorsExempt,
-      numerator,
-      denominator,
-      fixedFeeAmount,
-    ) {
-      const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
-      const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
-
-      let foundConsensusNodeFee = false;
-      let foundMirrorNodeFee = false;
-
-      for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
-        if (
-          consensusNodeInfo.customFees[i] instanceof CustomRoyaltyFee &&
-          consensusNodeFeeEqualsCustomRoyaltyFee(
-            consensusNodeInfo.customFees[i],
-            feeCollectorAccountId,
-            feeCollectorsExempt,
-            numerator,
-            denominator,
-            fixedFeeAmount,
-          )
-        ) {
-          foundConsensusNodeFee = true;
-          break;
-        }
-      }
-
-      for (let i = 0; i < mirrorNodeInfo.custom_fees.royalty_fees.length; i++) {
-        if (
-          mirrorNodeFeeEqualsCustomRoyaltyFee(
-            mirrorNodeInfo.custom_fees.royalty_fees[i],
-            feeCollectorAccountId,
-            numerator,
-            denominator,
-            fixedFeeAmount,
-          )
-        ) {
-          foundMirrorNodeFee = true;
-          break;
-        }
-      }
-
-      expect(foundConsensusNodeFee).to.be.true;
-      expect(foundMirrorNodeFee).to.be.true;
-    }
-
     it("(#1) Creates a token with a fixed fee with an amount of 0", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4059,9 +2732,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4072,7 +2742,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with a fixed fee with an amount of -1", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4086,9 +2756,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4101,7 +2768,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775807";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4115,9 +2782,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFixedFee(
         response.tokenId,
@@ -4131,7 +2795,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775806";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4145,9 +2809,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFixedFee(
         response.tokenId,
@@ -4159,7 +2820,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4173,9 +2834,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4186,7 +2844,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4200,9 +2858,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4213,7 +2868,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with a fractional fee with a numerator of 0", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4231,10 +2886,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4245,7 +2896,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with a fractional fee with a numerator of -1", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4263,9 +2914,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4282,7 +2930,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4300,9 +2948,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4324,7 +2969,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4342,9 +2987,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4360,7 +3002,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4378,9 +3020,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4391,7 +3030,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#12) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4409,9 +3048,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4422,7 +3058,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#13) Creates a token with a fractional fee with a denominator of 0", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4440,9 +3076,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "FRACTION_DIVIDES_BY_ZERO");
         return;
@@ -4453,7 +3086,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#14) Creates a token with a fractional fee with a denominator of -1", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4471,9 +3104,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4490,7 +3120,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4508,9 +3138,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4532,7 +3159,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4550,9 +3177,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4568,7 +3192,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4586,9 +3210,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4599,7 +3220,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#18) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4617,9 +3238,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4636,7 +3254,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "0";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4654,9 +3272,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4672,7 +3287,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#20) Creates a token with a fractional fee with a minimum amount of -1", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4690,9 +3305,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4703,7 +3315,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#21) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4721,9 +3333,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(
           err.data.status,
@@ -4737,7 +3346,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#22) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4755,9 +3364,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(
           err.data.status,
@@ -4771,7 +3377,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4789,9 +3395,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4802,7 +3405,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#24) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4820,9 +3423,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4839,7 +3439,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "0";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4857,9 +3457,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4875,7 +3472,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#26) Creates a token with a fractional fee with a maximum amount of -1", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4893,9 +3490,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -4912,7 +3506,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "9223372036854775807";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4930,9 +3524,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4954,7 +3545,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "9223372036854775806";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4972,9 +3563,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -4990,7 +3578,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5008,9 +3596,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5021,7 +3606,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#30) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5039,9 +3624,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5051,16 +3633,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#31) Creates a token with a royalty fee with a numerator of 0", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5080,9 +3660,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5092,16 +3669,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#32) Creates a token with a royalty fee with a numerator of -1", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5121,9 +3696,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5133,16 +3705,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#33) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5162,9 +3732,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "ROYALTY_FRACTION_CANNOT_EXCEED_ONE");
         return;
@@ -5174,16 +3741,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#34) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5203,9 +3768,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "ROYALTY_FRACTION_CANNOT_EXCEED_ONE");
         return;
@@ -5215,16 +3777,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5244,9 +3804,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5256,16 +3813,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#36) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5285,9 +3840,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5297,16 +3849,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#37) Creates a token with a royalty fee with a denominator of 0", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5326,9 +3876,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "FRACTION_DIVIDES_BY_ZERO");
         return;
@@ -5338,16 +3885,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#38) Creates a token with a royalty fee with a denominator of -1", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5367,9 +3912,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5379,12 +3921,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#39) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
@@ -5392,7 +3932,7 @@ describe("TokenCreateTransaction", function () {
       const numerator = "1";
       const denominator = "9223372036854775807";
       const fallbackFeeAmount = "10";
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5412,9 +3952,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithRoyaltyFee(
         response.tokenId,
@@ -5429,12 +3966,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#40) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
@@ -5442,7 +3977,7 @@ describe("TokenCreateTransaction", function () {
       const numerator = "1";
       const denominator = "9223372036854775806";
       const fallbackFeeAmount = "10";
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5462,9 +3997,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithRoyaltyFee(
         response.tokenId,
@@ -5479,16 +4011,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5508,9 +4038,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5520,16 +4047,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#42) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5549,9 +4074,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5561,16 +4083,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#43) Creates a token with a royalty fee with a fallback fee with an amount of 0", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5590,9 +4110,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5602,16 +4119,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#44) Creates a token with a royalty fee with a fallback fee with an amount of -1", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5631,9 +4146,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5643,12 +4155,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#45) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
@@ -5656,7 +4166,7 @@ describe("TokenCreateTransaction", function () {
       const numerator = "1";
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775807";
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5676,9 +4186,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithRoyaltyFee(
         response.tokenId,
@@ -5693,12 +4200,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#46) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
@@ -5706,7 +4211,7 @@ describe("TokenCreateTransaction", function () {
       const numerator = "1";
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775806";
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5726,9 +4231,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithRoyaltyFee(
         response.tokenId,
@@ -5743,16 +4245,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5772,9 +4272,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5784,16 +4281,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#48) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5813,9 +4308,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
@@ -5826,7 +4318,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#49) Creates a token with a fixed fee with a fee collector account that doesn't exist", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5840,9 +4332,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -5853,7 +4342,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#50) Creates a token with a fractional with a fee collector account that doesn't exist", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5871,9 +4360,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -5883,16 +4369,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#51) Creates a token with a royalty fee with a fee collector account that doesn't exist", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5912,9 +4396,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -5925,7 +4406,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#52) Creates a token with a fixed fee with an empty fee collector account", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5939,9 +4420,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603);
         return;
@@ -5952,7 +4430,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#53) Creates a token with a fractional with an empty fee collector account", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5970,9 +4448,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603);
         return;
@@ -5982,16 +4457,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#54) Creates a token with a royalty fee with an empty fee collector account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6011,9 +4484,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603);
         return;
@@ -6023,35 +4493,28 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#55) Creates a token with a fixed fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("deleteAccount", {
+      response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6068,10 +4531,6 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -6081,35 +4540,28 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#56) Creates a token with a fractional fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("deleteAccount", {
+      response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6130,9 +4582,6 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -6142,35 +4591,28 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#57) Creates a token with a royalty fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
-      response = await JSONRPCRequest("createAccount", {
+      response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest("deleteAccount", {
+      response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [key],
         },
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6193,9 +4635,6 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
@@ -6209,7 +4648,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorsExempt = false;
       const fixedFeeAmount = "10";
       const denominatingTokenId = "0.0.0";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6224,9 +4663,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFixedFee(
         response.tokenId,
@@ -6238,7 +4674,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#59) Creates a token with a fixed fee that is assessed with a token that doesn't exist", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6253,9 +4689,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID_IN_CUSTOM_FEES");
         return;
@@ -6266,7 +4699,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#60) Creates a token with a fixed fee that is assessed with an empty token", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6281,10 +4714,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603);
         return;
@@ -6294,26 +4723,21 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async function () {
-      let response = await JSONRPCRequest("createToken", {
+      let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         adminKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const tokenId = response.tokenId;
 
-      response = await JSONRPCRequest("deleteToken", {
+      response = await JSONRPCRequest(this, "deleteToken", {
         tokenId: tokenId,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6344,7 +4768,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "exclusive";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6362,9 +4786,6 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithFractionalFee(
         response.tokenId,
@@ -6380,7 +4801,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#63) Creates a fungible token with a royalty fee", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6400,9 +4821,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(
           err.data.status,
@@ -6415,16 +4833,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#64) Creates an NFT with a fractional fee", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest("createToken", {
+        response = await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6444,9 +4860,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(
           err.data.status,
@@ -6460,7 +4873,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#65) Creates a token with more than the maximum amount of fees allowed", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -6544,9 +4957,6 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.data.status, "CUSTOM_FEES_LIST_TOO_LONG");
         return;
@@ -6557,289 +4967,153 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Pause Key", function () {
-    async function verifyTokenCreationWithPauseKey(tokenId, pauseKey) {
-      const rawKey = getRawKeyFromHex(pauseKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).pauseKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "pause_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithPauseKeyList(tokenId, pauseKey) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "pauseKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(pauseKey.slice(pauseKey.length - keyHex.length)).to.equal(keyHex);
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).pause_key
-      ).key;
-
-      expect(pauseKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - pauseKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithPauseKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithPauseKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithPauseKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithPauseKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithPauseKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "pauseKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithPauseKeyList(
-        response.tokenId,
-        nestedKeyList,
-      );
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "pauseKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoThresholdKeyParams,
+      );
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         pauseKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithPauseKeyList(response.tokenId, thresholdKey);
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "pauseKey");
     });
 
     it("(#8) Creates a token with an invalid key as its pause key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           pauseKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
@@ -6868,283 +5142,153 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with metadata", async function () {
       const metadataValue = "1234";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadata: metadataValue,
       });
 
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
-
       await verifyTokenCreationWithMetadata(response.tokenId, metadataValue);
     });
 
     it("(#2) Creates a token with empty metadata", async function () {
       const metadata = "";
-      const response = await JSONRPCRequest("createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadata: metadata,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       await verifyTokenCreationWithMetadata(response.tokenId, metadata);
     });
   });
 
   describe("Metadata Key", function () {
-    async function verifyTokenCreationWithMetadataKey(tokenId, metadataKey) {
-      const rawKey = getRawKeyFromHex(metadataKey);
-
-      expect(rawKey).to.equal(
-        (
-          await (
-            await consensusInfoClient.getTokenInfo(tokenId)
-          ).metadataKey
-        ).toStringRaw(),
-      );
-
-      const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getTokenData",
-        tokenId,
-        "metadata_key",
-      );
-
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-    }
-
-    async function verifyTokenCreationWithMetadataKeyList(
-      tokenId,
-      metadataKey,
-    ) {
-      const keyHex = await getEncodedKeyHexFromKeyListConsensus(
-        "getTokenInfo",
-        tokenId,
-        "metadataKey",
-      );
-
-      // Consensus node check
-      // Removing the unnecessary prefix from the incoming key
-      expect(metadataKey.slice(metadataKey.length - keyHex.length)).to.equal(
-        keyHex,
-      );
-
-      // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).metadata_key
-      ).key;
-
-      expect(metadataKey).to.equal(
-        // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - metadataKey.length),
-      );
-    }
-
     it("(#1) Creates a token with a valid ED25519 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadata: "1234",
         metadataKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithMetadataKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: publicKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithMetadataKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenCreationWithMetadataKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const privateKey = response.key;
 
-      response = await JSONRPCRequest("generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
         fromKey: privateKey,
       });
       const publicKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: privateKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenCreationWithMetadataKey(response.tokenId, publicKey);
+      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "ed25519PublicKey",
-          },
-          {
-            type: "ecdsaSecp256k1PrivateKey",
-          },
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        fourKeysKeyListParams,
+      );
+
       const keyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: keyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithMetadataKeyList(response.tokenId, keyList);
+      await verifyTokenKeyList(response.tokenId, keyList, "metadataKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
-        type: "keyList",
-        keys: [
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ecdsaSecp256k1PrivateKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-              {
-                type: "ed25519PublicKey",
-              },
-            ],
-          },
-          {
-            type: "keyList",
-            keys: [
-              {
-                type: "ed25519PrivateKey",
-              },
-              {
-                type: "ecdsaSecp256k1PublicKey",
-              },
-            ],
-          },
-        ],
-      });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+      let response = await JSONRPCRequest(
+        this,
+        "generateKey",
+        twoLevelsNestedKeyListParams,
+      );
+
       const nestedKeyList = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: nestedKeyList,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithMetadataKeyList(
-        response.tokenId,
-        nestedKeyList,
-      );
+      await verifyTokenKeyList(response.tokenId, nestedKeyList, "metadataKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
-      let response = await JSONRPCRequest("generateKey", {
+      let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
         keys: [
@@ -7159,38 +5303,27 @@ describe("TokenCreateTransaction", function () {
           },
         ],
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
+
       const thresholdKey = response.key;
 
-      response = await JSONRPCRequest("createToken", {
+      response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         metadataKey: thresholdKey,
       });
-      if (response.status === "NOT_IMPLEMENTED") {
-        this.skip();
-      }
 
-      await verifyTokenCreationWithMetadataKeyList(
-        response.tokenId,
-        thresholdKey,
-      );
+      await verifyTokenKeyList(response.tokenId, thresholdKey, "metadataKey");
     });
 
     it("(#8) Creates a token with an invalid key as its metadata key", async function () {
       try {
-        const response = await JSONRPCRequest("createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           metadataKey: crypto.randomBytes(88).toString("hex"),
         });
-        if (response.status === "NOT_IMPLEMENTED") {
-          this.skip();
-        }
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
         return;
