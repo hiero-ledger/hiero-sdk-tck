@@ -1,28 +1,34 @@
-# Hedera SDK TCK
+# Hiero SDK TCK
 
-A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification. The hedera-sdk-tck aims to verify compliant implementations of
-a Hedera SDK. It will encompass tests that validate the implmentation of consensus node software transactions and queries, performance and longevity testing.
-
-# test-driver-js
+A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification.
+The TCK aims to verify compliant implementations of a Hiero SDK.
+It will encompass tests that validate the implementation of consensus node software transactions and queries, performance and longevity testing.
 
 ## Setup
 
-Clone repository
+First you need to clone the repository
 
-    git clone git@github.com:hashgraph/hedera-sdk-tck.git
+```
+git clone git@github.com:hiero-ledger/hiero-sdk-tck.git
+```
 
-### Decide between Testnet or a local node
+The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hedera-local-node](https://github.com/hashgraph/hedera-local-node).
+In near future hedera-local-node will be transfered to Hiero (see our [transition document](https://github.com/hiero-ledger/hiero/blob/main/transition.md) for more details).
 
-#### Testnet
+### Configure usage of Hedera Testnet
 
 - Get a Hedera testnet account ID and private key from Hedera [here](https://portal.hedera.com/register)
 - rename `.env.testnet` to `.env`
 - Add ECDSA account ID and private key to `.env`
 
-#### Local node
+### Configure usage of local node
 
 - Start your [hedera-local-node](https://github.com/hashgraph/hedera-local-node)
 - rename `.env.custom_node` to `.env`
+
+### Configure usage of a custom network
+
+- Change the content of `.env` to fit to your network
 
 ### Start a JSON-RPC server
 
@@ -32,49 +38,51 @@ Start only the JSON-RPC server for the SDK you want to test. The JSON-RPC server
 
 Install packages with npm
 
-    npm install
+```
+npm install
+```
 
 Run specific test file
 
-    npm run test test/account/test_accountCreateTransaction.js
+```
+npm run test test/account/test_accountCreateTransaction.js
+```
 
 Run all tests
 
-    npm run test
+```
+npm run test
+```
 
 ### Reports
 
-After running `npm run test` the generated HTML and JSON reports can be found in the mochawesome-report folder
+After running `npm run test` the generated HTML and JSON reports can be found in the `mochawesome-report` folder
 
 ### Linting and Formatting
+
 To ensure code quality and consistent styling, you can run ESLint and Prettier on the codebase.
 
 To check for **code issues**, run:
 
-    npm run lint
+```
+npm run lint
+```
 
 To **format** the code run:
 
-    npm run format
-
-
-## Support
-
-If you have a question on how to use the product, please see our
-[support guide](https://github.com/hashgraph/.github/blob/main/SUPPORT.md).
+```
+npm run format
+```
 
 ## Contributing
 
-Contributions are welcome. Please see the
-[contributing guide](https://github.com/hashgraph/.github/blob/main/CONTRIBUTING.md)
-to see how you can get involved.
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
 ## Code of Conduct
 
-This project is governed by the
-[Contributor Covenant Code of Conduct](https://github.com/hashgraph/.github/blob/main/CODE_OF_CONDUCT.md). By
-participating, you are expected to uphold this code of conduct. Please report unacceptable behavior
-to [oss@hedera.com](mailto:oss@hedera.com).
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 ## License
 
