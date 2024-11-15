@@ -4726,6 +4726,7 @@ describe("TokenCreateTransaction", function () {
       let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
+        adminKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
 

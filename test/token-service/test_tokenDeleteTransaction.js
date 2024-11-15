@@ -1,0 +1,188 @@
+import { assert } from "chai";
+
+import { JSONRPCRequest } from "../../client.js";
+import { setOperator } from "../../setup_Tests.js";
+
+import {
+  verifyTokenIsDeleted,
+  getNewFungibleTokenId,
+} from "../../utils/helpers/token.js";
+import { retryOnError } from "../../utils/helpers/retry-on-error.js";
+/**
+ * Tests for TokenDeleteTransaction
+ */
+describe("TokenDeleteTransaction", function () {
+  // Tests should not take longer than 30 seconds to fully execute.
+  this.timeout(30000);
+
+  // Each test should first establish the network to use, and then teardown the network when complete.
+  beforeEach(async function () {
+    await setOperator(
+      process.env.OPERATOR_ACCOUNT_ID,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+    );
+  });
+  afterEach(async function () {
+    await JSONRPCRequest(this, "reset");
+  });
+
+  describe("Token ID", function () {
+    it("(#1) Deletes an immutable token", async function () {
+      const response = await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      });
+
+      const tokenId = response.tokenId;
+
+      try {
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId,
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+      } catch (err) {
+        assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+
+    it("(#2) Deletes a mutable token", async function () {
+      const tokenId = await getNewFungibleTokenId(this);
+
+      await JSONRPCRequest(this, "deleteToken", {
+        tokenId,
+        commonTransactionParams: {
+          signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+        },
+      });
+
+      await retryOnError(async () => {
+        verifyTokenIsDeleted(tokenId);
+      });
+    });
+
+    it("(#3) Deletes a token that doesn't exist", async function () {
+      try {
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: "123.456.789",
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+      } catch (err) {
+        assert.equal(err.data.status, "INVALID_TOKEN_ID");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Deletes a token with no token ID", async function () {
+      try {
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: "",
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+      } catch (err) {
+        assert.equal(err.message, "Internal error");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Deletes a token that was already deleted", async function () {
+      try {
+        const tokenId = await getNewFungibleTokenId(this);
+
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: tokenId,
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+
+        // Trying to delete a token once again
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: tokenId,
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+      } catch (err) {
+        assert.equal(err.data.status, "TOKEN_WAS_DELETED");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Deletes a token without signing with the token's admin key", async function () {
+      try {
+        // Passing other admin key in order to throw an error
+        const privateKey = await JSONRPCRequest(this, "generateKey", {
+          type: "ed25519PrivateKey",
+        });
+
+        const tokenId = await getNewFungibleTokenId(this, privateKey.key);
+
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: tokenId,
+        });
+      } catch (err) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Deletes a token but signs with an incorrect private key", async function () {
+      try {
+        const privateKey = await JSONRPCRequest(this, "generateKey", {
+          type: "ed25519PrivateKey",
+        });
+
+        // Creating an account to use its accountId for creating the token
+        // and after that signing it with different private key
+        const createdAccount = await JSONRPCRequest(this, "createAccount", {
+          key: privateKey.key,
+        });
+
+        const tokenId = await getNewFungibleTokenId(
+          this,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+          createdAccount.accountId,
+        );
+
+        // Trying to delete a token once again
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: tokenId,
+          commonTransactionParams: {
+            signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
+          },
+        });
+      } catch (err) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
+  });
+
+  return Promise.resolve();
+});
