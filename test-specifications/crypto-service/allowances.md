@@ -27,12 +27,12 @@ Allowances can be granted to accounts to allow that account to spend on behalf o
 
 ### NFT Allowance Object Definition
 
-| Parameter Name             | Type         | Required/Optional | Description/Notes                                                                                                      |
-|----------------------------|--------------|-------------------|------------------------------------------------------------------------------------------------------------------------|
-| tokenId                    | string       | optional          | The ID of the token to be allowanced.                                                                                  |
-| serialNumbers              | list<string> | optional          | The serial numbers of the NFTs to be allowanced.                                                                       |
-| approvedForAll             | bool         | optional          | Should the spender be granted access to all the owner's NFTs of the tokenId class (currently owned and in the future)? |
-| delegatingSpenderAccountId | string       | optional          | The ID of the account of a spender is granted approvedForAll access and can grant NFT allowances to another spender.   |
+| Parameter Name           | Type         | Required/Optional | Description/Notes                                                                                                      |
+|--------------------------|--------------|-------------------|------------------------------------------------------------------------------------------------------------------------|
+| tokenId                  | string       | optional          | The ID of the token to be allowanced.                                                                                  |
+| serialNumbers            | list<string> | optional          | The serial numbers of the NFTs to be allowanced.                                                                       |
+| approvedForAll           | bool         | optional          | Should the spender be granted access to all the owner's NFTs of the tokenId class (currently owned and in the future)? |
+| delegateSpenderAccountId | string       | optional          | The ID of the account of a spender is granted approvedForAll access and can grant NFT allowances to another spender.   |
 
 ## Example Usage
 
@@ -69,7 +69,7 @@ Allowances can be granted to accounts to allow that account to spend on behalf o
             "789"
           ],
           "approvedForAll": false,
-          "delegatingSpenderAccountId": "0.0.532543"
+          "delegateSpenderAccountId": "0.0.532543"
         }
       }
     ]
