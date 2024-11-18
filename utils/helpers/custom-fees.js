@@ -124,7 +124,7 @@ async function mirrorNodeFeeEqualsCustomRoyaltyFee(
   );
 }
 
-export async function verifyTokenCreationWithFixedFee(
+export async function verifyCustomFixedFee(
   tokenId,
   feeCollectorAccountId,
   feeCollectorsExempt,
@@ -168,7 +168,7 @@ export async function verifyTokenCreationWithFixedFee(
   expect(foundMirrorNodeFee).to.be.true;
 }
 
-export async function verifyTokenCreationWithFractionalFee(
+export async function verifyCustomFractionalFee(
   tokenId,
   feeCollectorAccountId,
   feeCollectorsExempt,
@@ -224,7 +224,7 @@ export async function verifyTokenCreationWithFractionalFee(
   expect(foundMirrorNodeFee).to.be.true;
 }
 
-export async function verifyTokenCreationWithRoyaltyFee(
+export async function verifyCustomRoyaltyFee(
   tokenId,
   feeCollectorAccountId,
   feeCollectorsExempt,

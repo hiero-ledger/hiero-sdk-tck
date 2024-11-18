@@ -17,9 +17,9 @@ import {
   verifyTokenKeyList,
 } from "../../utils/helpers/verify-token-key.js";
 import {
-  verifyTokenCreationWithFixedFee,
-  verifyTokenCreationWithFractionalFee,
-  verifyTokenCreationWithRoyaltyFee,
+  verifyCustomFixedFee,
+  verifyCustomFractionalFee,
+  verifyCustomRoyaltyFee,
 } from "../../utils/helpers/custom-fees.js";
 
 /**
@@ -2783,7 +2783,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFixedFee(
+      await verifyCustomFixedFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -2810,7 +2810,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFixedFee(
+      await verifyCustomFixedFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -2949,7 +2949,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -2988,7 +2988,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3139,7 +3139,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3178,7 +3178,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3273,7 +3273,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3458,7 +3458,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3525,7 +3525,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3564,7 +3564,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3953,7 +3953,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithRoyaltyFee(
+      await verifyCustomRoyaltyFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -3998,7 +3998,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithRoyaltyFee(
+      await verifyCustomRoyaltyFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -4187,7 +4187,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithRoyaltyFee(
+      await verifyCustomRoyaltyFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -4232,7 +4232,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithRoyaltyFee(
+      await verifyCustomRoyaltyFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -4664,7 +4664,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFixedFee(
+      await verifyCustomFixedFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
@@ -4786,7 +4786,7 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
-      await verifyTokenCreationWithFractionalFee(
+      await verifyCustomFractionalFee(
         response.tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
