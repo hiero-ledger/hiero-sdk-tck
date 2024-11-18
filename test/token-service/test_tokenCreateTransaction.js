@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { assert, expect } from "chai";
-import { Timestamp } from "@hashgraph/sdk";
 
 import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
@@ -15,7 +14,8 @@ import {
 import {
   verifyTokenKey,
   verifyTokenKeyList,
-} from "../../utils/helpers/verify-token-key.js";
+  verifyTokenExpirationTimeUpdate,
+} from "../../utils/helpers/verify-token-tx.js";
 import {
   verifyTokenCreationWithFixedFee,
   verifyTokenCreationWithFractionalFee,
@@ -1707,32 +1707,6 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Expiration Time", function () {
-    async function verifyTokenCreationWithExpirationTime(
-      tokenId,
-      expirationTime,
-    ) {
-      const parsedExpirationTime = Timestamp.fromDate(
-        new Date(Number(expirationTime) * 1000),
-      );
-
-      expect(parsedExpirationTime).to.deep.equal(
-        await (
-          await consensusInfoClient.getTokenInfo(tokenId)
-        ).expirationTime,
-      );
-
-      const mirrorNodeExpirationDateNanoseconds = await (
-        await mirrorNodeClient.getTokenData(tokenId)
-      ).expiry_timestamp;
-
-      // Convert nanoseconds got back from to timestamp
-      const mirrorNodeTimestamp = Timestamp.fromDate(
-        new Date(mirrorNodeExpirationDateNanoseconds / 1000000),
-      );
-
-      expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
-    }
-
     it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
@@ -1850,31 +1824,32 @@ describe("TokenCreateTransaction", function () {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
+        expirationTime,
       });
 
-      await verifyTokenCreationWithExpirationTime(
-        response.tokenId,
-        expirationTime,
-      );
+      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
-    //it("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
-    //  try {
-    //    const response = await JSONRPCRequest(this,"createToken", {
-    //      name: "testname",
-    //      symbol: "testsymbol",
-    //      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-    //      expirationTime: (Date.now() / 1000) + 2591999
-    //    });
-    //    if (response.status === "NOT_IMPLEMENTED") this.skip();
-    //  } catch (err) {
-    //    assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-    //    return;
-    //  }
-    //
-    //  assert.fail("Should throw an error");
-    //});
+    it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 2591999
+      ).toString();
+
+      try {
+        const response = await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          expirationTime,
+        });
+        if (response.status === "NOT_IMPLEMENTED") this.skip();
+      } catch (err) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
 
     it("(#10) Creates a token with an expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
@@ -1885,13 +1860,10 @@ describe("TokenCreateTransaction", function () {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
+        expirationTime,
       });
 
-      await verifyTokenCreationWithExpirationTime(
-        response.tokenId,
-        expirationTime,
-      );
+      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
     it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
