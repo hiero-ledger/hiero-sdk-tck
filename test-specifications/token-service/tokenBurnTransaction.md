@@ -46,7 +46,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Additional Notes
 
-The tests contained in this specification will assume that a valid fungible token and a valid non-fungible token have already successfully created. The fungible token will have an initial supply of 9,223,372,036,854,775,807 (int64 max) and the non-fungible token will have three minted. <CREATED_FUNGIBLE_TOKEN_ID> will denote the ID of the created fungible token, and <CREATED_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created fungible token as a DER-encoded hex string. <CREATED_NON_FUNGIBLE_TOKEN_ID> will denote the ID of the created non-fungible token, and <CREATED_NON_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created non-fungible token as a DER-encoded hex string. <NFT_SERIAL_1>, <NFT_SERIAL_2>, and <NFT_SERIAL_3> will denote the serial numbers of the three minted NFTs.
+The tests contained in this specification will assume that a valid fungible token and a valid non-fungible token have already successfully created. The fungible token will have an initial supply of 9,223,372,036,854,775,807 (int64 max) and the non-fungible token will have three minted. <CREATED_FUNGIBLE_TOKEN_ID> will denote the ID of the created fungible token, <CREATED_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created fungible token as a DER-encoded hex string, and <CREATED_FUNGIBLE_TOKEN_ADMIN_KEY> will denote the admin key of the created fungible token as a DER-encoded hex string. <CREATED_NON_FUNGIBLE_TOKEN_ID> will denote the ID of the created non-fungible token, <CREATED_NON_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created non-fungible token as a DER-encoded hex string, and <CREATED_NON_FUNGIBLE_TOKEN_ADMIN_KEY> will denote the admin key of the created non-fungible token as a DER-encoded hex string. <NFT_SERIAL_1>, <NFT_SERIAL_2>, and <NFT_SERIAL_3> will denote the serial numbers of the three minted NFTs.
 
 ## Property Tests
 
@@ -62,9 +62,10 @@ The tests contained in this specification will assume that a valid fungible toke
 | 4       | Burns a token with no token ID                            |                                                                                                                                                    | The token burn fails with an INVALID_TOKEN_ID response code from the network.              | N                 |
 | 5       | Burns a deleted token                                     | tokenId=<DELETED_TOKEN_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_SUPPLY_KEY>]                                                           | The token burn fails with an TOKEN_WAS_DELETED response code from the network.             | N                 |
 | 6       | Burns a token without signing with the token's supply key | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10"                                                                                                   | The token burn fails with an INVALID_SIGNATURE response code from the network.             | N                 |
-| 7       | Burns a token but signs with an incorrect supply key      | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10" commonTransactionParams.signers=[<INCORRECT_VALID__KEY>]                                          | The token burn fails with an INVALID_SIGNATURE response code from the network.             | N                 |
-| 8       | Burns a token with no supply key                          | tokenId=<CREATED_TOKEN_ID>, amount="10"                                                                                                            | The token burn fails with an TOKEN_HAS_NO_SUPPLY_KEY response code from the network.       | N                 |
-| 9       | Burns a paused token                                      | tokenId=<PAUSED_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<PAUSED_TOKEN_SUPPLY_KEY>]                                                | The token burn fails with an TOKEN_IS_PAUSED response code from the network.               | N                 |
+| 7       | Burns a token but signs with the token's admin key        | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<CREATED_FUNGIBLE_TOKEN_ADMIN_KEY>]                             | The token burn fails with an INVALID_SIGNATURE response code from the network.             | N                 |
+| 8       | Burns a token but signs with an incorrect supply key      | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10" commonTransactionParams.signers=[<INCORRECT_VALID__KEY>]                                          | The token burn fails with an INVALID_SIGNATURE response code from the network.             | N                 |
+| 9       | Burns a token with no supply key                          | tokenId=<CREATED_TOKEN_ID>, amount="10"                                                                                                            | The token burn fails with an TOKEN_HAS_NO_SUPPLY_KEY response code from the network.       | N                 |
+| 10      | Burns a paused token                                      | tokenId=<PAUSED_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<PAUSED_TOKEN_SUPPLY_KEY>]                                                | The token burn fails with an TOKEN_IS_PAUSED response code from the network.               | N                 |
 
 #### JSON Request Example
 
@@ -74,7 +75,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "id": 64362,
   "method": "burnToken",
   "params": {
-    "tokenId": "0.0.15432"
+    "tokenId": "0.0.15432",
+    "amount": "100"
   }
 }
 ```
@@ -86,7 +88,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "999900"
   }
 }
 ```
@@ -137,7 +140,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "9000000"
   }
 }
 ```
@@ -186,7 +190,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "0"
   }
 }
 ```
