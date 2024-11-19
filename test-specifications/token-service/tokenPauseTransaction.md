@@ -41,6 +41,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 |----------------|--------|------------------------------------------------------------------------------------|
 | status         | string | The status of the submitted `TokenPauseTransaction` (from a `TransactionReceipt`). |
 
+### Additional Notes
+
+The tests contained in this specification will assume that a valid token has already been created. <CREATED_TOKEN_ID> will denote the ID of the token, <CREATED_TOKEN_PAUSE_KEY> will denote the pause key of the token as a DER-encoded hex string, and <CREATED_TOKEN_ADMIN_KEY> will denote the admin key of the token as a DER-encoded hex string.
+
 ## Property Tests
 
 ### **Token ID:**
