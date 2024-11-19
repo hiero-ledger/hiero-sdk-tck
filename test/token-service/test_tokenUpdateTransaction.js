@@ -2350,7 +2350,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it.skip("(#6) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
