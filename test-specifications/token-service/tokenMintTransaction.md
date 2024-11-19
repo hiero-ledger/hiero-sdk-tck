@@ -39,9 +39,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Output Parameters
 
-| Parameter Name | Type   | Description/Notes                                                                 |
-|----------------|--------|-----------------------------------------------------------------------------------|
-| status         | string | The status of the submitted `TokenMintTransaction` (from a `TransactionReceipt`). |
+| Parameter Name | Type         | Required/Optional | Description/Notes                                                                 |
+|----------------|--------------|-------------------|-----------------------------------------------------------------------------------|
+| status         | string       | required          | The status of the submitted `TokenMintTransaction` (from a `TransactionReceipt`). |
+| newTotalSupply | string       | required          | The new total amount of tokens minted.                                            |
+| serialNumbers  | list<string> | optional          | When minting NFTs, the serial numbers of the minted NFTs.                         |
 
 ### Additional Notes
 
