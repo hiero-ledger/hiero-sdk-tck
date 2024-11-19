@@ -41,21 +41,26 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 |----------------|--------|--------------------------------------------------------------------------------------|
 | status         | string | The status of the submitted `TokenUnpauseTransaction` (from a `TransactionReceipt`). |
 
+### Additional Notes
+
+The tests contained in this specification will assume that a valid token has already been created and paused, unless specified otherwise. <CREATED_TOKEN_ID> will denote the ID of the token, <CREATED_TOKEN_PAUSE_KEY> will denote the pause key of the token as a DER-encoded hex string, and <CREATED_TOKEN_ADMIN_KEY> will denote the admin key of the token as a DER-encoded hex string.
+
 ## Property Tests
 
 ### **Token ID:**
 
 - The ID of the token to unpause.
 
-| Test no | Name                                                        | Input                                                                                   | Expected response                                                                 | Implemented (Y/N) |
-|---------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------|
-| 1       | Unpauses a token                                            | tokenId=<CREATED_TOKEN_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_PAUSE_KEY>] | The token unpause succeeds and the token is unpaused.                             | N                 |
-| 2       | Unpauses a token with no token ID                           |                                                                                         | The token unpause fails with an INVALID_TOKEN_ID response code from the network.  | N                 |
-| 3       | Unpauses a token without signing with the token's pause key | tokenId=<CREATED_TOKEN_ID>                                                              | The token unpause fails with an INVALID_SIGNATURE response code from the network. | N                 |
-| 4       | Unpauses a token that doesn't exist                         | tokenId="123.456.789"                                                                   | The token unpause fails with an INVALID_TOKEN_ID response code from the network.  | N                 |
-| 5       | Unpauses a token that is deleted                            | tokenId=<DELETED_TOKEN_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_PAUSE_KEY>] | The token unpause fails with an TOKEN_WAS_DELETED response code from the network. | N                 |
-| 6       | Unpauses a token that is empty                              | tokenId=""                                                                              | The token unpause fails with an SDK internal error.                               | N                 |
-| 7       | Unpauses a token that isn't paused                          | tokenId=<CREATED_TOKEN_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_PAUSE_KEY>] | The token unpause succeeds and the token is unpaused.                             | N                 |
+| Test no | Name                                                                  | Input                                                                                   | Expected response                                                                 | Implemented (Y/N) |
+|---------|-----------------------------------------------------------------------|-----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------|
+| 1       | Unpauses a token                                                      | tokenId=<CREATED_TOKEN_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_PAUSE_KEY>] | The token unpause succeeds and the token is unpaused.                             | N                 |
+| 2       | Unpauses a token with no token ID                                     |                                                                                         | The token unpause fails with an INVALID_TOKEN_ID response code from the network.  | N                 |
+| 3       | Unpauses a token without signing with the token's pause key           | tokenId=<CREATED_TOKEN_ID>                                                              | The token unpause fails with an INVALID_SIGNATURE response code from the network. | N                 |
+| 4       | Unpauses a token and sign with the admin key instead of the pause key | tokenId=<CREATED_TOKEN_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_ADMIN_KEY>] | The token unpause fails with an INVALID_SIGNATURE response code from the network. | N                 |
+| 5       | Unpauses a token that doesn't exist                                   | tokenId="123.456.789"                                                                   | The token unpause fails with an INVALID_TOKEN_ID response code from the network.  | N                 |
+| 6       | Unpauses a token that is deleted                                      | tokenId=<DELETED_TOKEN_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_PAUSE_KEY>] | The token unpause fails with an TOKEN_WAS_DELETED response code from the network. | N                 |
+| 7       | Unpauses a token that is empty                                        | tokenId=""                                                                              | The token unpause fails with an SDK internal error.                               | N                 |
+| 8       | Unpauses a token that isn't paused                                    | tokenId=<CREATED_TOKEN_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_PAUSE_KEY>] | The token unpause succeeds and the token is unpaused.                             | N                 |
 
 #### JSON Request Example
 
