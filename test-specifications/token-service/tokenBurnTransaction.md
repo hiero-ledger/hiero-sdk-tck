@@ -42,6 +42,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | Parameter Name | Type   | Description/Notes                                                                 |
 |----------------|--------|-----------------------------------------------------------------------------------|
 | status         | string | The status of the submitted `TokenBurnTransaction` (from a `TransactionReceipt`). |
+| newTotalSupply | string | The new total amount of tokens.                                                   |
 
 ### Additional Notes
 
