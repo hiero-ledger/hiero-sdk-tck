@@ -30,11 +30,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name | Type   | Required/Optional | Description/Notes                             |
-|----------------|--------|-------------------|-----------------------------------------------|
-| tokenId        | string | optional          | The ID of the token of which to revoke KYC.   |
-| accountId      | string | optional          | The ID of the account to which to revoke KYC. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                             |
+| Parameter Name          | Type                                             | Required/Optional | Description/Notes                             |
+|-------------------------|--------------------------------------------------|-------------------|-----------------------------------------------|
+| tokenId                 | string                                           | optional          | The ID of the token of which to revoke KYC.   |
+| accountId               | string                                           | optional          | The ID of the account to which to revoke KYC. |
+| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                               |
 
 ### Output Parameters
 
@@ -44,7 +44,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Additional Notes
 
-The tests contained in this specification will assume that a valid account has been granted KYC for a valid token. <CREATED_ACCOUNT_ID> will denote the ID of the account, and <CREATED_ACCOUNT_PRIVATE_KEY> will denote the private key of the created account as a DER-encoded hex string. <CREATED_TOKEN_ID> will denote the ID of the created token, and <CREATED_TOKEN_KYC_KEY> will denote the KYC key of the token as a DER-encoded hex string.
+The tests contained in this specification will assume that a valid account has been granted KYC for a valid token. <CREATED_ACCOUNT_ID> will denote the ID of the account, and <CREATED_ACCOUNT_PRIVATE_KEY> will denote the private key of the created account as a DER-encoded hex string. <CREATED_TOKEN_ID> will denote the ID of the created token, <CREATED_TOKEN_KYC_KEY> will denote the KYC key of the token as a DER-encoded hex string, and <CREATED_TOKEN_ADMIN_KEY> will denote the admin key of the token as a DER-encoded hex string.
 
 ## Property Tests
 
@@ -60,12 +60,13 @@ The tests contained in this specification will assume that a valid account has b
 | 4       | Revokes KYC of a token with no token ID to an account                         | accountId=<CREATED_ACCOUNT_ID>                                                                                              | The token KYC revoke fails with an INVALID_TOKEN_ID response code from the network.                | N                 |
 | 5       | Revokes KYC of a deleted token to an account                                  | tokenId=<DELETED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an TOKEN_WAS_DELETED response code from the network.               | N                 |
 | 6       | Revokes KYC of a token to an account without signing with the token's KYC key | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>                                                                  | The token KYC revoke fails with an INVALID_SIGNATURE response code from the network.               | N                 |
-| 7       | Revokes KYC of a token to an account but signs with an incorrect private key  | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>] | The token KYC revoke fails with an INVALID_SIGNATURE response code from the network.               | N                 |
-| 8       | Revokes KYC of a token with no KYC key to an account                          | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>                                                                  | The token KYC revoke fails with an TOKEN_HAS_NO_KYC_KEY response code from the network.            | N                 |
-| 9       | Revokes KYC of a token to an account that doesn't have KYC                    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token revokes KYC to the account.                                                              | N                 |
-| 10      | Revokes KYC of a token to an account that is not associated with the token    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an TOKEN_NOT_ASSOCIATED_TO_ACCOUNT response code from the network. | N                 |
-| 11      | Revokes KYC of a paused token to an account                                   | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an TOKEN_IS_PAUSED response code from the network.                 | N                 |
-| 12      | Revokes KYC of a token to a frozen account                                    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an ACCOUNT_FROZEN_FOR_TOKEN response code from the network.        | N                 |
+| 7       | Revokes KYC of a token to an account but signs with the the token's admin key | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_ADMIN_KEY>]     | The token KYC revoke fails with an INVALID_SIGNATURE response code from the network.               | N                 |
+| 8       | Revokes KYC of a token to an account but signs with an incorrect private key  | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>] | The token KYC revoke fails with an INVALID_SIGNATURE response code from the network.               | N                 |
+| 9       | Revokes KYC of a token with no KYC key to an account                          | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>                                                                  | The token KYC revoke fails with an TOKEN_HAS_NO_KYC_KEY response code from the network.            | N                 |
+| 10      | Revokes KYC of a token to an account that doesn't have KYC                    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token revokes KYC to the account.                                                              | N                 |
+| 11      | Revokes KYC of a token to an account that is not associated with the token    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an TOKEN_NOT_ASSOCIATED_TO_ACCOUNT response code from the network. | N                 |
+| 12      | Revokes KYC of a paused token to an account                                   | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an TOKEN_IS_PAUSED response code from the network.                 | N                 |
+| 13      | Revokes KYC of a token to a frozen account                                    | tokenId=<CREATED_TOKEN_ID>, accountId=<CREATED_ACCOUNT_ID>, commonTransactionParams.signers=[<CREATED_TOKEN_KYC_KEY>]       | The token KYC revoke fails with an ACCOUNT_FROZEN_FOR_TOKEN response code from the network.        | N                 |
 
 #### JSON Request Example
 
