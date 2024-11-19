@@ -47,7 +47,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Additional Notes
 
-The tests contained in this specification will assume that a valid fungible token and a valid non-fungible token have already successfully created. <CREATED_FUNGIBLE_TOKEN_ID> will denote the ID of the created fungible token, and <CREATED_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created fungible token as a DER-encoded hex string. <CREATED_NON_FUNGIBLE_TOKEN_ID> will denote the ID of the created non-fungible token, and <CREATED_NON_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created non-fungible token as a DER-encoded hex string.
+The tests contained in this specification will assume that a valid fungible token and a valid non-fungible token have already successfully created. <CREATED_FUNGIBLE_TOKEN_ID> will denote the ID of the created fungible token, <CREATED_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created fungible token as a DER-encoded hex string, and <CREATED_FUNGIBLE_TOKEN_ADMIN_KEY> will denote the admin key of the created fungible token as a DER-encoded hex string. <CREATED_NON_FUNGIBLE_TOKEN_ID> will denote the ID of the created non-fungible token, <CREATED_NON_FUNGIBLE_TOKEN_SUPPLY_KEY> will denote the supply key of the created non-fungible token as a DER-encoded hex string, and <CREATED_NON_FUNGIBLE_TOKEN_ADMIN_KEY> will denote the admin key of the created non-fungible token as a DER-encoded hex string.
 
 ## Property Tests
 
@@ -63,9 +63,10 @@ The tests contained in this specification will assume that a valid fungible toke
 | 4       | Mints a token with no token ID                            |                                                                                                                                       | The token mint fails with an INVALID_TOKEN_ID response code from the network.                | N                 |
 | 5       | Mints a deleted token                                     | tokenId=<DELETED_TOKEN_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_SUPPLY_KEY>]                                              | The token mint fails with an TOKEN_WAS_DELETED response code from the network.               | N                 |
 | 6       | Mints a token without signing with the token's supply key | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10"                                                                                      | The token mint fails with an INVALID_SIGNATURE response code from the network.               | N                 |
-| 7       | Mints a token but signs with an incorrect supply key      | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10" commonTransactionParams.signers=[<INCORRECT_VALID__KEY>]                             | The token mint fails with an INVALID_SIGNATURE response code from the network.               | N                 |
-| 8       | Mints a token with no supply key                          | tokenId=<CREATED_TOKEN_ID>, amount="10"                                                                                               | The token mint fails with an TOKEN_HAS_NO_SUPPLY_KEY response code from the network.         | N                 |
-| 9       | Mints a paused token                                      | tokenId=<PAUSED_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<PAUSED_TOKEN_SUPPLY_KEY>]                                   | The token mint fails with an TOKEN_IS_PAUSED response code from the network.                 | N                 |
+| 7       | Mints a token but signs with the token's admin key        | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<CREATED_FUNGIBLE_TOKEN_ADMIN_KEY>]                | The token mint fails with an INVALID_SIGNATURE response code from the network.               | N                 |
+| 8       | Mints a token but signs with an incorrect supply key      | tokenId=<CREATED_FUNGIBLE_TOKEN_ID>, amount="10" commonTransactionParams.signers=[<INCORRECT_VALID__KEY>]                             | The token mint fails with an INVALID_SIGNATURE response code from the network.               | N                 |
+| 9       | Mints a token with no supply key                          | tokenId=<CREATED_TOKEN_ID>, amount="10"                                                                                               | The token mint fails with an TOKEN_HAS_NO_SUPPLY_KEY response code from the network.         | N                 |
+| 10      | Mints a paused token                                      | tokenId=<PAUSED_TOKEN_ID>, amount="10", commonTransactionParams.signers=[<PAUSED_TOKEN_SUPPLY_KEY>]                                   | The token mint fails with an TOKEN_IS_PAUSED response code from the network.                 | N                 |
 
 #### JSON Request Example
 
@@ -75,7 +76,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "id": 64362,
   "method": "mintToken",
   "params": {
-    "tokenId": "0.0.15432"
+    "tokenId": "0.0.15432",
+    "amount": "1000"
   }
 }
 ```
@@ -87,7 +89,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "1001000"
   }
 }
 ```
@@ -138,7 +141,8 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "2000000"
   }
 }
 ```
@@ -186,7 +190,11 @@ The tests contained in this specification will assume that a valid fungible toke
   "jsonrpc": "2.0",
   "id": 64362,
   "result": {
-    "status": "SUCCESS"
+    "status": "SUCCESS",
+    "newTotalSupply": "1",
+    "serialNumbers": [
+      "1"
+    ]
   }
 }
 ```
