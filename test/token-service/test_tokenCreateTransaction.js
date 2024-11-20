@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { assert, expect } from "chai";
-import { Timestamp } from "@hashgraph/sdk";
 
 import { JSONRPCRequest } from "../../client.js";
 import mirrorNodeClient from "../../mirrorNodeClient.js";
@@ -15,7 +14,8 @@ import {
 import {
   verifyTokenKey,
   verifyTokenKeyList,
-} from "../../utils/helpers/verify-token-key.js";
+  verifyTokenExpirationTimeUpdate,
+} from "../../utils/helpers/verify-token-tx.js";
 import {
   verifyTokenCreationWithFixedFee,
   verifyTokenCreationWithFractionalFee,
@@ -478,7 +478,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
+    it("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1707,32 +1707,6 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Expiration Time", function () {
-    async function verifyTokenCreationWithExpirationTime(
-      tokenId,
-      expirationTime,
-    ) {
-      const parsedExpirationTime = Timestamp.fromDate(
-        new Date(Number(expirationTime) * 1000),
-      );
-
-      expect(parsedExpirationTime).to.deep.equal(
-        await (
-          await consensusInfoClient.getTokenInfo(tokenId)
-        ).expirationTime,
-      );
-
-      const mirrorNodeExpirationDateNanoseconds = await (
-        await mirrorNodeClient.getTokenData(tokenId)
-      ).expiry_timestamp;
-
-      // Convert nanoseconds got back from to timestamp
-      const mirrorNodeTimestamp = Timestamp.fromDate(
-        new Date(mirrorNodeExpirationDateNanoseconds / 1000000),
-      );
-
-      expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
-    }
-
     it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
@@ -1797,7 +1771,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1850,31 +1824,32 @@ describe("TokenCreateTransaction", function () {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
+        expirationTime,
       });
 
-      await verifyTokenCreationWithExpirationTime(
-        response.tokenId,
-        expirationTime,
-      );
+      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
-    //it("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
-    //  try {
-    //    const response = await JSONRPCRequest(this,"createToken", {
-    //      name: "testname",
-    //      symbol: "testsymbol",
-    //      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-    //      expirationTime: (Date.now() / 1000) + 2591999
-    //    });
-    //    if (response.status === "NOT_IMPLEMENTED") this.skip();
-    //  } catch (err) {
-    //    assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-    //    return;
-    //  }
-    //
-    //  assert.fail("Should throw an error");
-    //});
+    it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 2591999
+      ).toString();
+
+      try {
+        const response = await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          expirationTime,
+        });
+        if (response.status === "NOT_IMPLEMENTED") this.skip();
+      } catch (err) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
 
     it("(#10) Creates a token with an expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
@@ -1885,13 +1860,10 @@ describe("TokenCreateTransaction", function () {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
+        expirationTime,
       });
 
-      await verifyTokenCreationWithExpirationTime(
-        response.tokenId,
-        expirationTime,
-      );
+      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
     it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
@@ -2488,7 +2460,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
-    it.skip("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
+    it("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2505,7 +2477,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
+    it("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2818,7 +2790,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3000,7 +2972,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3190,7 +3162,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3375,7 +3347,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3576,7 +3548,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",

@@ -1,10 +1,11 @@
 import { expect } from "chai";
+import { Timestamp } from "@hashgraph/sdk";
 
-import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
+import { getRawKeyFromHex } from "./asn1-decoder.js";
 import {
   getPublicKeyFromMirrorNode,
   getEncodedKeyHexFromKeyListConsensus,
-} from "../../utils/helpers/key.js";
+} from "./key.js";
 
 import mirrorNodeClient from "../../mirrorNodeClient.js";
 import consensusInfoClient from "../../consensusInfoClient.js";
@@ -60,4 +61,46 @@ export async function verifyTokenKeyList(tokenId, key, keyType) {
 
 function transformConsensusToMirrorNodeProp(key) {
   return key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+}
+
+export async function verifyTokenUpdateWithNullKey(tokenId, keyType) {
+  // Fetch the key from the consensus node and check if it is null
+  const consensusNodeKey = await (
+    await consensusInfoClient.getTokenInfo(tokenId)
+  )[keyType];
+  expect(null).to.equal(consensusNodeKey);
+
+  // Convert the keyType to match the mirror node property format
+  const mirrorNodeKeyName = transformConsensusToMirrorNodeProp(keyType);
+
+  // Fetch the key from the mirror node and check if it is null
+  const mirrorNodeKey = await getPublicKeyFromMirrorNode(
+    "getTokenData",
+    tokenId,
+    mirrorNodeKeyName,
+  );
+  expect(null).to.equal(mirrorNodeKey);
+}
+
+export async function verifyTokenExpirationTimeUpdate(tokenId, expirationTime) {
+  const parsedExpirationTime = Timestamp.fromDate(
+    new Date(Number(expirationTime) * 1000),
+  );
+
+  expect(parsedExpirationTime).to.deep.equal(
+    await (
+      await consensusInfoClient.getTokenInfo(tokenId)
+    ).expirationTime,
+  );
+
+  const mirrorNodeExpirationDateNanoseconds = await (
+    await mirrorNodeClient.getTokenData(tokenId)
+  ).expiry_timestamp;
+
+  // Convert nanoseconds got back from to timestamp
+  const mirrorNodeTimestamp = Timestamp.fromDate(
+    new Date(mirrorNodeExpirationDateNanoseconds / 1000000),
+  );
+
+  expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
 }
