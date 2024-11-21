@@ -30,15 +30,15 @@ describe("TokenAssociateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
-  // All tests require a token to be created. This same token can be used for each test so only create it once.
-  let tokenId;
-  before(async function () {
+  // All tests require an account and a token to be created.
+  let tokenId, accountId, accountPrivateKey;
+  beforeEach(async function () {
     await setOperator(
       process.env.OPERATOR_ACCOUNT_ID,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
     );
 
-    const response = await JSONRPCRequest(this, "createToken", {
+    let response = await JSONRPCRequest(this, "createToken", {
       name: "testname",
       symbol: "testsymbol",
       treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -46,18 +46,7 @@ describe("TokenAssociateTransaction", function () {
     });
     tokenId = response.tokenId;
 
-    await JSONRPCRequest(this, "reset");
-  });
-
-  // All tests require an account to be created. A new account is required for each test.
-  let accountId, accountPrivateKey;
-  beforeEach(async function () {
-    await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
-    );
-
-    let response = await JSONRPCRequest(this, "generateKey", {
+    response = await JSONRPCRequest(this, "generateKey", {
       type: "ed25519PrivateKey",
     });
     accountPrivateKey = response.key;
@@ -84,6 +73,12 @@ describe("TokenAssociateTransaction", function () {
     }
 
     expect(foundToken).to.be.true;
+  }
+
+  async function verifyNoTokenAssociations(accountId) {
+    // No way to get token associations via consensus node, so just query mirror node.
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(accountId);
+    expect(mirrorNodeInfo.tokens.length).to.equal(0);
   }
 
   describe("Account ID", function () {
@@ -192,7 +187,7 @@ describe("TokenAssociateTransaction", function () {
           }
         });
       } catch (err) {
-        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
 
@@ -217,7 +212,7 @@ describe("TokenAssociateTransaction", function () {
   })
 
   describe("Token IDs", function () {
-    if ("(#1) Associates no tokens with an account", async function () {
+    it ("(#1) Associates no tokens with an account", async function () {
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         commonTransactionParams: {
@@ -227,7 +222,7 @@ describe("TokenAssociateTransaction", function () {
         }
       });
 
-      await retryOnError(async () => verifyTokenAssociation(accountId, tokenId));
+      await retryOnError(async () => verifyNoTokenAssociations(accountId));
     });
 
     it ("(#2) Associates a token that doesn't exist with an account", async function () {
@@ -262,7 +257,12 @@ describe("TokenAssociateTransaction", function () {
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey,
-        tokenType: "ft"
+        tokenType: "ft",
+        commonTransactionParams: {
+          signers: [
+            adminKey
+          ]
+        }
       });
       const deletedTokenId = response.tokenId;
 
@@ -406,7 +406,7 @@ describe("TokenAssociateTransaction", function () {
     });
 
     it ("(#8) Associates two valid tokens and a deleted token with an account", async function () {
-      response = await JSONRPCRequest(this, "createToken", {
+      let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -414,7 +414,7 @@ describe("TokenAssociateTransaction", function () {
       });
       const secondTokenId = response.tokenId;
 
-      let response = await JSONRPCRequest(this, "generateKey", {
+      response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey"
       });
       const adminKey = response.key;
@@ -424,7 +424,12 @@ describe("TokenAssociateTransaction", function () {
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey,
-        tokenType: "ft"
+        tokenType: "ft",
+        commonTransactionParams: {
+          signers: [
+            adminKey
+          ]
+        }
       });
       const deletedTokenId = response.tokenId;
 
