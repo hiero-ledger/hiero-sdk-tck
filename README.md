@@ -12,12 +12,12 @@ First you need to clone the repository
 git clone git@github.com:hiero-ledger/hiero-sdk-tck.git
 ```
 
-The TCK provides ready-to-use configurations to run tests against [testnet](https://docs.hedera.com/hedera/networks) or [hedera-local-node](https://github.com/hashgraph/hedera-local-node).
+The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hedera-local-node](https://github.com/hashgraph/hedera-local-node).
 In near future hedera-local-node will be transfered to Hiero (see our [transition document](https://github.com/hiero-ledger/hiero/blob/main/transition.md) for more details).
 
-### Configure usage of Hiero Testnet
+### Configure usage of Hedera Testnet
 
-- Get a testnet account ID and private key [here](https://portal.hedera.com/register)
+- Get a Hedera testnet account ID and private key [here](https://portal.hedera.com/register)
 - rename `.env.testnet` to `.env`
 - Add ECDSA account ID and private key to `.env`
 
