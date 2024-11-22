@@ -54,7 +54,7 @@ describe("TokenUnpauseTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  async function verifyTokenNotPaused(tokenId) {
+  async function verifyTokenUnpaused(tokenId) {
     const mirrorNodeData = await mirrorNodeClient.getTokenData(tokenId);
     const consensusNodeData = await consensusInfoClient.getTokenInfo(tokenId);
 
