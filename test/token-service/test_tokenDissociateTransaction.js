@@ -19,12 +19,12 @@ describe("TokenDissociateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
     );
 
-    response = await JSONRPCRequest(this, "generateKey", {
+    let response = await JSONRPCRequest(this, "generateKey", {
       type: "ed25519PrivateKey",
     });
     tokenKey = response.key;
 
-    let response = await JSONRPCRequest(this, "createToken", {
+    response = await JSONRPCRequest(this, "createToken", {
       name: "testname",
       symbol: "testsymbol",
       treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -209,7 +209,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err) {
-        assert.equal(err.data.status, "INVALID_TOKEN_ID");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
@@ -250,7 +250,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err) {
-        assert.equal(err.data.status, "TOKEN_WAS_DELETED");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
@@ -308,6 +308,14 @@ describe("TokenDissociateTransaction", function () {
       });
       const thirdTokenId = response.tokenId;
 
+      await JSONRPCRequest(this, "associateToken", {
+        accountId,
+        tokenIds: [secondTokenId, thirdTokenId],
+        commonTransactionParams: {
+          signers: [accountPrivateKey]
+        }
+      })
+
       await JSONRPCRequest(this, "dissociateToken", {
         accountId,
         tokenIds: [tokenId, secondTokenId, thirdTokenId],
@@ -338,7 +346,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err) {
-        assert.equal(err.data.status, "INVALID_TOKEN_ID");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
@@ -387,7 +395,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err) {
-        assert.equal(err.data.status, "TOKEN_WAS_DELETED");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
