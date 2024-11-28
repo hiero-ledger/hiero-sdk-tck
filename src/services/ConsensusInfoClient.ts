@@ -7,6 +7,7 @@ import {
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
+  sdkClient;
   constructor() {
     if (
       process.env.NODE_IP &&
@@ -24,29 +25,29 @@ class ConsensusInfoClient {
     }
 
     this.sdkClient.setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   }
 
-  async getBalance(accountId) {
+  async getBalance(accountId: string) {
     return this.executeAccountMethod(accountId, new AccountBalanceQuery());
   }
 
-  async getAccountInfo(accountId) {
+  async getAccountInfo(accountId: string) {
     return this.executeAccountMethod(accountId, new AccountInfoQuery());
   }
 
-  async getTokenInfo(tokenId) {
+  async getTokenInfo(tokenId: string) {
     return this.executeTokenMethod(tokenId, new TokenInfoQuery());
   }
 
-  async executeAccountMethod(accountId, method) {
+  async executeAccountMethod(accountId: string, method: any) {
     method.setAccountId(accountId);
     return method.execute(this.sdkClient);
   }
 
-  async executeTokenMethod(tokenId, method) {
+  async executeTokenMethod(tokenId: string, method: any) {
     method.setTokenId(tokenId);
     return method.execute(this.sdkClient);
   }

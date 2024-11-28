@@ -1,8 +1,9 @@
 import { proto } from "@hashgraph/proto";
+import { PublicKey } from "@hashgraph/sdk";
 
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
-import { keyTypeConvertFunctions } from "./constants/key-type.js";
+import mirrorNodeClient from "../../services/MirrorNodeClient";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
+import { keyTypeConvertFunctions } from "./constants/key-type";
 
 /**
  * Retrieves the encoded hexadecimal representation of a specified dynamic key
@@ -16,12 +17,16 @@ import { keyTypeConvertFunctions } from "./constants/key-type.js";
  * @returns {Promise<string>} - A promise that resolves to the hexadecimal representation of the encoded key.
  */
 export const getEncodedKeyHexFromKeyListConsensus = async (
-  consensusInfoClientMethod,
-  searchedId,
-  searchedKey,
-) => {
+  consensusInfoClientMethod: keyof typeof consensusInfoClient,
+  searchedId: string,
+  searchedKey: string,
+): Promise<string> => {
   // Retrieve the desired data from consensus
-  const data = await consensusInfoClient[consensusInfoClientMethod](searchedId);
+  const data = await (
+    consensusInfoClient[consensusInfoClientMethod] as (
+      id: string,
+    ) => Promise<any>
+  )(searchedId);
 
   const protoKey = data[searchedKey]._toProtobufKey();
   let encodedKeyList;
@@ -47,10 +52,10 @@ export const getEncodedKeyHexFromKeyListConsensus = async (
  * @returns {Promise<PublicKey>} - A promise that resolves to the public key object retrieved from the Mirror Node.
  */
 export const getPublicKeyFromMirrorNode = async (
-  mirrorClientMethod,
-  searchedId,
-  searchedKey,
-) => {
+  mirrorClientMethod: keyof typeof mirrorNodeClient,
+  searchedId: string,
+  searchedKey: string,
+): Promise<PublicKey | null> => {
   // Retrieve the desired data from Mirror node
   const data = await mirrorNodeClient[mirrorClientMethod](searchedId);
 
@@ -62,9 +67,9 @@ export const getPublicKeyFromMirrorNode = async (
   }
 
   // Use the appropriate key type function to convert the key
-  const publicKeyMirrorNode = keyTypeConvertFunctions[keyMirrorNode._type](
-    keyMirrorNode.key,
-  );
+  const publicKeyMirrorNode = keyTypeConvertFunctions[
+    keyMirrorNode._type as keyof typeof keyTypeConvertFunctions
+  ](keyMirrorNode.key);
 
   return publicKeyMirrorNode;
 };

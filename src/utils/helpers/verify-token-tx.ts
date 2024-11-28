@@ -1,16 +1,20 @@
 import { expect } from "chai";
 import { Timestamp } from "@hashgraph/sdk";
 
-import { getRawKeyFromHex } from "./asn1-decoder.js";
+import { getRawKeyFromHex } from "./asn1-decoder";
 import {
   getPublicKeyFromMirrorNode,
   getEncodedKeyHexFromKeyListConsensus,
-} from "./key.js";
+} from "./key";
 
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
+import mirrorNodeClient from "../../services/MirrorNodeClient";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
 
-export async function verifyTokenKey(tokenId, key, keyType) {
+export async function verifyTokenKey(
+  tokenId: string,
+  key: string,
+  keyType: string,
+) {
   const rawKey = getRawKeyFromHex(key);
 
   // Fetch the token info from the consensus node
@@ -29,10 +33,14 @@ export async function verifyTokenKey(tokenId, key, keyType) {
   );
 
   // Verify that the key from the mirror node matches the raw key
-  expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+  expect(rawKey).to.equal(publicKeyMirrorNode?.toStringRaw());
 }
 
-export async function verifyTokenKeyList(tokenId, key, keyType) {
+export async function verifyTokenKeyList(
+  tokenId: string,
+  key: string,
+  keyType: string,
+) {
   // Fetch the encoded key from the consensus node
   const keyHex = await getEncodedKeyHexFromKeyListConsensus(
     "getTokenInfo",
@@ -59,11 +67,14 @@ export async function verifyTokenKeyList(tokenId, key, keyType) {
   );
 }
 
-function transformConsensusToMirrorNodeProp(key) {
+function transformConsensusToMirrorNodeProp(key: string) {
   return key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 }
 
-export async function verifyTokenUpdateWithNullKey(tokenId, keyType) {
+export async function verifyTokenUpdateWithNullKey(
+  tokenId: string,
+  keyType: string,
+) {
   // Fetch the key from the consensus node and check if it is null
   const consensusNodeKey = await (
     await consensusInfoClient.getTokenInfo(tokenId)
@@ -82,7 +93,10 @@ export async function verifyTokenUpdateWithNullKey(tokenId, keyType) {
   expect(null).to.equal(mirrorNodeKey);
 }
 
-export async function verifyTokenExpirationTimeUpdate(tokenId, expirationTime) {
+export async function verifyTokenExpirationTimeUpdate(
+  tokenId: string,
+  expirationTime: string,
+) {
   const parsedExpirationTime = Timestamp.fromDate(
     new Date(Number(expirationTime) * 1000),
   );

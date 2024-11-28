@@ -1,39 +1,40 @@
 import crypto from "crypto";
 import { assert, expect } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
-import { setOperator } from "../../setup_Tests.js";
+import { JSONRPCRequest } from "../../services/Client";
+import mirrorNodeClient from "../../services/MirrorNodeClient";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
+import { setOperator } from "../../utils/helpers/setup_Tests";
 
 import {
   twoThresholdKeyParams,
   twoLevelsNestedKeyListParams,
   fourKeysKeyListParams,
-} from "../../utils/helpers/constants/key-list.js";
+} from "../../utils/helpers/constants/key-list";
 import {
   verifyTokenKey,
   verifyTokenKeyList,
   verifyTokenExpirationTimeUpdate,
-} from "../../utils/helpers/verify-token-tx.js";
+} from "../../utils/helpers/verify-token-tx";
 import {
   verifyTokenCreationWithFixedFee,
   verifyTokenCreationWithFractionalFee,
   verifyTokenCreationWithRoyaltyFee,
-} from "../../utils/helpers/custom-fees.js";
+} from "../../utils/helpers/custom-fees";
 
 /**
  * Tests for TokenCreateTransaction
  */
-describe("TokenCreateTransaction", function () {
+describe.only("TokenCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
   beforeEach(async function () {
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
   afterEach(async function () {
@@ -41,7 +42,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Name", function () {
-    async function verifyTokenCreationWithName(tokenId, name) {
+    async function verifyTokenCreationWithName(tokenId: string, name: string) {
       expect(name).to.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -83,7 +84,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
       }
@@ -110,7 +111,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_NAME_TOO_LONG");
         return;
       }
@@ -124,7 +125,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
       }
@@ -134,7 +135,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Symbol", function () {
-    async function verifyTokenCreationWithSymbol(tokenId, symbol) {
+    async function verifyTokenCreationWithSymbol(
+      tokenId: string,
+      symbol: string,
+    ) {
       expect(symbol).to.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -165,7 +169,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_SYMBOL");
         return;
       }
@@ -193,7 +197,7 @@ describe("TokenCreateTransaction", function () {
             "This is a long symbol that is not valid because it exceeds 100 characters and it should fail the test",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_SYMBOL_TOO_LONG");
         return;
       }
@@ -207,7 +211,7 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_SYMBOL");
         return;
       }
@@ -217,7 +221,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Decimals", function () {
-    async function verifyTokenCreationWithDecimals(tokenId, decimals) {
+    async function verifyTokenCreationWithDecimals(
+      tokenId: string,
+      decimals: number,
+    ) {
       expect(decimals).to.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -249,7 +256,7 @@ describe("TokenCreateTransaction", function () {
           decimals: -1,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -289,7 +296,7 @@ describe("TokenCreateTransaction", function () {
           decimals: 2147483648,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -305,7 +312,7 @@ describe("TokenCreateTransaction", function () {
           decimals: 4294967295,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -321,7 +328,7 @@ describe("TokenCreateTransaction", function () {
           decimals: 4294967294,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -337,7 +344,7 @@ describe("TokenCreateTransaction", function () {
           decimals: -2147483648,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -353,7 +360,7 @@ describe("TokenCreateTransaction", function () {
           decimals: -2147483647,
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -390,7 +397,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
       }
@@ -401,8 +408,8 @@ describe("TokenCreateTransaction", function () {
 
   describe("Initial Supply", function () {
     async function verifyTokenCreationWithInitialSupply(
-      tokenId,
-      initialSupply,
+      tokenId: string,
+      initialSupply: string,
     ) {
       const totalSupplyConsensus = await (
         await consensusInfoClient.getTokenInfo(tokenId)
@@ -439,7 +446,7 @@ describe("TokenCreateTransaction", function () {
           initialSupply: "-1",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
       }
@@ -486,7 +493,7 @@ describe("TokenCreateTransaction", function () {
           initialSupply: "-9223372036854775808",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
       }
@@ -502,7 +509,7 @@ describe("TokenCreateTransaction", function () {
           initialSupply: "-9223372036854775807",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
       }
@@ -576,7 +583,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_SUPPLY_KEY");
         return;
       }
@@ -593,7 +600,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           tokenType: "nft",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
       }
@@ -604,8 +611,8 @@ describe("TokenCreateTransaction", function () {
 
   describe("Treasury Account ID", function () {
     async function verifyTokenCreationWithTreasuryAccount(
-      tokenId,
-      treasuryAccountId,
+      tokenId: string,
+      treasuryAccountId: string,
     ) {
       expect(treasuryAccountId).to.equal(
         await (
@@ -663,7 +670,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId: accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -679,7 +686,7 @@ describe("TokenCreateTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId: "123.456.789",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
       }
@@ -718,7 +725,7 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TREASURY_ACCOUNT_FOR_TOKEN");
         return;
       }
@@ -933,7 +940,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           adminKey: key,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -949,7 +956,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           adminKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -1116,7 +1123,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           kycKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -1284,7 +1291,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           freezeKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -1451,7 +1458,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           wipeKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -1618,7 +1625,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           supplyKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -1629,8 +1636,8 @@ describe("TokenCreateTransaction", function () {
 
   describe("Freeze Default", function () {
     async function verifyTokenCreationWithFreezeDefault(
-      tokenId,
-      freezeDefault,
+      tokenId: string,
+      freezeDefault: boolean,
     ) {
       expect(freezeDefault).to.equal(
         await (
@@ -1675,7 +1682,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           freezeDefault: true,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_FREEZE_KEY");
         return;
       }
@@ -1715,7 +1722,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "0",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1731,7 +1738,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-1",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1747,7 +1754,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "9223372036854775807",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1763,7 +1770,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "9223372036854775806",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1779,7 +1786,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-9223372036854775808",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1795,7 +1802,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: "-9223372036854775807",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1843,7 +1850,7 @@ describe("TokenCreateTransaction", function () {
           expirationTime,
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1879,7 +1886,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           expirationTime: expirationTime,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -1947,7 +1954,7 @@ describe("TokenCreateTransaction", function () {
             treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
             autoRenewAccountId: accountId,
           });
-        } catch (err) {
+        } catch (err: any) {
           assert.equal(err.data.status, "INVALID_SIGNATURE");
           return;
         }
@@ -1964,7 +1971,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: "123.456.789",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_AUTORENEW_ACCOUNT");
         return;
       }
@@ -1980,7 +1987,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: "",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -2020,7 +2027,7 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_AUTORENEW_ACCOUNT");
         return;
       }
@@ -2032,8 +2039,8 @@ describe("TokenCreateTransaction", function () {
 
   describe("Auto Renew Period", function () {
     async function verifyTokenCreationWithAutoRenewPeriod(
-      tokenId,
-      autoRenewPeriod,
+      tokenId: string,
+      autoRenewPeriod: string,
     ) {
       expect(autoRenewPeriod).to.equal(
         await (
@@ -2057,7 +2064,7 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "0",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2074,7 +2081,7 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-1",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2090,7 +2097,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "9223372036854775807",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2106,7 +2113,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "9223372036854775806",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2122,7 +2129,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-9223372036854775808",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2138,7 +2145,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "-9223372036854775807",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2187,7 +2194,7 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "2591999",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2220,7 +2227,7 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "8000002",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -2230,7 +2237,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Memo", function () {
-    async function verifyTokenCreationWithMemo(tokenId, memo) {
+    async function verifyTokenCreationWithMemo(tokenId: string, memo: string) {
       expect(memo).to.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -2288,7 +2295,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           memo: "This is a long memo that is not valid because it exceeds 100 characters and it should fail the test!!",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MEMO_TOO_LONG");
         return;
       }
@@ -2298,7 +2305,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Token Type", function () {
-    async function verifyTokenCreationWithTokenType(tokenId, type) {
+    async function verifyTokenCreationWithTokenType(
+      tokenId: string,
+      type: string,
+    ) {
       expect(type).to.deep.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -2349,7 +2359,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Supply Type", function () {
-    async function verifyTokenCreationWithSupplyType(tokenId, type) {
+    async function verifyTokenCreationWithSupplyType(
+      tokenId: string,
+      type: string,
+    ) {
       expect(type).to.equal(
         await (
           await consensusInfoClient.getTokenInfo(tokenId)
@@ -2387,7 +2400,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Max Supply", function () {
-    async function verifyTokenCreationWithMaxSupply(tokenId, maxSupply) {
+    async function verifyTokenCreationWithMaxSupply(
+      tokenId: string,
+      maxSupply: string,
+    ) {
       const totalMaxSupplyConsensus = await (
         await consensusInfoClient.getTokenInfo(tokenId)
       ).maxSupply;
@@ -2409,7 +2425,7 @@ describe("TokenCreateTransaction", function () {
           supplyType: "finite",
           maxSupply: "0",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
       }
@@ -2426,7 +2442,7 @@ describe("TokenCreateTransaction", function () {
           supplyType: "finite",
           maxSupply: "-1",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
       }
@@ -2469,7 +2485,7 @@ describe("TokenCreateTransaction", function () {
           supplyType: "finite",
           maxSupply: "-9223372036854775808",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
       }
@@ -2486,7 +2502,7 @@ describe("TokenCreateTransaction", function () {
           supplyType: "finite",
           maxSupply: "-9223372036854775807",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
       }
@@ -2503,7 +2519,7 @@ describe("TokenCreateTransaction", function () {
           supplyType: "infinite",
           maxSupply: "1000000",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_MAX_SUPPLY");
         return;
       }
@@ -2678,7 +2694,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           feeScheduleKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -2704,7 +2720,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2728,7 +2744,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2736,8 +2752,8 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+    it.only("(#3) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775807";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -2755,6 +2771,11 @@ describe("TokenCreateTransaction", function () {
         ],
       });
 
+      console.log(response.tokenId);
+      console.log(feeCollectorAccountId);
+      console.log(feeCollectorsExempt);
+      console.log(amount);
+
       await verifyTokenCreationWithFixedFee(
         response.tokenId,
         feeCollectorAccountId,
@@ -2764,7 +2785,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775806";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -2806,7 +2827,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2830,7 +2851,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2858,7 +2879,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2886,7 +2907,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -2895,7 +2916,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#9) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "9223372036854775807";
       const denominator = "10";
@@ -2934,7 +2955,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#10) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "9223372036854775806";
       const denominator = "10";
@@ -2992,7 +3013,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3020,7 +3041,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3048,7 +3069,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "FRACTION_DIVIDES_BY_ZERO");
         return;
       }
@@ -3076,7 +3097,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3085,7 +3106,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#15) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775807";
@@ -3124,7 +3145,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#16) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775806";
@@ -3182,7 +3203,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3210,7 +3231,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3219,7 +3240,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#19) Creates a token with a fractional fee with a minimum amount of 0", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -3277,7 +3298,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3305,7 +3326,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT",
@@ -3336,7 +3357,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "FRACTIONAL_FEE_MAX_AMOUNT_LESS_THAN_MIN_AMOUNT",
@@ -3367,7 +3388,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3395,7 +3416,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3404,7 +3425,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#25) Creates a token with a fractional fee with a maximum amount of 0", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -3462,7 +3483,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3471,7 +3492,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#27) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -3510,7 +3531,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#28) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -3568,7 +3589,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3596,7 +3617,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3632,7 +3653,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3668,7 +3689,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3704,7 +3725,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ROYALTY_FRACTION_CANNOT_EXCEED_ONE");
         return;
       }
@@ -3740,7 +3761,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ROYALTY_FRACTION_CANNOT_EXCEED_ONE");
         return;
       }
@@ -3776,7 +3797,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3812,7 +3833,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3848,7 +3869,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "FRACTION_DIVIDES_BY_ZERO");
         return;
       }
@@ -3884,7 +3905,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -3899,7 +3920,7 @@ describe("TokenCreateTransaction", function () {
 
       const key = response.key;
 
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775807";
@@ -3932,8 +3953,6 @@ describe("TokenCreateTransaction", function () {
         numerator,
         denominator,
         feeCollectorAccountId,
-        feeCollectorsExempt,
-        fallbackFeeAmount,
       );
     });
 
@@ -3944,7 +3963,7 @@ describe("TokenCreateTransaction", function () {
 
       const key = response.key;
 
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775806";
@@ -3977,8 +3996,6 @@ describe("TokenCreateTransaction", function () {
         numerator,
         denominator,
         feeCollectorAccountId,
-        feeCollectorsExempt,
-        fallbackFeeAmount,
       );
     });
 
@@ -4010,7 +4027,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4046,7 +4063,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4082,7 +4099,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4118,7 +4135,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4133,7 +4150,7 @@ describe("TokenCreateTransaction", function () {
 
       const key = response.key;
 
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -4166,8 +4183,6 @@ describe("TokenCreateTransaction", function () {
         numerator,
         denominator,
         feeCollectorAccountId,
-        feeCollectorsExempt,
-        fallbackFeeAmount,
       );
     });
 
@@ -4178,7 +4193,7 @@ describe("TokenCreateTransaction", function () {
 
       const key = response.key;
 
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -4211,8 +4226,6 @@ describe("TokenCreateTransaction", function () {
         numerator,
         denominator,
         feeCollectorAccountId,
-        feeCollectorsExempt,
-        fallbackFeeAmount,
       );
     });
 
@@ -4244,7 +4257,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4280,7 +4293,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
         return;
       }
@@ -4304,7 +4317,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4332,7 +4345,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4368,7 +4381,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4392,7 +4405,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603);
         return;
       }
@@ -4420,7 +4433,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603);
         return;
       }
@@ -4456,7 +4469,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603);
         return;
       }
@@ -4503,7 +4516,7 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4554,7 +4567,7 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4607,7 +4620,7 @@ describe("TokenCreateTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
         return;
       }
@@ -4616,7 +4629,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#58) Creates a token with a fixed fee that is assessed with the created token", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const fixedFeeAmount = "10";
       const denominatingTokenId = "0.0.0";
@@ -4661,7 +4674,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID_IN_CUSTOM_FEES");
         return;
       }
@@ -4686,7 +4699,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603);
         return;
       }
@@ -4724,7 +4737,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID_IN_CUSTOM_FEES");
         return;
       }
@@ -4733,7 +4746,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#62) Creates a token with a fractional fee that is assessed to the receiver", async function () {
-      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
@@ -4793,7 +4806,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "CUSTOM_ROYALTY_FEE_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE",
@@ -4832,7 +4845,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "CUSTOM_FRACTIONAL_FEE_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON",
@@ -4929,7 +4942,7 @@ describe("TokenCreateTransaction", function () {
             },
           ],
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "CUSTOM_FEES_LIST_TOO_LONG");
         return;
       }
@@ -5086,7 +5099,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           pauseKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -5096,7 +5109,10 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Metadata", function () {
-    async function verifyTokenCreationWithMetadata(tokenId, expectedMetadata) {
+    async function verifyTokenCreationWithMetadata(
+      tokenId: string,
+      expectedMetadata: string,
+    ) {
       const metadataConsensus = await (
         await consensusInfoClient.getTokenInfo(tokenId)
       ).metadata;
@@ -5296,7 +5312,7 @@ describe("TokenCreateTransaction", function () {
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           metadataKey: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }

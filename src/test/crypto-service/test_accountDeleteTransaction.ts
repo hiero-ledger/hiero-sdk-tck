@@ -1,21 +1,22 @@
 import { assert } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
-import { setOperator } from "../../setup_Tests.js";
+import { JSONRPCRequest } from "../../services/Client";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
+import { setOperator } from "../../utils/helpers/setup_Tests";
 
 describe("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
   // An account is created for each test. These hold the information for that account.
-  let accountPrivateKey, accountId;
+  let accountPrivateKey: string, accountId: string;
 
   beforeEach(async function () {
     // Initialize the network and operator.
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
     // Generate a private key.
@@ -46,7 +47,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_ID_DOES_NOT_EXIST");
         return;
       }
@@ -64,7 +65,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_ID_DOES_NOT_EXIST");
         return;
       }
@@ -83,7 +84,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ENTITY_NOT_ALLOWED_TO_DELETE");
         return;
       }
@@ -102,7 +103,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
       }
@@ -130,7 +131,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
@@ -146,7 +147,7 @@ describe("AccountDeleteTransaction", function () {
           deleteAccountId: accountId,
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -170,7 +171,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [key.key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -195,7 +196,7 @@ describe("AccountDeleteTransaction", function () {
       // AccountInfoQuery throws if the account is deleted, so catch that and verify the status code maps correctly.
       try {
         await consensusInfoClient.getAccountInfo(accountId);
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.status._code, 72); // 72 maps to ACCOUNT_DELETED
         return;
       }
@@ -214,7 +215,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT",
@@ -236,7 +237,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TRANSFER_ACCOUNT_ID");
         return;
       }
@@ -276,7 +277,7 @@ describe("AccountDeleteTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }

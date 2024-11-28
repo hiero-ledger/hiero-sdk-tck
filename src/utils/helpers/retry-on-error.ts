@@ -10,14 +10,17 @@
  * @returns {Promise<void>} A Promise that resolves if the function succeeds within the maximum retries,
  *                          or rejects with the last error if all retries fail.
  */
-export const retryOnError = async (fn, maxRetries = 10, retryDelay = 200) => {
+export const retryOnError = async (
+  fn: () => Promise<void>,
+  maxRetries: number = 10,
+  retryDelay: number = 200,
+): Promise<void> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      await fn();
-      return;
+      return await fn();
     } catch (error) {
       if (attempt === maxRetries) {
-        throw error;
+        throw error; // Throw the last error if retries are exhausted
       }
 
       // Delay before retrying

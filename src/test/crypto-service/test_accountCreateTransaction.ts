@@ -1,15 +1,15 @@
 import crypto from "crypto";
 import { assert, expect } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
-import { setOperator } from "../../setup_Tests.js";
+import { JSONRPCRequest } from "../../services/Client";
+import mirrorNodeClient from "../../services/MirrorNodeClient";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
+import { setOperator } from "../../utils/helpers/setup_Tests";
 
 import {
-  twoLevelsNestedKeyListParams,
   fourKeysKeyListParams,
-} from "../../utils/helpers/constants/key-list.js";
+  twoLevelsNestedKeyListParams,
+} from "../../utils/helpers/constants/key-list";
 
 /**
  * Tests for AccountCreateTransaction
@@ -21,8 +21,9 @@ describe("AccountCreateTransaction", function () {
 
   beforeEach(async function () {
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
 
@@ -31,13 +32,14 @@ describe("AccountCreateTransaction", function () {
   });
 
   describe("Key", function () {
-    async function verifyOnlyAccountCreation(accountId) {
+    async function verifyOnlyAccountCreation(accountId: string) {
       // If the account was created successfully, the queried account's IDs should be equal.
       expect(accountId).to.equal(
         await (
           await consensusInfoClient.getAccountInfo(accountId)
         ).accountId.toString(),
       );
+
       expect(accountId).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
@@ -64,8 +66,8 @@ describe("AccountCreateTransaction", function () {
       // Generate an ECDSAsecp256k1 public key for the account.
       //prettier-ignore
       const ecdsaSecp256k1PublicKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      type: "ecdsaSecp256k1PublicKey",
+    });
 
       // Attempt to create an account.
       const response = await JSONRPCRequest(this, "createAccount", {
@@ -95,8 +97,8 @@ describe("AccountCreateTransaction", function () {
       // Generate an ECDSAsecp256k1 private key for the account.
       //prettier-ignore
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+          type: "ecdsaSecp256k1PrivateKey",
+        });
 
       // Attempt to create an account.
       const response = await JSONRPCRequest(this, "createAccount", {
@@ -145,7 +147,7 @@ describe("AccountCreateTransaction", function () {
       try {
         // Attempt to create an account without providing a key. The network should respond with a KEY_REQUIRED status.
         await JSONRPCRequest(this, "createAccount", {});
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "KEY_REQUIRED");
         return;
       }
@@ -160,7 +162,7 @@ describe("AccountCreateTransaction", function () {
         await JSONRPCRequest(this, "createAccount", {
           key: crypto.randomBytes(88).toString("hex"),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -172,8 +174,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Initial Balance", function () {
     async function verifyAccountCreationWithInitialBalance(
-      accountId,
-      initialBalance,
+      accountId: string,
+      initialBalance: number,
     ) {
       // If the account was created successfully, the queried account's balances should be equal.
       expect(initialBalance).to.equal(
@@ -244,7 +246,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           initialBalance: -1,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_INITIAL_BALANCE");
         return;
       }
@@ -256,7 +258,7 @@ describe("AccountCreateTransaction", function () {
     it("(#4) Creates an account with an initial balance higher than the operator account balance", async function () {
       // Get the operator account balance.
       const operatorBalanceData = await mirrorNodeClient.getAccountData(
-        process.env.OPERATOR_ACCOUNT_ID,
+        process.env.OPERATOR_ACCOUNT_ID as string,
       );
 
       const operatorAccountBalance = Number(
@@ -269,12 +271,12 @@ describe("AccountCreateTransaction", function () {
       });
 
       try {
-        // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
+        // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_ER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
           initialBalance: operatorAccountBalance + 1,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_PAYER_BALANCE");
         return;
       }
@@ -286,8 +288,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Receiver Signature Required", function () {
     async function verifyAccountCreationWithReceiverSignatureRequired(
-      accountId,
-      receiverSignatureRequired,
+      accountId: string,
+      receiverSignatureRequired: boolean,
     ) {
       // If the account was created successfully, the queried account's receiver signature required policies should be equal.
       expect(receiverSignatureRequired).to.equal(
@@ -363,7 +365,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           receiverSignatureRequired: true,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -375,8 +377,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Auto Renew Period", function () {
     async function verifyAccountCreationWithAutoRenewPeriod(
-      accountId,
-      autoRenewPeriodSeconds,
+      accountId: string,
+      autoRenewPeriodSeconds: number,
     ) {
       // If the account was created successfully, the queried account's auto renew periods should be equal.
       expect(autoRenewPeriodSeconds).to.equal(
@@ -425,7 +427,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           autoRenewPeriod: -1,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -466,7 +468,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           autoRenewPeriod: 2591999,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
@@ -507,7 +509,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           autoRenewPeriod: 8000002,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
@@ -518,7 +520,10 @@ describe("AccountCreateTransaction", function () {
   });
 
   describe("Memo", async function () {
-    async function verifyAccountCreationWithMemo(accountId, memo) {
+    async function verifyAccountCreationWithMemo(
+      accountId: string,
+      memo: string,
+    ) {
       // If the account was created successfully, the queried account's memos should be equal.
       expect(memo).to.equal(
         await (
@@ -596,7 +601,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           memo: "This is a long memo that is not valid because it exceeds 100 characters and it should fail the test!!",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MEMO_TOO_LONG");
         return;
       }
@@ -617,7 +622,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           memo: "This is an invalid memo!\0",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ZERO_BYTE_IN_STRING");
         return;
       }
@@ -629,8 +634,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Max Automatic Token Associations", async function () {
     async function verifyAccountCreationWithMaxAutoTokenAssociations(
-      accountId,
-      maxAutomaticTokenAssociations,
+      accountId: string,
+      maxAutomaticTokenAssociations: number,
     ) {
       // If the account was created successfully, the queried account's max automatic token associations should be equal.
       expect(maxAutomaticTokenAssociations).to.equal(
@@ -722,7 +727,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           maxAutoTokenAssociations: 5001,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_MAX_AUTO_ASSOCIATIONS");
         return;
       }
@@ -734,8 +739,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Staked ID", async function () {
     async function verifyAccountCreationWithStakedAccountId(
-      accountId,
-      stakedAccountId,
+      accountId: string,
+      stakedAccountId: string,
     ) {
       // If the account was created successfully, the queried account's staked account IDs should be equal.
       expect(stakedAccountId).to.equal(
@@ -751,8 +756,8 @@ describe("AccountCreateTransaction", function () {
     }
 
     async function verifyAccountCreationWithStakedNodeId(
-      accountId,
-      stakedNodeId,
+      accountId: string,
+      stakedNodeId: string,
     ) {
       // If the account was created successfully, the queried account's staked node IDs should be equal.
       expect(stakedNodeId.toString()).to.equal(
@@ -760,10 +765,10 @@ describe("AccountCreateTransaction", function () {
           await consensusInfoClient.getAccountInfo(accountId)
         ).stakingInfo.stakedNodeId.toString(),
       );
-      expect(stakedNodeId).to.equal(
+      expect(stakedNodeId.toString()).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
-        ).staked_node_id,
+        ).staked_node_id.toString(),
       );
     }
 
@@ -782,7 +787,7 @@ describe("AccountCreateTransaction", function () {
       // Verify the account was created with the staked account ID equal to the operator account ID.
       await verifyAccountCreationWithStakedAccountId(
         response.accountId,
-        process.env.OPERATOR_ACCOUNT_ID,
+        process.env.OPERATOR_ACCOUNT_ID as string,
       );
     });
 
@@ -793,7 +798,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with the staked node ID set to the node's node ID.
-      const stakedNodeId = 0;
+      const stakedNodeId = "0";
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedNodeId,
@@ -818,7 +823,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           stakedAccountId: "123.456.789",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -839,7 +844,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           stakedNodeId: 123456789,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -860,7 +865,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           stakedAccountId: "",
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -881,7 +886,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           stakedNodeId: -100,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -897,7 +902,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with a staked account ID and a staked node ID.
-      const stakedNodeId = 0;
+      const stakedNodeId = "0";
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -914,8 +919,8 @@ describe("AccountCreateTransaction", function () {
 
   describe("Decline Rewards", async function () {
     async function verifyAccountCreationWithDeclineRewards(
-      accountId,
-      declineRewards,
+      accountId: string,
+      declineRewards: boolean,
     ) {
       // If the account was created successfully, the queried account's decline rewards policy should be equal.
       expect(declineRewards).to.equal(
@@ -972,7 +977,10 @@ describe("AccountCreateTransaction", function () {
   });
 
   describe("Alias", async function () {
-    async function verifyAccountCreationWithAlias(accountId, alias) {
+    async function verifyAccountCreationWithAlias(
+      accountId: string,
+      alias: string,
+    ) {
       // If the account was created successfully, the queried account's aliases should be equal.
       expect(alias).to.equal(
         await (
@@ -996,8 +1004,8 @@ describe("AccountCreateTransaction", function () {
       // Generate the ECDSAsecp256k1 private key of the alias for the account.
       //prettier-ignore
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+          type: "ecdsaSecp256k1PrivateKey",
+        });
 
       // Generate the EVM address associated with the private key, which will then be used as the alias for the account.
       const alias = await JSONRPCRequest(this, "generateKey", {
@@ -1035,7 +1043,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           alias: alias.key,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -1056,7 +1064,7 @@ describe("AccountCreateTransaction", function () {
           key: key.key,
           alias: "0x" + crypto.randomBytes(20).toString("hex").toUpperCase(),
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }

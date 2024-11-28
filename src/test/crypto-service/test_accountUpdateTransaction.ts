@@ -1,34 +1,34 @@
 import { expect, assert } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
-import { setOperator } from "../../setup_Tests.js";
-
+import { JSONRPCRequest } from "../../services/Client";
+import mirrorNodeClient from "../../services/MirrorNodeClient";
+import consensusInfoClient from "../../services/ConsensusInfoClient";
+import { setOperator } from "../../utils/helpers/setup_Tests";
+import { retryOnError } from "../../utils/helpers/retry-on-error";
+import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder";
+import {
+  fourKeysKeyListParams,
+  twoLevelsNestedKeyListParams,
+  twoThresholdKeyParams,
+} from "../../utils/helpers/constants/key-list";
 import {
   getEncodedKeyHexFromKeyListConsensus,
   getPublicKeyFromMirrorNode,
-} from "../../utils/helpers/key.js";
-import { retryOnError } from "../../utils/helpers/retry-on-error.js";
-import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder.js";
-import {
-  twoLevelsNestedKeyListParams,
-  fourKeysKeyListParams,
-  twoThresholdKeyParams,
-} from "../../utils/helpers/constants/key-list.js";
+} from "../../utils/helpers/key";
 
 describe("AccountUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
   // An account is created for each test. These hold the information for that account.
-  let accountPrivateKey, accountId;
+  let accountPrivateKey: string, accountId: string;
 
   beforeEach(async function () {
     // Initialize the network and operator.
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
     // Generate a private key.
@@ -73,7 +73,7 @@ describe("AccountUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -86,7 +86,7 @@ describe("AccountUpdateTransaction", function () {
       try {
         // Attempt to update the account without providing the account ID. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
         await JSONRPCRequest(this, "updateAccount", {});
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_ID_DOES_NOT_EXIST");
         return;
       }
@@ -97,7 +97,10 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Key", async function () {
-    async function verifyAccountUpdateKey(accountId, updatedKey) {
+    async function verifyAccountUpdateKey(
+      accountId: string,
+      updatedKey: string,
+    ) {
       // If the account was updated successfully, the queried account keys should be equal.
       const rawKey = getRawKeyFromHex(updatedKey);
 
@@ -115,10 +118,13 @@ describe("AccountUpdateTransaction", function () {
       );
 
       // Mirror node check
-      expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
+      expect(rawKey).to.equal(publicKeyMirrorNode?.toStringRaw());
     }
 
-    async function verifyAccountUpdateKeyList(accountId, updatedKey) {
+    async function verifyAccountUpdateKeyList(
+      accountId: string,
+      updatedKey: string,
+    ) {
       const keyHex = await getEncodedKeyHexFromKeyListConsensus(
         "getAccountInfo",
         accountId,
@@ -367,7 +373,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -396,7 +402,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [privateKey.key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -407,7 +413,9 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Auto Renew Period", async function () {
-    async function verifyAccountAutoRenewPeriodUpdate(autoRenewPeriodSeconds) {
+    async function verifyAccountAutoRenewPeriodUpdate(
+      autoRenewPeriodSeconds: number,
+    ) {
       // If the account was updated successfully, the queried account's auto renew periods should be equal.
       expect(autoRenewPeriodSeconds).to.equal(
         Number(
@@ -450,7 +458,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
         return;
       }
@@ -486,7 +494,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
@@ -522,7 +530,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
@@ -533,7 +541,7 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Expiration Time", async function () {
-    async function verifyAccountExpirationTimeUpdate(expirationTime) {
+    async function verifyAccountExpirationTimeUpdate(expirationTime: number) {
       // If the account was updated successfully, the queried account's expiration times should be equal.
       expect(expirationTime).to.equal(
         Number(
@@ -553,7 +561,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async function () {
       // Attempt to update the expiration time of the account to 8,000,001 seconds from the current time.
-      const expirationTimeSeconds = parseInt(Date.now() / 1000 + 8000001);
+      const expirationTimeSeconds = Math.floor(Date.now() / 1000 + 8000001);
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
         expirationTime: expirationTimeSeconds,
@@ -578,7 +586,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -596,12 +604,12 @@ describe("AccountUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: parseInt(Number(expirationTimeSeconds) - 1),
+          expirationTime: +(Number(expirationTimeSeconds) - 1),
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "EXPIRATION_REDUCTION_NOT_ALLOWED");
         return;
       }
@@ -621,7 +629,7 @@ describe("AccountUpdateTransaction", function () {
           },
         });
         if (response.status === "NOT_IMPLEMENTED") this.skip();
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
@@ -633,7 +641,7 @@ describe("AccountUpdateTransaction", function () {
 
   describe("Receiver Signature Required", async function () {
     async function verifyAccountReceiverSignatureRequiredUpdate(
-      receiverSignatureRequired,
+      receiverSignatureRequired: boolean,
     ) {
       // If the account was updated successfully, the queried account's receiver signature required policies should be equal.
       expect(receiverSignatureRequired).to.equal(
@@ -684,7 +692,7 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Memo", async function () {
-    async function verifyAccountMemoUpdate(memo) {
+    async function verifyAccountMemoUpdate(memo: string) {
       // If the account was updated successfully, the queried account's memos should be equal.
       expect(memo).to.equal(
         await (
@@ -754,7 +762,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "MEMO_TOO_LONG");
         return;
       }
@@ -766,7 +774,7 @@ describe("AccountUpdateTransaction", function () {
 
   describe("Max Automatic Token Associations", async function () {
     async function verifyMaxAutoTokenAssociationsUpdate(
-      maxAutomaticTokenAssociations,
+      maxAutomaticTokenAssociations: number,
     ) {
       // If the account was updated successfully, the queried account's max automatic token associations should be equal.
       expect(maxAutomaticTokenAssociations).to.equal(
@@ -849,7 +857,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT",
@@ -863,7 +871,7 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Staked ID", async function () {
-    async function verifyAccountStakedAccountIdUpdate(stakedAccountId) {
+    async function verifyAccountStakedAccountIdUpdate(stakedAccountId: string) {
       // If the account was updated successfully, the queried account's staked account IDs should be equal.
       expect(stakedAccountId.toString()).to.equal(
         await (
@@ -877,16 +885,16 @@ describe("AccountUpdateTransaction", function () {
       );
     }
 
-    async function verifyAccountStakedNodeIdUpdate(stakedAccountId) {
+    async function verifyAccountStakedNodeIdUpdate(stakedAccountId: string) {
       // If the account was updated successfully, the queried account's staked node IDs should be equal.
-      expect(stakedAccountId).to.equal(
+      expect(+stakedAccountId).to.equal(
         Number(
           await (
             await consensusInfoClient.getAccountInfo(accountId)
           ).stakingInfo.stakedNodeId,
         ),
       );
-      expect(stakedAccountId).to.equal(
+      expect(+stakedAccountId).to.equal(
         Number(
           await (
             await mirrorNodeClient.getAccountData(accountId)
@@ -897,7 +905,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#1) Updates the staked account ID of an account to the operator's account ID", async function () {
       // Attempt to update the staked account ID of the account to the operator's account ID.
-      const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID;
+      const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
         stakedAccountId: stakedAccountId,
@@ -925,7 +933,7 @@ describe("AccountUpdateTransaction", function () {
 
       // Verify the staked node ID of the account was updated.
       await retryOnError(async () =>
-        verifyAccountStakedNodeIdUpdate(stakedNodeId),
+        verifyAccountStakedNodeIdUpdate(stakedNodeId.toString()),
       );
     });
 
@@ -939,7 +947,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -958,7 +966,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -977,7 +985,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -996,7 +1004,7 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
         return;
       }
@@ -1007,7 +1015,7 @@ describe("AccountUpdateTransaction", function () {
   });
 
   describe("Decline Reward", async function () {
-    async function verifyDeclineRewardUpdate(declineRewards) {
+    async function verifyDeclineRewardUpdate(declineRewards: boolean) {
       // If the account was updated successfully, the queried account's decline staking rewards policy should be equal.
       expect(declineRewards).to.equal(
         await (
