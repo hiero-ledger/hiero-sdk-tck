@@ -8,8 +8,14 @@
     "rootDir": "./src",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@helpers/*": ["src/utils/helpers/*"],
+      "@services/*": ["src/services/*"],
+      "@constants/*": ["src/utils/helpers/constants/*"]
+    }
   },
-  "include": ["src/**/*.ts", "src/test/**/*.ts"],
+  "include": ["src/**/*.ts", "src/tests/**/*.ts"],
   "exclude": ["node_modules"]
 }

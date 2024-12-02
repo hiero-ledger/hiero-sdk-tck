@@ -6,36 +6,36 @@ import {
   CustomRoyaltyFee,
 } from "@hashgraph/sdk";
 
-import mirrorNodeClient from "../../services/MirrorNodeClient";
-import consensusInfoClient from "../../services/ConsensusInfoClient";
+import mirrorNodeClient from "@services/MirrorNodeClient";
+import consensusInfoClient from "@services/ConsensusInfoClient";
 
-async function consensusNodeFeeEqualsCustomFee(
+const consensusNodeFeeEqualsCustomFee = (
   customFee: CustomFee,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
-) {
+) => {
   return (
     feeCollectorAccountId === customFee.feeCollectorAccountId?.toString() &&
     feeCollectorsExempt === customFee.allCollectorsAreExempt
   );
-}
+};
 
-async function consensusNodeFeeEqualsCustomFixedFee(
+const consensusNodeFeeEqualsCustomFixedFee = (
   customFixedFee: CustomFixedFee,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
   amount: string,
-) {
+) => {
   return (
-    (await consensusNodeFeeEqualsCustomFee(
+    consensusNodeFeeEqualsCustomFee(
       customFixedFee,
       feeCollectorAccountId,
       feeCollectorsExempt,
-    )) && amount === customFixedFee.amount?.toString()
+    ) && amount === customFixedFee.amount?.toString()
   );
-}
+};
 
-async function consensusNodeFeeEqualsCustomFractionalFee(
+const consensusNodeFeeEqualsCustomFractionalFee = (
   customFractionalFee: CustomFractionalFee,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
@@ -44,13 +44,13 @@ async function consensusNodeFeeEqualsCustomFractionalFee(
   minAmount: string,
   maxAmount: string,
   assessmentMethod: string,
-) {
+) => {
   return (
-    (await consensusNodeFeeEqualsCustomFee(
+    consensusNodeFeeEqualsCustomFee(
       customFractionalFee,
       feeCollectorAccountId,
       feeCollectorsExempt,
-    )) &&
+    ) &&
     numerator === customFractionalFee.numerator?.toString() &&
     denominator === customFractionalFee.denominator?.toString() &&
     minAmount === customFractionalFee.min?.toString() &&
@@ -58,41 +58,42 @@ async function consensusNodeFeeEqualsCustomFractionalFee(
     assessmentMethod ===
       customFractionalFee.assessmentMethod?.toString().toLowerCase()
   );
-}
+};
 
-async function consensusNodeFeeEqualsCustomRoyaltyFee(
+const consensusNodeFeeEqualsCustomRoyaltyFee = (
   customRoyaltyFee: CustomRoyaltyFee,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
   numerator: string,
   denominator: string,
   fixedFeeAmount: string,
-) {
+) => {
   return (
-    (await consensusNodeFeeEqualsCustomFee(
+    consensusNodeFeeEqualsCustomFee(
       customRoyaltyFee,
       feeCollectorAccountId,
       feeCollectorsExempt,
-    )) &&
+    ) &&
     numerator === customRoyaltyFee.numerator?.toString() &&
     denominator === customRoyaltyFee.denominator?.toString() &&
     fixedFeeAmount === customRoyaltyFee.fallbackFee?.amount?.toString()
   );
-}
+};
 
-async function mirrorNodeFeeEqualsCustomFixedFee(
-  customFixedFee: CustomFixedFee,
+const mirrorNodeFeeEqualsCustomFixedFee = (
+  // TODO: Get mirror node interface with OpenAPI
+  customFixedFee: any,
   feeCollectorAccountId: string,
   amount: string,
-) {
+) => {
   return (
     feeCollectorAccountId.toString() ===
-      customFixedFee.feeCollectorAccountId?.toString() &&
+      customFixedFee.collector_account_id.toString() &&
     amount === customFixedFee.amount?.toString()
   );
-}
+};
 
-async function mirrorNodeFeeEqualsCustomFractionalFee(
+const mirrorNodeFeeEqualsCustomFractionalFee = (
   customFractionalFee: CustomFractionalFee,
   feeCollectorAccountId: string,
   numerator: string,
@@ -100,7 +101,7 @@ async function mirrorNodeFeeEqualsCustomFractionalFee(
   minAmount: string,
   maxAmount: string,
   assessmentMethod: string,
-) {
+) => {
   return (
     feeCollectorAccountId?.toString() ===
       customFractionalFee.feeCollectorAccountId?.toString() &&
@@ -111,15 +112,15 @@ async function mirrorNodeFeeEqualsCustomFractionalFee(
     (assessmentMethod === "exclusive") ===
       customFractionalFee._allCollectorsAreExempt
   );
-}
+};
 
-async function mirrorNodeFeeEqualsCustomRoyaltyFee(
+const mirrorNodeFeeEqualsCustomRoyaltyFee = (
   customRoyaltyFee: CustomRoyaltyFee,
   feeCollectorAccountId: string,
   numerator: string,
   denominator: string,
   fixedFeeAmount: string,
-) {
+) => {
   return (
     feeCollectorAccountId.toString() ===
       customRoyaltyFee.feeCollectorAccountId?.toString() &&
@@ -127,14 +128,14 @@ async function mirrorNodeFeeEqualsCustomRoyaltyFee(
     denominator === customRoyaltyFee.denominator?.toString() &&
     fixedFeeAmount === customRoyaltyFee.fallbackFee?.amount?.toString()
   );
-}
+};
 
-export async function verifyTokenCreationWithFixedFee(
+export const verifyTokenCreationWithFixedFee = async (
   tokenId: string,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
   amount: string,
-) {
+) => {
   const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
   const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
 
@@ -144,12 +145,12 @@ export async function verifyTokenCreationWithFixedFee(
   for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
     if (
       consensusNodeInfo.customFees[i] instanceof CustomFixedFee &&
-      (await consensusNodeFeeEqualsCustomFixedFee(
-        consensusNodeInfo.customFees[i],
+      consensusNodeFeeEqualsCustomFixedFee(
+        consensusNodeInfo.customFees[i] as CustomFixedFee,
         feeCollectorAccountId,
         feeCollectorsExempt,
         amount,
-      ))
+      )
     ) {
       foundConsensusNodeFee = true;
       break;
@@ -158,7 +159,7 @@ export async function verifyTokenCreationWithFixedFee(
 
   for (let i = 0; i < mirrorNodeInfo.custom_fees.fixed_fees.length; i++) {
     if (
-      await mirrorNodeFeeEqualsCustomFixedFee(
+      mirrorNodeFeeEqualsCustomFixedFee(
         mirrorNodeInfo.custom_fees.fixed_fees[i],
         feeCollectorAccountId,
         amount,
@@ -171,9 +172,9 @@ export async function verifyTokenCreationWithFixedFee(
 
   expect(foundConsensusNodeFee).to.be.true;
   expect(foundMirrorNodeFee).to.be.true;
-}
+};
 
-export async function verifyTokenCreationWithFractionalFee(
+export const verifyTokenCreationWithFractionalFee = async (
   tokenId: string,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
@@ -182,7 +183,7 @@ export async function verifyTokenCreationWithFractionalFee(
   minAmount: string,
   maxAmount: string,
   assessmentMethod: string,
-) {
+) => {
   const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
   const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
 
@@ -192,8 +193,8 @@ export async function verifyTokenCreationWithFractionalFee(
   for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
     if (
       consensusNodeInfo.customFees[i] instanceof CustomFractionalFee &&
-      (await consensusNodeFeeEqualsCustomFractionalFee(
-        consensusNodeInfo.customFees[i],
+      consensusNodeFeeEqualsCustomFractionalFee(
+        consensusNodeInfo.customFees[i] as CustomFractionalFee,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -201,7 +202,7 @@ export async function verifyTokenCreationWithFractionalFee(
         minAmount,
         maxAmount,
         assessmentMethod,
-      ))
+      )
     ) {
       foundConsensusNodeFee = true;
       break;
@@ -210,7 +211,7 @@ export async function verifyTokenCreationWithFractionalFee(
 
   for (let i = 0; i < mirrorNodeInfo.custom_fees.fractional_fees.length; i++) {
     if (
-      await mirrorNodeFeeEqualsCustomFractionalFee(
+      mirrorNodeFeeEqualsCustomFractionalFee(
         mirrorNodeInfo.custom_fees.fractional_fees[i],
         feeCollectorAccountId,
         numerator,
@@ -227,16 +228,16 @@ export async function verifyTokenCreationWithFractionalFee(
 
   expect(foundConsensusNodeFee).to.be.true;
   expect(foundMirrorNodeFee).to.be.true;
-}
+};
 
-export async function verifyTokenCreationWithRoyaltyFee(
+export const verifyTokenCreationWithRoyaltyFee = async (
   tokenId: string,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
   numerator: string,
   denominator: string,
   fixedFeeAmount: string,
-) {
+) => {
   const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
   const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
 
@@ -246,14 +247,14 @@ export async function verifyTokenCreationWithRoyaltyFee(
   for (let i = 0; i < consensusNodeInfo.customFees.length; i++) {
     if (
       consensusNodeInfo.customFees[i] instanceof CustomRoyaltyFee &&
-      (await consensusNodeFeeEqualsCustomRoyaltyFee(
-        consensusNodeInfo.customFees[i],
+      consensusNodeFeeEqualsCustomRoyaltyFee(
+        consensusNodeInfo.customFees[i] as CustomRoyaltyFee,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
         denominator,
         fixedFeeAmount,
-      ))
+      )
     ) {
       foundConsensusNodeFee = true;
       break;
@@ -262,7 +263,7 @@ export async function verifyTokenCreationWithRoyaltyFee(
 
   for (let i = 0; i < mirrorNodeInfo.custom_fees.royalty_fees.length; i++) {
     if (
-      await mirrorNodeFeeEqualsCustomRoyaltyFee(
+      mirrorNodeFeeEqualsCustomRoyaltyFee(
         mirrorNodeInfo.custom_fees.royalty_fees[i],
         feeCollectorAccountId,
         numerator,
@@ -277,4 +278,4 @@ export async function verifyTokenCreationWithRoyaltyFee(
 
   expect(foundConsensusNodeFee).to.be.true;
   expect(foundMirrorNodeFee).to.be.true;
-}
+};

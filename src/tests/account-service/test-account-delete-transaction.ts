@@ -1,8 +1,8 @@
 import { assert } from "chai";
 
-import { JSONRPCRequest } from "../../services/Client";
-import consensusInfoClient from "../../services/ConsensusInfoClient";
-import { setOperator } from "../../utils/helpers/setup_Tests";
+import { JSONRPCRequest } from "@services/Client";
+import consensusInfoClient from "@services/ConsensusInfoClient";
+import { setOperator } from "@helpers/setup-tests";
 
 describe("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
@@ -11,7 +11,7 @@ describe("AccountDeleteTransaction", function () {
   // An account is created for each test. These hold the information for that account.
   let accountPrivateKey: string, accountId: string;
 
-  beforeEach(async function () {
+  beforeEach(async () => {
     // Initialize the network and operator.
     await setOperator(
       this,
@@ -33,12 +33,12 @@ describe("AccountDeleteTransaction", function () {
 
     accountId = response.accountId;
   });
-  afterEach(async function () {
+  afterEach(async () => {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("Delete Account Id", async function () {
-    it("(#1) Deletes an account with no transfer account", async function () {
+  describe("Delete Account Id", async () => {
+    it("(#1) Deletes an account with no transfer account", async () => {
       try {
         // Attempt to delete the account without a transfer account. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
         const response = await JSONRPCRequest(this, "deleteAccount", {
@@ -56,7 +56,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Deletes an account with no delete account", async function () {
+    it("(#2) Deletes an account with no delete account", async () => {
       try {
         // Attempt to delete the account without a delete account. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
         await JSONRPCRequest(this, "deleteAccount", {
@@ -74,10 +74,10 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Deletes an admin account", async function () {
+    it("(#3) Deletes an admin account", async () => {
       try {
         // Attempt to delete an admin account. The network should respond with an ENTITY_NOT_ALLOWED_TO_DELETE status.
-        const response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: "0.0.2",
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
           commonTransactionParams: {
@@ -93,7 +93,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Deletes an account that doesn't exist", async function () {
+    it("(#4) Deletes an account that doesn't exist", async () => {
       try {
         // Attempt to delete an account that doesn't exist. The network should respond with an INVALID_ACCOUNT_ID status.
         await JSONRPCRequest(this, "deleteAccount", {
@@ -112,7 +112,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Deletes an account that was already deleted", async function () {
+    it("(#5) Deletes an account that was already deleted", async () => {
       // Delete the account first.
       let response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
@@ -140,7 +140,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Deletes an account without signing with the account's private key", async function () {
+    it("(#6) Deletes an account without signing with the account's private key", async () => {
       try {
         // Attempt to delete the account without signing with the account's private key. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "deleteAccount", {
@@ -156,7 +156,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Deletes an account but signs with an incorrect private key", async function () {
+    it("(#7) Deletes an account but signs with an incorrect private key", async () => {
       // Generate a private key.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -181,8 +181,8 @@ describe("AccountDeleteTransaction", function () {
     });
   });
 
-  describe("Transfer Account Id", async function () {
-    it("(#1) Deletes an account with a valid transfer account", async function () {
+  describe("Transfer Account Id", async () => {
+    it("(#1) Deletes an account with a valid transfer account", async () => {
       // Attempt to delete the account and transfer its funds to the operator account.
       const response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
@@ -205,7 +205,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Deletes an account with a transfer account that is the deleted account", async function () {
+    it("(#2) Deletes an account with a transfer account that is the deleted account", async () => {
       try {
         // Attempt to delete the account with a transfer account that is the deleted account. The network should respond with an TRANSFER_ACCOUNT_SAME_AS_DELETE_ACCOUNT status.
         await JSONRPCRequest(this, "deleteAccount", {
@@ -227,7 +227,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Deletes an account with a transfer account that is invalid/doesn't exist", async function () {
+    it("(#3) Deletes an account with a transfer account that is invalid/doesn't exist", async () => {
       try {
         // Attempt to delete the account with a transfer account that is the deleted account. The network should respond with an INVALID_TRANSFER_ACCOUNT_ID status.
         const response = await JSONRPCRequest(this, "deleteAccount", {
@@ -246,7 +246,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Deletes an account with a transfer account that is a deleted account", async function () {
+    it("(#4) Deletes an account with a transfer account that is a deleted account", async () => {
       // Generate a key.
       var response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",

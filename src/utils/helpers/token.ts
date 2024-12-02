@@ -1,7 +1,8 @@
 import { expect } from "chai";
-import consensusInfoClient from "../../services/ConsensusInfoClient";
-import mirrorNodeClient from "../../services/MirrorNodeClient";
-import { JSONRPCRequest } from "../../services/Client";
+
+import consensusInfoClient from "@services/ConsensusInfoClient";
+import mirrorNodeClient from "@services/MirrorNodeClient";
+import { JSONRPCRequest } from "@services/Client";
 
 /**
  * Verifies that a token has been deleted by checking both the Consensus Info
@@ -28,9 +29,9 @@ export const verifyTokenIsDeleted = async (tokenId: string) => {
  * @returns {Promise<string>} - The ID of the newly created fungible token.
  */
 export const getNewFungibleTokenId = async (
-  mochaTestContext: string,
-  adminKey: string,
-  treasuryAccountId: string,
+  mochaTestContext: any,
+  adminKey?: string,
+  treasuryAccountId?: string,
 ): Promise<string> => {
   const tokenResponse = await JSONRPCRequest(mochaTestContext, "createToken", {
     name: "testname",

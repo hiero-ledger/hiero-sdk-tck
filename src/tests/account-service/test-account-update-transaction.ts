@@ -1,20 +1,23 @@
 import { expect, assert } from "chai";
+import { PublicKey, StatusError } from "@hashgraph/sdk";
 
-import { JSONRPCRequest } from "../../services/Client";
-import mirrorNodeClient from "../../services/MirrorNodeClient";
-import consensusInfoClient from "../../services/ConsensusInfoClient";
-import { setOperator } from "../../utils/helpers/setup_Tests";
-import { retryOnError } from "../../utils/helpers/retry-on-error";
-import { getRawKeyFromHex } from "../../utils/helpers/asn1-decoder";
+import { JSONRPCRequest } from "@services/Client";
+import mirrorNodeClient from "@services/MirrorNodeClient";
+import consensusInfoClient from "@services/ConsensusInfoClient";
+
+import { setOperator } from "@helpers/setup-tests";
+import { retryOnError } from "@helpers/retry-on-error";
+import { getRawKeyFromHex } from "@helpers/asn1-decoder";
+import {
+  getEncodedKeyHexFromKeyListConsensus,
+  getPublicKeyFromMirrorNode,
+} from "@helpers/key";
+
 import {
   fourKeysKeyListParams,
   twoLevelsNestedKeyListParams,
   twoThresholdKeyParams,
-} from "../../utils/helpers/constants/key-list";
-import {
-  getEncodedKeyHexFromKeyListConsensus,
-  getPublicKeyFromMirrorNode,
-} from "../../utils/helpers/key";
+} from "@constants/key-list";
 
 describe("AccountUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
@@ -23,7 +26,7 @@ describe("AccountUpdateTransaction", function () {
   // An account is created for each test. These hold the information for that account.
   let accountPrivateKey: string, accountId: string;
 
-  beforeEach(async function () {
+  beforeEach(async () => {
     // Initialize the network and operator.
     await setOperator(
       this,
@@ -45,12 +48,12 @@ describe("AccountUpdateTransaction", function () {
 
     accountId = response.accountId;
   });
-  afterEach(async function () {
+  afterEach(async () => {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("AccountId", async function () {
-    it("(#1) Updates an account with no updates", async function () {
+  describe("AccountId", async () => {
+    it("(#1) Updates an account with no updates", async () => {
       // Attempt to update the account.
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
@@ -67,7 +70,7 @@ describe("AccountUpdateTransaction", function () {
       expect(accountId).to.be.equal(consensusNodeData.accountId.toString());
     });
 
-    it("(#2) Updates an account with no updates without signing with the account's private key", async function () {
+    it("(#2) Updates an account with no updates without signing with the account's private key", async () => {
       try {
         // Attempt to update the account without signing with the account's private key. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -82,7 +85,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates an account with no account ID", async function () {
+    it("(#3) Updates an account with no account ID", async () => {
       try {
         // Attempt to update the account without providing the account ID. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
         await JSONRPCRequest(this, "updateAccount", {});
@@ -96,19 +99,19 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Key", async function () {
-    async function verifyAccountUpdateKey(
+  describe("Key", () => {
+    const verifyAccountUpdateKey = async (
       accountId: string,
       updatedKey: string,
-    ) {
+    ) => {
       // If the account was updated successfully, the queried account keys should be equal.
       const rawKey = getRawKeyFromHex(updatedKey);
 
       // Consensus node check
       expect(rawKey).to.equal(
-        await (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).key._key.toStringRaw(),
+        (
+          (await consensusInfoClient.getAccountInfo(accountId)).key as PublicKey
+        ).toStringRaw(),
       );
 
       const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
@@ -119,12 +122,12 @@ describe("AccountUpdateTransaction", function () {
 
       // Mirror node check
       expect(rawKey).to.equal(publicKeyMirrorNode?.toStringRaw());
-    }
+    };
 
-    async function verifyAccountUpdateKeyList(
+    const verifyAccountUpdateKeyList = async (
       accountId: string,
       updatedKey: string,
-    ) {
+    ) => {
       const keyHex = await getEncodedKeyHexFromKeyListConsensus(
         "getAccountInfo",
         accountId,
@@ -148,9 +151,9 @@ describe("AccountUpdateTransaction", function () {
         // Removing the unnecessary prefix from the mirror node key
         mirrorNodeKey.slice(mirrorNodeKey.length - updatedKey.length),
       );
-    }
+    };
 
-    it("(#1) Updates the key of an account to a new valid ED25519 public key", async function () {
+    it("(#1) Updates the key of an account to a new valid ED25519 public key", async () => {
       // Generate a new ED25519 private key for the account.
       const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -177,7 +180,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the key of an account to a new valid ECDSAsecp256k1 public key", async function () {
+    it("(#2) Updates the key of an account to a new valid ECDSAsecp256k1 public key", async () => {
       // Generate a new ECDSAsecp256k1 private key for the account.
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
         this,
@@ -209,7 +212,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the key of an account to a new valid ED25519 private key", async function () {
+    it("(#3) Updates the key of an account to a new valid ED25519 private key", async () => {
       // Generate a new ED25519 private key for the account.
       const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -236,7 +239,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the key of an account to a new valid ECDSAsecp256k1 private key", async function () {
+    it("(#4) Updates the key of an account to a new valid ECDSAsecp256k1 private key", async () => {
       // Generate a new ECDSAsecp256k1 private key for the account.
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
         this,
@@ -271,7 +274,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates the key of an account to a new valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
+    it("(#5) Updates the key of an account to a new valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async () => {
       // Generate a KeyList of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const keyList = await JSONRPCRequest(
         this,
@@ -300,7 +303,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the key of an account to a new valid KeyList of nested KeyLists (three levels)", async function () {
+    it("(#6) Updates the key of an account to a new valid KeyList of nested KeyLists (three levels)", async () => {
       // Generate a KeyList of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const nestedKeyList = await JSONRPCRequest(
         this,
@@ -331,7 +334,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates the key of an account to a new valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
+    it("(#7) Updates the key of an account to a new valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys", async () => {
       // Generate a ThresholdKey of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const thresholdKey = await JSONRPCRequest(
         this,
@@ -358,7 +361,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates the key of an account to a key without signing with the new key", async function () {
+    it("(#8) Updates the key of an account to a key without signing with the new key", async () => {
       // Generate a new key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -382,7 +385,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates the key of an account to a new public key and signs with an incorrect private key", async function () {
+    it("(#9) Updates the key of an account to a new public key and signs with an incorrect private key", async () => {
       // Generate a new public key for the account.
       const publicKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -412,16 +415,15 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Auto Renew Period", async function () {
-    async function verifyAccountAutoRenewPeriodUpdate(
+  describe("Auto Renew Period", () => {
+    const verifyAccountAutoRenewPeriodUpdate = async (
       autoRenewPeriodSeconds: number,
-    ) {
+    ) => {
       // If the account was updated successfully, the queried account's auto renew periods should be equal.
       expect(autoRenewPeriodSeconds).to.equal(
         Number(
-          await (
-            await consensusInfoClient.getAccountInfo(accountId)
-          ).autoRenewPeriod.seconds,
+          (await consensusInfoClient.getAccountInfo(accountId)).autoRenewPeriod
+            .seconds,
         ),
       );
       expect(autoRenewPeriodSeconds).to.equal(
@@ -429,9 +431,9 @@ describe("AccountUpdateTransaction", function () {
           await mirrorNodeClient.getAccountData(accountId)
         ).auto_renew_period,
       );
-    }
+    };
 
-    it("(#1) Updates the auto-renew period of an account to 60 days (5,184,000 seconds)", async function () {
+    it("(#1) Updates the auto-renew period of an account to 60 days (5,184,000 seconds)", async () => {
       // Attempt to update the auto-renew period of the account 60 days.
       const autoRenewPeriodSeconds = 5184000;
       await JSONRPCRequest(this, "updateAccount", {
@@ -443,12 +445,12 @@ describe("AccountUpdateTransaction", function () {
       });
 
       // Verify the account was updated with an auto-renew period set to 60 days.
-      await retryOnError(async () =>
+      await retryOnError(() =>
         verifyAccountAutoRenewPeriodUpdate(autoRenewPeriodSeconds),
       );
     });
 
-    it("(#2) Updates the auto-renew period of an account to -1 seconds", async function () {
+    it("(#2) Updates the auto-renew period of an account to -1 seconds", async () => {
       try {
         // Attempt to update the auto-renew period of the account to -1 seconds. The network should respond with an INVALID_RENEWAL_PERIOD status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -467,7 +469,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates the auto-renew period of an account to 30 days (2,592,000 seconds)", async function () {
+    it("(#3) Updates the auto-renew period of an account to 30 days (2,592,000 seconds)", async () => {
       // Attempt to update the auto-renew period of the account to 30 days.
       const autoRenewPeriodSeconds = 2592000;
       await JSONRPCRequest(this, "updateAccount", {
@@ -484,7 +486,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the auto-renew period of an account to 30 days minus one second (2,591,999 seconds)", async function () {
+    it("(#4) Updates the auto-renew period of an account to 30 days minus one second (2,591,999 seconds)", async () => {
       try {
         // Attempt to update the auto-renew period of the account to 2,591,999 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -503,7 +505,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds", async function () {
+    it("(#5) Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds", async () => {
       // Attempt to update the auto-renew period of the account to 8,000,001 seconds.
       const autoRenewPeriodSeconds = 8000001;
       await JSONRPCRequest(this, "updateAccount", {
@@ -520,7 +522,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the auto-renew period of an account to the maximum period plus one second (8,000,002 seconds)", async function () {
+    it("(#6) Updates the auto-renew period of an account to the maximum period plus one second (8,000,002 seconds)", async () => {
       try {
         // Attempt to update auto-renew period of the account to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -540,14 +542,15 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", async function () {
-    async function verifyAccountExpirationTimeUpdate(expirationTime: number) {
+  describe("Expiration Time", async () => {
+    const verifyAccountExpirationTimeUpdate = async (
+      expirationTime: number,
+    ) => {
       // If the account was updated successfully, the queried account's expiration times should be equal.
       expect(expirationTime).to.equal(
         Number(
-          await (
-            await consensusInfoClient.getAccountInfo(accountId)
-          ).expirationTime.seconds,
+          (await consensusInfoClient.getAccountInfo(accountId)).expirationTime
+            .seconds,
         ),
       );
       expect(expirationTime).to.equal(
@@ -557,9 +560,9 @@ describe("AccountUpdateTransaction", function () {
           ).expiry_timestamp,
         ),
       );
-    }
+    };
 
-    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async function () {
+    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async () => {
       // Attempt to update the expiration time of the account to 8,000,001 seconds from the current time.
       const expirationTimeSeconds = Math.floor(Date.now() / 1000 + 8000001);
       await JSONRPCRequest(this, "updateAccount", {
@@ -576,7 +579,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the expiration time of an account to -1 seconds", async function () {
+    it("(#2) Updates the expiration time of an account to -1 seconds", async () => {
       try {
         // Attempt to update the expiration time of the account to -1 seconds. The network should respond with an INVALID_EXPIRATION_TIME status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -595,7 +598,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async function () {
+    it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async () => {
       // Get the account's expiration time.
       const accountInfo = await mirrorNodeClient.getAccountData(accountId);
       const expirationTimeSeconds = await accountInfo.expiry_timestamp;
@@ -618,7 +621,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
+    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async () => {
       try {
         // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
         const response = await JSONRPCRequest(this, "updateAccount", {
@@ -628,7 +631,6 @@ describe("AccountUpdateTransaction", function () {
             signers: [accountPrivateKey],
           },
         });
-        if (response.status === "NOT_IMPLEMENTED") this.skip();
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
@@ -639,24 +641,23 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Receiver Signature Required", async function () {
-    async function verifyAccountReceiverSignatureRequiredUpdate(
+  describe("Receiver Signature Required", async () => {
+    const verifyAccountReceiverSignatureRequiredUpdate = async (
       receiverSignatureRequired: boolean,
-    ) {
+    ) => {
       // If the account was updated successfully, the queried account's receiver signature required policies should be equal.
       expect(receiverSignatureRequired).to.equal(
-        await (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).isReceiverSignatureRequired,
+        (await consensusInfoClient.getAccountInfo(accountId))
+          .isReceiverSignatureRequired,
       );
       expect(receiverSignatureRequired).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
         ).receiver_sig_required,
       );
-    }
+    };
 
-    it("(#1) Updates the receiver signature required policy of an account to require a receiving signature", async function () {
+    it("(#1) Updates the receiver signature required policy of an account to require a receiving signature", async () => {
       // Attempt to update the receiver signature required policy of the account to require a signature when receiving.
       const receiverSignatureRequired = true;
       await JSONRPCRequest(this, "updateAccount", {
@@ -673,7 +674,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the receiver signature required policy of an account to not require a receiving signature", async function () {
+    it("(#2) Updates the receiver signature required policy of an account to not require a receiving signature", async () => {
       // Attempt to update the receiver signature required policy of the account to not require a signature when receiving.
       const receiverSignatureRequired = false;
       await JSONRPCRequest(this, "updateAccount", {
@@ -691,22 +692,20 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Memo", async function () {
-    async function verifyAccountMemoUpdate(memo: string) {
+  describe("Memo", async () => {
+    const verifyAccountMemoUpdate = async (memo: string) => {
       // If the account was updated successfully, the queried account's memos should be equal.
       expect(memo).to.equal(
-        await (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).accountMemo,
+        (await consensusInfoClient.getAccountInfo(accountId)).accountMemo,
       );
       expect(memo).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
         ).memo,
       );
-    }
+    };
 
-    it("(#1) Updates the memo of an account to a memo that is a valid length", async function () {
+    it("(#1) Updates the memo of an account to a memo that is a valid length", async () => {
       // Attempt to update the memo of the account to a memo that is a valid length.
       const memo = "testmemo";
       await JSONRPCRequest(this, "updateAccount", {
@@ -721,7 +720,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#2) Updates the memo of an account to a memo that is the minimum length", async function () {
+    it("(#2) Updates the memo of an account to a memo that is the minimum length", async () => {
       // Attempt to update the memo of the account with a memo that is the minimum length.
       const memo = "";
       await JSONRPCRequest(this, "updateAccount", {
@@ -736,7 +735,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#3) Updates the memo of an account to a memo that is the maximum length", async function () {
+    it("(#3) Updates the memo of an account to a memo that is the maximum length", async () => {
       // Attempt to update the memo of the account with a memo that is the maximum length.
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
@@ -752,7 +751,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#4) Updates the memo of an account to a memo that exceeds the maximum length", async function () {
+    it("(#4) Updates the memo of an account to a memo that exceeds the maximum length", async () => {
       try {
         // Attempt to update the memo of the account with a memo that exceeds the maximum length. The network should respond with a MEMO_TOO_LONG status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -772,16 +771,15 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Max Automatic Token Associations", async function () {
-    async function verifyMaxAutoTokenAssociationsUpdate(
+  describe("Max Automatic Token Associations", async () => {
+    const verifyMaxAutoTokenAssociationsUpdate = async (
       maxAutomaticTokenAssociations: number,
-    ) {
+    ) => {
       // If the account was updated successfully, the queried account's max automatic token associations should be equal.
       expect(maxAutomaticTokenAssociations).to.equal(
         Number(
-          await (
-            await consensusInfoClient.getAccountInfo(accountId)
-          ).maxAutomaticTokenAssociations,
+          (await consensusInfoClient.getAccountInfo(accountId))
+            .maxAutomaticTokenAssociations,
         ),
       );
       expect(maxAutomaticTokenAssociations).to.equal(
@@ -791,9 +789,9 @@ describe("AccountUpdateTransaction", function () {
           ).max_automatic_token_associations,
         ),
       );
-    }
+    };
 
-    it("(#1) Updates the max automatic token associations of an account to a valid amount", async function () {
+    it("(#1) Updates the max automatic token associations of an account to a valid amount", async () => {
       // Attempt to update the max automatic token associations of the account to 100.
       const maxAutoTokenAssociations = 100;
       await JSONRPCRequest(this, "updateAccount", {
@@ -811,7 +809,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the max automatic token associations of an account to the minimum amount", async function () {
+    it("(#2) Updates the max automatic token associations of an account to the minimum amount", async () => {
       // Attempt to update the max automatic token associations of the account to 0.
       const maxAutoTokenAssociations = 0;
       await JSONRPCRequest(this, "updateAccount", {
@@ -828,7 +826,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the max automatic token associations of an account to the maximum amount", async function () {
+    it("(#3) Updates the max automatic token associations of an account to the maximum amount", async () => {
       // Attempt to update the max automatic token associations of the account to 5000.
       const maxAutoTokenAssociations = 5000;
       await JSONRPCRequest(this, "updateAccount", {
@@ -846,7 +844,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the max automatic token associations of an account to an amount that exceeds the maximum amount", async function () {
+    it("(#4) Updates the max automatic token associations of an account to an amount that exceeds the maximum amount", async () => {
       try {
         // Attempt to update the max automatic token associations of the account to 5001. The network should respond with a REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -870,28 +868,29 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Staked ID", async function () {
-    async function verifyAccountStakedAccountIdUpdate(stakedAccountId: string) {
+  describe("Staked ID", async () => {
+    const verifyAccountStakedAccountIdUpdate = async (
+      stakedAccountId: string,
+    ) => {
       // If the account was updated successfully, the queried account's staked account IDs should be equal.
       expect(stakedAccountId.toString()).to.equal(
-        await (
+        (
           await consensusInfoClient.getAccountInfo(accountId)
-        ).stakingInfo.stakedAccountId.toString(),
+        ).stakingInfo?.stakedAccountId?.toString(),
       );
       expect(stakedAccountId).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
         ).staked_account_id,
       );
-    }
+    };
 
-    async function verifyAccountStakedNodeIdUpdate(stakedAccountId: string) {
+    const verifyAccountStakedNodeIdUpdate = async (stakedAccountId: string) => {
       // If the account was updated successfully, the queried account's staked node IDs should be equal.
       expect(+stakedAccountId).to.equal(
         Number(
-          await (
-            await consensusInfoClient.getAccountInfo(accountId)
-          ).stakingInfo.stakedNodeId,
+          (await consensusInfoClient.getAccountInfo(accountId)).stakingInfo
+            ?.stakedNodeId,
         ),
       );
       expect(+stakedAccountId).to.equal(
@@ -901,9 +900,9 @@ describe("AccountUpdateTransaction", function () {
           ).staked_account_id,
         ),
       );
-    }
+    };
 
-    it("(#1) Updates the staked account ID of an account to the operator's account ID", async function () {
+    it("(#1) Updates the staked account ID of an account to the operator's account ID", async () => {
       // Attempt to update the staked account ID of the account to the operator's account ID.
       const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       await JSONRPCRequest(this, "updateAccount", {
@@ -920,7 +919,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the staked node ID of an account to a valid node ID", async function () {
+    it("(#2) Updates the staked node ID of an account to a valid node ID", async () => {
       // Attempt to update the staked node ID of the account to a valid node ID.
       const stakedNodeId = 0;
       await JSONRPCRequest(this, "updateAccount", {
@@ -937,7 +936,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the staked account ID of an account to an account ID that doesn't exist", async function () {
+    it("(#3) Updates the staked account ID of an account to an account ID that doesn't exist", async () => {
       try {
         // Attempt to update the staked account ID of the account to an account ID that doesn't exist. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -956,7 +955,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates the staked node ID of an account to a node ID that doesn't exist", async function () {
+    it("(#4) Updates the staked node ID of an account to a node ID that doesn't exist", async () => {
       try {
         // Attempt to update the staked node ID of the account to a node ID that doesn't exist. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -975,7 +974,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates the staked account ID of an account to an empty account ID", async function () {
+    it("(#5) Updates the staked account ID of an account to an empty account ID", async () => {
       try {
         // Attempt to update the staked account ID of the account to an empty account ID. The SDK should throw an internal error.
         await JSONRPCRequest(this, "updateAccount", {
@@ -994,7 +993,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates the staked node ID of an account to an invalid node ID", async function () {
+    it("(#6) Updates the staked node ID of an account to an invalid node ID", async () => {
       try {
         // Attempt to update the staked node ID of the account to an invalid node ID. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -1014,20 +1013,19 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Decline Reward", async function () {
-    async function verifyDeclineRewardUpdate(declineRewards: boolean) {
+  describe("Decline Reward", async () => {
+    const verifyDeclineRewardUpdate = async (declineRewards: boolean) => {
       // If the account was updated successfully, the queried account's decline staking rewards policy should be equal.
       expect(declineRewards).to.equal(
-        await (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).stakingInfo.declineStakingReward,
+        (await consensusInfoClient.getAccountInfo(accountId)).stakingInfo
+          ?.declineStakingReward,
       );
       expect(declineRewards).to.equal(
         (await mirrorNodeClient.getAccountData(accountId)).decline_reward,
       );
-    }
+    };
 
-    it("(#1) Updates the decline reward policy of an account to decline staking rewards", async function () {
+    it("(#1) Updates the decline reward policy of an account to decline staking rewards", async () => {
       // Attempt to update the decline reward policy of the account to decline staking rewards.
       const declineStakingRewards = true;
       await JSONRPCRequest(this, "updateAccount", {
@@ -1044,7 +1042,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the decline reward policy of an account to not decline staking rewards", async function () {
+    it("(#2) Updates the decline reward policy of an account to not decline staking rewards", async () => {
       // Attempt to update the decline reward policy of the account to not decline staking rewards.
       const declineStakingRewards = false;
       await JSONRPCRequest(this, "updateAccount", {

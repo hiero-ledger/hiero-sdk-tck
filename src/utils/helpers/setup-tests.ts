@@ -1,4 +1,4 @@
-import { JSONRPCRequest } from "../../services/Client";
+import { JSONRPCRequest } from "@services/Client";
 
 export const setOperator = async (
   mochaTestContext: any,

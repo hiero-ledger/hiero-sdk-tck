@@ -14,7 +14,7 @@ export const retryOnError = async (
   fn: () => Promise<void>,
   maxRetries: number = 10,
   retryDelay: number = 200,
-): Promise<void> => {
+): Promise<any> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn();

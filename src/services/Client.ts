@@ -28,11 +28,11 @@ const JSONRPClient = new JSONRPCClient(
   createID,
 );
 
-export async function JSONRPCRequest(
+export const JSONRPCRequest = async (
   mochaTestContext: any,
   method: string,
   params?: any,
-) {
+) => {
   const jsonRPCRequest = {
     jsonrpc: JSONRPC,
     id: createID(),
@@ -58,4 +58,4 @@ export async function JSONRPCRequest(
     }
     return jsonRPCResponse.result;
   }
-}
+};

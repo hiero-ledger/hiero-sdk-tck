@@ -1,8 +1,11 @@
 import {
+  AccountBalance,
   AccountBalanceQuery,
   AccountId,
+  AccountInfo,
   AccountInfoQuery,
   Client,
+  TokenInfo,
   TokenInfoQuery,
 } from "@hashgraph/sdk";
 
@@ -30,24 +33,33 @@ class ConsensusInfoClient {
     );
   }
 
-  async getBalance(accountId: string) {
-    return this.executeAccountMethod(accountId, new AccountBalanceQuery());
+  async getBalance(accountId: string): Promise<AccountBalance> {
+    return this.executeAccountMethod(
+      accountId,
+      new AccountBalanceQuery(),
+    ) as Promise<AccountBalance>;
   }
 
-  async getAccountInfo(accountId: string) {
-    return this.executeAccountMethod(accountId, new AccountInfoQuery());
+  async getAccountInfo(accountId: string): Promise<AccountInfo> {
+    return this.executeAccountMethod(
+      accountId,
+      new AccountInfoQuery(),
+    ) as Promise<AccountInfo>;
   }
 
-  async getTokenInfo(tokenId: string) {
+  async getTokenInfo(tokenId: string): Promise<TokenInfo> {
     return this.executeTokenMethod(tokenId, new TokenInfoQuery());
   }
 
-  async executeAccountMethod(accountId: string, method: any) {
+  async executeAccountMethod(
+    accountId: string,
+    method: AccountInfoQuery | AccountBalanceQuery,
+  ) {
     method.setAccountId(accountId);
     return method.execute(this.sdkClient);
   }
 
-  async executeTokenMethod(tokenId: string, method: any) {
+  async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {
     method.setTokenId(tokenId);
     return method.execute(this.sdkClient);
   }

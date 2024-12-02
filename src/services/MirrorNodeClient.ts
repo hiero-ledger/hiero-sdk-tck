@@ -8,16 +8,19 @@ class MirrorNodeClient {
     this.mirrorNodeRestUrl = process.env.MIRROR_NODE_REST_URL;
   }
 
+  // TODO: Get mirror node interface with OpenAPI
   async getAccountData(accountId: string): Promise<any> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}`;
     return retryOnError(async () => fetchData(url));
   }
 
+  // TODO: Get mirror node interface with OpenAPI
   async getBalanceData(): Promise<any> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/balances`;
     return retryOnError(async () => fetchData(url));
   }
 
+  // TODO: Get mirror node interface with OpenAPI
   async getTokenData(tokenId: string): Promise<any> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}`;
     return retryOnError(async () => fetchData(url));
