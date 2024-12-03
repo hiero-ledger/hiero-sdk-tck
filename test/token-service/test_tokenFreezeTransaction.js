@@ -18,7 +18,12 @@ describe("TokenFreezeTransaction", function () {
   this.timeout(30000);
 
   // All tests require an account and a token to be created, and to have the two be associated.
-  let tokenId, tokenFreezeKey, tokenAdminKey, tokenPauseKey, accountId, accountPrivateKey;
+  let tokenId,
+    tokenFreezeKey,
+    tokenAdminKey,
+    tokenPauseKey,
+    accountId,
+    accountPrivateKey;
   beforeEach(async function () {
     await setOperator(
       process.env.OPERATOR_ACCOUNT_ID,
@@ -48,8 +53,8 @@ describe("TokenFreezeTransaction", function () {
       freezeKey: tokenFreezeKey,
       pauseKey: tokenPauseKey,
       commonTransactionParams: {
-        signers: [tokenAdminKey]
-      }
+        signers: [tokenAdminKey],
+      },
     });
     tokenId = response.tokenId;
 
@@ -67,8 +72,8 @@ describe("TokenFreezeTransaction", function () {
       accountId,
       tokenIds: [tokenId],
       commonTransactionParams: {
-        signers: [accountPrivateKey]
-      }
+        signers: [accountPrivateKey],
+      },
     });
   });
   afterEach(async function () {
@@ -100,20 +105,18 @@ describe("TokenFreezeTransaction", function () {
         tokenId,
         accountId,
         commonTransactionParams: {
-          signers: [
-            tokenFreezeKey
-          ]
-        }
+          signers: [tokenFreezeKey],
+        },
       });
 
       await retryOnError(async () => verifyTokenFrozen(accountId, tokenId));
     });
 
-    it ("(#2) Freezes a token that doesn't exist on an account", async function () {
+    it("(#2) Freezes a token that doesn't exist on an account", async function () {
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId: "123.456.789",
-          accountId
+          accountId,
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
@@ -123,11 +126,11 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#3) Freezes a token with an empty token ID on an account", async function () {
+    it("(#3) Freezes a token with an empty token ID on an account", async function () {
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId: "",
-          accountId
+          accountId,
         });
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
@@ -137,10 +140,10 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#4) Freezes a token with no token ID on an account", async function () {
+    it("(#4) Freezes a token with no token ID on an account", async function () {
       try {
         await JSONRPCRequest(this, "freezeToken", {
-          accountId
+          accountId,
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
@@ -150,14 +153,12 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#5) Freezes a deleted token on an account", async function () {
+    it("(#5) Freezes a deleted token on an account", async function () {
       await JSONRPCRequest(this, "deleteToken", {
         tokenId,
         commonTransactionParams: {
-          signers: [
-            tokenAdminKey
-          ]
-        }
+          signers: [tokenAdminKey],
+        },
       });
 
       try {
@@ -165,10 +166,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              tokenFreezeKey
-            ]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_WAS_DELETED");
@@ -178,11 +177,11 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#6) Freezes a token on an account without signing with the token's freeze key", async function () {
+    it("(#6) Freezes a token on an account without signing with the token's freeze key", async function () {
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId,
-          accountId
+          accountId,
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
@@ -192,16 +191,14 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#7) Freezes a token but signs with the token's admin key", async function () {
+    it("(#7) Freezes a token but signs with the token's admin key", async function () {
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              tokenAdminKey
-            ]
-          }
+            signers: [tokenAdminKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
@@ -211,9 +208,9 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#8) Freezes a token on an account but signs with an incorrect freeze key", async function () {
+    it("(#8) Freezes a token on an account but signs with an incorrect freeze key", async function () {
       const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey"
+        type: "ed25519PrivateKey",
       });
       const key = response.key;
 
@@ -222,10 +219,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              key
-            ]
-          }
+            signers: [key],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
@@ -235,18 +230,18 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#9) Freezes a token with no freeze key on an account", async function () {
+    it("(#9) Freezes a token with no freeze key on an account", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
       const tokenIdNoFreeze = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId: tokenIdNoFreeze,
-          accountId
+          accountId,
         });
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_FREEZE_KEY");
@@ -261,34 +256,28 @@ describe("TokenFreezeTransaction", function () {
         tokenId,
         accountId,
         commonTransactionParams: {
-          signers: [
-            tokenFreezeKey
-          ]
-        }
+          signers: [tokenFreezeKey],
+        },
       });
 
       await JSONRPCRequest(this, "freezeToken", {
         tokenId,
         accountId,
         commonTransactionParams: {
-          signers: [
-            tokenFreezeKey
-          ]
-        }
+          signers: [tokenFreezeKey],
+        },
       });
 
       await retryOnError(async () => verifyTokenFrozen(accountId, tokenId));
     });
 
-    it ("(#11) Freezes a token on an account that is not associated with the token", async function () {
+    it("(#11) Freezes a token on an account that is not associated with the token", async function () {
       await JSONRPCRequest(this, "dissociateToken", {
         accountId,
         tokenIds: [tokenId],
         commonTransactionParams: {
-          signers: [
-            accountPrivateKey
-          ]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
@@ -296,8 +285,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [tokenFreezeKey]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
@@ -307,14 +296,12 @@ describe("TokenFreezeTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it ("(#12) Freezes a paused token on an account", async function () {
+    it("(#12) Freezes a paused token on an account", async function () {
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
         commonTransactionParams: {
-          signers: [
-            tokenPauseKey
-          ]
-        }
+          signers: [tokenPauseKey],
+        },
       });
 
       try {
@@ -322,8 +309,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [tokenFreezeKey]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "TOKEN_IS_PAUSED");
@@ -341,10 +328,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId: "123.456.789",
           commonTransactionParams: {
-            signers: [
-              tokenFreezeKey
-            ]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
@@ -360,8 +345,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId: "",
           commonTransactionParams: {
-            signers: [tokenFreezeKey]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.code, -32603, "Internal error");
@@ -376,10 +361,8 @@ describe("TokenFreezeTransaction", function () {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId,
           commonTransactionParams: {
-            signers: [
-              tokenFreezeKey
-            ]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
@@ -394,8 +377,8 @@ describe("TokenFreezeTransaction", function () {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
@@ -403,10 +386,8 @@ describe("TokenFreezeTransaction", function () {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              tokenFreezeKey
-            ]
-          }
+            signers: [tokenFreezeKey],
+          },
         });
       } catch (err) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
