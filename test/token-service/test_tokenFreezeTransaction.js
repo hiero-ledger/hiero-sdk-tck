@@ -1,7 +1,8 @@
-import { assert } from "chai";
+import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "../../client.js";
 import { setOperator } from "../../setup_Tests.js";
+import mirrorNodeClient from "../../mirrorNodeClient.js";
 
 import {
   verifyTokenIsDeleted,
@@ -45,7 +46,10 @@ describe("TokenFreezeTransaction", function () {
       treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       adminKey: tokenAdminKey,
       freezeKey: tokenFreezeKey,
-      pauseKey: tokenPauseKey
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey]
+      }
     });
     tokenId = response.tokenId;
 
@@ -263,22 +267,17 @@ describe("TokenFreezeTransaction", function () {
         }
       });
 
-      try {
-        await JSONRPCRequest(this, "freezeToken", {
-          tokenId,
-          accountId,
-          commonTransactionParams: {
-            signers: [
-              tokenFreezeKey
-            ]
-          }
-        });
-      } catch (err) {
-        assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
-        return;
-      }
+      await JSONRPCRequest(this, "freezeToken", {
+        tokenId,
+        accountId,
+        commonTransactionParams: {
+          signers: [
+            tokenFreezeKey
+          ]
+        }
+      });
 
-      assert.fail("Should throw an error");
+      await retryOnError(async () => verifyTokenFrozen(accountId, tokenId));
     });
 
     it ("(#11) Freezes a token on an account that is not associated with the token", async function () {
@@ -301,7 +300,7 @@ describe("TokenFreezeTransaction", function () {
           }
         });
       } catch (err) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_WITH_ACCOUNT");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
