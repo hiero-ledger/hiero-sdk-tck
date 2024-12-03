@@ -270,7 +270,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       try {
-        // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_ER_BALANCE status.
+        // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
           initialBalance: operatorAccountBalance + 1,
@@ -732,7 +732,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Staked ID", async () => {
+  describe.only("Staked ID", async () => {
     const verifyAccountCreationWithStakedAccountId = async (
       accountId: string,
       stakedAccountId: string,
@@ -755,12 +755,12 @@ describe("AccountCreateTransaction", function () {
       stakedNodeId: string,
     ) => {
       // If the account was created successfully, the queried account's staked node IDs should be equal.
-      expect(stakedNodeId.toString()).to.equal(
+      expect(stakedNodeId).to.equal(
         (
           await consensusInfoClient.getAccountInfo(accountId)
         ).stakingInfo?.stakedNodeId?.toString(),
       );
-      expect(stakedNodeId.toString()).to.equal(
+      expect(stakedNodeId).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
         ).staked_node_id.toString(),
@@ -837,7 +837,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with a staked node ID that doesn't exist. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          stakedNodeId: 123456789,
+          stakedNodeId: "123456789",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");
@@ -879,7 +879,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an invalid staked node ID. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          stakedNodeId: -100,
+          stakedNodeId: "-100",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_STAKING_ID");

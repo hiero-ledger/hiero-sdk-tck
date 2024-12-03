@@ -3943,7 +3943,7 @@ describe("TokenCreateTransaction", function () {
         feeCollectorsExempt,
         numerator,
         denominator,
-        feeCollectorAccountId,
+        fallbackFeeAmount,
       );
     });
 
@@ -3986,7 +3986,7 @@ describe("TokenCreateTransaction", function () {
         feeCollectorsExempt,
         numerator,
         denominator,
-        feeCollectorAccountId,
+        fallbackFeeAmount,
       );
     });
 
@@ -4173,7 +4173,7 @@ describe("TokenCreateTransaction", function () {
         feeCollectorsExempt,
         numerator,
         denominator,
-        feeCollectorAccountId,
+        fallbackFeeAmount,
       );
     });
 
@@ -4216,7 +4216,7 @@ describe("TokenCreateTransaction", function () {
         feeCollectorsExempt,
         numerator,
         denominator,
-        feeCollectorAccountId,
+        fallbackFeeAmount,
       );
     });
 

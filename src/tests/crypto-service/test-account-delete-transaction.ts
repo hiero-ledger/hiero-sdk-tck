@@ -41,7 +41,7 @@ describe("AccountDeleteTransaction", function () {
     it("(#1) Deletes an account with no transfer account", async () => {
       try {
         // Attempt to delete the account without a transfer account. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
-        const response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: accountId,
           commonTransactionParams: {
             signers: [accountPrivateKey],
@@ -164,7 +164,7 @@ describe("AccountDeleteTransaction", function () {
 
       try {
         // Attempt to delete the account and sign with an incorrect private key. The network should respond with an INVALID_SIGNATURE status.
-        const response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: accountId,
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
           commonTransactionParams: {
@@ -184,7 +184,7 @@ describe("AccountDeleteTransaction", function () {
   describe("Transfer Account Id", async () => {
     it("(#1) Deletes an account with a valid transfer account", async () => {
       // Attempt to delete the account and transfer its funds to the operator account.
-      const response = await JSONRPCRequest(this, "deleteAccount", {
+      await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
@@ -230,7 +230,7 @@ describe("AccountDeleteTransaction", function () {
     it("(#3) Deletes an account with a transfer account that is invalid/doesn't exist", async () => {
       try {
         // Attempt to delete the account with a transfer account that is the deleted account. The network should respond with an INVALID_TRANSFER_ACCOUNT_ID status.
-        const response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: accountId,
           transferAccountId: "123.456.789",
           commonTransactionParams: {

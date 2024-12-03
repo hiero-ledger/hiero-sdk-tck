@@ -55,8 +55,8 @@ const consensusNodeFeeEqualsCustomFractionalFee = (
     denominator === customFractionalFee.denominator?.toString() &&
     minAmount === customFractionalFee.min?.toString() &&
     maxAmount === customFractionalFee.max?.toString() &&
-    assessmentMethod ===
-      customFractionalFee.assessmentMethod?.toString().toLowerCase()
+    (assessmentMethod === "exclusive") ===
+      customFractionalFee.assessmentMethod?._value
   );
 };
 
@@ -94,7 +94,8 @@ const mirrorNodeFeeEqualsCustomFixedFee = (
 };
 
 const mirrorNodeFeeEqualsCustomFractionalFee = (
-  customFractionalFee: CustomFractionalFee,
+  // TODO: Get mirror node interface with OpenAPI
+  customFractionalFee: any,
   feeCollectorAccountId: string,
   numerator: string,
   denominator: string,
@@ -104,18 +105,19 @@ const mirrorNodeFeeEqualsCustomFractionalFee = (
 ) => {
   return (
     feeCollectorAccountId?.toString() ===
-      customFractionalFee.feeCollectorAccountId?.toString() &&
-    numerator === customFractionalFee.numerator?.toString() &&
-    denominator === customFractionalFee.denominator?.toString() &&
-    minAmount === customFractionalFee?.toString() &&
-    maxAmount === customFractionalFee?.toString() &&
+      customFractionalFee.collector_account_id &&
+    numerator === customFractionalFee.amount.numerator.toString() &&
+    denominator === customFractionalFee.amount.denominator.toString() &&
+    minAmount === customFractionalFee.minimum.toString() &&
+    maxAmount === customFractionalFee.maximum.toString() &&
     (assessmentMethod === "exclusive") ===
       customFractionalFee._allCollectorsAreExempt
   );
 };
 
 const mirrorNodeFeeEqualsCustomRoyaltyFee = (
-  customRoyaltyFee: CustomRoyaltyFee,
+  // TODO: Get mirror node interface with OpenAPI
+  customRoyaltyFee: any,
   feeCollectorAccountId: string,
   numerator: string,
   denominator: string,
@@ -123,10 +125,10 @@ const mirrorNodeFeeEqualsCustomRoyaltyFee = (
 ) => {
   return (
     feeCollectorAccountId.toString() ===
-      customRoyaltyFee.feeCollectorAccountId?.toString() &&
-    numerator === customRoyaltyFee.numerator?.toString() &&
-    denominator === customRoyaltyFee.denominator?.toString() &&
-    fixedFeeAmount === customRoyaltyFee.fallbackFee?.amount?.toString()
+      customRoyaltyFee.collector_account_id &&
+    numerator === customRoyaltyFee.amount.numerator?.toString() &&
+    denominator === customRoyaltyFee.amount.denominator?.toString() &&
+    fixedFeeAmount === customRoyaltyFee.fallback_fee.amount?.toString()
   );
 };
 
