@@ -9,11 +9,11 @@ It will encompass tests that validate the implementation of consensus node softw
 First you need to clone the repository
 
 ```
-git clone git@github.com:hashgraph/hedera-sdk-tck.git
+git clone git@github.com:hiero-ledger/hiero-sdk-tck.git
 ```
 
 The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hedera-local-node](https://github.com/hashgraph/hedera-local-node).
-In near future hedera-local-node will be transfered to Hiero.
+In near future hedera-local-node will be transfered to Hiero (see our [transition document](https://github.com/hiero-ledger/hiero/blob/main/transition.md) for more details).
 
 ### Configure usage of Hedera Testnet
 
