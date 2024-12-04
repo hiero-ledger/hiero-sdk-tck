@@ -607,7 +607,7 @@ describe("AccountUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: +(Number(expirationTimeSeconds) - 1),
+          expirationTime: Math.floor(Number(expirationTimeSeconds) - 1),
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },

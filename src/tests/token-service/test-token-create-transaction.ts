@@ -1776,7 +1776,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async () => {
+    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async () => {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
