@@ -20,6 +20,11 @@ class MirrorNodeClient {
     const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}`;
     return this.retryUntilData(url);
   }
+  
+  async getTokenRelationships(accountId) {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens`;
+    return this.retryUntilData(url);
+  }
 
   async retryUntilData(url) {
     const maxRetries = Math.floor(this.NODE_TIMEOUT / 1000); // retry once per second
