@@ -732,7 +732,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe.only("Staked ID", async () => {
+  describe("Staked ID", async () => {
     const verifyAccountCreationWithStakedAccountId = async (
       accountId: string,
       stakedAccountId: string,
