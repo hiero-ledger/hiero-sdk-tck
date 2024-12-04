@@ -17,7 +17,7 @@ In near future hedera-local-node will be transfered to Hiero (see our [transitio
 
 ### Configure usage of Hedera Testnet
 
-- Get a Hedera testnet account ID and private key from Hedera [here](https://portal.hedera.com/register)
+- Get a Hedera testnet account ID and private key [here](https://portal.hedera.com/register)
 - rename `.env.testnet` to `.env`
 - Add ECDSA account ID and private key to `.env`
 

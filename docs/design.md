@@ -30,9 +30,8 @@ The SDK's JSON-RPC server returns responses that originate from the consensus no
 
 ### Requirements
 
-1. The hedera network must support at least 4 nodes, so one can be shut down
-   without affecting consensus.
-2. The hedera network will be a local network setup by the TCK
+1. The test network must support at least 4 nodes, so one can be shut down without affecting consensus.
+2. The test network will be a local network setup by the TCK
 3. The TCK will be an executable NPM module.
 4. The JSON-RPC server for the SDK must be started prior to running the TCK.
 5. The TCK must take configuration, requiring the endpoint of the JSON-RPC
@@ -43,8 +42,7 @@ The SDK's JSON-RPC server returns responses that originate from the consensus no
 
 ### Guidance
 
-The hedera network ideally would be a hedera-local-node, which would mean adding
-support for multiple nodes to the hedera-local-node (Issue is already filed)
+The network ideally would be a hedera-local-node, which would mean adding support for multiple nodes to the hedera-local-node (Issue is already filed)
 
 ### JSON-RPC API Examples
 
