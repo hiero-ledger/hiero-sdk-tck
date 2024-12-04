@@ -417,25 +417,24 @@ describe("AccountUpdateTransaction", function () {
 
   describe("Auto Renew Period", () => {
     const verifyAccountAutoRenewPeriodUpdate = async (
-      autoRenewPeriodSeconds: number,
+      autoRenewPeriodSeconds: string,
     ) => {
       // If the account was updated successfully, the queried account's auto renew periods should be equal.
       expect(autoRenewPeriodSeconds).to.equal(
-        Number(
-          (await consensusInfoClient.getAccountInfo(accountId)).autoRenewPeriod
-            .seconds,
-        ),
+        (
+          await consensusInfoClient.getAccountInfo(accountId)
+        ).autoRenewPeriod.seconds.toString(),
       );
       expect(autoRenewPeriodSeconds).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
-        ).auto_renew_period,
+        ).auto_renew_period.toString(),
       );
     };
 
     it("(#1) Updates the auto-renew period of an account to 60 days (5,184,000 seconds)", async () => {
       // Attempt to update the auto-renew period of the account 60 days.
-      const autoRenewPeriodSeconds = 5184000;
+      const autoRenewPeriodSeconds = "5184000";
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
         autoRenewPeriod: autoRenewPeriodSeconds,
@@ -455,7 +454,7 @@ describe("AccountUpdateTransaction", function () {
         // Attempt to update the auto-renew period of the account to -1 seconds. The network should respond with an INVALID_RENEWAL_PERIOD status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          autoRenewPeriod: -1,
+          autoRenewPeriod: "-1",
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -471,7 +470,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#3) Updates the auto-renew period of an account to 30 days (2,592,000 seconds)", async () => {
       // Attempt to update the auto-renew period of the account to 30 days.
-      const autoRenewPeriodSeconds = 2592000;
+      const autoRenewPeriodSeconds = "2592000";
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
         autoRenewPeriod: autoRenewPeriodSeconds,
@@ -491,7 +490,7 @@ describe("AccountUpdateTransaction", function () {
         // Attempt to update the auto-renew period of the account to 2,591,999 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          autoRenewPeriod: 2591999,
+          autoRenewPeriod: "2591999",
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -507,7 +506,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#5) Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds", async () => {
       // Attempt to update the auto-renew period of the account to 8,000,001 seconds.
-      const autoRenewPeriodSeconds = 8000001;
+      const autoRenewPeriodSeconds = "8000001";
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
         autoRenewPeriod: autoRenewPeriodSeconds,
@@ -527,7 +526,7 @@ describe("AccountUpdateTransaction", function () {
         // Attempt to update auto-renew period of the account to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          autoRenewPeriod: 8000002,
+          autoRenewPeriod: "8000002",
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -542,32 +541,34 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", async () => {
+  describe.only("Expiration Time", async () => {
     const verifyAccountExpirationTimeUpdate = async (
-      expirationTime: number,
+      expirationTime: string,
     ) => {
       // If the account was updated successfully, the queried account's expiration times should be equal.
       expect(expirationTime).to.equal(
-        Number(
-          (await consensusInfoClient.getAccountInfo(accountId)).expirationTime
-            .seconds,
-        ),
+        (
+          await consensusInfoClient.getAccountInfo(accountId)
+        ).expirationTime.seconds.toString(),
       );
       expect(expirationTime).to.equal(
-        Number(
-          await (
-            await mirrorNodeClient.getAccountData(accountId)
-          ).expiry_timestamp,
-        ),
+        await (
+          await mirrorNodeClient.getAccountData(accountId)
+        ).expiry_timestamp.toString(),
       );
     };
 
-    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async () => {
+    it.only("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async () => {
       // Attempt to update the expiration time of the account to 8,000,001 seconds from the current time.
-      const expirationTimeSeconds = Math.floor(Date.now() / 1000 + 8000001);
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 8000001
+      ).toString();
+
+      console.log(expirationTime);
+
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
-        expirationTime: expirationTimeSeconds,
+        expirationTime: expirationTime,
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
@@ -575,7 +576,7 @@ describe("AccountUpdateTransaction", function () {
 
       // Verify the account was updated with an expiration time set to 8,000,001 seconds from the current time.
       await retryOnError(async () =>
-        verifyAccountExpirationTimeUpdate(expirationTimeSeconds),
+        verifyAccountExpirationTimeUpdate(expirationTime),
       );
     });
 
@@ -584,7 +585,7 @@ describe("AccountUpdateTransaction", function () {
         // Attempt to update the expiration time of the account to -1 seconds. The network should respond with an INVALID_EXPIRATION_TIME status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: -1,
+          expirationTime: "-1",
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -607,7 +608,9 @@ describe("AccountUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: +(Number(expirationTimeSeconds) - 1),
+          expirationTime: Math.floor(
+            Number(expirationTimeSeconds) - 1,
+          ).toString(),
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -623,10 +626,14 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async () => {
       try {
+        const expirationTime = (
+          Math.floor(Date.now() / 1000) + 8000002
+        ).toString();
+
         // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
-        const response = await JSONRPCRequest(this, "updateAccount", {
+        await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: Math.floor(Date.now() / 1000) + 8000002,
+          expirationTime: expirationTime,
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
