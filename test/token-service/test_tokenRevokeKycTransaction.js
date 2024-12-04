@@ -99,7 +99,7 @@ describe("TokenRevokeKycTransaction", function () {
     let foundToken = false;
     for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
       if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].kyc_status).to.equal("UNGRANTED");
+        expect(mirrorNodeInfo.tokens[i].kyc_status).to.equal("REVOKED");
         foundToken = true;
         break;
       }
