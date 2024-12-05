@@ -45,7 +45,7 @@ npm install
 Run specific test file
 
 ```
-npm run test test/account/test_accountCreateTransaction.js
+npm run test src/tests/account-service/test-account-create-transaction.js
 ```
 
 Run all tests
