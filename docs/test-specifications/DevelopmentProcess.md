@@ -21,7 +21,7 @@ The TCK development process encompasses all work done for a Hedera request type,
 
 ### Step 1: Documentation
 
-Before any development takes place, the tests to be written need to be thought out and put in a markdown file in the `test-specifications` folder inside `docs` directory. A new file should use the `test-specifications/TestSpecificationsTemplate.md` file as a template. The new markdown file should also be placed within a folder within the `test-specifications` folder that contains all the tests for the particular Hedera service that services the request for which tests are being written. For example, if tests are being written for `AccountCreateTransaction`, the `AccountCreateTransaction.md` file should be placed in `test-specifications/crypto-service`.
+Before any development takes place, the tests to be written need to be thought out and put in a markdown file in the `test-specifications` folder inside the `docs` directory. A new file should use the `test-specifications/TestSpecificationsTemplate.md` file as a template. The new markdown file should also be placed within a folder within the `test-specifications` folder that contains all the tests for the particular Hedera service that services the request for which tests are being written. For example, if tests are being written for `AccountCreateTransaction`, the `AccountCreateTransaction.md` file should be placed in `test-specifications/crypto-service`.
 
 The items that should be included in a request's test documentation can be seen by looking at the `TestSpecificationsTemplate.md` file. These items include:
  - Description: A description of the test specification. This, for the most part, should be copy-paste between test files with slight changes for names, links, etc.
@@ -49,7 +49,7 @@ Once the tests have been written, they can be put up for in a pull request. The 
 
 ### Step 2a: TCK Test Driver
 
-Once the tests are written, approved, and merged, they can then be developed. The approved and merged test documentation should be used to discern what tests to write and how they should operate. Much like the test documentation, the file that contains the code for the tests should be placed within a folder within the `tests` folder that contains all the tests for the particular Hedera service that services the request for which the tests are being written. For example, if tests are being written for `AccountCreateTransaction`, the `test-account-create-transaction.ts` file should be placed in `test/crypto-service`.
+Once the tests are written, approved, and merged, they can then be developed. The approved and merged test documentation should be used to discern what tests to write and how they should operate. Much like the test documentation, the file that contains the code for the tests should be placed within a folder within the `tests` folder that contains all the tests for the particular Hiero service that services the request for which the tests are being written. For example, if tests are being written for `AccountCreateTransaction`, the `test-account-create-transaction.ts` file should be placed in `tests/crypto-service`.
 
 A few guidelines for developing the tests:
  - The name of the test file should be `kebap-case` and match the name of the documentation, with a `test-` prepended to the file name, and obviously the different file extension. So a documentation markdown file named `AccountCreateTransaction.md` would have its test implementation file named `test-account-create-transaction.ts`.

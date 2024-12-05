@@ -950,7 +950,7 @@ describe("AccountUpdateTransaction", function () {
 
       // Verify the staked node ID of the account was updated.
       await retryOnError(async () =>
-        verifyAccountStakedNodeIdUpdate(stakedNodeId),
+        verifyAccountStakedNodeIdUpdate(stakedNodeId.toString()),
       );
     });
 
