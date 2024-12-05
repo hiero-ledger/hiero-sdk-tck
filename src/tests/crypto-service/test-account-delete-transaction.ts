@@ -2,7 +2,9 @@ import { assert } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
+
 import { setOperator } from "@helpers/setup-tests";
+import { ERROR_STATUS_CODES } from "@constants/error-status-codes";
 
 describe("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
@@ -114,7 +116,7 @@ describe("AccountDeleteTransaction", function () {
 
     it("(#5) Deletes an account that was already deleted", async () => {
       // Delete the account first.
-      let response = await JSONRPCRequest(this, "deleteAccount", {
+      await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
@@ -124,7 +126,7 @@ describe("AccountDeleteTransaction", function () {
 
       try {
         // Attempt to delete the account again. The network should respond with an ACCOUNT_DELETED status.
-        response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: accountId,
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
           commonTransactionParams: {
@@ -197,7 +199,7 @@ describe("AccountDeleteTransaction", function () {
       try {
         await consensusInfoClient.getAccountInfo(accountId);
       } catch (err: any) {
-        assert.equal(err.status._code, 72); // 72 maps to ACCOUNT_DELETED
+        assert.equal(err.status._code, ERROR_STATUS_CODES.ACCOUNT_DELETED);
         return;
       }
 

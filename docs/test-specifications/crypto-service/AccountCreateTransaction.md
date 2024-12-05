@@ -33,13 +33,13 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | Parameter Name            | Type                                             | Required/Optional | Description/Notes                                                                                                                           |
 |---------------------------|--------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | key                       | string                                           | optional          | DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. |
-| initialBalance            | int64                                            | optional          | Units of tinybars                                                                                                                           |
+| initialBalance            | string                                            | optional          | Units of tinybars                                                                                                                           |
 | receiverSignatureRequired | bool                                             | optional          |                                                                                                                                             |
-| autoRenewPeriod           | int64                                            | optional          | Units of seconds                                                                                                                            |
+| autoRenewPeriod           | string                                            | optional          | Units of seconds                                                                                                                            |
 | memo                      | string                                           | optional          |                                                                                                                                             |
-| maxAutoTokenAssociations  | int32                                            | optional          |                                                                                                                                             |
+| maxAutoTokenAssociations  | string                                            | optional          |                                                                                                                                             |
 | stakedAccountId           | string                                           | optional          |                                                                                                                                             |
-| stakedNodeId              | int64                                            | optional          |                                                                                                                                             |
+| stakedNodeId              | string                                            | optional          |                                                                                                                                             |
 | declineStakingReward      | bool                                             | optional          |                                                                                                                                             |
 | alias                     | string                                           | optional          | Hex string representation of the keccak-256 hash of an ECDSAsecp256k1 public key type.                                                      |
 | commonTransactionParams   | [json object](../commonTransactionParameters.md) | optional          |                                                                                                                                             |
@@ -100,9 +100,9 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                                                                | Input                                                | Expected response                                                                             | Implemented (Y/N) |
 |---------|-------------------------------------------------------------------------------------|------------------------------------------------------|-----------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates an account with an initial balance                                          | key=<VALID_KEY>, initialBalance=100                  | The account creation succeeds and the account contains 100 tinybar.                           | Y                 |
-| 2       | Creates an account with no initial balance                                          | key=<VALID_KEY>, initialBalance=0                    | The account creation succeeds and the account contains 0 tinybar.                             | Y                 |
-| 3       | Creates an account with a negative initial balance                                  | key=<VALID_KEY>, initialBalance=-1                   | The account creation fails with an INVALID_INITIAL_BALANCE response code from the network.    | Y                 |
+| 1       | Creates an account with an initial balance                                          | key=<VALID_KEY>, initialBalance="100"                  | The account creation succeeds and the account contains 100 tinybar.                           | Y                 |
+| 2       | Creates an account with no initial balance                                          | key=<VALID_KEY>, initialBalance="0"                    | The account creation succeeds and the account contains 0 tinybar.                             | Y                 |
+| 3       | Creates an account with a negative initial balance                                  | key=<VALID_KEY>, initialBalance="-1"                   | The account creation fails with an INVALID_INITIAL_BALANCE response code from the network.    | Y                 |
 | 4       | Creates an account with an initial balance higher than the operator account balance | key=<VALID_KEY>, initialBalance=<OPERATOR_BALANCE>+1 | The account creation fails with an INSUFFICIENT_PAYER_BALANCE response code from the network. | Y                 |
 
 #### JSON Request Example
@@ -114,7 +114,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
   "method": "createAccount",
   "params": {
     "key": "3030020100300706052b8104000a04220420e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35",
-    "initialBalance": 100
+    "initialBalance": "100"
   }
 }
 ```
@@ -180,12 +180,12 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                                                                                                   | Input                                    | Expected response                                                                                  | Implemented (Y/N) |
 |---------|------------------------------------------------------------------------------------------------------------------------|------------------------------------------|----------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates an account with an auto renew period set to 60 days (5,184,000 seconds)                                        | key=<VALID_KEY>, autoRenewPeriod=5184000 | The account creation succeeds and the account's auto renew period should equal 5,184,000 seconds.  | Y                 |
-| 2       | Creates an account with an auto renew period set to -1 seconds                                                         | key=<VALID_KEY>, autoRenewPeriod=-1      | The account creation fails with an INVALID_RENEWAL_PERIOD response code from the network.          | Y                 |
-| 3       | Creates an account with an auto renew period set to the minimum period of 30 days (2,592,000 seconds)                  | key=<VALID_KEY>, autoRenewPeriod=2592000 | The account creation succeeds and the account's auto renew period should equal 2,592,000 seconds.  | Y                 |
-| 4       | Creates an account with an auto renew period set to the minimum period of 30 days minus one second (2,591,999 seconds) | key=<VALID_KEY>, autoRenewPeriod=2591999 | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
+| 1       | Creates an account with an auto renew period set to 60 days (5,184,000 seconds)                                        | key=<VALID_KEY>, autoRenewPeriod="5184000" | The account creation succeeds and the account's auto renew period should equal 5,184,000 seconds.  | Y                 |
+| 2       | Creates an account with an auto renew period set to "-1" seconds                                                         | key=<VALID_KEY>, autoRenewPeriod="-1"      | The account creation fails with an INVALID_RENEWAL_PERIOD response code from the network.          | Y                 |
+| 3       | Creates an account with an auto renew period set to the minimum period of 30 days (2,592,000 seconds)                  | key=<VALID_KEY>, autoRenewPeriod="2592000" | The account creation succeeds and the account's auto renew period should equal 2,592,000 seconds.  | Y                 |
+| 4       | Creates an account with an auto renew period set to the minimum period of 30 days minus one second (2,591,999 seconds) | key=<VALID_KEY>, autoRenewPeriod="2591999" | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 | 5       | Creates an account with an auto renew period set to the maximum period of 8,000,001 seconds                            | key=<VALID_KEY>, autoRenewPeriod=8000001 | The account creation succeeds and the account's auto renew period should equal 8,000,001 seconds.  | Y                 |
-| 6       | Creates an account with an auto renew period set to the maximum period plus one seconds (8,000,002 seconds)            | key=<VALID_KEY>, autoRenewPeriod=8000002 | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
+| 6       | Creates an account with an auto renew period set to the maximum period plus one seconds (8,000,002 seconds)            | key=<VALID_KEY>, autoRenewPeriod="8000002" | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 
 #### JSON Request Example
 
@@ -196,7 +196,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
   "method": "createAccount",
   "params": {
     "key": "302e020100300506032b65700422042031f8eb3e77a04ebe599c51570976053009e619414f26bdd39676a5d3b2782a1d",
-    "autoRenewPeriod": 5184000
+    "autoRenewPeriod": "5184000"
   }
 }
 ```
@@ -259,10 +259,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                                                           | Input                                                                                                  | Expected response                                                                               | Implemented (Y/N) |
 |---------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates an account with a max token association that is a valid amount         | key=<VALID_KEY>, maxAutoTokenAssociations=100                                                          | The account creation succeeds and the account has 100 automatic token associations.             | Y                 |
-| 2       | Creates an account with a max token association that is the minimum value      | key=<VALID_KEY>, maxAutoTokenAssociations=0                                                            | The account creation succeeds and the account has 0 automatic token associations.               | Y                 |
-| 3       | Creates an account with a max token association that is the maximum value      | key=<VALID_KEY>, maxAutoTokenAssociations=5000, commonTransactionParams.maxTransactionFee=100000000000 | The account creation succeeds and the account has 5000 automatic token associations.            | Y                 |
-| 4       | Creates an account with a max token association that exceeds the maximum value | key=<VALID_KEY>, maxAutoTokenAssociations=5001, commonTransactionParams.maxTransactionFee=100000000000 | The account creation fails with a INVALID_MAX_AUTO_ASSOCIATIONS response code from the network. | Y                 |
+| 1       | Creates an account with a max token association that is a valid amount         | key=<VALID_KEY>, maxAutoTokenAssociations="100"                                                          | The account creation succeeds and the account has 100 automatic token associations.             | Y                 |
+| 2       | Creates an account with a max token association that is the minimum value      | key=<VALID_KEY>, maxAutoTokenAssociations="0"                                                            | The account creation succeeds and the account has 0 automatic token associations.               | Y                 |
+| 3       | Creates an account with a max token association that is the maximum value      | key=<VALID_KEY>, maxAutoTokenAssociations="5000", commonTransactionParams.maxTransactionFee="100000000000" | The account creation succeeds and the account has 5000 automatic token associations.            | Y                 |
+| 4       | Creates an account with a max token association that exceeds the maximum value | key=<VALID_KEY>, maxAutoTokenAssociations="5001", commonTransactionParams.maxTransactionFee="100000000000" | The account creation fails with a INVALID_MAX_AUTO_ASSOCIATIONS response code from the network. | Y                 |
 
 #### JSON Request Example
 
@@ -273,7 +273,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
   "method": "createAccount",
   "params": {
     "key": "302e020100300506032b65700422042031f8eb3e77a04ebe599c51570976053009e619414f26bdd39676a5d3b2782a1d",
-    "maxAutoTokenAssociations": 100
+    "maxAutoTokenAssociations": "100"
   }
 }
 ```
@@ -304,7 +304,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 3       | Creates an account with the staked account ID set to an account ID that doesn't exist | key=<VALID_KEY>, stakedAccountId="123.456.789"                                               | The account creation fails with an INVALID_STAKING_ID response code from the network.                 | Y                 |
 | 4       | Creates an account with the staked node ID set to a node ID that doesn't exist        | key=<VALID_KEY>, stakedNodeId=123456789                                                      | The account creation fails with an INVALID_STAKING_ID response code from the network.                 | Y                 |
 | 5       | Creates an account with the staked account ID set to an empty account ID              | key=<VALID_KEY>, stakedAccountId=""                                                          | The account creation fails with and SDK internal error.                                               | Y                 |
-| 6       | Creates an account with the staked node ID set to an invalid node ID                  | key=<VALID_KEY>, stakedNodeId=-100                                                           | The account creation fails with an INVALID_STAKING_ID response code from the network.                 | Y                 |
+| 6       | Creates an account with the staked node ID set to an invalid node ID                  | key=<VALID_KEY>, stakedNodeId="-100"                                                           | The account creation fails with an INVALID_STAKING_ID response code from the network.                 | Y                 |
 | 7       | Creates an account with a staked account ID and a staked node ID                      | key=<VALID_KEY>, stakedAccountId=<OPERATOR_ACCOUNT_ID>, stakedNodeId=<VALID_NETWORK_NODE_ID> | The account creation succeeds and the account has a staking node ID equal to the input node ID.       | Y                 |
 
 #### JSON Request Examples
@@ -328,7 +328,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
   "method": "createAccount",
   "params": {
     "key": "302e020100300506032b65700422042031f8eb3e77a04ebe599c51570976053009e619414f26bdd39676a5d3b2782a1d",
-    "stakedNodeId": 10
+    "stakedNodeId": "10"
   }
 }
 ```

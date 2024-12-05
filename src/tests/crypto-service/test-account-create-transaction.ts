@@ -9,7 +9,8 @@ import { setOperator } from "@helpers/setup-tests";
 import {
   fourKeysKeyListParams,
   twoLevelsNestedKeyListParams,
-} from "@helpers/constants/key-list";
+} from "@constants/key-list";
+import { ErrorStatusCodes } from "@enums/error-codes";
 
 /**
  * Tests for AccountCreateTransaction
@@ -163,7 +164,11 @@ describe("AccountCreateTransaction", function () {
           key: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -198,9 +203,10 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an initial balance of 100 tinybars.
       const initialBalance = "100";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
-        initialBalance: initialBalance,
+        initialBalance,
       });
 
       // Verify the account was created with 100 tinybars.
@@ -218,6 +224,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an initial balance of 0 tinybars.
       const initialBalance = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         initialBalance,
@@ -396,6 +403,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an auto-renew period set to 60 days.
       const autoRenewPeriod = "5184000";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         autoRenewPeriod,
@@ -478,6 +486,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an auto-renew period set to 90ish days.
       const autoRenewPeriod = "8000001";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         autoRenewPeriod,
@@ -536,6 +545,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with a memo set to "testmemo".
       const memo = "testmemo";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo,
@@ -553,6 +563,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an empty memo.
       const memo = "";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo,
@@ -571,6 +582,7 @@ describe("AccountCreateTransaction", function () {
       // Attempt to create an account with a memo set to the maximum length.
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo: memo,
@@ -692,9 +704,10 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with the max automatic token associations set to the maximum value.
       const maxAutoTokenAssociations = "5000";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
-        maxAutoTokenAssociations: "5000",
+        maxAutoTokenAssociations,
       });
 
       // Verify the account was created with the max automatic token associations set to 5000.
@@ -788,6 +801,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with the staked node ID set to the node's node ID.
       const stakedNodeId = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedNodeId,
@@ -892,6 +906,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with a staked account ID and a staked node ID.
       const stakedNodeId = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
