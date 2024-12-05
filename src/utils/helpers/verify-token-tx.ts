@@ -1,24 +1,28 @@
 import { expect } from "chai";
-import { Timestamp } from "@hashgraph/sdk";
+import { Timestamp, TokenInfo, PublicKey } from "@hashgraph/sdk";
 
-import { getRawKeyFromHex } from "./asn1-decoder.js";
+import { getRawKeyFromHex } from "@helpers/asn1-decoder";
 import {
   getPublicKeyFromMirrorNode,
   getEncodedKeyHexFromKeyListConsensus,
-} from "./key.js";
+} from "@helpers/key";
 
-import mirrorNodeClient from "../../mirrorNodeClient.js";
-import consensusInfoClient from "../../consensusInfoClient.js";
+import mirrorNodeClient from "@services/MirrorNodeClient";
+import consensusInfoClient from "@services/ConsensusInfoClient";
 
-export async function verifyTokenKey(tokenId, key, keyType) {
+export const verifyTokenKey = async (
+  tokenId: string,
+  key: string,
+  keyType: string,
+) => {
   const rawKey = getRawKeyFromHex(key);
 
   // Fetch the token info from the consensus node
   const tokenInfo = await consensusInfoClient.getTokenInfo(tokenId);
-  const tokenKey = tokenInfo[keyType];
+  const tokenKey = tokenInfo[keyType as keyof TokenInfo] as PublicKey;
 
   // Check if the key matches
-  expect(rawKey).to.equal(tokenKey.toStringRaw());
+  expect(rawKey).to.equal(tokenKey?.toStringRaw());
 
   const mirrorNodeKey = transformConsensusToMirrorNodeProp(keyType);
   // Fetch the key from the mirror node
@@ -29,10 +33,14 @@ export async function verifyTokenKey(tokenId, key, keyType) {
   );
 
   // Verify that the key from the mirror node matches the raw key
-  expect(rawKey).to.equal(publicKeyMirrorNode.toStringRaw());
-}
+  expect(rawKey).to.equal(publicKeyMirrorNode?.toStringRaw());
+};
 
-export async function verifyTokenKeyList(tokenId, key, keyType) {
+export const verifyTokenKeyList = async (
+  tokenId: string,
+  key: string,
+  keyType: string,
+) => {
   // Fetch the encoded key from the consensus node
   const keyHex = await getEncodedKeyHexFromKeyListConsensus(
     "getTokenInfo",
@@ -46,28 +54,29 @@ export async function verifyTokenKeyList(tokenId, key, keyType) {
 
   const mirrorNodeKeyName = transformConsensusToMirrorNodeProp(keyType);
   // Mirror node check
-  const mirrorNodeKey = (
-    await (
-      await mirrorNodeClient.getTokenData(tokenId)
-    )[mirrorNodeKeyName]
-  ).key;
+  const mirrorNodeKey = await (
+    await mirrorNodeClient.getTokenData(tokenId)
+  )[mirrorNodeKeyName].key;
 
   // Verify that the key from the mirror node matches the expected key
   expect(key).to.equal(
     // Removing the unnecessary prefix from the mirror node key
     mirrorNodeKey.slice(mirrorNodeKey.length - key.length),
   );
-}
+};
 
-function transformConsensusToMirrorNodeProp(key) {
+const transformConsensusToMirrorNodeProp = (key: string) => {
   return key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
-}
+};
 
-export async function verifyTokenUpdateWithNullKey(tokenId, keyType) {
+export const verifyTokenUpdateWithNullKey = async (
+  tokenId: string,
+  keyType: string,
+) => {
   // Fetch the key from the consensus node and check if it is null
-  const consensusNodeKey = await (
-    await consensusInfoClient.getTokenInfo(tokenId)
-  )[keyType];
+  const consensusNodeKey = (await consensusInfoClient.getTokenInfo(tokenId))[
+    keyType as keyof TokenInfo
+  ];
   expect(null).to.equal(consensusNodeKey);
 
   // Convert the keyType to match the mirror node property format
@@ -80,17 +89,18 @@ export async function verifyTokenUpdateWithNullKey(tokenId, keyType) {
     mirrorNodeKeyName,
   );
   expect(null).to.equal(mirrorNodeKey);
-}
+};
 
-export async function verifyTokenExpirationTimeUpdate(tokenId, expirationTime) {
+export const verifyTokenExpirationTimeUpdate = async (
+  tokenId: string,
+  expirationTime: string,
+) => {
   const parsedExpirationTime = Timestamp.fromDate(
     new Date(Number(expirationTime) * 1000),
   );
 
   expect(parsedExpirationTime).to.deep.equal(
-    await (
-      await consensusInfoClient.getTokenInfo(tokenId)
-    ).expirationTime,
+    (await consensusInfoClient.getTokenInfo(tokenId)).expirationTime,
   );
 
   const mirrorNodeExpirationDateNanoseconds = await (
@@ -103,4 +113,4 @@ export async function verifyTokenExpirationTimeUpdate(tokenId, expirationTime) {
   );
 
   expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
-}
+};
