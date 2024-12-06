@@ -1,3 +1,0 @@
-export const ERROR_STATUS_CODES = {
-  ACCOUNT_DELETED: 72,
-};

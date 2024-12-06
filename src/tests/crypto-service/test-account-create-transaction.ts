@@ -10,13 +10,13 @@ import {
   fourKeysKeyListParams,
   twoLevelsNestedKeyListParams,
 } from "@constants/key-list";
-import { ErrorStatusCodes } from "@enums/error-codes";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for AccountCreateTransaction
  */
 
-describe("AccountCreateTransaction", function () {
+describe.only("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -638,18 +638,21 @@ describe("AccountCreateTransaction", function () {
   describe("Max Automatic Token Associations", async () => {
     const verifyAccountCreationWithMaxAutoTokenAssociations = async (
       accountId: string,
-      maxAutomaticTokenAssociations: string,
+      maxAutomaticTokenAssociations: number,
     ) => {
       // If the account was created successfully, the queried account's max automatic token associations should be equal.
       expect(maxAutomaticTokenAssociations).to.equal(
-        (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).maxAutomaticTokenAssociations.toString(),
+        Number(
+          (await consensusInfoClient.getAccountInfo(accountId))
+            .maxAutomaticTokenAssociations,
+        ),
       );
       expect(maxAutomaticTokenAssociations).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).max_automatic_token_associations.toString(),
+        Number(
+          await (
+            await mirrorNodeClient.getAccountData(accountId)
+          ).max_automatic_token_associations,
+        ),
       );
     };
 
@@ -660,12 +663,12 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with the max automatic token associations set to 100.
-      const maxAutoTokenAssociations = "100";
+      const maxAutoTokenAssociations = 100;
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         maxAutoTokenAssociations,
         commonTransactionParams: {
-          maxTransactionFee: "100000000000",
+          maxTransactionFee: 100000000000,
         },
       });
 
@@ -683,7 +686,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with the max automatic token associations set to 0.
-      const maxAutoTokenAssociations = "0";
+      const maxAutoTokenAssociations = 0;
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         maxAutoTokenAssociations,
@@ -703,7 +706,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with the max automatic token associations set to the maximum value.
-      const maxAutoTokenAssociations = "5000";
+      const maxAutoTokenAssociations = 5000;
 
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
@@ -727,7 +730,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with the max automatic token associations over the maximum value. The network should respond with an INVALID_MAX_AUTO_ASSOCIATIONS status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          maxAutoTokenAssociations: "5001",
+          maxAutoTokenAssociations: 5001,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_MAX_AUTO_ASSOCIATIONS");

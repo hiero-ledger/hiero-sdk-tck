@@ -4,9 +4,9 @@ import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
-import { ERROR_STATUS_CODES } from "@constants/error-status-codes";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-describe("AccountDeleteTransaction", function () {
+describe.only("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -199,7 +199,7 @@ describe("AccountDeleteTransaction", function () {
       try {
         await consensusInfoClient.getAccountInfo(accountId);
       } catch (err: any) {
-        assert.equal(err.status._code, ERROR_STATUS_CODES.ACCOUNT_DELETED);
+        assert.equal(err.status._code, ErrorStatusCodes.ACCOUNT_DELETED);
         return;
       }
 

@@ -18,9 +18,9 @@ import {
   twoLevelsNestedKeyListParams,
   twoThresholdKeyParams,
 } from "@constants/key-list";
-import { ErrorStatusCodes } from "@enums/error-codes";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-describe("AccountUpdateTransaction", function () {
+describe.only("AccountUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -791,30 +791,33 @@ describe("AccountUpdateTransaction", function () {
 
   describe("Max Automatic Token Associations", async () => {
     const verifyMaxAutoTokenAssociationsUpdate = async (
-      maxAutomaticTokenAssociations: string,
+      maxAutomaticTokenAssociations: number,
     ) => {
       // If the account was updated successfully, the queried account's max automatic token associations should be equal.
       expect(maxAutomaticTokenAssociations).to.equal(
-        (
-          await consensusInfoClient.getAccountInfo(accountId)
-        ).maxAutomaticTokenAssociations.toString(),
+        Number(
+          (await consensusInfoClient.getAccountInfo(accountId))
+            .maxAutomaticTokenAssociations,
+        ),
       );
       expect(maxAutomaticTokenAssociations).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).max_automatic_token_associations.toString(),
+        Number(
+          await (
+            await mirrorNodeClient.getAccountData(accountId)
+          ).max_automatic_token_associations,
+        ),
       );
     };
 
     it("(#1) Updates the max automatic token associations of an account to a valid amount", async () => {
       // Attempt to update the max automatic token associations of the account to 100.
-      const maxAutoTokenAssociations = "100";
+      const maxAutoTokenAssociations = 100;
 
       await JSONRPCRequest(this, "updateAccount", {
         accountId,
         maxAutoTokenAssociations,
         commonTransactionParams: {
-          maxTransactionFee: "100000000000",
+          maxTransactionFee: 100000000000,
           signers: [accountPrivateKey],
         },
       });
@@ -827,7 +830,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#2) Updates the max automatic token associations of an account to the minimum amount", async () => {
       // Attempt to update the max automatic token associations of the account to 0.
-      const maxAutoTokenAssociations = "0";
+      const maxAutoTokenAssociations = 0;
 
       await JSONRPCRequest(this, "updateAccount", {
         accountId,
@@ -845,13 +848,13 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#3) Updates the max automatic token associations of an account to the maximum amount", async () => {
       // Attempt to update the max automatic token associations of the account to 5000.
-      const maxAutoTokenAssociations = "5000";
+      const maxAutoTokenAssociations = 5000;
 
       await JSONRPCRequest(this, "updateAccount", {
         accountId,
         maxAutoTokenAssociations,
         commonTransactionParams: {
-          maxTransactionFee: "100000000000",
+          maxTransactionFee: 100000000000,
           signers: [accountPrivateKey],
         },
       });
@@ -867,9 +870,9 @@ describe("AccountUpdateTransaction", function () {
         // Attempt to update the max automatic token associations of the account to 5001. The network should respond with a REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId,
-          maxAutoTokenAssociations: "5001",
+          maxAutoTokenAssociations: 5001,
           commonTransactionParams: {
-            maxTransactionFee: "100000000000",
+            maxTransactionFee: 100000000000,
             signers: [accountPrivateKey],
           },
         });

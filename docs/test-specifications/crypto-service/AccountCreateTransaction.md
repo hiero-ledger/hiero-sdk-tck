@@ -37,7 +37,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | receiverSignatureRequired | bool                                             | optional          |                                                                                                                                             |
 | autoRenewPeriod           | string                                            | optional          | Units of seconds                                                                                                                            |
 | memo                      | string                                           | optional          |                                                                                                                                             |
-| maxAutoTokenAssociations  | string                                            | optional          |                                                                                                                                             |
+| maxAutoTokenAssociations  | int32                                            | optional          |                                                                                                                                             |
 | stakedAccountId           | string                                           | optional          |                                                                                                                                             |
 | stakedNodeId              | string                                            | optional          |                                                                                                                                             |
 | declineStakingReward      | bool                                             | optional          |                                                                                                                                             |
@@ -259,10 +259,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                                                           | Input                                                                                                  | Expected response                                                                               | Implemented (Y/N) |
 |---------|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates an account with a max token association that is a valid amount         | key=<VALID_KEY>, maxAutoTokenAssociations="100"                                                          | The account creation succeeds and the account has 100 automatic token associations.             | Y                 |
-| 2       | Creates an account with a max token association that is the minimum value      | key=<VALID_KEY>, maxAutoTokenAssociations="0"                                                            | The account creation succeeds and the account has 0 automatic token associations.               | Y                 |
-| 3       | Creates an account with a max token association that is the maximum value      | key=<VALID_KEY>, maxAutoTokenAssociations="5000", commonTransactionParams.maxTransactionFee="100000000000" | The account creation succeeds and the account has 5000 automatic token associations.            | Y                 |
-| 4       | Creates an account with a max token association that exceeds the maximum value | key=<VALID_KEY>, maxAutoTokenAssociations="5001", commonTransactionParams.maxTransactionFee="100000000000" | The account creation fails with a INVALID_MAX_AUTO_ASSOCIATIONS response code from the network. | Y                 |
+| 1       | Creates an account with a max token association that is a valid amount         | key=<VALID_KEY>, maxAutoTokenAssociations=100                                                          | The account creation succeeds and the account has 100 automatic token associations.             | Y                 |
+| 2       | Creates an account with a max token association that is the minimum value      | key=<VALID_KEY>, maxAutoTokenAssociations=0                                                            | The account creation succeeds and the account has 0 automatic token associations.               | Y                 |
+| 3       | Creates an account with a max token association that is the maximum value      | key=<VALID_KEY>, maxAutoTokenAssociations=5000, commonTransactionParams.maxTransactionFee=100000000000 | The account creation succeeds and the account has 5000 automatic token associations.            | Y                 |
+| 4       | Creates an account with a max token association that exceeds the maximum value | key=<VALID_KEY>, maxAutoTokenAssociations=5001, commonTransactionParams.maxTransactionFee=100000000000 | The account creation fails with a INVALID_MAX_AUTO_ASSOCIATIONS response code from the network. | Y                 |
 
 #### JSON Request Example
 
@@ -273,7 +273,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
   "method": "createAccount",
   "params": {
     "key": "302e020100300506032b65700422042031f8eb3e77a04ebe599c51570976053009e619414f26bdd39676a5d3b2782a1d",
-    "maxAutoTokenAssociations": "100"
+    "maxAutoTokenAssociations": 100
   }
 }
 ```
