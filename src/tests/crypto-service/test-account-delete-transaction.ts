@@ -6,7 +6,7 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 import { setOperator } from "@helpers/setup-tests";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-describe.only("AccountDeleteTransaction", function () {
+describe("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
