@@ -1711,7 +1711,7 @@ describe("TokenCreateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", () => {
+  describe.only("Expiration Time", () => {
     it("(#1) Creates a token with an expiration time of 0 seconds", async () => {
       try {
         await JSONRPCRequest(this, "createToken", {
