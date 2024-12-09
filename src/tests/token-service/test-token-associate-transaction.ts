@@ -15,7 +15,7 @@ describe("TokenAssociateTransaction", function () {
 
   // All tests require an account and a token to be created.
   let tokenId: string, accountId: string, accountPrivateKey: string;
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -40,7 +40,7 @@ describe("TokenAssociateTransaction", function () {
     });
     accountId = response.accountId;
   });
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
@@ -68,7 +68,7 @@ describe("TokenAssociateTransaction", function () {
   };
 
   describe("Account ID", function () {
-    it("(#1) Associates a token with an account", async () => {
+    it("(#1) Associates a token with an account", async function () {
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         tokenIds: [tokenId],
@@ -82,7 +82,7 @@ describe("TokenAssociateTransaction", function () {
       );
     });
 
-    it("(#2) Associates a token with an account with which it is already associated", async () => {
+    it("(#2) Associates a token with an account with which it is already associated", async function () {
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         tokenIds: [tokenId],
@@ -107,7 +107,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Associates a token with an account without signing with the account's private key", async () => {
+    it("(#3) Associates a token with an account without signing with the account's private key", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
@@ -121,7 +121,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Associates a token with an account that doesn't exist", async () => {
+    it("(#4) Associates a token with an account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId: "123.456.789",
@@ -135,7 +135,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Associates a token with an account that is deleted", async () => {
+    it("(#5) Associates a token with an account that is deleted", async function () {
       await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -160,7 +160,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Associates a token with an empty account", async () => {
+    it("(#6) Associates a token with an empty account", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId: "",
@@ -176,7 +176,7 @@ describe("TokenAssociateTransaction", function () {
   });
 
   describe("Token IDs", function () {
-    it("(#1) Associates no tokens with an account", async () => {
+    it("(#1) Associates no tokens with an account", async function () {
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         commonTransactionParams: {
@@ -187,7 +187,7 @@ describe("TokenAssociateTransaction", function () {
       await retryOnError(async () => verifyNoTokenAssociations(accountId));
     });
 
-    it("(#2) Associates a token that doesn't exist with an account", async () => {
+    it("(#2) Associates a token that doesn't exist with an account", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
@@ -204,7 +204,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Associates a token that is deleted with an account", async () => {
+    it("(#3) Associates a token that is deleted with an account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -245,7 +245,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Associates a token that is empty with an account", async () => {
+    it("(#4) Associates a token that is empty with an account", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
@@ -262,7 +262,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Associates a token twice with an account", async () => {
+    it("(#5) Associates a token twice with an account", async function () {
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
@@ -279,7 +279,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Associates three valid tokens with an account", async () => {
+    it("(#6) Associates three valid tokens with an account", async function () {
       let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -315,7 +315,7 @@ describe("TokenAssociateTransaction", function () {
       );
     });
 
-    it("(#7) Associates two valid tokens and an invalid token with an account", async () => {
+    it("(#7) Associates two valid tokens and an invalid token with an account", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -340,7 +340,7 @@ describe("TokenAssociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Associates two valid tokens and a deleted token with an account", async () => {
+    it("(#8) Associates two valid tokens and a deleted token with an account", async function () {
       let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
