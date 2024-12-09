@@ -277,7 +277,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          initialBalance: operatorAccountBalance + 1,
+          initialBalance: (operatorAccountBalance + 1).toString(),
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_PAYER_BALANCE");
