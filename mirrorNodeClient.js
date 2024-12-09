@@ -20,7 +20,7 @@ class MirrorNodeClient {
     const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}`;
     return this.retryUntilData(url);
   }
-  
+
   async getTokenRelationships(accountId) {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens`;
     return this.retryUntilData(url);
