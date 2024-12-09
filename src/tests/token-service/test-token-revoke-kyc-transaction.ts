@@ -1,10 +1,10 @@
 import { assert, expect } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import { setOperator } from "../../setup_Tests.js";
-import mirrorNodeClient from "../../mirrorNodeClient.js";
+import { JSONRPCRequest } from "@services/Client";
+import mirrorNodeClient from "@services/MirrorNodeClient";
 
-import { retryOnError } from "../../utils/helpers/retry-on-error.js";
+import { setOperator } from "@helpers/setup-tests";
+import { retryOnError } from "@helpers/retry-on-error";
 
 /**
  * Tests for TokenRevokeKycTransaction
@@ -14,17 +14,18 @@ describe("TokenRevokeKycTransaction", function () {
   this.timeout(30000);
 
   // All tests require an account and a token to be created, have the two be associated, and KYC granted.
-  let tokenId,
-    tokenFreezeKey,
-    tokenAdminKey,
-    tokenPauseKey,
-    tokenKycKey,
-    accountId,
-    accountPrivateKey;
+  let tokenId: string,
+    tokenFreezeKey: string,
+    tokenAdminKey: string,
+    tokenPauseKey: string,
+    tokenKycKey: string,
+    accountId: string,
+    accountPrivateKey: string;
   beforeEach(async function () {
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
     let response = await JSONRPCRequest(this, "generateKey", {
@@ -83,7 +84,7 @@ describe("TokenRevokeKycTransaction", function () {
       tokenId,
       accountId,
       commonTransactionParams: {
-        signers: [tokenKycKey]
+        signers: [tokenKycKey],
       },
     });
   });
@@ -91,7 +92,7 @@ describe("TokenRevokeKycTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  async function verifyTokenNoKyc(accountId, tokenId) {
+  async function verifyTokenNoKyc(accountId: string, tokenId: string) {
     // No way to get token associations via consensus node, so just query mirror node.
     const mirrorNodeInfo =
       await mirrorNodeClient.getTokenRelationships(accountId);
@@ -129,7 +130,7 @@ describe("TokenRevokeKycTransaction", function () {
           tokenId: "123.456.789",
           accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
         return;
       }
@@ -143,7 +144,7 @@ describe("TokenRevokeKycTransaction", function () {
           tokenId: "",
           accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -156,7 +157,7 @@ describe("TokenRevokeKycTransaction", function () {
         await JSONRPCRequest(this, "revokeTokenKyc", {
           accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
         return;
       }
@@ -180,7 +181,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_WAS_DELETED");
         return;
       }
@@ -194,7 +195,7 @@ describe("TokenRevokeKycTransaction", function () {
           tokenId,
           accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -211,7 +212,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenAdminKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -233,7 +234,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [key],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -254,7 +255,7 @@ describe("TokenRevokeKycTransaction", function () {
           tokenId: tokenIdNoKyc,
           accountId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_KYC_KEY");
         return;
       }
@@ -299,7 +300,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
@@ -323,7 +324,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_IS_PAUSED");
         return;
       }
@@ -348,7 +349,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
         return;
       }
@@ -367,7 +368,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
       }
@@ -384,7 +385,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.code, -32603, "Internal error");
         return;
       }
@@ -400,7 +401,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
       }
@@ -425,7 +426,7 @@ describe("TokenRevokeKycTransaction", function () {
             signers: [tokenKycKey],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }

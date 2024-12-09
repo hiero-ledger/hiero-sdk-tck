@@ -7,6 +7,7 @@ export default defineConfig([
         console: "readonly",
       },
     },
+    extends: ["plugin:prettier/recommended"],
     rules: {
       "no-console": ["warn", { allow: ["warn"] }],
       "prefer-const": "error",
@@ -15,6 +16,7 @@ export default defineConfig([
       eqeqeq: ["error", "always"],
       "no-multi-spaces": ["error"],
       "no-duplicate-imports": ["error"],
+      "prettier/prettier": "error",
     },
     ignores: ["mochawesome-report/**"],
   },

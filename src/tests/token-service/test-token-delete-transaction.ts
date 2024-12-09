@@ -1,13 +1,11 @@
 import { assert } from "chai";
 
-import { JSONRPCRequest } from "../../client.js";
-import { setOperator } from "../../setup_Tests.js";
+import { JSONRPCRequest } from "@services/Client";
 
-import {
-  verifyTokenIsDeleted,
-  getNewFungibleTokenId,
-} from "../../utils/helpers/token.js";
-import { retryOnError } from "../../utils/helpers/retry-on-error.js";
+import { setOperator } from "@helpers/setup-tests";
+import { verifyTokenIsDeleted, getNewFungibleTokenId } from "@helpers/token";
+import { retryOnError } from "@helpers/retry-on-error";
+
 /**
  * Tests for TokenDeleteTransaction
  */
@@ -16,18 +14,19 @@ describe("TokenDeleteTransaction", function () {
   this.timeout(30000);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
-  beforeEach(async function () {
+  beforeEach(async () => {
     await setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
-  afterEach(async function () {
+  afterEach(async () => {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("Token ID", function () {
-    it("(#1) Deletes an immutable token", async function () {
+  describe("Token ID", () => {
+    it("(#1) Deletes an immutable token", async () => {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -43,7 +42,7 @@ describe("TokenDeleteTransaction", function () {
             signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
         return;
       }
@@ -52,7 +51,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Deletes a mutable token", async function () {
+    it("(#2) Deletes a mutable token", async () => {
       const tokenId = await getNewFungibleTokenId(this);
 
       await JSONRPCRequest(this, "deleteToken", {
@@ -67,7 +66,7 @@ describe("TokenDeleteTransaction", function () {
       });
     });
 
-    it("(#3) Deletes a token that doesn't exist", async function () {
+    it("(#3) Deletes a token that doesn't exist", async () => {
       try {
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: "123.456.789",
@@ -75,7 +74,7 @@ describe("TokenDeleteTransaction", function () {
             signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
         return;
       }
@@ -84,7 +83,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Deletes a token with no token ID", async function () {
+    it("(#4) Deletes a token with no token ID", async () => {
       try {
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: "",
@@ -92,7 +91,7 @@ describe("TokenDeleteTransaction", function () {
             signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.message, "Internal error");
         return;
       }
@@ -101,7 +100,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Deletes a token that was already deleted", async function () {
+    it("(#5) Deletes a token that was already deleted", async () => {
       try {
         const tokenId = await getNewFungibleTokenId(this);
 
@@ -119,7 +118,7 @@ describe("TokenDeleteTransaction", function () {
             signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_WAS_DELETED");
         return;
       }
@@ -128,7 +127,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Deletes a token without signing with the token's admin key", async function () {
+    it("(#6) Deletes a token without signing with the token's admin key", async () => {
       try {
         // Passing other admin key in order to throw an error
         const privateKey = await JSONRPCRequest(this, "generateKey", {
@@ -140,7 +139,7 @@ describe("TokenDeleteTransaction", function () {
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: tokenId,
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
@@ -149,7 +148,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Deletes a token but signs with an incorrect private key", async function () {
+    it("(#7) Deletes a token but signs with an incorrect private key", async () => {
       try {
         const privateKey = await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
@@ -174,7 +173,7 @@ describe("TokenDeleteTransaction", function () {
             signers: [process.env.OPERATOR_ACCOUNT_PRIVATE_KEY],
           },
         });
-      } catch (err) {
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }

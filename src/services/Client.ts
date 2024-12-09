@@ -1,31 +1,38 @@
-import { JSONRPC, JSONRPCClient } from "json-rpc-2.0";
+import { JSONRPC, JSONRPCClient, CreateID } from "json-rpc-2.0";
 import axios from "axios";
 import "dotenv/config";
 
 let nextID = 0;
-const createID = () => nextID++;
+const createID: CreateID = () => nextID++;
 
 // JSONRPCClient needs to know how to send a JSON-RPC request.
 // Tell it by passing a function to its constructor. The function must take a JSON-RPC request and send it.
-const JSONRPClient = new JSONRPCClient(async (jsonRPCRequest) => {
-  try {
-    const response = await axios.post("http://localhost", jsonRPCRequest, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+const JSONRPClient = new JSONRPCClient(
+  async (jsonRPCRequest): Promise<void> => {
+    try {
+      const response = await axios.post("http://localhost", jsonRPCRequest, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    if (response.status === 200) {
-      return JSONRPClient.receive(response.data);
-    } else if (jsonRPCRequest.id !== undefined) {
-      throw new Error(response.statusText);
+      if (response.status === 200) {
+        return JSONRPClient.receive(response.data);
+      } else if (jsonRPCRequest.id !== undefined) {
+        throw new Error(response.statusText);
+      }
+    } catch (error) {
+      throw error;
     }
-  } catch (error) {
-    throw error;
-  }
-}, createID());
+  },
+  createID,
+);
 
-export async function JSONRPCRequest(mochaTestContext, method, params) {
+export const JSONRPCRequest = async (
+  mochaTestContext: any,
+  method: string,
+  params?: any,
+) => {
   const jsonRPCRequest = {
     jsonrpc: JSONRPC,
     id: createID(),
@@ -51,4 +58,4 @@ export async function JSONRPCRequest(mochaTestContext, method, params) {
     }
     return jsonRPCResponse.result;
   }
-}
+};
