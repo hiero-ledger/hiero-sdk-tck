@@ -1,12 +1,16 @@
 import {
+  AccountBalance,
   AccountBalanceQuery,
   AccountId,
+  AccountInfo,
   AccountInfoQuery,
   Client,
+  TokenInfo,
   TokenInfoQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
+  sdkClient;
   constructor() {
     if (
       process.env.NODE_IP &&
@@ -24,29 +28,38 @@ class ConsensusInfoClient {
     }
 
     this.sdkClient.setOperator(
-      process.env.OPERATOR_ACCOUNT_ID,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   }
 
-  async getBalance(accountId) {
-    return this.executeAccountMethod(accountId, new AccountBalanceQuery());
+  async getBalance(accountId: string): Promise<AccountBalance> {
+    return this.executeAccountMethod(
+      accountId,
+      new AccountBalanceQuery(),
+    ) as Promise<AccountBalance>;
   }
 
-  async getAccountInfo(accountId) {
-    return this.executeAccountMethod(accountId, new AccountInfoQuery());
+  async getAccountInfo(accountId: string): Promise<AccountInfo> {
+    return this.executeAccountMethod(
+      accountId,
+      new AccountInfoQuery(),
+    ) as Promise<AccountInfo>;
   }
 
-  async getTokenInfo(tokenId) {
+  async getTokenInfo(tokenId: string): Promise<TokenInfo> {
     return this.executeTokenMethod(tokenId, new TokenInfoQuery());
   }
 
-  async executeAccountMethod(accountId, method) {
+  async executeAccountMethod(
+    accountId: string,
+    method: AccountInfoQuery | AccountBalanceQuery,
+  ) {
     method.setAccountId(accountId);
     return method.execute(this.sdkClient);
   }
 
-  async executeTokenMethod(tokenId, method) {
+  async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {
     method.setTokenId(tokenId);
     return method.execute(this.sdkClient);
   }
