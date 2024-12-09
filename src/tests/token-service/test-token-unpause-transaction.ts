@@ -16,7 +16,7 @@ describe("TokenUnpauseTransaction", function () {
 
   // All tests required a token to be created and paused.
   let tokenId: string, tokenAdminKey: string, tokenPauseKey: string;
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -53,7 +53,7 @@ describe("TokenUnpauseTransaction", function () {
       },
     });
   });
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
@@ -66,7 +66,7 @@ describe("TokenUnpauseTransaction", function () {
   }
 
   describe("Token ID", function () {
-    it("(#1) Unpauses a token", async () => {
+    it("(#1) Unpauses a token", async function () {
       await JSONRPCRequest(this, "unpauseToken", {
         tokenId,
         commonTransactionParams: {
@@ -77,7 +77,7 @@ describe("TokenUnpauseTransaction", function () {
       await retryOnError(async () => verifyTokenUnpaused(tokenId));
     });
 
-    it("(#2) Unpauses a token with no token ID", async () => {
+    it("(#2) Unpauses a token with no token ID", async function () {
       try {
         await JSONRPCRequest(this, "unpauseToken", {});
       } catch (err: any) {
@@ -88,7 +88,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Unpauses a token without signing with the token's pause key", async () => {
+    it("(#3) Unpauses a token without signing with the token's pause key", async function () {
       try {
         await JSONRPCRequest(this, "unpauseToken", {
           tokenId,
@@ -101,7 +101,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Unpauses a token and sign with the admin key instead of the pause key", async () => {
+    it("(#4) Unpauses a token and sign with the admin key instead of the pause key", async function () {
       try {
         await JSONRPCRequest(this, "unpauseToken", {
           tokenId,
@@ -117,7 +117,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Unpauses a token that doesn't exist", async () => {
+    it("(#5) Unpauses a token that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "unpauseToken", {
           tokenId: "123.456.789",
@@ -130,7 +130,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Unpauses a token that is deleted", async () => {
+    it.skip("(#6) Unpauses a token that is deleted", async function () {
       await JSONRPCRequest(this, "unpauseToken", {
         tokenId,
         commonTransactionParams: {
@@ -160,7 +160,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Unpauses a token that is empty", async () => {
+    it("(#7) Unpauses a token that is empty", async function () {
       try {
         await JSONRPCRequest(this, "unpauseToken", {
           tokenId: "",
@@ -173,7 +173,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Unpauses a token that isn't paused", async () => {
+    it("(#8) Unpauses a token that isn't paused", async function () {
       await JSONRPCRequest(this, "unpauseToken", {
         tokenId,
         commonTransactionParams: {
