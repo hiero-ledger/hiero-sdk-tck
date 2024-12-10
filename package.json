@@ -5,7 +5,7 @@
     "chai": "^4.3.6",
     "dotenv": "^16.0.1",
     "json-rpc-2.0": "^1.6.0",
-    "mocha": "^9.2.2"
+    "mocha": "^11.0.1"
   },
   "scripts": {
     "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome",
