@@ -5,8 +5,11 @@ import {
   AccountInfo,
   AccountInfoQuery,
   Client,
+  NftId,
   TokenInfo,
   TokenInfoQuery,
+  TokenNftInfo,
+  TokenNftInfoQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
@@ -49,6 +52,15 @@ class ConsensusInfoClient {
 
   async getTokenInfo(tokenId: string): Promise<TokenInfo> {
     return this.executeTokenMethod(tokenId, new TokenInfoQuery());
+  }
+
+  async getTokenNftInfo(
+    tokenId: string,
+    serialNumber: string,
+  ): Promise<TokenNftInfo[]> {
+    let query = new TokenNftInfoQuery();
+    query.setNftId(NftId.fromString(tokenId + "/" + serialNumber));
+    return query.execute(this.sdkClient);
   }
 
   async executeAccountMethod(

@@ -25,6 +25,18 @@ class MirrorNodeClient {
     const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}`;
     return retryOnError(async () => fetchData(url));
   }
+
+  // TODO: Get mirror node interface with OpenAPI
+  async getTokenRelationships(accountId: string) {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  // TODO: Get mirror node interface with OpenAPI
+  async getAccountNfts(accountId: string) {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/nfts`;
+    return retryOnError(async () => fetchData(url));
+  }
 }
 
 export default new MirrorNodeClient();
