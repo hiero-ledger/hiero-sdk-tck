@@ -27,7 +27,7 @@ describe("AccountUpdateTransaction", function () {
   // An account is created for each test. These hold the information for that account.
   let accountPrivateKey: string, accountId: string;
 
-  beforeEach(async () => {
+  beforeEach(async function () {
     // Initialize the network and operator.
     await setOperator(
       this,
@@ -49,12 +49,12 @@ describe("AccountUpdateTransaction", function () {
 
     accountId = response.accountId;
   });
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("AccountId", async () => {
-    it("(#1) Updates an account with no updates", async () => {
+  describe("AccountId", async function () {
+    it("(#1) Updates an account with no updates", async function () {
       // Attempt to update the account.
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
@@ -71,7 +71,7 @@ describe("AccountUpdateTransaction", function () {
       expect(accountId).to.be.equal(consensusNodeData.accountId.toString());
     });
 
-    it("(#2) Updates an account with no updates without signing with the account's private key", async () => {
+    it("(#2) Updates an account with no updates without signing with the account's private key", async function () {
       try {
         // Attempt to update the account without signing with the account's private key. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -86,7 +86,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates an account with no account ID", async () => {
+    it("(#3) Updates an account with no account ID", async function () {
       try {
         // Attempt to update the account without providing the account ID. The network should respond with an ACCOUNT_ID_DOES_NOT_EXIST status.
         await JSONRPCRequest(this, "updateAccount", {});
@@ -154,7 +154,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the key of an account to a new valid ED25519 public key", async () => {
+    it("(#1) Updates the key of an account to a new valid ED25519 public key", async function () {
       // Generate a new ED25519 private key for the account.
       const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -181,7 +181,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the key of an account to a new valid ECDSAsecp256k1 public key", async () => {
+    it("(#2) Updates the key of an account to a new valid ECDSAsecp256k1 public key", async function () {
       // Generate a new ECDSAsecp256k1 private key for the account.
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
         this,
@@ -213,7 +213,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the key of an account to a new valid ED25519 private key", async () => {
+    it("(#3) Updates the key of an account to a new valid ED25519 private key", async function () {
       // Generate a new ED25519 private key for the account.
       const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -240,7 +240,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the key of an account to a new valid ECDSAsecp256k1 private key", async () => {
+    it("(#4) Updates the key of an account to a new valid ECDSAsecp256k1 private key", async function () {
       // Generate a new ECDSAsecp256k1 private key for the account.
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
         this,
@@ -275,7 +275,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates the key of an account to a new valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async () => {
+    it("(#5) Updates the key of an account to a new valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
       // Generate a KeyList of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const keyList = await JSONRPCRequest(
         this,
@@ -304,7 +304,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the key of an account to a new valid KeyList of nested KeyLists (three levels)", async () => {
+    it("(#6) Updates the key of an account to a new valid KeyList of nested KeyLists (three levels)", async function () {
       // Generate a KeyList of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const nestedKeyList = await JSONRPCRequest(
         this,
@@ -335,7 +335,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates the key of an account to a new valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys", async () => {
+    it("(#7) Updates the key of an account to a new valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
       // Generate a ThresholdKey of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const thresholdKey = await JSONRPCRequest(
         this,
@@ -362,7 +362,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates the key of an account to a key without signing with the new key", async () => {
+    it("(#8) Updates the key of an account to a key without signing with the new key", async function () {
       // Generate a new key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -386,7 +386,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates the key of an account to a new public key and signs with an incorrect private key", async () => {
+    it("(#9) Updates the key of an account to a new public key and signs with an incorrect private key", async function () {
       // Generate a new public key for the account.
       const publicKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -433,7 +433,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the auto-renew period of an account to 60 days (5,184,000 seconds)", async () => {
+    it("(#1) Updates the auto-renew period of an account to 60 days (5,184,000 seconds)", async function () {
       // Attempt to update the auto-renew period of the account 60 days.
       const autoRenewPeriod = "5184000";
 
@@ -451,7 +451,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the auto-renew period of an account to -1 seconds", async () => {
+    it("(#2) Updates the auto-renew period of an account to -1 seconds", async function () {
       try {
         // Attempt to update the auto-renew period of the account to -1 seconds. The network should respond with an INVALID_RENEWAL_PERIOD status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -470,7 +470,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates the auto-renew period of an account to 30 days (2,592,000 seconds)", async () => {
+    it("(#3) Updates the auto-renew period of an account to 30 days (2,592,000 seconds)", async function () {
       // Attempt to update the auto-renew period of the account to 30 days.
       const autoRenewPeriod = "2592000";
 
@@ -488,7 +488,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the auto-renew period of an account to 30 days minus one second (2,591,999 seconds)", async () => {
+    it("(#4) Updates the auto-renew period of an account to 30 days minus one second (2,591,999 seconds)", async function () {
       try {
         // Attempt to update the auto-renew period of the account to 2,591,999 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -507,7 +507,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds", async () => {
+    it("(#5) Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds", async function () {
       // Attempt to update the auto-renew period of the account to 8,000,001 seconds.
       const autoRenewPeriod = "8000001";
 
@@ -525,7 +525,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the auto-renew period of an account to the maximum period plus one second (8,000,002 seconds)", async () => {
+    it("(#6) Updates the auto-renew period of an account to the maximum period plus one second (8,000,002 seconds)", async function () {
       try {
         // Attempt to update auto-renew period of the account to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -545,7 +545,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", async () => {
+  describe("Expiration Time", async function () {
     const verifyAccountExpirationTimeUpdate = async (
       expirationTime: string,
     ) => {
@@ -565,7 +565,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async () => {
+    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async function () {
       // Attempt to update the expiration time of the account to 8,000,001 seconds from the current time.
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
@@ -585,7 +585,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the expiration time of an account to -1 seconds", async () => {
+    it("(#2) Updates the expiration time of an account to -1 seconds", async function () {
       try {
         // Attempt to update the expiration time of the account to -1 seconds. The network should respond with an INVALID_EXPIRATION_TIME status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -604,7 +604,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async () => {
+    it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async function () {
       // Get the account's expiration time.
       const accountInfo = await mirrorNodeClient.getAccountData(accountId);
       const expirationTimeSeconds = await accountInfo.expiry_timestamp;
@@ -630,7 +630,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async () => {
+    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
       try {
         const expirationTime = (
           Math.floor(Date.now() / 1000) + 8000002
@@ -654,7 +654,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Receiver Signature Required", async () => {
+  describe("Receiver Signature Required", async function () {
     const verifyAccountReceiverSignatureRequiredUpdate = async (
       receiverSignatureRequired: boolean,
     ) => {
@@ -670,7 +670,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the receiver signature required policy of an account to require a receiving signature", async () => {
+    it("(#1) Updates the receiver signature required policy of an account to require a receiving signature", async function () {
       // Attempt to update the receiver signature required policy of the account to require a signature when receiving.
       const receiverSignatureRequired = true;
 
@@ -688,7 +688,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the receiver signature required policy of an account to not require a receiving signature", async () => {
+    it("(#2) Updates the receiver signature required policy of an account to not require a receiving signature", async function () {
       // Attempt to update the receiver signature required policy of the account to not require a signature when receiving.
       const receiverSignatureRequired = false;
 
@@ -707,7 +707,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Memo", async () => {
+  describe("Memo", async function () {
     const verifyAccountMemoUpdate = async (memo: string) => {
       // If the account was updated successfully, the queried account's memos should be equal.
       expect(memo).to.equal(
@@ -720,7 +720,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the memo of an account to a memo that is a valid length", async () => {
+    it("(#1) Updates the memo of an account to a memo that is a valid length", async function () {
       // Attempt to update the memo of the account to a memo that is a valid length.
       const memo = "testmemo";
 
@@ -736,7 +736,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#2) Updates the memo of an account to a memo that is the minimum length", async () => {
+    it("(#2) Updates the memo of an account to a memo that is the minimum length", async function () {
       // Attempt to update the memo of the account with a memo that is the minimum length.
       const memo = "";
 
@@ -752,7 +752,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#3) Updates the memo of an account to a memo that is the maximum length", async () => {
+    it("(#3) Updates the memo of an account to a memo that is the maximum length", async function () {
       // Attempt to update the memo of the account with a memo that is the maximum length.
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
@@ -769,7 +769,7 @@ describe("AccountUpdateTransaction", function () {
       await retryOnError(async () => verifyAccountMemoUpdate(memo));
     });
 
-    it("(#4) Updates the memo of an account to a memo that exceeds the maximum length", async () => {
+    it("(#4) Updates the memo of an account to a memo that exceeds the maximum length", async function () {
       try {
         // Attempt to update the memo of the account with a memo that exceeds the maximum length. The network should respond with a MEMO_TOO_LONG status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -789,7 +789,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Max Automatic Token Associations", async () => {
+  describe("Max Automatic Token Associations", async function () {
     const verifyMaxAutoTokenAssociationsUpdate = async (
       maxAutomaticTokenAssociations: number,
     ) => {
@@ -809,7 +809,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the max automatic token associations of an account to a valid amount", async () => {
+    it("(#1) Updates the max automatic token associations of an account to a valid amount", async function () {
       // Attempt to update the max automatic token associations of the account to 100.
       const maxAutoTokenAssociations = 100;
 
@@ -828,7 +828,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the max automatic token associations of an account to the minimum amount", async () => {
+    it("(#2) Updates the max automatic token associations of an account to the minimum amount", async function () {
       // Attempt to update the max automatic token associations of the account to 0.
       const maxAutoTokenAssociations = 0;
 
@@ -846,7 +846,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the max automatic token associations of an account to the maximum amount", async () => {
+    it("(#3) Updates the max automatic token associations of an account to the maximum amount", async function () {
       // Attempt to update the max automatic token associations of the account to 5000.
       const maxAutoTokenAssociations = 5000;
 
@@ -865,7 +865,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the max automatic token associations of an account to an amount that exceeds the maximum amount", async () => {
+    it("(#4) Updates the max automatic token associations of an account to an amount that exceeds the maximum amount", async function () {
       try {
         // Attempt to update the max automatic token associations of the account to 5001. The network should respond with a REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -889,7 +889,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Staked ID", async () => {
+  describe("Staked ID", async function () {
     const verifyAccountStakedAccountIdUpdate = async (
       stakedAccountId: string,
     ) => {
@@ -921,7 +921,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the staked account ID of an account to the operator's account ID", async () => {
+    it("(#1) Updates the staked account ID of an account to the operator's account ID", async function () {
       // Attempt to update the staked account ID of the account to the operator's account ID.
       const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -939,7 +939,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the staked node ID of an account to a valid node ID", async () => {
+    it("(#2) Updates the staked node ID of an account to a valid node ID", async function () {
       // Attempt to update the staked node ID of the account to a valid node ID.
       const stakedNodeId = "0";
 
@@ -957,7 +957,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the staked account ID of an account to an account ID that doesn't exist", async () => {
+    it("(#3) Updates the staked account ID of an account to an account ID that doesn't exist", async function () {
       try {
         // Attempt to update the staked account ID of the account to an account ID that doesn't exist. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -976,7 +976,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates the staked node ID of an account to a node ID that doesn't exist", async () => {
+    it("(#4) Updates the staked node ID of an account to a node ID that doesn't exist", async function () {
       try {
         // Attempt to update the staked node ID of the account to a node ID that doesn't exist. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -995,7 +995,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates the staked account ID of an account to an empty account ID", async () => {
+    it("(#5) Updates the staked account ID of an account to an empty account ID", async function () {
       try {
         // Attempt to update the staked account ID of the account to an empty account ID. The SDK should throw an internal error.
         await JSONRPCRequest(this, "updateAccount", {
@@ -1018,7 +1018,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates the staked node ID of an account to an invalid node ID", async () => {
+    it("(#6) Updates the staked node ID of an account to an invalid node ID", async function () {
       try {
         // Attempt to update the staked node ID of the account to an invalid node ID. The network should respond with an INVALID_STAKING_ID status.
         await JSONRPCRequest(this, "updateAccount", {
@@ -1038,7 +1038,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Decline Reward", async () => {
+  describe("Decline Reward", async function () {
     const verifyDeclineRewardUpdate = async (declineRewards: boolean) => {
       // If the account was updated successfully, the queried account's decline staking rewards policy should be equal.
       expect(declineRewards).to.equal(
@@ -1050,7 +1050,7 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the decline reward policy of an account to decline staking rewards", async () => {
+    it("(#1) Updates the decline reward policy of an account to decline staking rewards", async function () {
       // Attempt to update the decline reward policy of the account to decline staking rewards.
       const declineStakingReward = true;
 
@@ -1068,7 +1068,7 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the decline reward policy of an account to not decline staking rewards", async () => {
+    it("(#2) Updates the decline reward policy of an account to not decline staking rewards", async function () {
       // Attempt to update the decline reward policy of the account to not decline staking rewards.
       const declineStakingReward = false;
 
