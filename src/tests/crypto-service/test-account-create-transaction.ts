@@ -9,7 +9,8 @@ import { setOperator } from "@helpers/setup-tests";
 import {
   fourKeysKeyListParams,
   twoLevelsNestedKeyListParams,
-} from "@helpers/constants/key-list";
+} from "@constants/key-list";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for AccountCreateTransaction
@@ -163,7 +164,11 @@ describe("AccountCreateTransaction", function () {
           key: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -175,21 +180,18 @@ describe("AccountCreateTransaction", function () {
   describe("Initial Balance", () => {
     const verifyAccountCreationWithInitialBalance = async (
       accountId: string,
-      initialBalance: number,
+      initialBalance: string,
     ) => {
       // If the account was created successfully, the queried account's balances should be equal.
       expect(initialBalance).to.equal(
-        Number(
-          (await consensusInfoClient.getAccountInfo(accountId)).balance
-            ._valueInTinybar,
-        ),
+        (
+          await consensusInfoClient.getAccountInfo(accountId)
+        ).balance._valueInTinybar.toString(),
       );
       expect(initialBalance).to.equal(
-        Number(
-          await (
-            await mirrorNodeClient.getAccountData(accountId)
-          ).balance.balance,
-        ),
+        await (
+          await mirrorNodeClient.getAccountData(accountId)
+        ).balance.balance.toString(),
       );
     };
 
@@ -200,10 +202,11 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with an initial balance of 100 tinybars.
-      const initialBalance = 100;
+      const initialBalance = "100";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
-        initialBalance: initialBalance,
+        initialBalance,
       });
 
       // Verify the account was created with 100 tinybars.
@@ -220,7 +223,8 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with an initial balance of 0 tinybars.
-      const initialBalance = 0;
+      const initialBalance = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         initialBalance,
@@ -243,7 +247,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an initial balance of -1. The network should respond with an INVALID_INITIAL_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          initialBalance: -1,
+          initialBalance: "-1",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_INITIAL_BALANCE");
@@ -273,7 +277,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          initialBalance: operatorAccountBalance + 1,
+          initialBalance: (operatorAccountBalance + 1).toString(),
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_PAYER_BALANCE");
@@ -376,20 +380,18 @@ describe("AccountCreateTransaction", function () {
   describe("Auto Renew Period", () => {
     const verifyAccountCreationWithAutoRenewPeriod = async (
       accountId: string,
-      autoRenewPeriodSeconds: number,
+      autoRenewPeriodSeconds: string,
     ) => {
       // If the account was created successfully, the queried account's auto renew periods should be equal.
       expect(autoRenewPeriodSeconds).to.equal(
-        Number(
-          await (
-            await consensusInfoClient.getAccountInfo(accountId)
-          ).autoRenewPeriod.seconds,
-        ),
+        (
+          await consensusInfoClient.getAccountInfo(accountId)
+        ).autoRenewPeriod.seconds.toString(),
       );
       expect(autoRenewPeriodSeconds).to.equal(
         await (
           await mirrorNodeClient.getAccountData(accountId)
-        ).auto_renew_period,
+        ).auto_renew_period.toString(),
       );
     };
 
@@ -400,7 +402,8 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with an auto-renew period set to 60 days.
-      const autoRenewPeriod = 5184000;
+      const autoRenewPeriod = "5184000";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         autoRenewPeriod,
@@ -423,7 +426,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an auto-renew period set to -1 seconds. The network should respond with an INVALID_RENEWAL_PERIOD status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          autoRenewPeriod: -1,
+          autoRenewPeriod: "-1",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
@@ -441,7 +444,7 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with an auto-renew period set to 30 days.
-      const autoRenewPeriod = 2592000;
+      const autoRenewPeriod = "2592000";
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         autoRenewPeriod,
@@ -464,7 +467,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an auto-renew period set to 2,591,999 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          autoRenewPeriod: 2591999,
+          autoRenewPeriod: "2591999",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
@@ -482,7 +485,8 @@ describe("AccountCreateTransaction", function () {
       });
 
       // Attempt to create an account with an auto-renew period set to 90ish days.
-      const autoRenewPeriod = 8000001;
+      const autoRenewPeriod = "8000001";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         autoRenewPeriod,
@@ -505,7 +509,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an auto-renew period set to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "createAccount", {
           key: key.key,
-          autoRenewPeriod: 8000002,
+          autoRenewPeriod: "8000002",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
@@ -541,6 +545,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with a memo set to "testmemo".
       const memo = "testmemo";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo,
@@ -558,6 +563,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with an empty memo.
       const memo = "";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo,
@@ -576,6 +582,7 @@ describe("AccountCreateTransaction", function () {
       // Attempt to create an account with a memo set to the maximum length.
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         memo: memo,
@@ -641,9 +648,11 @@ describe("AccountCreateTransaction", function () {
         ),
       );
       expect(maxAutomaticTokenAssociations).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).max_automatic_token_associations,
+        Number(
+          await (
+            await mirrorNodeClient.getAccountData(accountId)
+          ).max_automatic_token_associations,
+        ),
       );
     };
 
@@ -698,9 +707,10 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with the max automatic token associations set to the maximum value.
       const maxAutoTokenAssociations = 5000;
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
-        maxAutoTokenAssociations: 5000,
+        maxAutoTokenAssociations,
       });
 
       // Verify the account was created with the max automatic token associations set to 5000.
@@ -794,6 +804,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with the staked node ID set to the node's node ID.
       const stakedNodeId = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedNodeId,
@@ -898,6 +909,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account with a staked account ID and a staked node ID.
       const stakedNodeId = "0";
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key: key.key,
         stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
