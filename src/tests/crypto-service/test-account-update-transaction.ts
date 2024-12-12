@@ -116,9 +116,7 @@ describe("AccountUpdateTransaction", function () {
       );
 
       const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-        "getAccountData",
-        accountId,
-        "key",
+        (await mirrorNodeClient.getAccountData(accountId))["key"],
       );
 
       // Mirror node check

@@ -54,26 +54,17 @@ export const getEncodedKeyHexFromKeyListConsensus = async (
  * @returns {Promise<PublicKey>} - A promise that resolves to the public key object retrieved from the Mirror Node.
  */
 export const getPublicKeyFromMirrorNode = async (
-  mirrorClientMethod: keyof typeof mirrorNodeClient,
-  searchedId: string,
-  searchedKey: string,
+  keyMirrorNode: any,
 ): Promise<PublicKey | null> => {
-  // Retrieve the desired data from Mirror node
-  const data = await mirrorNodeClient[mirrorClientMethod](searchedId);
-
-  // Access the dynamic key (e.g., fee_schedule_key, admin_key, etc.)
-  const keyMirrorNode = data[searchedKey];
-
+  // If the key doesn't exist, it doesn't exist.
   if (keyMirrorNode == null) {
     return null;
   }
 
   // Use the appropriate key type function to convert the key
-  const publicKeyMirrorNode = keyTypeConvertFunctions[
+  return keyTypeConvertFunctions[
     keyMirrorNode._type as keyof typeof keyTypeConvertFunctions
   ](keyMirrorNode.key);
-
-  return publicKeyMirrorNode;
 };
 
 /**
