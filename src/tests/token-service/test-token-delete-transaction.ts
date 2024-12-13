@@ -14,19 +14,19 @@ describe("TokenDeleteTransaction", function () {
   this.timeout(30000);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
   describe("Token ID", () => {
-    it("(#1) Deletes an immutable token", async () => {
+    it("(#1) Deletes an immutable token", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -51,7 +51,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Deletes a mutable token", async () => {
+    it("(#2) Deletes a mutable token", async function () {
       const tokenId = await getNewFungibleTokenId(this);
 
       await JSONRPCRequest(this, "deleteToken", {
@@ -61,12 +61,12 @@ describe("TokenDeleteTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenIsDeleted(tokenId);
       });
     });
 
-    it("(#3) Deletes a token that doesn't exist", async () => {
+    it("(#3) Deletes a token that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: "123.456.789",
@@ -83,7 +83,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Deletes a token with no token ID", async () => {
+    it("(#4) Deletes a token with no token ID", async function () {
       try {
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: "",
@@ -100,7 +100,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Deletes a token that was already deleted", async () => {
+    it("(#5) Deletes a token that was already deleted", async function () {
       try {
         const tokenId = await getNewFungibleTokenId(this);
 
@@ -127,7 +127,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Deletes a token without signing with the token's admin key", async () => {
+    it("(#6) Deletes a token without signing with the token's admin key", async function () {
       try {
         // Passing other admin key in order to throw an error
         const privateKey = await JSONRPCRequest(this, "generateKey", {
@@ -148,7 +148,7 @@ describe("TokenDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Deletes a token but signs with an incorrect private key", async () => {
+    it("(#7) Deletes a token but signs with an incorrect private key", async function () {
       try {
         const privateKey = await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
