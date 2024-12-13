@@ -63,13 +63,6 @@ describe("TokenAssociateTransaction", function () {
     expect(foundToken).to.be.true;
   }
 
-  async function verifyNoTokenAssociations(accountId: string) {
-    // No way to get token associations via consensus node, so just query mirror node.
-    expect(
-      (await mirrorNodeClient.getTokenRelationships(accountId)).tokens.length,
-    ).to.equal(0);
-  }
-
   describe("Account ID", function () {
     it("(#1) Associates a token with an account", async function () {
       await JSONRPCRequest(this, "associateToken", {
@@ -187,7 +180,12 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyNoTokenAssociations(accountId));
+      await retryOnError(async () => {
+        expect(
+          (await mirrorNodeClient.getTokenRelationships(accountId)).tokens
+            .length,
+        ).to.equal(0);
+      });
     });
 
     it("(#2) Associates a token that doesn't exist with an account", async function () {
