@@ -36,7 +36,7 @@ describe("TokenUpdateTransaction", function () {
   // Two tokens should be created. One immutable token (no admin key) and another mutable.
   let immutableTokenId: string, mutableTokenId: string, mutableTokenKey: string;
 
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -57,7 +57,7 @@ describe("TokenUpdateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -92,7 +92,7 @@ describe("TokenUpdateTransaction", function () {
     mutableTokenId = response.tokenId;
   });
 
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
@@ -105,7 +105,7 @@ describe("TokenUpdateTransaction", function () {
       expect(tokenId).to.be.equal(consensusNodeData.tokenId.toString());
     };
 
-    it("(#1) Updates an immutable token with no updates", async () => {
+    it("(#1) Updates an immutable token with no updates", async function () {
       await JSONRPCRequest(this, "updateToken", {
         tokenId: immutableTokenId,
       });
@@ -113,7 +113,7 @@ describe("TokenUpdateTransaction", function () {
       await retryOnError(async () => verifyTokenUpdate(immutableTokenId));
     });
 
-    it("(#2) Updates a mutable token with no updates", async () => {
+    it("(#2) Updates a mutable token with no updates", async function () {
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
       });
@@ -121,7 +121,7 @@ describe("TokenUpdateTransaction", function () {
       await retryOnError(async () => verifyTokenUpdate(mutableTokenId));
     });
 
-    it("(#3) Updates a token with no token ID", async () => {
+    it("(#3) Updates a token with no token ID", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {});
       } catch (err: any) {
@@ -145,7 +145,7 @@ describe("TokenUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates an immutable token with a symbol", async () => {
+    it("(#1) Updates an immutable token with a symbol", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -159,7 +159,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a symbol that is the minimum length", async () => {
+    it("(#2) Updates a mutable token with a symbol that is the minimum length", async function () {
       const symbol = "t";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -174,7 +174,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a symbol that is empty", async () => {
+    it("(#3) Updates a mutable token with a symbol that is empty", async function () {
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         symbol: "",
@@ -189,7 +189,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a symbol that is the maximum length", async () => {
+    it("(#4) Updates a mutable token with a symbol that is the maximum length", async function () {
       const symbol =
         "This is a really long symbol but it is still valid because it is 100 characters exactly on the money";
       await JSONRPCRequest(this, "updateToken", {
@@ -205,7 +205,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a symbol that exceeds the maximum length", async () => {
+    it("(#5) Updates a mutable token with a symbol that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -223,7 +223,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with a valid symbol without signing with the token's admin key", async () => {
+    it("(#6) Updates a mutable token with a valid symbol without signing with the token's admin key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -251,7 +251,7 @@ describe("TokenUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates an immutable token with a name", async () => {
+    it("(#1) Updates an immutable token with a name", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -265,7 +265,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a name that is the minimum length", async () => {
+    it("(#2) Updates a mutable token with a name that is the minimum length", async function () {
       const name = "t";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -280,7 +280,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a name that is empty", async () => {
+    it("(#3) Updates a mutable token with a name that is empty", async function () {
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         name: "",
@@ -295,7 +295,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a name that is the maximum length", async () => {
+    it("(#4) Updates a mutable token with a name that is the maximum length", async function () {
       const name =
         "This is a really long name but it is still valid because it is 100 characters exactly on the money!!";
       await JSONRPCRequest(this, "updateToken", {
@@ -311,7 +311,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a name that exceeds the maximum length", async () => {
+    it("(#5) Updates a mutable token with a name that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -328,7 +328,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with a valid name without signing with the token's admin key", async () => {
+    it("(#6) Updates a mutable token with a valid name without signing with the token's admin key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -344,7 +344,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Treasury Account ID", () => {
-    it("(#1) Updates an immutable token with a treasury account", async () => {
+    it("(#1) Updates an immutable token with a treasury account", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -358,7 +358,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a treasury account", async () => {
+    it("(#2) Updates a mutable token with a treasury account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -405,7 +405,7 @@ describe("TokenUpdateTransaction", function () {
       ).to.equal(initialSupply.toString());
     });
 
-    it("(#3) Updates a mutable token with a treasury account without signing with the account's private key", async () => {
+    it("(#3) Updates a mutable token with a treasury account without signing with the account's private key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -434,7 +434,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates a mutable token with a treasury account that doesn't exist", async () => {
+    it("(#4) Updates a mutable token with a treasury account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -451,7 +451,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates a mutable token with a treasury account that is deleted", async () => {
+    it("(#5) Updates a mutable token with a treasury account that is deleted", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -488,7 +488,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with a treasury account without signing with the token's admin key", async () => {
+    it("(#6) Updates a mutable token with a treasury account without signing with the token's admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -519,7 +519,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Admin Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its admin key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -539,7 +539,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its admin key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -566,7 +566,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its admin key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -593,7 +593,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its admin key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -620,7 +620,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its admin key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -647,7 +647,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -673,7 +673,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its admin key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its admin key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -701,7 +701,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -725,7 +725,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#9) Updates a mutable token with a valid key as its admin key but doesn't sign with it", async () => {
+    it("(#9) Updates a mutable token with a valid key as its admin key but doesn't sign with it", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -748,7 +748,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Updates a mutable token with an invalid key as its admin key", async () => {
+    it("(#10) Updates a mutable token with an invalid key as its admin key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -767,7 +767,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("KYC Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its KYC key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -787,7 +787,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its KYC key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -808,7 +808,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its KYC key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -829,7 +829,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its KYC key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -856,7 +856,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its KYC key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -883,7 +883,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -909,7 +909,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its KYC key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -937,7 +937,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -961,7 +961,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its KYC key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -982,7 +982,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#10) Updates a mutable token that doesn't have a KYC key with a valid key as its KYC key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a KYC key with a valid key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1018,7 +1018,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its KYC key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its KYC key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1037,7 +1037,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Freeze Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its freeze key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1057,7 +1057,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its freeze key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1084,7 +1084,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its freeze key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1111,7 +1111,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its freeze key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1138,7 +1138,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its freeze key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1165,7 +1165,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1191,7 +1191,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its freeze key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1219,7 +1219,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1243,7 +1243,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its freeze key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -1264,7 +1264,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1300,7 +1300,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its freeze key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its freeze key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1319,7 +1319,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Wipe Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its wipe key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1339,7 +1339,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its wipe key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1366,7 +1366,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its wipe key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1393,7 +1393,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its wipe key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1420,7 +1420,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its wipe key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1447,7 +1447,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1473,7 +1473,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its wipe key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1501,7 +1501,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1525,7 +1525,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its wipe key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -1546,7 +1546,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1582,7 +1582,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its wipe key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its wipe key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1601,7 +1601,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Supply Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its supply key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1621,7 +1621,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its supply key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1648,7 +1648,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its supply key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1675,7 +1675,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its supply key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1702,7 +1702,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its supply key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1729,7 +1729,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1755,7 +1755,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its supply key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1783,7 +1783,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1807,7 +1807,7 @@ describe("TokenUpdateTransaction", function () {
       );
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its supply key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -1823,12 +1823,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenUpdateWithNullKey(mutableTokenId, "supplyKey");
       });
     });
 
-    it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1864,7 +1864,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its supply key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its supply key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1883,7 +1883,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Auto Renew Account", () => {
-    it("(#1) Updates an immutable token with an auto renew account", async () => {
+    it("(#1) Updates an immutable token with an auto renew account", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -1897,7 +1897,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with an auto renew account", async () => {
+    it("(#2) Updates a mutable token with an auto renew account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1923,7 +1923,7 @@ describe("TokenUpdateTransaction", function () {
       expect(accountId).to.equal(tokenInfo.autoRenewAccountId?.toString());
     });
 
-    it("(#3) Updates a mutable token with an auto renew account without signing with the account's private key", async () => {
+    it("(#3) Updates a mutable token with an auto renew account without signing with the account's private key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1952,7 +1952,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates a mutable token with an auto renew account that doesn't exist", async () => {
+    it("(#4) Updates a mutable token with an auto renew account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1969,7 +1969,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates a mutable token with an empty auto renew account", async () => {
+    it("(#5) Updates a mutable token with an empty auto renew account", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -1986,7 +1986,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a mutable token with an auto renew account that is deleted", async () => {
+    it("(#6) Updates a mutable token with an auto renew account that is deleted", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2023,7 +2023,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Updates a mutable token with an auto renew account without signing with the token's admin key", async () => {
+    it("(#7) Updates a mutable token with an auto renew account without signing with the token's admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2069,7 +2069,7 @@ describe("TokenUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates an immutable token with an auto renew period set to 60 days (5,184,000 seconds)", async () => {
+    it("(#1) Updates an immutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -2083,7 +2083,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with an auto renew period set to 0 seconds", async () => {
+    it("(#2) Updates a mutable token with an auto renew period set to 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2100,7 +2100,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates a mutable token with an auto renew period set to -1 seconds", async () => {
+    it("(#3) Updates a mutable token with an auto renew period set to -1 seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2117,7 +2117,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,807 (int64 max) seconds", async () => {
+    it("(#4) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2134,7 +2134,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,806 (int64 max - 1) seconds", async () => {
+    it("(#5) Updates a mutable token with an auto renew period set to 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2151,7 +2151,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async () => {
+    it.skip("(#6) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2168,7 +2168,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,807 (int64 min + 1) seconds", async () => {
+    it("(#7) Updates a mutable token with an auto renew period set to -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2185,7 +2185,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Updates a mutable token with an auto renew period set to 60 days (5,184,000 seconds)", async () => {
+    it("(#8) Updates a mutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
       const autoRenewPeriod = "5184000";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -2195,12 +2195,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
-    it("(#9) Updates a mutable token with an auto renew period set to 30 days (2,592,000 seconds)", async () => {
+    it("(#9) Updates a mutable token with an auto renew period set to 30 days (2,592,000 seconds)", async function () {
       const autoRenewPeriod = "2592000";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -2210,12 +2210,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
-    it("(#10) Updates a mutable token with an auto renew period set to 30 days minus one second (2,591,999 seconds)", async () => {
+    it("(#10) Updates a mutable token with an auto renew period set to 30 days minus one second (2,591,999 seconds)", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2232,7 +2232,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an auto renew period set to 8,000,001 seconds", async () => {
+    it("(#11) Updates a mutable token with an auto renew period set to 8,000,001 seconds", async function () {
       const autoRenewPeriod = "8000001";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -2242,12 +2242,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenAutoRenewPeriodUpdate(mutableTokenId, autoRenewPeriod);
       });
     });
 
-    it("(#12) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async () => {
+    it("(#12) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2266,7 +2266,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Expiration Time", () => {
-    it.skip("(#1) Updates an immutable token with a valid expiration time", async () => {
+    it.skip("(#1) Updates an immutable token with a valid expiration time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2284,7 +2284,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token to an expiration time of 0", async () => {
+    it("(#2) Updates a mutable token to an expiration time of 0", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2301,7 +2301,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates a mutable token to an expiration time of -1", async () => {
+    it("(#3) Updates a mutable token to an expiration time of -1", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2318,7 +2318,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Updates a mutable token to an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async () => {
+    it("(#4) Updates a mutable token to an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2335,7 +2335,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Updates a mutable token to an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async () => {
+    it("(#5) Updates a mutable token to an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2352,7 +2352,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async () => {
+    it.skip("(#6) Updates a mutable token to an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2369,7 +2369,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Updates a mutable token to an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async () => {
+    it("(#7) Updates a mutable token to an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2386,7 +2386,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#8) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async () => {
+    it.skip("(#8) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2399,12 +2399,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
       });
     });
 
-    it.skip("(#9) Updates a mutable token to an expiration time of 30 days (2,592,000 seconds) from the current time", async () => {
+    it.skip("(#9) Updates a mutable token to an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 2592000
       ).toString();
@@ -2417,12 +2417,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
       });
     });
 
-    it("(#10) Updates a mutable to an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async () => {
+    it("(#10) Updates a mutable to an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2439,7 +2439,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async () => {
+    it("(#11) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -2452,12 +2452,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenExpirationTimeUpdate(mutableTokenId, expirationTime);
       });
     });
 
-    it("(#12) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async () => {
+    it("(#12) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2488,7 +2488,7 @@ describe("TokenUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates an immutable token with a memo that is a valid length", async () => {
+    it("(#1) Updates an immutable token with a memo that is a valid length", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -2502,7 +2502,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a memo that is a valid length", async () => {
+    it("(#2) Updates a mutable token with a memo that is a valid length", async function () {
       const memo = "testmemo";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -2512,12 +2512,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
-    it("(#3) Updates a mutable token with a memo that is the minimum length", async () => {
+    it("(#3) Updates a mutable token with a memo that is the minimum length", async function () {
       const memo = "";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -2527,12 +2527,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
-    it("(#4) Updates a mutable token with a memo that is the minimum length", async () => {
+    it("(#4) Updates a mutable token with a memo that is the minimum length", async function () {
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
       await JSONRPCRequest(this, "updateToken", {
@@ -2543,12 +2543,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenMemoUpdate(mutableTokenId, memo);
       });
     });
 
-    it("(#5) Updates a mutable token with a memo that exceeds the maximum length", async () => {
+    it("(#5) Updates a mutable token with a memo that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2567,7 +2567,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Fee Schedule Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its fee schedule key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -2587,7 +2587,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its fee schedule key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2609,12 +2609,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "feeScheduleKey");
       });
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its fee schedule key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -2636,12 +2636,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "feeScheduleKey");
       });
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its fee schedule key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2663,12 +2663,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "feeScheduleKey");
       });
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its fee schedule key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -2690,12 +2690,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "feeScheduleKey");
       });
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2710,12 +2710,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, keyList.key, "feeScheduleKey");
       });
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2730,12 +2730,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, nestedKeyList.key, "feeScheduleKey");
       });
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2750,12 +2750,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, thresholdKey.key, "feeScheduleKey");
       });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -2771,12 +2771,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenUpdateWithNullKey(mutableTokenId, "feeScheduleKey");
       });
     });
 
-    it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -2812,7 +2812,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its fee schedule key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its fee schedule key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -2831,7 +2831,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Pause Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its pause key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -2851,7 +2851,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its pause key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -2866,12 +2866,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, key, "pauseKey");
       });
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its pause key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -2886,12 +2886,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, key, "pauseKey");
       });
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its pause key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2913,12 +2913,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "pauseKey");
       });
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its pause key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -2940,12 +2940,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "pauseKey");
       });
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2962,12 +2962,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "pauseKey");
       });
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its pause key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2984,12 +2984,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "pauseKey");
       });
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -3006,12 +3006,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "pauseKey");
       });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its pause key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -3027,12 +3027,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         await verifyTokenUpdateWithNullKey(mutableTokenId, "pauseKey");
       });
     });
 
-    it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -3068,7 +3068,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its pause key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its pause key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
@@ -3099,7 +3099,7 @@ describe("TokenUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates an immutable token with metadata", async () => {
+    it("(#1) Updates an immutable token with metadata", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
@@ -3113,7 +3113,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with metadata", async () => {
+    it("(#2) Updates a mutable token with metadata", async function () {
       const metadata = "1234";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -3123,12 +3123,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenMetadataUpdate(mutableTokenId, metadata);
       });
     });
 
-    it("(#3) Updates a mutable token with empty metadata", async () => {
+    it("(#3) Updates a mutable token with empty metadata", async function () {
       const metadata = "";
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
@@ -3138,14 +3138,14 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenMetadataUpdate(mutableTokenId, metadata);
       });
     });
   });
 
   describe("Metadata Key", () => {
-    it("(#1) Updates an immutable token with a valid key as its metadata key", async () => {
+    it("(#1) Updates an immutable token with a valid key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -3165,7 +3165,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Updates a mutable token with a valid ED25519 public key as its metadata key", async () => {
+    it("(#2) Updates a mutable token with a valid ED25519 public key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -3180,12 +3180,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, key, "metadataKey");
       });
     });
 
-    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its metadata key", async () => {
+    it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -3200,12 +3200,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, key, "metadataKey");
       });
     });
 
-    it("(#4) Updates a mutable token with a valid ED25519 private key as its metadata key", async () => {
+    it("(#4) Updates a mutable token with a valid ED25519 private key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -3227,12 +3227,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "metadataKey");
       });
     });
 
-    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its metadata key", async () => {
+    it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3254,12 +3254,12 @@ describe("TokenUpdateTransaction", function () {
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKey(mutableTokenId, publicKey, "metadataKey");
       });
     });
 
-    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async () => {
+    it("(#6) Updates a mutable token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -3276,12 +3276,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "metadataKey");
       });
     });
 
-    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its metadata key", async () => {
+    it("(#7) Updates a mutable token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -3298,12 +3298,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "metadataKey");
       });
     });
 
-    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async () => {
+    it("(#8) Updates a mutable token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -3320,12 +3320,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenKeyList(mutableTokenId, key, "metadataKey");
       });
     });
 
-    it("(#9) Updates a mutable token with an empty KeyList as its metadata key", async () => {
+    it("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "keyList",
         keys: [],
@@ -3341,12 +3341,12 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         verifyTokenUpdateWithNullKey(mutableTokenId, "metadataKey");
       });
     });
 
-    it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async () => {
+    it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -3382,7 +3382,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a mutable token with an invalid key as its metadata key", async () => {
+    it("(#11) Updates a mutable token with an invalid key as its metadata key", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
