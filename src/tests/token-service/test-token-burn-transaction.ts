@@ -41,6 +41,7 @@ describe("TokenBurnTransaction", function () {
     decimals: number | null = null,
     maxSupply: string | null = null,
     freezeKey: string | null = null,
+    initialSupply: string | null = null,
   ): Promise<string> {
     let params: any = {
       name: "testname",
@@ -49,7 +50,9 @@ describe("TokenBurnTransaction", function () {
     };
 
     if (fungible) {
-      params.initialSupply = fungibleInitialSupply;
+      params.initialSupply = initialSupply
+        ? initialSupply
+        : fungibleInitialSupply;
       params.decimals = 0;
       params.tokenType = "ft";
     } else {
@@ -111,7 +114,7 @@ describe("TokenBurnTransaction", function () {
   async function verifyFungibleTokenBurn(tokenId: string, amount: string) {
     const consensusNodeInfo =
       await consensusInfoClient.getBalance(treasuryAccountId);
-    expect(Number(fungibleInitialSupply) - Number(amount)).to.equal(
+    expect(BigInt(fungibleInitialSupply) - BigInt(amount)).to.equal(
       consensusNodeInfo.tokens?.get(tokenId),
     );
 
@@ -197,7 +200,7 @@ describe("TokenBurnTransaction", function () {
             },
           })
         ).newTotalSupply,
-      ).to.equal((Number(fungibleInitialSupply) - Number(amount)).toString());
+      ).to.equal((BigInt(fungibleInitialSupply) - BigInt(amount)).toString());
       await verifyFungibleTokenBurn(tokenId, amount);
     });
 
@@ -393,7 +396,7 @@ describe("TokenBurnTransaction", function () {
             },
           })
         ).newTotalSupply,
-      ).to.equal((Number(fungibleInitialSupply) - Number(amount)).toString());
+      ).to.equal((BigInt(fungibleInitialSupply) - BigInt(amount)).toString());
       await verifyFungibleTokenBurn(tokenId, amount);
     });
 
@@ -433,14 +436,407 @@ describe("TokenBurnTransaction", function () {
       await verifyFungibleTokenBurn(tokenId, "0");
     });
 
-    it("(#4) Burns no fungible tokens", async function () {
+    it("(#4) Burns an amount of 9,223,372,036,854,775,806 (int64 max - 1) fungible tokens", async function () {
       const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, true, supplyKey);
+
+      const amount = "9223372036854775806";
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal(BigInt(fungibleInitialSupply) - BigInt(amount));
+      await verifyFungibleTokenBurn(tokenId, amount);
+    });
+
+    it("(#5) Burns an amount of 9,223,372,036,854,775,807 (int64 max) fungible tokens", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, true, supplyKey);
+
+      const amount = "9223372036854775807";
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal(BigInt(fungibleInitialSupply) - BigInt(amount));
+      await verifyFungibleTokenBurn(tokenId, amount);
+    });
+
+    it("(#6) Burns an amount of 9,223,372,036,854,775,808 (int64 max + 1) fungible tokens", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId: await createToken(this, true, supplyKey),
+          amount: "9223372036854775808",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_AMOUNT");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Burns an amount of 18,446,744,073,709,551,614 (uint64 max - 1) fungible tokens", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId: await createToken(this, true, supplyKey),
+          amount: "18446744073709551614",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_AMOUNT");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Burns an amount of 18,446,744,073,709,551,615 (uint64 max) fungible tokens", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId: await createToken(this, true, supplyKey),
+          amount: "18446744073709551615",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_AMOUNT");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#9) Burns an amount of 10,000 fungible tokens with 2 decimals", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, true, supplyKey, null, null, 2);
+
+      const amount = "10000";
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            amount,
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal((BigInt(fungibleInitialSupply) - BigInt(amount)).toString());
+      await verifyFungibleTokenBurn(tokenId, amount);
+    });
+
+    it("(#10) Burns an amount of 10,000 fungible tokens with 1,000 max supply", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId: await createToken(
+            this,
+            true,
+            supplyKey,
+            null,
+            null,
+            null,
+            "1000",
+            null,
+            "1000",
+          ),
+          amount: "10000",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_AMOUNT");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Burns fungible tokens with the treasury account frozen", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const tokenId = await createToken(
+        this,
+        true,
+        supplyKey,
+        null,
+        null,
+        null,
+        null,
+        freezeKey,
+      );
+
+      await JSONRPCRequest(this, "freezeToken", {
+        tokenId,
+        accountId: treasuryAccountId,
+        commonTransactionParams: {
+          signers: [freezeKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          amount: "1000000",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#12) Burns paused fungible tokens", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const tokenId = await createToken(this, true, supplyKey, null, pauseKey);
+
+      await JSONRPCRequest(this, "pauseToken", {
+        tokenId,
+        commonTransactionParams: {
+          signers: [pauseKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          amount: "1000000",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "TOKEN_IS_PAUSED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#13) Burns an amount of 1,000,000 NFTs", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, false, supplyKey);
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          amount: "1000000",
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_METADATA");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe("Serial Numbers", function () {
+    it("(#1) Burns an NFT", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, false, supplyKey);
+
+      const serialNumber = "1";
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            serialNumbers: [serialNumber],
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal(nonFungibleMetadata.length - 1);
+      await verifyNonFungibleTokenBurn(tokenId, serialNumber);
+    });
+
+    it("(#2) Burns 3 NFTs", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, false, supplyKey);
+
+      const serialNumbers = ["1", "2", "3"];
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            serialNumbers,
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal(nonFungibleMetadata.length - serialNumbers.length);
+      await verifyNonFungibleTokenBurn(tokenId, serialNumbers[0]);
+      await verifyNonFungibleTokenBurn(tokenId, serialNumbers[1]);
+      await verifyNonFungibleTokenBurn(tokenId, serialNumbers[2]);
+    });
+
+    it("(#3) Burns 3 NFTs but one is already burned", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, false, supplyKey);
+      const serialNumbers = ["1", "2", "3"];
+
+      await JSONRPCRequest(this, "burnToken", {
+        tokenId,
+        serialNumbers: [serialNumbers[serialNumbers.length - 1]],
+        commonTransactionParams: {
+          signers: [supplyKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          serialNumbers,
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NFT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Burns no NFTs", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const tokenId = await createToken(this, false, supplyKey);
+
+      expect(
+        (
+          await JSONRPCRequest(this, "burnToken", {
+            tokenId,
+            commonTransactionParams: {
+              signers: [supplyKey],
+            },
+          })
+        ).newTotalSupply,
+      ).to.equal(nonFungibleMetadata.length);
+    });
+
+    it("(#5) Burns an NFT that doesn't exist", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId: await createToken(this, false, supplyKey),
+          serialNumbers: ["12345678"],
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_NFT_SERIAL_NUMBER");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Burns NFTs with the treasury account frozen", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const tokenId = await createToken(
+        this,
+        false,
+        supplyKey,
+        null,
+        null,
+        null,
+        null,
+        freezeKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          serialNumbers: ["1"],
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_NFT_SERIAL_NUMBER");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Burns paused NFTs", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const tokenId = await createToken(this, false, supplyKey, null, pauseKey);
+
+      await JSONRPCRequest(this, "pauseToken", {
+        tokenId,
+        commonTransactionParams: {
+          signers: [pauseKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          serialNumbers: ["1"],
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "TOKEN_IS_PAUSED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Burns fungible tokens with serial numbers", async function () {
+      const supplyKey = await getPrivateKey(this, "ed25519");
+      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
       const tokenId = await createToken(this, true, supplyKey);
 
       expect(
         (
           await JSONRPCRequest(this, "burnToken", {
             tokenId,
+            serialNumbers: ["1"],
             commonTransactionParams: {
               signers: [supplyKey],
             },
