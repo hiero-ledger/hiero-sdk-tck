@@ -27,9 +27,7 @@ export const verifyTokenKey = async (
   const mirrorNodeKey = transformConsensusToMirrorNodeProp(keyType);
   // Fetch the key from the mirror node
   const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-    "getTokenData",
-    tokenId,
-    mirrorNodeKey,
+    (await mirrorNodeClient.getTokenData(tokenId))[mirrorNodeKey],
   );
 
   // Verify that the key from the mirror node matches the raw key
@@ -84,9 +82,7 @@ export const verifyTokenUpdateWithNullKey = async (
 
   // Fetch the key from the mirror node and check if it is null
   const mirrorNodeKey = await getPublicKeyFromMirrorNode(
-    "getTokenData",
-    tokenId,
-    mirrorNodeKeyName,
+    (await mirrorNodeClient.getTokenData(tokenId))[mirrorNodeKeyName],
   );
   expect(null).to.equal(mirrorNodeKey);
 };
