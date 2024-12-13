@@ -114,8 +114,8 @@ describe("TokenBurnTransaction", function () {
   async function verifyFungibleTokenBurn(tokenId: string, amount: string) {
     const consensusNodeInfo =
       await consensusInfoClient.getBalance(treasuryAccountId);
-    expect(BigInt(fungibleInitialSupply) - BigInt(amount)).to.equal(
-      consensusNodeInfo.tokens?.get(tokenId),
+    expect(consensusNodeInfo.tokens?.get(tokenId)?.toString()).to.equal(
+      (BigInt(fungibleInitialSupply) - BigInt(amount)).toString(),
     );
 
     await retryOnError(async () => {
@@ -127,7 +127,9 @@ describe("TokenBurnTransaction", function () {
       let foundToken = false;
       for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
         if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-          expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(amount);
+          expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(
+            (BigInt(fungibleInitialSupply) - BigInt(amount)).toString(),
+          );
           foundToken = true;
           break;
         }
@@ -143,20 +145,15 @@ describe("TokenBurnTransaction", function () {
     tokenId: string,
     serialNumber: string,
   ) {
-    // Query the consensus node.
-    const consensusNodeInfo = await consensusInfoClient.getTokenNftInfo(
-      tokenId,
-      serialNumber,
-    );
-    let foundNft = false;
-    for (let i = 0; i < consensusNodeInfo.length; i++) {
-      if (
-        consensusNodeInfo[i].nftId.tokenId.toString() === tokenId &&
-        consensusNodeInfo[i].nftId.serial.toString() === serialNumber
-      ) {
-        foundNft = true;
-        break;
-      }
+    // Query the consensus node. Should throw since the NFT shouldn't exist anymore.
+    let foundNft = true;
+    try {
+      const consensusNodeInfo = await consensusInfoClient.getTokenNftInfo(
+        tokenId,
+        serialNumber,
+      );
+    } catch (err: any) {
+      foundNft = false;
     }
 
     // Make sure the NFT was not found.
@@ -210,7 +207,7 @@ describe("TokenBurnTransaction", function () {
 
       const response = await JSONRPCRequest(this, "burnToken", {
         tokenId,
-        metadata: [nonFungibleMetadata[0]],
+        serialNumbers: ["1"],
         commonTransactionParams: {
           signers: [supplyKey],
         },
@@ -445,12 +442,13 @@ describe("TokenBurnTransaction", function () {
         (
           await JSONRPCRequest(this, "burnToken", {
             tokenId,
+            amount,
             commonTransactionParams: {
               signers: [supplyKey],
             },
           })
         ).newTotalSupply,
-      ).to.equal(BigInt(fungibleInitialSupply) - BigInt(amount));
+      ).to.equal((BigInt(fungibleInitialSupply) - BigInt(amount)).toString());
       await verifyFungibleTokenBurn(tokenId, amount);
     });
 
@@ -463,12 +461,13 @@ describe("TokenBurnTransaction", function () {
         (
           await JSONRPCRequest(this, "burnToken", {
             tokenId,
+            amount,
             commonTransactionParams: {
               signers: [supplyKey],
             },
           })
         ).newTotalSupply,
-      ).to.equal(BigInt(fungibleInitialSupply) - BigInt(amount));
+      ).to.equal((BigInt(fungibleInitialSupply) - BigInt(amount)).toString());
       await verifyFungibleTokenBurn(tokenId, amount);
     });
 
@@ -680,7 +679,7 @@ describe("TokenBurnTransaction", function () {
             },
           })
         ).newTotalSupply,
-      ).to.equal(nonFungibleMetadata.length - 1);
+      ).to.equal((nonFungibleMetadata.length - 1).toString());
       await verifyNonFungibleTokenBurn(tokenId, serialNumber);
     });
 
@@ -699,7 +698,7 @@ describe("TokenBurnTransaction", function () {
             },
           })
         ).newTotalSupply,
-      ).to.equal(nonFungibleMetadata.length - serialNumbers.length);
+      ).to.equal((nonFungibleMetadata.length - serialNumbers.length).toString());
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[0]);
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[1]);
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[2]);
@@ -738,16 +737,19 @@ describe("TokenBurnTransaction", function () {
       const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(this, false, supplyKey);
 
-      expect(
-        (
-          await JSONRPCRequest(this, "burnToken", {
-            tokenId,
-            commonTransactionParams: {
-              signers: [supplyKey],
-            },
-          })
-        ).newTotalSupply,
-      ).to.equal(nonFungibleMetadata.length);
+      try {
+        await JSONRPCRequest(this, "burnToken", {
+          tokenId,
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_BURN_METADATA");
+        return;
+      }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#5) Burns an NFT that doesn't exist", async function () {
@@ -762,7 +764,7 @@ describe("TokenBurnTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_TOKEN_NFT_SERIAL_NUMBER");
+        assert.equal(err.data.status, "INVALID_NFT_ID");
         return;
       }
 
@@ -783,6 +785,14 @@ describe("TokenBurnTransaction", function () {
         freezeKey,
       );
 
+      await JSONRPCRequest(this, "freezeToken", {
+        tokenId,
+        accountId: treasuryAccountId,
+        commonTransactionParams: {
+          signers: [freezeKey],
+        },
+      });
+
       try {
         await JSONRPCRequest(this, "burnToken", {
           tokenId,
@@ -792,7 +802,7 @@ describe("TokenBurnTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_TOKEN_NFT_SERIAL_NUMBER");
+        assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
         return;
       }
 
