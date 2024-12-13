@@ -23,28 +23,31 @@ describe("TokenPauseTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    tokenPauseKey = response.key;
+    tokenPauseKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
-    tokenAdminKey = response.key;
+    tokenAdminKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ecdsaSecp256k1PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createToken", {
-      name: "testname",
-      symbol: "testsymbol",
-      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      adminKey: tokenAdminKey,
-      tokenType: "ft",
-      pauseKey: tokenPauseKey,
-      commonTransactionParams: {
-        signers: [tokenAdminKey],
-      },
-    });
-    tokenId = response.tokenId;
+    tokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: tokenAdminKey,
+        tokenType: "ft",
+        pauseKey: tokenPauseKey,
+        commonTransactionParams: {
+          signers: [tokenAdminKey],
+        },
+      })
+    ).tokenId;
   });
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");
@@ -60,12 +63,11 @@ describe("TokenPauseTransaction", function () {
       });
 
       await retryOnError(async function () {
-        const mirrorNodeData = await mirrorNodeClient.getTokenData(tokenId);
-        const consensusNodeData =
-          await consensusInfoClient.getTokenInfo(tokenId);
-
-        expect(mirrorNodeData.pause_status).to.equal("PAUSED");
-        expect(consensusNodeData.pauseStatus).to.be.true;
+        expect((await consensusInfoClient.getTokenInfo(tokenId)).pauseStatus).to
+          .be.true;
+        expect(
+          (await mirrorNodeClient.getTokenData(tokenId)).pause_status,
+        ).to.equal("PAUSED");
       });
     });
 
