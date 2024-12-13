@@ -698,7 +698,9 @@ describe("TokenBurnTransaction", function () {
             },
           })
         ).newTotalSupply,
-      ).to.equal((nonFungibleMetadata.length - serialNumbers.length).toString());
+      ).to.equal(
+        (nonFungibleMetadata.length - serialNumbers.length).toString(),
+      );
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[0]);
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[1]);
       await verifyNonFungibleTokenBurn(tokenId, serialNumbers[2]);
