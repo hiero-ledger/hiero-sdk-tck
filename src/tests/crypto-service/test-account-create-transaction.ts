@@ -20,7 +20,7 @@ describe("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -28,11 +28,11 @@ describe("AccountCreateTransaction", function () {
     );
   });
 
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("Key", () => {
+  describe("Key", function () {
     const verifyOnlyAccountCreation = async (accountId: string) => {
       // If the account was created successfully, the queried account's IDs should be equal.
       expect(accountId).to.equal(
@@ -48,7 +48,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with a valid ED25519 public key", async () => {
+    it("(#1) Creates an account with a valid ED25519 public key", async function () {
       // Generate an ED25519 public key for the account.
       const ed25519PublicKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -63,7 +63,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#2) Creates an account with a valid ECDSAsecp256k1 public key", async () => {
+    it("(#2) Creates an account with a valid ECDSAsecp256k1 public key", async function () {
       // Generate an ECDSAsecp256k1 public key for the account.
       //prettier-ignore
       const ecdsaSecp256k1PublicKey = await JSONRPCRequest(this, "generateKey", {
@@ -79,7 +79,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#3) Creates an account with a valid ED25519 private key", async () => {
+    it("(#3) Creates an account with a valid ED25519 private key", async function () {
       // Generate an ED25519 private key for the account.
       const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -94,7 +94,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#4) Creates an account with a valid ECDSAsecp256k1 private key", async () => {
+    it("(#4) Creates an account with a valid ECDSAsecp256k1 private key", async function () {
       // Generate an ECDSAsecp256k1 private key for the account.
       //prettier-ignore
       const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(this, "generateKey", {
@@ -110,7 +110,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#5) Creates an account with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async () => {
+    it("(#5) Creates an account with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
       // Generate a KeyList of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const keyList = await JSONRPCRequest(
         this,
@@ -127,7 +127,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#6) Creates an account with a valid KeyList of nested Keylists (three levels)", async () => {
+    it("(#6) Creates an account with a valid KeyList of nested Keylists (three levels)", async function () {
       // Generate a KeyList of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
       const nestedKeyList = await JSONRPCRequest(
         this,
@@ -144,7 +144,7 @@ describe("AccountCreateTransaction", function () {
       await verifyOnlyAccountCreation(response.accountId);
     });
 
-    it("(#7) Creates an account with no key", async () => {
+    it("(#7) Creates an account with no key", async function () {
       try {
         // Attempt to create an account without providing a key. The network should respond with a KEY_REQUIRED status.
         await JSONRPCRequest(this, "createAccount", {});
@@ -157,7 +157,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Creates an account with an invalid key", async () => {
+    it("(#8) Creates an account with an invalid key", async function () {
       try {
         // Attempt to create an account with an invalid key (random 88 bytes, which is equal to the byte length of a valid public key). The SDK should throw an internal error.
         await JSONRPCRequest(this, "createAccount", {
@@ -177,7 +177,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Initial Balance", () => {
+  describe("Initial Balance", function () {
     const verifyAccountCreationWithInitialBalance = async (
       accountId: string,
       initialBalance: string,
@@ -195,7 +195,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with an initial balance", async () => {
+    it("(#1) Creates an account with an initial balance", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -216,7 +216,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account with no initial balance", async () => {
+    it("(#2) Creates an account with no initial balance", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -237,7 +237,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#3) Creates an account with a negative initial balance", async () => {
+    it("(#3) Creates an account with a negative initial balance", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -258,7 +258,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates an account with an initial balance higher than the operator account balance", async () => {
+    it("(#4) Creates an account with an initial balance higher than the operator account balance", async function () {
       // Get the operator account balance.
       const operatorBalanceData = await mirrorNodeClient.getAccountData(
         process.env.OPERATOR_ACCOUNT_ID as string,
@@ -289,7 +289,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Receiver Signature Required", () => {
+  describe("Receiver Signature Required", function () {
     const verifyAccountCreationWithReceiverSignatureRequired = async (
       accountId: string,
       receiverSignatureRequired: boolean,
@@ -306,7 +306,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account that requires a receiving signature", async () => {
+    it("(#1) Creates an account that requires a receiving signature", async function () {
       // Generate a valid private key for the account.
       const privateKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -335,7 +335,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account that doesn't require a receiving signature", async () => {
+    it("(#2) Creates an account that doesn't require a receiving signature", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -355,7 +355,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#3) Creates an account that requires a receiving signature but isn't signed by the account key", async () => {
+    it("(#3) Creates an account that requires a receiving signature but isn't signed by the account key", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -377,7 +377,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Auto Renew Period", () => {
+  describe("Auto Renew Period", function () {
     const verifyAccountCreationWithAutoRenewPeriod = async (
       accountId: string,
       autoRenewPeriodSeconds: string,
@@ -395,7 +395,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with an auto renew period set to 60 days (5,184,000 seconds)", async () => {
+    it("(#1) Creates an account with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -416,7 +416,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account with an auto renew period set to -1 seconds", async () => {
+    it("(#2) Creates an account with an auto renew period set to -1 seconds", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -437,7 +437,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates an account with an auto renew period set to the minimum period of 30 days (2,592,000 seconds)", async () => {
+    it("(#3) Creates an account with an auto renew period set to the minimum period of 30 days (2,592,000 seconds)", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -457,7 +457,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#4) Creates an account with an auto renew period set to the minimum period of 30 days minus one second (2,591,999 seconds)", async () => {
+    it("(#4) Creates an account with an auto renew period set to the minimum period of 30 days minus one second (2,591,999 seconds)", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -478,7 +478,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates an account with an auto renew period set to the maximum period of 8,000,001 seconds", async () => {
+    it("(#5) Creates an account with an auto renew period set to the maximum period of 8,000,001 seconds", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -499,7 +499,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#6) Creates an account with an auto renew period set to the maximum period plus one seconds (8,000,002 seconds)", async () => {
+    it("(#6) Creates an account with an auto renew period set to the maximum period plus one seconds (8,000,002 seconds)", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -521,7 +521,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Memo", async () => {
+  describe("Memo", async function () {
     const verifyAccountCreationWithMemo = async (
       accountId: string,
       memo: string,
@@ -537,7 +537,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with a valid memo", async () => {
+    it("(#1) Creates an account with a valid memo", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -555,7 +555,7 @@ describe("AccountCreateTransaction", function () {
       await verifyAccountCreationWithMemo(response.accountId, memo);
     });
 
-    it("(#2) Creates an account with an empty memo", async () => {
+    it("(#2) Creates an account with an empty memo", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -573,7 +573,7 @@ describe("AccountCreateTransaction", function () {
       await verifyAccountCreationWithMemo(response.accountId, memo);
     });
 
-    it("(#3) Creates an account with a memo that is 100 characters", async () => {
+    it("(#3) Creates an account with a memo that is 100 characters", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -592,7 +592,7 @@ describe("AccountCreateTransaction", function () {
       await verifyAccountCreationWithMemo(response.accountId, memo);
     });
 
-    it("(#4) Creates an account with a memo that exceeds 100 characters", async () => {
+    it("(#4) Creates an account with a memo that exceeds 100 characters", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -613,7 +613,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates an account with an invalid memo", async () => {
+    it("(#5) Creates an account with an invalid memo", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -635,7 +635,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Max Automatic Token Associations", async () => {
+  describe("Max Automatic Token Associations", async function () {
     const verifyAccountCreationWithMaxAutoTokenAssociations = async (
       accountId: string,
       maxAutomaticTokenAssociations: number,
@@ -656,7 +656,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with a max token association set to 100", async () => {
+    it("(#1) Creates an account with a max token association set to 100", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -679,7 +679,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account with a max token association set to 0", async () => {
+    it("(#2) Creates an account with a max token association set to 0", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -699,7 +699,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#3) Creates an account with a max token association that is the maximum value", async () => {
+    it("(#3) Creates an account with a max token association that is the maximum value", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -720,7 +720,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#4) Creates an account with a max token association that is the maximum value plus one", async () => {
+    it("(#4) Creates an account with a max token association that is the maximum value plus one", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -742,7 +742,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Staked ID", async () => {
+  describe("Staked ID", async function () {
     const verifyAccountCreationWithStakedAccountId = async (
       accountId: string,
       stakedAccountId: string,
@@ -777,7 +777,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with the staked account ID set to the operators account ID", async () => {
+    it("(#1) Creates an account with the staked account ID set to the operators account ID", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -796,7 +796,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account with the staked node ID set to a valid node ID", async () => {
+    it("(#2) Creates an account with the staked node ID set to a valid node ID", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -817,7 +817,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#3) Creates an account with the staked account ID set to an account ID that doesn't exist", async () => {
+    it("(#3) Creates an account with the staked account ID set to an account ID that doesn't exist", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -838,7 +838,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates an account with the staked node ID set to a node ID that doesn't exist", async () => {
+    it("(#4) Creates an account with the staked node ID set to a node ID that doesn't exist", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -859,7 +859,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates an account with the staked account ID set to an empty account ID", async () => {
+    it("(#5) Creates an account with the staked account ID set to an empty account ID", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -880,7 +880,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates an account with the staked node ID set to an invalid node ID", async () => {
+    it("(#6) Creates an account with the staked node ID set to an invalid node ID", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -901,7 +901,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates an account with a staked account ID and a staked node ID", async () => {
+    it("(#7) Creates an account with a staked account ID and a staked node ID", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -924,7 +924,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Decline Rewards", async () => {
+  describe("Decline Rewards", async function () {
     const verifyAccountCreationWithDeclineRewards = async (
       accountId: string,
       declineRewards: boolean,
@@ -941,7 +941,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account that declines staking rewards", async () => {
+    it("(#1) Creates an account that declines staking rewards", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
@@ -961,7 +961,7 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an account that doesn't decline staking rewards", async () => {
+    it("(#2) Creates an account that doesn't decline staking rewards", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
@@ -982,7 +982,7 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
-  describe("Alias", async () => {
+  describe("Alias", async function () {
     const verifyAccountCreationWithAlias = async (
       accountId: string,
       alias: string,
@@ -999,7 +999,7 @@ describe("AccountCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key", async () => {
+    it("(#1) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -1030,7 +1030,7 @@ describe("AccountCreateTransaction", function () {
       await verifyAccountCreationWithAlias(response.accountId, alias.key);
     });
 
-    it("(#2) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key without a signature", async () => {
+    it("(#2) Creates an account with the keccak-256 hash of an ECDSAsecp256k1 public key without a signature", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -1056,7 +1056,7 @@ describe("AccountCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates an account with an invalid alias", async () => {
+    it("(#3) Creates an account with an invalid alias", async function () {
       // Generate a valid key for the account.
       const key = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
