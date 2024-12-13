@@ -7,7 +7,7 @@ Allowances can be granted to accounts to allow that account to spend on behalf o
 | Parameter Name   | Type        | Required/Optional | Description/Notes                                                                                                                    |
 |------------------|-------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | ownerAccountId   | string      | optional          | The ID of the account granting the allowance.                                                                                        |
-| spenderAccountId | bool        | optional          | The ID of the account being granted the allowance.                                                                                   |
+| spenderAccountId | string      | optional          | The ID of the account being granted the allowance.                                                                                   |
 | hbar             | json object | optional          | REQUIRED if `token` and `nft` are not provided. The parameters of the [HBAR Allowance](#hbar-allowance-object-definition) to grant.  |
 | token            | json object | optional          | REQUIRED if `hbar` and `nft` are not provided. The parameters of the [Token Allowance](#token-allowance-object-definition) to grant. |
 | nft              | json object | optional          | REQUIRED if `hbar` and `token` are not provided. The parameters of the [NFT Allowance](#nft-allowance-object-definition) to grant.   |
