@@ -73,9 +73,9 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () =>
-        verifyTokenAssociation(accountId, tokenId),
-      );
+      await retryOnError(async function () {
+        verifyTokenAssociation(accountId, tokenId);
+      });
     });
 
     it("(#2) Associates a token with an account with which it is already associated", async function () {
@@ -180,7 +180,7 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => {
+      await retryOnError(async function () {
         expect(
           (await mirrorNodeClient.getTokenRelationships(accountId)).tokens
             .length,
@@ -309,15 +309,15 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () =>
-        verifyTokenAssociation(accountId, tokenId),
-      );
-      await retryOnError(async () =>
-        verifyTokenAssociation(accountId, secondTokenId),
-      );
-      await retryOnError(async () =>
-        verifyTokenAssociation(accountId, thirdTokenId),
-      );
+      await retryOnError(async function () {
+        verifyTokenAssociation(accountId, tokenId);
+      });
+      await retryOnError(async function () {
+        verifyTokenAssociation(accountId, secondTokenId);
+      });
+      await retryOnError(async function () {
+        verifyTokenAssociation(accountId, thirdTokenId);
+      });
     });
 
     it("(#7) Associates two valid tokens and an invalid token with an account", async function () {
