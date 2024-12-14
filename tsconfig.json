@@ -13,7 +13,8 @@
     "paths": {
       "@helpers/*": ["src/utils/helpers/*"],
       "@services/*": ["src/services/*"],
-      "@constants/*": ["src/utils/helpers/constants/*"]
+      "@constants/*": ["src/utils/constants/*"],
+      "@enums/*": ["src/utils/enums/*"]
     }
   },
   "include": ["src/**/*.ts", "src/tests/**/*.ts"],
