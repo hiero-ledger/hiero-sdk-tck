@@ -27,43 +27,49 @@ describe("TokenUnfreezeTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    tokenFreezeKey = response.key;
+    tokenFreezeKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    tokenAdminKey = response.key;
+    tokenAdminKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
-    tokenPauseKey = response.key;
+    tokenPauseKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ecdsaSecp256k1PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createToken", {
-      name: "testname",
-      symbol: "testsymbol",
-      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      adminKey: tokenAdminKey,
-      freezeKey: tokenFreezeKey,
-      pauseKey: tokenPauseKey,
-      commonTransactionParams: {
-        signers: [tokenAdminKey],
-      },
-    });
-    tokenId = response.tokenId;
+    tokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: tokenAdminKey,
+        freezeKey: tokenFreezeKey,
+        pauseKey: tokenPauseKey,
+        commonTransactionParams: {
+          signers: [tokenAdminKey],
+        },
+      })
+    ).tokenId;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    accountPrivateKey = response.key;
+    accountPrivateKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createAccount", {
-      key: accountPrivateKey,
-    });
-    accountId = response.accountId;
+    accountId = (
+      await JSONRPCRequest(this, "createAccount", {
+        key: accountPrivateKey,
+      })
+    ).accountId;
 
     await JSONRPCRequest(this, "associateToken", {
       accountId,
@@ -114,7 +120,9 @@ describe("TokenUnfreezeTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyTokenUnfrozen(accountId, tokenId));
+      await retryOnError(async function () {
+        await verifyTokenUnfrozen(accountId, tokenId);
+      });
     });
 
     it("(#2) Unfreezes a token that doesn't exist on an account", async function () {
@@ -214,17 +222,18 @@ describe("TokenUnfreezeTransaction", function () {
     });
 
     it("(#8) Unfreezes a token on an account but signs with an incorrect freeze key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-      const key = response.key;
-
       try {
         await JSONRPCRequest(this, "unfreezeToken", {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [key],
+            signers: [
+              (
+                await JSONRPCRequest(this, "generateKey", {
+                  type: "ed25519PrivateKey",
+                })
+              ).key,
+            ],
           },
         });
       } catch (err: any) {
@@ -236,16 +245,15 @@ describe("TokenUnfreezeTransaction", function () {
     });
 
     it("(#9) Unfreezes a token with no freeze key on an account", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-      const tokenIdNoFreeze = response.tokenId;
-
       try {
         await JSONRPCRequest(this, "unfreezeToken", {
-          tokenId: tokenIdNoFreeze,
+          tokenId: (
+            await JSONRPCRequest(this, "createToken", {
+              name: "testname",
+              symbol: "testsymbol",
+              treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            })
+          ).tokenId,
           accountId,
         });
       } catch (err: any) {
@@ -273,7 +281,9 @@ describe("TokenUnfreezeTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyTokenUnfrozen(accountId, tokenId));
+      await retryOnError(async function () {
+        await verifyTokenUnfrozen(accountId, tokenId);
+      });
     });
 
     it("(#11) Unfreezes a token on an account that is not associated with the token", async function () {
