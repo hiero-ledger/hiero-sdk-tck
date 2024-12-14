@@ -23,28 +23,31 @@ describe("TokenUnpauseTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    tokenPauseKey = response.key;
+    tokenPauseKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
-    tokenAdminKey = response.key;
+    tokenAdminKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ecdsaSecp256k1PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createToken", {
-      name: "testname",
-      symbol: "testsymbol",
-      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      adminKey: tokenAdminKey,
-      tokenType: "ft",
-      pauseKey: tokenPauseKey,
-      commonTransactionParams: {
-        signers: [tokenAdminKey],
-      },
-    });
-    tokenId = response.tokenId;
+    tokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: tokenAdminKey,
+        tokenType: "ft",
+        pauseKey: tokenPauseKey,
+        commonTransactionParams: {
+          signers: [tokenAdminKey],
+        },
+      })
+    ).tokenId;
 
     await JSONRPCRequest(this, "pauseToken", {
       tokenId,
@@ -58,11 +61,11 @@ describe("TokenUnpauseTransaction", function () {
   });
 
   async function verifyTokenUnpaused(tokenId: string) {
-    const mirrorNodeData = await mirrorNodeClient.getTokenData(tokenId);
-    const consensusNodeData = await consensusInfoClient.getTokenInfo(tokenId);
-
-    expect(mirrorNodeData.pause_status).to.equal("UNPAUSED");
-    expect(consensusNodeData.pauseStatus).to.be.false;
+    expect((await consensusInfoClient.getTokenInfo(tokenId)).pauseStatus).to.be
+      .false;
+    expect(
+      (await mirrorNodeClient.getTokenData(tokenId)).pause_status,
+    ).to.equal("UNPAUSED");
   }
 
   describe("Token ID", function () {
@@ -74,7 +77,9 @@ describe("TokenUnpauseTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyTokenUnpaused(tokenId));
+      await retryOnError(async function () {
+        await verifyTokenUnpaused(tokenId);
+      });
     });
 
     it("(#2) Unpauses a token with no token ID", async function () {
@@ -188,7 +193,9 @@ describe("TokenUnpauseTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyTokenUnpaused(tokenId));
+      await retryOnError(async function () {
+        await verifyTokenUnpaused(tokenId);
+      });
     });
   });
 
