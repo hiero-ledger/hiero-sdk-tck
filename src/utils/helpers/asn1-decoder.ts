@@ -26,7 +26,7 @@ class ASN1Decoder {
   private readLength(): number {
     let length = this.data[this.pos++];
     if (length & 0x80) {
-      let numBytes = length & 0x7f;
+      const numBytes = length & 0x7f;
       length = 0;
       for (let i = 0; i < numBytes; i++) {
         length = (length << 8) | this.data[this.pos++];
