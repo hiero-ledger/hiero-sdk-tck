@@ -31,14 +31,14 @@ describe("TokenCreateTransaction", function () {
   this.timeout(30000);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
-  beforeEach(async () => {
+  beforeEach(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
-  afterEach(async () => {
+  afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
 
@@ -57,7 +57,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a name that is a valid length", async () => {
+    it("(#1) Creates a token with a name that is a valid length", async function () {
       const name = "testname";
       const response = await JSONRPCRequest(this, "createToken", {
         name: name,
@@ -68,7 +68,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
-    it("(#2) Creates a token with a name that is the minimum length", async () => {
+    it("(#2) Creates a token with a name that is the minimum length", async function () {
       const name = "t";
       const response = await JSONRPCRequest(this, "createToken", {
         name: name,
@@ -79,7 +79,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
-    it("(#3) Creates a token with a name that is empty", async () => {
+    it("(#3) Creates a token with a name that is empty", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "",
@@ -94,7 +94,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with a name that is the maximum length", async () => {
+    it("(#4) Creates a token with a name that is the maximum length", async function () {
       const name =
         "This is a really long name but it is still valid because it is 100 characters exactly on the money!!";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -106,7 +106,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithName(response.tokenId, name);
     });
 
-    it("(#5) Creates a token with a name that exceeds the maximum length", async () => {
+    it("(#5) Creates a token with a name that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "This is a long name that is not valid because it exceeds 100 characters and it should fail the test!!",
@@ -121,7 +121,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with no name", async () => {
+    it("(#6) Creates a token with no name", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           symbol: "testsymbol",
@@ -151,7 +151,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a symbol that is the minimum length", async () => {
+    it("(#1) Creates a token with a symbol that is the minimum length", async function () {
       const symbol = "t";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -162,7 +162,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithSymbol(response.tokenId, symbol);
     });
 
-    it("(#2) Creates a token with a symbol that is empty", async () => {
+    it("(#2) Creates a token with a symbol that is empty", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -177,7 +177,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with a symbol that is the maximum length", async () => {
+    it("(#3) Creates a token with a symbol that is the maximum length", async function () {
       const symbol =
         "This is a really long symbol but it is still valid because it is 100 characters exactly on the money";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -189,7 +189,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithSymbol(response.tokenId, symbol);
     });
 
-    it("(#4) Creates a token with a symbol that exceeds the maximum length", async () => {
+    it("(#4) Creates a token with a symbol that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -205,7 +205,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a token with no symbol", async () => {
+    it("(#5) Creates a token with no symbol", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -234,7 +234,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a fungible token with 0 decimals", async () => {
+    it("(#1) Creates a fungible token with 0 decimals", async function () {
       const decimals = 0;
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -246,7 +246,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
-    it("(#2) Creates a fungible token with -1 decimals", async () => {
+    it("(#2) Creates a fungible token with -1 decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -262,7 +262,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a fungible token with 2,147,483,647 (int32 max) decimals", async () => {
+    it("(#3) Creates a fungible token with 2,147,483,647 (int32 max) decimals", async function () {
       const decimals = 2147483647;
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -274,7 +274,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
-    it("(#4) Creates a fungible token with 2,147,483,646 (int32 max - 1) decimals", async () => {
+    it("(#4) Creates a fungible token with 2,147,483,646 (int32 max - 1) decimals", async function () {
       const decimals = 2147483646;
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -286,7 +286,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
-    it("(#5) Creates a fungible token with 2,147,483,648 (int32 max + 1) decimals", async () => {
+    it("(#5) Creates a fungible token with 2,147,483,648 (int32 max + 1) decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -302,7 +302,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a fungible token with 4,294,967,295 (uint32 max) decimals", async () => {
+    it("(#6) Creates a fungible token with 4,294,967,295 (uint32 max) decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -318,7 +318,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a fungible token with 4,294,967,294 (uint32 max - 1) decimals", async () => {
+    it("(#7) Creates a fungible token with 4,294,967,294 (uint32 max - 1) decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -334,7 +334,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Creates a fungible token with -2,147,483,648 (int32 min) decimals", async () => {
+    it("(#8) Creates a fungible token with -2,147,483,648 (int32 min) decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -350,7 +350,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Creates a fungible token with -2,147,483,647 (int32 min + 1) decimals", async () => {
+    it("(#9) Creates a fungible token with -2,147,483,647 (int32 min + 1) decimals", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -366,7 +366,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Creates an NFT with a decimal amount of zero", async () => {
+    it("(#10) Creates an NFT with a decimal amount of zero", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -386,7 +386,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithDecimals(response.tokenId, decimals);
     });
 
-    it("(#11) Creates an NFT with a nonzero decimal amount", async () => {
+    it("(#11) Creates an NFT with a nonzero decimal amount", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -421,7 +421,7 @@ describe("TokenCreateTransaction", function () {
       expect(initialSupply).to.equal(totalSupplyMirror);
     };
 
-    it("(#1) Creates a fungible token with 0 initial supply", async () => {
+    it("(#1) Creates a fungible token with 0 initial supply", async function () {
       const initialSupply = "0";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -436,7 +436,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates a fungible token with -1 initial supply", async () => {
+    it("(#2) Creates a fungible token with -1 initial supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -452,7 +452,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a fungible token with 9,223,372,036,854,775,807 (int64 max) initial supply", async () => {
+    it("(#3) Creates a fungible token with 9,223,372,036,854,775,807 (int64 max) initial supply", async function () {
       const initialSupply = "9223372036854775807";
 
       const response = await JSONRPCRequest(this, "createToken", {
@@ -468,7 +468,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#4) Creates a fungible token with 9,223,372,036,854,775,806 (int64 max - 1) initial supply", async () => {
+    it("(#4) Creates a fungible token with 9,223,372,036,854,775,806 (int64 max - 1) initial supply", async function () {
       const initialSupply = "9223372036854775806";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -483,7 +483,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async () => {
+    it("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -499,7 +499,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a fungible token with -9,223,372,036,854,775,807 (int64 min + 1) initial supply", async () => {
+    it("(#6) Creates a fungible token with -9,223,372,036,854,775,807 (int64 min + 1) initial supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -515,7 +515,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a fungible token with a valid initial supply and decimals", async () => {
+    it("(#7) Creates a fungible token with a valid initial supply and decimals", async function () {
       const decimals = 2;
       const initialSupply = "1000000";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -532,7 +532,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#8) Creates a fungible token with a valid initial supply and more decimals", async () => {
+    it("(#8) Creates a fungible token with a valid initial supply and more decimals", async function () {
       const decimals = 6;
       const initialSupply = "1000000";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -549,7 +549,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#9) Creates an NFT with an initial supply of zero", async () => {
+    it("(#9) Creates an NFT with an initial supply of zero", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -572,7 +572,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#10) Creates an NFT with an initial supply of zero without a supply key", async () => {
+    it("(#10) Creates an NFT with an initial supply of zero without a supply key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -589,7 +589,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Creates an NFT with a nonzero initial supply", async () => {
+    it("(#11) Creates an NFT with a nonzero initial supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -624,7 +624,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a treasury account", async () => {
+    it("(#1) Creates a token with a treasury account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -649,7 +649,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithTreasuryAccount(response.tokenId, accountId);
     });
 
-    it("(#2) Creates a token with a treasury account without signing with the account's private key", async () => {
+    it("(#2) Creates a token with a treasury account without signing with the account's private key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -677,7 +677,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with a treasury account that doesn't exist", async () => {
+    it("(#3) Creates a token with a treasury account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -693,7 +693,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with a treasury account that is deleted", async () => {
+    it("(#4) Creates a token with a treasury account that is deleted", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -734,7 +734,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Admin Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its admin key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -761,7 +761,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its admin key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -788,7 +788,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its admin key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -815,7 +815,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its admin key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -842,7 +842,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "adminKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const keyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -867,7 +867,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList.key, "adminKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its admin key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its admin key", async function () {
       const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
@@ -894,7 +894,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "adminKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const thresholdKey = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -924,7 +924,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey.key, "adminKey");
     });
 
-    it("(#8) Creates a token with a valid key as its admin key but doesn't sign with it", async () => {
+    it("(#8) Creates a token with a valid key as its admin key but doesn't sign with it", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -946,7 +946,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Creates a token with an invalid key as its admin key", async () => {
+    it("(#9) Creates a token with an invalid key as its admin key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -964,7 +964,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("KYC Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its KYC key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -981,7 +981,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its KYC key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -998,7 +998,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its KYC key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1022,7 +1022,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its KYC key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1046,7 +1046,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "kycKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1065,7 +1065,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "kycKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its KYC key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1084,7 +1084,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "kycKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -1113,7 +1113,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "kycKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its KYC key", async () => {
+    it("(#8) Creates a token with an invalid key as its KYC key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1132,7 +1132,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Freeze Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its freeze key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1149,7 +1149,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its freeze key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1166,7 +1166,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its freeze key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1190,7 +1190,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its freeze key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1214,7 +1214,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1233,7 +1233,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "freezeKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its freeze key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1252,7 +1252,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "freezeKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -1281,7 +1281,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "freezeKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its freeze key", async () => {
+    it("(#8) Creates a token with an invalid key as its freeze key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1299,7 +1299,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Wipe Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its wipe key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1316,7 +1316,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its wipe key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1333,7 +1333,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its wipe key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1357,7 +1357,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its wipe key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1381,7 +1381,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1400,7 +1400,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "wipeKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its wipe key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1419,7 +1419,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "wipeKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -1448,7 +1448,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "wipeKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its wipe key", async () => {
+    it("(#8) Creates a token with an invalid key as its wipe key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1466,7 +1466,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Supply Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its supply key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -1483,7 +1483,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its supply key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -1500,7 +1500,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its supply key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1524,7 +1524,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its supply key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -1548,7 +1548,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1567,7 +1567,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "supplyKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its supply key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -1586,7 +1586,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "supplyKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -1615,7 +1615,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "supplyKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its supply key", async () => {
+    it("(#8) Creates a token with an invalid key as its supply key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1650,7 +1650,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a frozen default status", async () => {
+    it("(#1) Creates a token with a frozen default status", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1672,7 +1672,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates a token with a frozen default status and no freeze key", async () => {
+    it("(#2) Creates a token with a frozen default status and no freeze key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1688,7 +1688,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with an unfrozen default status", async () => {
+    it("(#3) Creates a token with an unfrozen default status", async function () {
       const responseKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1712,7 +1712,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Expiration Time", () => {
-    it("(#1) Creates a token with an expiration time of 0 seconds", async () => {
+    it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1728,7 +1728,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Creates a token with an expiration time of -1 seconds", async () => {
+    it("(#2) Creates a token with an expiration time of -1 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1744,7 +1744,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async () => {
+    it("(#3) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1760,7 +1760,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async () => {
+    it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1776,7 +1776,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async () => {
+    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1792,7 +1792,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async () => {
+    it("(#6) Creates a token with an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1807,12 +1807,12 @@ describe("TokenCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
-    it("(#7) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async () => {
+    it("(#7) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      const response = await JSONRPCRequest(this, "createToken", {
+      await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1820,7 +1820,7 @@ describe("TokenCreateTransaction", function () {
       });
     });
 
-    it("(#8) Creates a token with an expiration time of 30 days (2,592,000 seconds) from the current time", async () => {
+    it("(#8) Creates a token with an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 2592000
       ).toString();
@@ -1835,7 +1835,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
-    it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async () => {
+    it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 2591999
       ).toString();
@@ -1855,7 +1855,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Creates a token with an expiration time of 8,000,001 seconds from the current time", async () => {
+    it("(#10) Creates a token with an expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -1870,14 +1870,14 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
-    it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async () => {
+    it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
       try {
         const expirationTime = (
           Math.floor(Date.now() / 1000) + 8000002
         ).toString();
 
         // Create the token with the calculated expiration time in ISO format
-        const response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1893,7 +1893,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Auto Renew Account ID", () => {
-    it("(#1) Creates a token with an auto renew account", async () => {
+    it("(#1) Creates a token with an auto renew account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1930,7 +1930,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates a token with an auto renew account without signing with the account's key", async () => {
+    it("(#2) Creates a token with an auto renew account without signing with the account's key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -1943,24 +1943,22 @@ describe("TokenCreateTransaction", function () {
 
       const accountId = response.accountId;
 
-      async () => {
-        try {
-          response = await JSONRPCRequest(this, "createToken", {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            autoRenewAccountId: accountId,
-          });
-        } catch (err: any) {
-          assert.equal(err.data.status, "INVALID_SIGNATURE");
-          return;
-        }
+      try {
+        response = await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          autoRenewAccountId: accountId,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
 
-        assert.fail("Should throw an error");
-      };
+      assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with an auto renew account that doesn't exist", async () => {
+    it("(#3) Creates a token with an auto renew account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1976,7 +1974,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with the auto renew account not set", async () => {
+    it("(#4) Creates a token with the auto renew account not set", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1993,7 +1991,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a token with an auto renew account that is deleted", async () => {
+    it("(#5) Creates a token with an auto renew account that is deleted", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2052,7 +2050,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with an auto renew period set to 0 seconds", async () => {
+    it("(#1) Creates a token with an auto renew period set to 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2069,7 +2067,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Creates a token with an auto renew period set to -1 seconds", async () => {
+    it("(#2) Creates a token with an auto renew period set to -1 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2086,7 +2084,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with an auto renew period of 9,223,372,036,854,775,807 (`int64` max) seconds", async () => {
+    it("(#3) Creates a token with an auto renew period of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2102,7 +2100,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with an auto renew period of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async () => {
+    it("(#4) Creates a token with an auto renew period of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2118,7 +2116,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#5) Creates a token with an auto renew period of -9,223,372,036,854,775,808 (`int64` min) seconds", async () => {
+    it.skip("(#5) Creates a token with an auto renew period of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2134,7 +2132,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with an auto renew period of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async () => {
+    it("(#6) Creates a token with an auto renew period of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2150,7 +2148,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a token with an auto renew period of 60 days (5,184,000 seconds)", async () => {
+    it("(#7) Creates a token with an auto renew period of 60 days (5,184,000 seconds)", async function () {
       const autoRenewPeriod = "5184000";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2166,7 +2164,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#8) Creates a token with an auto renew period of 30 days (2,592,000 seconds)", async () => {
+    it("(#8) Creates a token with an auto renew period of 30 days (2,592,000 seconds)", async function () {
       const autoRenewPeriod = "2592000";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2182,7 +2180,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#9) Creates a token with an auto renew period of 30 days minus one second (2,591,999 seconds)", async () => {
+    it("(#9) Creates a token with an auto renew period of 30 days minus one second (2,591,999 seconds)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2199,7 +2197,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Creates a token with an auto renew period set to the maximum period of 8,000,001 seconds", async () => {
+    it("(#10) Creates a token with an auto renew period set to the maximum period of 8,000,001 seconds", async function () {
       const autoRenewPeriod = "8000001";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2215,7 +2213,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#11) Creates a token with an auto renew period set to the maximum period plus one second (8,000,002 seconds)", async () => {
+    it("(#11) Creates a token with an auto renew period set to the maximum period plus one second (8,000,002 seconds)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2248,7 +2246,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a memo that is a valid length", async () => {
+    it("(#1) Creates a token with a memo that is a valid length", async function () {
       const memo = "testmemo";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2260,7 +2258,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
 
-    it("(#2) Creates a token with a memo that is the minimum length", async () => {
+    it("(#2) Creates a token with a memo that is the minimum length", async function () {
       const memo = "";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2272,7 +2270,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
 
-    it("(#3) Creates a token with a memo that is the maximum length", async () => {
+    it("(#3) Creates a token with a memo that is the maximum length", async function () {
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
       const response = await JSONRPCRequest(this, "createToken", {
@@ -2285,7 +2283,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMemo(response.tokenId, memo);
     });
 
-    it("(#4) Creates a token with a memo that exceeds the maximum length", async () => {
+    it("(#4) Creates a token with a memo that exceeds the maximum length", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2318,7 +2316,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a fungible token", async () => {
+    it("(#1) Creates a fungible token", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -2332,7 +2330,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates an NFT", async () => {
+    it("(#2) Creates an NFT", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -2371,7 +2369,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with a finite supply", async () => {
+    it("(#1) Creates a token with a finite supply", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -2383,7 +2381,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithSupplyType(response.tokenId, "FINITE");
     });
 
-    it("(#2) Creates a token with an infinite supply", async () => {
+    it("(#2) Creates a token with an infinite supply", async function () {
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -2412,7 +2410,7 @@ describe("TokenCreateTransaction", function () {
       expect(maxSupply).to.equal(totalMaxSupplyMirror);
     };
 
-    it("(#1) Creates a token with 0 max supply", async () => {
+    it("(#1) Creates a token with 0 max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2429,7 +2427,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Creates a token with -1 max supply", async () => {
+    it("(#2) Creates a token with -1 max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2446,7 +2444,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with 9,223,372,036,854,775,807 (int64 max) max supply", async () => {
+    it("(#3) Creates a token with 9,223,372,036,854,775,807 (int64 max) max supply", async function () {
       const maxSupply = "9223372036854775807";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2459,7 +2457,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
-    it("(#4) Creates a token with 9,223,372,036,854,775,806 (int64 max - 1) max supply", async () => {
+    it("(#4) Creates a token with 9,223,372,036,854,775,806 (int64 max - 1) max supply", async function () {
       const maxSupply = "9223372036854775806";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -2472,7 +2470,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
     });
 
-    it("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async () => {
+    it("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2489,7 +2487,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async () => {
+    it("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2506,7 +2504,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a token with a max supply and an infinite supply type", async () => {
+    it("(#7) Creates a token with a max supply and an infinite supply type", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2525,7 +2523,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Fee Schedule Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its fee schedule key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -2542,7 +2540,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its fee schedule key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -2559,7 +2557,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its fee schedule key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -2583,7 +2581,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its fee schedule key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -2607,7 +2605,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2626,7 +2624,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "feeScheduleKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -2649,7 +2647,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -2682,7 +2680,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#8) Creates a token with an invalid key as its fee schedule key", async () => {
+    it("(#8) Creates a token with an invalid key as its fee schedule key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2700,7 +2698,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Custom Fees", () => {
-    it("(#1) Creates a token with a fixed fee with an amount of 0", async () => {
+    it("(#1) Creates a token with a fixed fee with an amount of 0", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2724,7 +2722,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Creates a token with a fixed fee with an amount of -1", async () => {
+    it("(#2) Creates a token with a fixed fee with an amount of -1", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2748,7 +2746,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#3) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#3) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775807";
@@ -2775,7 +2773,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#4) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#4) Creates a token with a fixed fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775806";
@@ -2802,7 +2800,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2826,7 +2824,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#6) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2850,7 +2848,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a token with a fractional fee with a numerator of 0", async () => {
+    it("(#7) Creates a token with a fractional fee with a numerator of 0", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2878,7 +2876,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Creates a token with a fractional fee with a numerator of -1", async () => {
+    it("(#8) Creates a token with a fractional fee with a numerator of -1", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -2906,7 +2904,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#9) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#9) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "9223372036854775807";
@@ -2945,7 +2943,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#10) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#10) Creates a token with a fractional fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "9223372036854775806";
@@ -2984,7 +2982,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3012,7 +3010,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#12) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#12) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3040,7 +3038,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Creates a token with a fractional fee with a denominator of 0", async () => {
+    it("(#13) Creates a token with a fractional fee with a denominator of 0", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3068,7 +3066,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#14) Creates a token with a fractional fee with a denominator of -1", async () => {
+    it("(#14) Creates a token with a fractional fee with a denominator of -1", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3096,7 +3094,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#15) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#15) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3135,7 +3133,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#16) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#16) Creates a token with a fractional fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3174,7 +3172,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3202,7 +3200,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#18) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#18) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3230,7 +3228,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#19) Creates a token with a fractional fee with a minimum amount of 0", async () => {
+    it("(#19) Creates a token with a fractional fee with a minimum amount of 0", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3269,7 +3267,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#20) Creates a token with a fractional fee with a minimum amount of -1", async () => {
+    it("(#20) Creates a token with a fractional fee with a minimum amount of -1", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3297,7 +3295,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#21) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#21) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3328,7 +3326,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#22) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#22) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3359,7 +3357,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3387,7 +3385,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#24) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#24) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3415,7 +3413,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#25) Creates a token with a fractional fee with a maximum amount of 0", async () => {
+    it("(#25) Creates a token with a fractional fee with a maximum amount of 0", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3454,7 +3452,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#26) Creates a token with a fractional fee with a maximum amount of -1", async () => {
+    it("(#26) Creates a token with a fractional fee with a maximum amount of -1", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3482,7 +3480,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#27) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#27) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3521,7 +3519,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#28) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#28) Creates a token with a fractional fee with a maximum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3560,7 +3558,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3588,7 +3586,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#30) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#30) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -3616,7 +3614,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#31) Creates a token with a royalty fee with a numerator of 0", async () => {
+    it("(#31) Creates a token with a royalty fee with a numerator of 0", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3652,7 +3650,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#32) Creates a token with a royalty fee with a numerator of -1", async () => {
+    it("(#32) Creates a token with a royalty fee with a numerator of -1", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3688,7 +3686,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#33) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#33) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3724,7 +3722,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#34) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#34) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3760,7 +3758,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3796,7 +3794,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#36) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#36) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3832,7 +3830,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#37) Creates a token with a royalty fee with a denominator of 0", async () => {
+    it("(#37) Creates a token with a royalty fee with a denominator of 0", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3868,7 +3866,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#38) Creates a token with a royalty fee with a denominator of -1", async () => {
+    it("(#38) Creates a token with a royalty fee with a denominator of -1", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3904,7 +3902,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#39) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#39) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3947,7 +3945,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#40) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#40) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3990,7 +3988,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4026,7 +4024,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#42) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#42) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4062,7 +4060,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#43) Creates a token with a royalty fee with a fallback fee with an amount of 0", async () => {
+    it("(#43) Creates a token with a royalty fee with a fallback fee with an amount of 0", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4098,7 +4096,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#44) Creates a token with a royalty fee with a fallback fee with an amount of -1", async () => {
+    it("(#44) Creates a token with a royalty fee with a fallback fee with an amount of -1", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4134,7 +4132,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#45) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async () => {
+    it("(#45) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4177,7 +4175,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#46) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async () => {
+    it("(#46) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4220,7 +4218,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async () => {
+    it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4256,7 +4254,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#48) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async () => {
+    it("(#48) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4292,7 +4290,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#49) Creates a token with a fixed fee with a fee collector account that doesn't exist", async () => {
+    it("(#49) Creates a token with a fixed fee with a fee collector account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4316,7 +4314,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#50) Creates a token with a fractional with a fee collector account that doesn't exist", async () => {
+    it("(#50) Creates a token with a fractional with a fee collector account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4344,7 +4342,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#51) Creates a token with a royalty fee with a fee collector account that doesn't exist", async () => {
+    it("(#51) Creates a token with a royalty fee with a fee collector account that doesn't exist", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4380,7 +4378,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#52) Creates a token with a fixed fee with an empty fee collector account", async () => {
+    it("(#52) Creates a token with a fixed fee with an empty fee collector account", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4404,7 +4402,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#53) Creates a token with a fractional with an empty fee collector account", async () => {
+    it("(#53) Creates a token with a fractional with an empty fee collector account", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4432,7 +4430,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#54) Creates a token with a royalty fee with an empty fee collector account", async () => {
+    it("(#54) Creates a token with a royalty fee with an empty fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4468,7 +4466,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#55) Creates a token with a fixed fee with a deleted fee collector account", async () => {
+    it.skip("(#55) Creates a token with a fixed fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4515,7 +4513,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#56) Creates a token with a fractional fee with a deleted fee collector account", async () => {
+    it.skip("(#56) Creates a token with a fractional fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4566,7 +4564,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#57) Creates a token with a royalty fee with a deleted fee collector account", async () => {
+    it.skip("(#57) Creates a token with a royalty fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4619,7 +4617,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#58) Creates a token with a fixed fee that is assessed with the created token", async () => {
+    it("(#58) Creates a token with a fixed fee that is assessed with the created token", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const fixedFeeAmount = "10";
@@ -4648,7 +4646,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#59) Creates a token with a fixed fee that is assessed with a token that doesn't exist", async () => {
+    it("(#59) Creates a token with a fixed fee that is assessed with a token that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4673,7 +4671,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#60) Creates a token with a fixed fee that is assessed with an empty token", async () => {
+    it("(#60) Creates a token with a fixed fee that is assessed with an empty token", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4698,7 +4696,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async () => {
+    it.skip("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async function () {
       let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
@@ -4736,7 +4734,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#62) Creates a token with a fractional fee that is assessed to the receiver", async () => {
+    it("(#62) Creates a token with a fractional fee that is assessed to the receiver", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -4775,7 +4773,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#63) Creates a fungible token with a royalty fee", async () => {
+    it("(#63) Creates a fungible token with a royalty fee", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4808,7 +4806,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#64) Creates an NFT with a fractional fee", async () => {
+    it("(#64) Creates an NFT with a fractional fee", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4847,7 +4845,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#65) Creates a token with more than the maximum amount of fees allowed", async () => {
+    it("(#65) Creates a token with more than the maximum amount of fees allowed", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -4943,7 +4941,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Pause Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its pause key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -4960,7 +4958,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its pause key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -4977,7 +4975,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its pause key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -5001,7 +4999,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its pause key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -5025,7 +5023,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -5044,7 +5042,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "pauseKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its pause key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -5063,7 +5061,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "pauseKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -5082,7 +5080,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "pauseKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its pause key", async () => {
+    it("(#8) Creates a token with an invalid key as its pause key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -5119,7 +5117,7 @@ describe("TokenCreateTransaction", function () {
       );
     };
 
-    it("(#1) Creates a token with metadata", async () => {
+    it("(#1) Creates a token with metadata", async function () {
       const metadataValue = "1234";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -5131,7 +5129,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenCreationWithMetadata(response.tokenId, metadataValue);
     });
 
-    it("(#2) Creates a token with empty metadata", async () => {
+    it("(#2) Creates a token with empty metadata", async function () {
       const metadata = "";
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -5145,7 +5143,7 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Metadata Key", () => {
-    it("(#1) Creates a token with a valid ED25519 public key as its metadata key", async () => {
+    it("(#1) Creates a token with a valid ED25519 public key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
@@ -5163,7 +5161,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
-    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its metadata key", async () => {
+    it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PublicKey",
       });
@@ -5180,7 +5178,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
-    it("(#3) Creates a token with a valid ED25519 private key as its metadata key", async () => {
+    it("(#3) Creates a token with a valid ED25519 private key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -5204,7 +5202,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
-    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its metadata key", async () => {
+    it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -5228,7 +5226,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
     });
 
-    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async () => {
+    it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -5247,7 +5245,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, keyList, "metadataKey");
     });
 
-    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its metadata key", async () => {
+    it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
       let response = await JSONRPCRequest(
         this,
         "generateKey",
@@ -5266,7 +5264,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, nestedKeyList, "metadataKey");
     });
 
-    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async () => {
+    it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "thresholdKey",
         threshold: 2,
@@ -5295,7 +5293,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenKeyList(response.tokenId, thresholdKey, "metadataKey");
     });
 
-    it("(#8) Creates a token with an invalid key as its metadata key", async () => {
+    it("(#8) Creates a token with an invalid key as its metadata key", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",

@@ -3,6 +3,7 @@ import { PublicKey } from "@hashgraph/sdk";
 
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
+
 import { keyTypeConvertFunctions } from "@constants/key-type";
 
 /**
@@ -62,7 +63,7 @@ export const getPublicKeyFromMirrorNode = async (
   // Access the dynamic key (e.g., fee_schedule_key, admin_key, etc.)
   const keyMirrorNode = data[searchedKey];
 
-  if (keyMirrorNode == null) {
+  if (keyMirrorNode === null) {
     return null;
   }
 
