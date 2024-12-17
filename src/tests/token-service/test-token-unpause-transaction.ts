@@ -6,6 +6,7 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenUnpauseTransaction
@@ -61,11 +62,11 @@ describe("TokenUnpauseTransaction", function () {
   });
 
   async function verifyTokenUnpaused(tokenId: string) {
-    expect((await consensusInfoClient.getTokenInfo(tokenId)).pauseStatus).to.be
-      .false;
-    expect(
-      (await mirrorNodeClient.getTokenData(tokenId)).pause_status,
-    ).to.equal("UNPAUSED");
+    const consensusNodeInfo = await consensusInfoClient.getTokenInfo(tokenId);
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
+
+    expect(consensusNodeInfo.pauseStatus).to.be.false;
+    expect(mirrorNodeInfo.pause_status).to.equal("UNPAUSED");
   }
 
   describe("Token ID", function () {
@@ -77,7 +78,7 @@ describe("TokenUnpauseTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenUnpaused(tokenId);
       });
     });
@@ -171,7 +172,11 @@ describe("TokenUnpauseTransaction", function () {
           tokenId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -193,7 +198,7 @@ describe("TokenUnpauseTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenUnpaused(tokenId);
       });
     });
