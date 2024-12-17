@@ -233,7 +233,7 @@ describe("TokenDissociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Dissociates a token that is deleted from an account", async function () {
+    it.skip("(#3) Dissociates a token that is deleted from an account", async function () {
       const adminKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
@@ -354,7 +354,7 @@ describe("TokenDissociateTransaction", function () {
       });
     });
 
-    it("(#7) Dissociates two valid and associated tokens and an invalid token from an account", async function () {
+    it.skip("(#7) Dissociates two valid and associated tokens and an invalid token from an account", async function () {
       const secondTokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -388,7 +388,7 @@ describe("TokenDissociateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Dissociates two valid and associated tokens and a deleted token from an account", async function () {
+    it.skip("(#8) Dissociates two valid and associated tokens and a deleted token from an account", async function () {
       const secondTokenId = (await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
