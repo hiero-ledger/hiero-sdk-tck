@@ -9,13 +9,22 @@ import {
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
+const stringifyNumberValue = (value: any) => {
+  if (value === null || value === undefined) {
+    return "0";
+  }
+
+  return value.toString();
+};
+
 const consensusNodeFeeEqualsCustomFee = (
   customFee: CustomFee,
   feeCollectorAccountId: string,
   feeCollectorsExempt: boolean,
 ) => {
   return (
-    feeCollectorAccountId === customFee.feeCollectorAccountId?.toString() &&
+    feeCollectorAccountId ===
+      stringifyNumberValue(customFee.feeCollectorAccountId) &&
     feeCollectorsExempt === customFee.allCollectorsAreExempt
   );
 };
@@ -31,7 +40,7 @@ const consensusNodeFeeEqualsCustomFixedFee = (
       customFixedFee,
       feeCollectorAccountId,
       feeCollectorsExempt,
-    ) && amount === customFixedFee.amount?.toString()
+    ) && amount === stringifyNumberValue(customFixedFee.amount)
   );
 };
 
@@ -51,13 +60,12 @@ const consensusNodeFeeEqualsCustomFractionalFee = (
       feeCollectorAccountId,
       feeCollectorsExempt,
     ) &&
-    numerator === customFractionalFee.numerator?.toString() &&
-    denominator === customFractionalFee.denominator?.toString() &&
-    minAmount === customFractionalFee.min?.toString() &&
-    maxAmount === customFractionalFee.max?.toString()
-    // TODO: Uncomment this line when fixing assessmentMethod bug across SDKs
-    // (assessmentMethod === "exclusive") ===
-    //   customFractionalFee.assessmentMethod?._value
+    numerator === stringifyNumberValue(customFractionalFee.numerator) &&
+    denominator === stringifyNumberValue(customFractionalFee.denominator) &&
+    minAmount === stringifyNumberValue(customFractionalFee.min) &&
+    maxAmount === stringifyNumberValue(customFractionalFee.max) &&
+    (assessmentMethod === "exclusive") ===
+      customFractionalFee.assessmentMethod?._value
   );
 };
 
@@ -75,9 +83,10 @@ const consensusNodeFeeEqualsCustomRoyaltyFee = (
       feeCollectorAccountId,
       feeCollectorsExempt,
     ) &&
-    numerator === customRoyaltyFee.numerator?.toString() &&
-    denominator === customRoyaltyFee.denominator?.toString() &&
-    fixedFeeAmount === customRoyaltyFee.fallbackFee?.amount?.toString()
+    numerator === stringifyNumberValue(customRoyaltyFee.numerator) &&
+    denominator === stringifyNumberValue(customRoyaltyFee.denominator) &&
+    fixedFeeAmount ===
+      stringifyNumberValue(customRoyaltyFee.fallbackFee?.amount)
   );
 };
 
@@ -89,8 +98,8 @@ const mirrorNodeFeeEqualsCustomFixedFee = (
 ) => {
   return (
     feeCollectorAccountId.toString() ===
-      customFixedFee.collector_account_id.toString() &&
-    amount === customFixedFee.amount?.toString()
+      stringifyNumberValue(customFixedFee.collector_account_id) &&
+    amount === stringifyNumberValue(customFixedFee.amount)
   );
 };
 
@@ -104,16 +113,19 @@ const mirrorNodeFeeEqualsCustomFractionalFee = (
   maxAmount: string,
   assessmentMethod: string,
 ) => {
+  if (customFractionalFee.maximum === null) {
+    customFractionalFee.maximum = 0;
+  }
+
   return (
     feeCollectorAccountId?.toString() ===
-      customFractionalFee.collector_account_id &&
-    numerator === customFractionalFee.amount.numerator.toString() &&
-    denominator === customFractionalFee.amount.denominator.toString() &&
-    minAmount === customFractionalFee.minimum.toString() &&
-    maxAmount === customFractionalFee.maximum.toString()
-    // TODO: Uncomment this line when fixing assessmentMethod bug across SDKs
-    // (assessmentMethod === "exclusive") ===
-    //   customFractionalFee._allCollectorsAreExempt
+      stringifyNumberValue(customFractionalFee.collector_account_id) &&
+    numerator === stringifyNumberValue(customFractionalFee.amount.numerator) &&
+    denominator ===
+      stringifyNumberValue(customFractionalFee.amount.denominator) &&
+    minAmount === stringifyNumberValue(customFractionalFee.minimum) &&
+    maxAmount === stringifyNumberValue(customFractionalFee.maximum) &&
+    (assessmentMethod === "exclusive") === customFractionalFee.net_of_transfers
   );
 };
 
@@ -127,10 +139,11 @@ const mirrorNodeFeeEqualsCustomRoyaltyFee = (
 ) => {
   return (
     feeCollectorAccountId.toString() ===
-      customRoyaltyFee.collector_account_id &&
-    numerator === customRoyaltyFee.amount.numerator?.toString() &&
-    denominator === customRoyaltyFee.amount.denominator?.toString() &&
-    fixedFeeAmount === customRoyaltyFee.fallback_fee.amount?.toString()
+      stringifyNumberValue(customRoyaltyFee.collector_account_id) &&
+    numerator === stringifyNumberValue(customRoyaltyFee.amount.numerator) &&
+    denominator === stringifyNumberValue(customRoyaltyFee.amount.denominator) &&
+    fixedFeeAmount ===
+      stringifyNumberValue(customRoyaltyFee.fallback_fee.amount)
   );
 };
 
