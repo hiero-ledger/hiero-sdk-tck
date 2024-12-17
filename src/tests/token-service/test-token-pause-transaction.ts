@@ -6,6 +6,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenPauseTransaction
@@ -62,12 +63,13 @@ describe("TokenPauseTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
-        expect((await consensusInfoClient.getTokenInfo(tokenId)).pauseStatus).to
-          .be.true;
-        expect(
-          (await mirrorNodeClient.getTokenData(tokenId)).pause_status,
-        ).to.equal("PAUSED");
+      await retryOnError(async () => {
+        const consensusNodeInfo =
+          await consensusInfoClient.getTokenInfo(tokenId);
+        const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
+
+        expect(consensusNodeInfo.pauseStatus).to.be.true;
+        expect(mirrorNodeInfo.pause_status).to.equal("PAUSED");
       });
     });
 
@@ -153,7 +155,11 @@ describe("TokenPauseTransaction", function () {
           tokenId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
