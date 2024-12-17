@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenGrantKycTransaction
@@ -120,7 +121,7 @@ describe("TokenGrantKycTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenKyc(accountId, tokenId);
       });
     });
@@ -146,7 +147,11 @@ describe("TokenGrantKycTransaction", function () {
           accountId,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -222,18 +227,18 @@ describe("TokenGrantKycTransaction", function () {
     });
 
     it("(#8) Grants KYC of a token to an account but signs with an incorrect private key", async function () {
+      const incorrectPrivateKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ed25519PrivateKey",
+        })
+      ).key;
+
       try {
         await JSONRPCRequest(this, "grantTokenKyc", {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              (
-                await JSONRPCRequest(this, "generateKey", {
-                  type: "ed25519PrivateKey",
-                })
-              ).key,
-            ],
+            signers: [incorrectPrivateKey],
           },
         });
       } catch (err: any) {
@@ -245,15 +250,17 @@ describe("TokenGrantKycTransaction", function () {
     });
 
     it("(#9) Grants KYC of a token with no KYC key to an account", async function () {
+      const tokenIdNoKycKey = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        })
+      ).tokenId;
+
       try {
         await JSONRPCRequest(this, "grantTokenKyc", {
-          tokenId: (
-            await JSONRPCRequest(this, "createToken", {
-              name: "testname",
-              symbol: "testsymbol",
-              treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            })
-          ).tokenId,
+          tokenId: tokenIdNoKycKey,
           accountId,
         });
       } catch (err: any) {
@@ -281,7 +288,7 @@ describe("TokenGrantKycTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenKyc(accountId, tokenId);
       });
     });
@@ -389,7 +396,11 @@ describe("TokenGrantKycTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
