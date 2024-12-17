@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenFreezeTransaction
@@ -112,7 +113,7 @@ describe("TokenFreezeTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenFrozen(accountId, tokenId);
       });
     });
@@ -138,7 +139,11 @@ describe("TokenFreezeTransaction", function () {
           accountId,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -214,18 +219,18 @@ describe("TokenFreezeTransaction", function () {
     });
 
     it("(#8) Freezes a token on an account but signs with an incorrect freeze key", async function () {
+      const incorrectKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ed25519PrivateKey",
+        })
+      ).key;
+
       try {
         await JSONRPCRequest(this, "freezeToken", {
           tokenId,
           accountId,
           commonTransactionParams: {
-            signers: [
-              (
-                await JSONRPCRequest(this, "generateKey", {
-                  type: "ed25519PrivateKey",
-                })
-              ).key,
-            ],
+            signers: [incorrectKey],
           },
         });
       } catch (err: any) {
@@ -237,15 +242,17 @@ describe("TokenFreezeTransaction", function () {
     });
 
     it("(#9) Freezes a token with no freeze key on an account", async function () {
+      const tokenIdNoFreezeKey = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        })
+      ).tokenId;
+
       try {
         await JSONRPCRequest(this, "freezeToken", {
-          tokenId: (
-            await JSONRPCRequest(this, "createToken", {
-              name: "testname",
-              symbol: "testsymbol",
-              treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            })
-          ).tokenId,
+          tokenId: tokenIdNoFreezeKey,
           accountId,
         });
       } catch (err: any) {
@@ -273,7 +280,7 @@ describe("TokenFreezeTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         await verifyTokenFrozen(accountId, tokenId);
       });
     });
@@ -356,7 +363,11 @@ describe("TokenFreezeTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
