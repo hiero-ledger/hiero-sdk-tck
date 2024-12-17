@@ -520,7 +520,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Admin Key", () => {
     it("(#1) Updates an immutable token with a valid key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -768,7 +768,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("KYC Key", () => {
     it("(#1) Updates an immutable token with a valid key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -1038,7 +1038,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Freeze Key", () => {
     it("(#1) Updates an immutable token with a valid key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -1320,7 +1320,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Wipe Key", () => {
     it("(#1) Updates an immutable token with a valid key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -1602,7 +1602,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Supply Key", () => {
     it("(#1) Updates an immutable token with a valid key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -2568,7 +2568,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Fee Schedule Key", () => {
     it("(#1) Updates an immutable token with a valid key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -2832,7 +2832,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Pause Key", () => {
     it("(#1) Updates an immutable token with a valid key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
@@ -3146,7 +3146,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Metadata Key", () => {
     it("(#1) Updates an immutable token with a valid key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PublicKey",
       });
 
