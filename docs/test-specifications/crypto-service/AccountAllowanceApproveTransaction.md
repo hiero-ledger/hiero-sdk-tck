@@ -32,7 +32,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                             | Required/Optional | Description/Notes          |
 |-------------------------|--------------------------------------------------|-------------------|----------------------------|
-| allowances              | list<[json object](allowances.md)>               | optional          | The allowance information. |
+| allowances              | list<[json object](allowances.md)>               | required          | The allowance information. |
 | commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                            |
 
 ### Output Parameters
