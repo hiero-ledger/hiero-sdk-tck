@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenDissociateTransaction
@@ -25,30 +26,34 @@ describe("TokenDissociateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    tokenKey = response.key;
+    tokenKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createToken", {
-      name: "testname",
-      symbol: "testsymbol",
-      treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      freezeKey: tokenKey,
-      tokenType: "ft",
-      pauseKey: tokenKey,
-    });
-    tokenId = response.tokenId;
+    tokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        freezeKey: tokenKey,
+        tokenType: "ft",
+        pauseKey: tokenKey,
+      })
+    ).tokenId;
 
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    accountPrivateKey = response.key;
+    accountPrivateKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      })
+    ).key;
 
-    response = await JSONRPCRequest(this, "createAccount", {
-      key: accountPrivateKey,
-    });
-    accountId = response.accountId;
+    accountId = (
+      await JSONRPCRequest(this, "createAccount", {
+        key: accountPrivateKey,
+      })
+    ).accountId;
 
     await JSONRPCRequest(this, "associateToken", {
       accountId,
@@ -95,7 +100,9 @@ describe("TokenDissociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyNoTokenAssociations(accountId));
+      await retryOnError(async () => {
+        await verifyNoTokenAssociations(accountId);
+      });
     });
 
     it("(#2) Dissociates a token from an account with which it is already dissociated", async function () {
@@ -183,7 +190,11 @@ describe("TokenDissociateTransaction", function () {
           tokenIds: [tokenId],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -200,9 +211,9 @@ describe("TokenDissociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () =>
-        verifyTokenAssociation(accountId, tokenId),
-      );
+      await retryOnError(async () => {
+        verifyTokenAssociation(accountId, tokenId);
+      });
     });
 
     it("(#2) Dissociates a token that doesn't exist from an account", async function () {
@@ -223,22 +234,24 @@ describe("TokenDissociateTransaction", function () {
     });
 
     it("(#3) Dissociates a token that is deleted from an account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-      const adminKey = response.key;
+      const adminKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ecdsaSecp256k1PrivateKey",
+        })
+      ).key;
 
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey,
-        tokenType: "ft",
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
-      });
-      const deletedTokenId = response.tokenId;
+      const deletedTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          adminKey,
+          tokenType: "ft",
+          commonTransactionParams: {
+            signers: [adminKey],
+          },
+        })
+      ).tokenId;
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId: deletedTokenId,
@@ -256,7 +269,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
+        assert.equal(err.data.status, "TOKEN_WAS_DELETED");
         return;
       }
 
@@ -273,7 +286,11 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -298,21 +315,23 @@ describe("TokenDissociateTransaction", function () {
     });
 
     it("(#6) Dissociates three valid tokens from an account", async function () {
-      let response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
-      });
-      const secondTokenId = response.tokenId;
+      const secondTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
 
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
-      });
-      const thirdTokenId = response.tokenId;
+      const thirdTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,
@@ -330,17 +349,28 @@ describe("TokenDissociateTransaction", function () {
         },
       });
 
-      await retryOnError(async () => verifyNoTokenAssociations(accountId));
+      await retryOnError(async () => {
+        await verifyNoTokenAssociations(accountId);
+      });
     });
 
-    it("(#7) Dissociates two valid tokens and an invalid token from an account", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
+    it("(#7) Dissociates two valid and associated tokens and an invalid token from an account", async function () {
+      const secondTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
+
+      await JSONRPCRequest(this, "associateToken", {
+        accountId,
+        tokenId: secondTokenId,
+        commonTransactionParams: {
+          signers: [accountPrivateKey]
+        }
       });
-      const secondTokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "dissociateToken", {
@@ -351,28 +381,26 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
+        assert.equal(err.data.status, "INVALID_TOKEN_ID");
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Dissociates two valid tokens and a deleted token from an account", async function () {
-      let response = await JSONRPCRequest(this, "createToken", {
+    it("(#8) Dissociates two valid and associated tokens and a deleted token from an account", async function () {
+      const secondTokenId = (await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         tokenType: "ft",
-      });
-      const secondTokenId = response.tokenId;
+      })).tokenId;
 
-      response = await JSONRPCRequest(this, "generateKey", {
+      const adminKey = (await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
-      });
-      const adminKey = response.key;
+      })).key;
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const deletedTokenId = (await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -381,14 +409,21 @@ describe("TokenDissociateTransaction", function () {
         commonTransactionParams: {
           signers: [adminKey],
         },
-      });
-      const deletedTokenId = response.tokenId;
+      })).tokenId;
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId: deletedTokenId,
         commonTransactionParams: {
           signers: [adminKey],
         },
+      });
+
+      await JSONRPCRequest(this, "associateToken", {
+        accountId,
+        tokenIds: [secondTokenId],
+        commonTransactionParams: {
+          signers: [accountPrivateKey]
+        }
       });
 
       try {
@@ -400,7 +435,7 @@ describe("TokenDissociateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
+        assert.equal(err.data.status, "TOKEN_WAS_DELETED");
         return;
       }
 
