@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenAssociateTransaction
@@ -73,7 +74,7 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenAssociation(accountId, tokenId);
       });
     });
@@ -163,7 +164,11 @@ describe("TokenAssociateTransaction", function () {
           tokenIds: [tokenId],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -180,11 +185,10 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
-        expect(
-          (await mirrorNodeClient.getTokenRelationships(accountId)).tokens
-            .length,
-        ).to.equal(0);
+      await retryOnError(async () => {
+        const mirrorNodeInfo =
+          await mirrorNodeClient.getTokenRelationships(accountId);
+        expect(mirrorNodeInfo.tokens.length).to.equal(0);
       });
     });
 
@@ -258,7 +262,11 @@ describe("TokenAssociateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -309,33 +317,31 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenAssociation(accountId, tokenId);
       });
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenAssociation(accountId, secondTokenId);
       });
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenAssociation(accountId, thirdTokenId);
       });
     });
 
     it("(#7) Associates two valid tokens and an invalid token with an account", async function () {
+      const otherTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
+
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
-          tokenIds: [
-            tokenId,
-            (
-              await JSONRPCRequest(this, "createToken", {
-                name: "testname",
-                symbol: "testsymbol",
-                treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-                tokenType: "ft",
-              })
-            ).tokenId,
-            "123.456.789",
-          ],
+          tokenIds: [tokenId, otherTokenId, "123.456.789"],
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -375,21 +381,19 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
+      const otherTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
+
       try {
         await JSONRPCRequest(this, "associateToken", {
           accountId,
-          tokenIds: [
-            tokenId,
-            (
-              await JSONRPCRequest(this, "createToken", {
-                name: "testname",
-                symbol: "testsymbol",
-                treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-                tokenType: "ft",
-              })
-            ).tokenId,
-            deletedTokenId,
-          ],
+          tokenIds: [tokenId, otherTokenId, deletedTokenId],
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
