@@ -365,7 +365,7 @@ describe("TokenMintTransaction", function () {
 
       try {
         await JSONRPCRequest(this, "mintToken", {
-          tokenId: await createToken(this, true),
+          tokenId,
           amount: "10",
           commonTransactionParams: {
             signers: [supplyKey],
