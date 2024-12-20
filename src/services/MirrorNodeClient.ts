@@ -3,9 +3,11 @@ import { retryOnError } from "../utils/helpers/retry-on-error";
 
 class MirrorNodeClient {
   private mirrorNodeRestUrl: string | undefined;
+  private mirrorNodeRestJavaUrl: string | undefined;
 
   constructor() {
     this.mirrorNodeRestUrl = process.env.MIRROR_NODE_REST_URL;
+    this.mirrorNodeRestJavaUrl = process.env.MIRROR_NODE_REST_JAVA_URL;
   }
 
   // TODO: Get mirror node interface with OpenAPI
@@ -34,19 +36,19 @@ class MirrorNodeClient {
 
   // TODO: Get mirror node interface with OpenAPI
   async getHbarAllowances(accountId: string): Promise<any> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/acconts/${accountId}/allowances/crypto`;
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/allowances/crypto`;
     return retryOnError(async () => fetchData(url));
   }
 
   // TODO: Get mirror node interface with OpenAPI
   async getTokenAllowances(accountId: string): Promise<any> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/acconts/${accountId}/allowances/tokens`;
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/allowances/tokens`;
     return retryOnError(async () => fetchData(url));
   }
 
   // TODO: Get mirror node interface with OpenAPI
   async getNftAllowances(accountId: string): Promise<any> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/acconts/${accountId}/allowances/nfts`;
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/allowances/nfts`;
     return retryOnError(async () => fetchData(url));
   }
 }
