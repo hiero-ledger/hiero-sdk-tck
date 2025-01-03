@@ -56,7 +56,7 @@ export const getPublicKeyFromMirrorNode = async (
   keyMirrorNode: any,
 ): Promise<PublicKey | null> => {
   // If the key doesn't exist, it doesn't exist.
-  if (keyMirrorNode == null) {
+  if (keyMirrorNode === null) {
     return null;
   }
 

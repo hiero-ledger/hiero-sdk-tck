@@ -58,7 +58,7 @@ class ConsensusInfoClient {
     tokenId: string,
     serialNumber: string,
   ): Promise<TokenNftInfo[]> {
-    let query = new TokenNftInfoQuery();
+    const query = new TokenNftInfoQuery();
     query.setNftId(NftId.fromString(tokenId + "/" + serialNumber));
     return query.execute(this.sdkClient);
   }
