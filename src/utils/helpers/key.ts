@@ -2,9 +2,9 @@ import { proto } from "@hashgraph/proto";
 import { PublicKey } from "@hashgraph/sdk";
 
 import consensusInfoClient from "@services/ConsensusInfoClient";
+import { JSONRPCRequest } from "@services/Client";
 
 import { keyTypeConvertFunctions } from "@constants/key-type";
-import { JSONRPCRequest } from "@services/Client";
 
 /**
  * Retrieves the encoded hexadecimal representation of a specified dynamic key
