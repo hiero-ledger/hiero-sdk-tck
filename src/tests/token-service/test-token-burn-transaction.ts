@@ -213,9 +213,10 @@ describe("TokenBurnTransaction", function () {
         },
       });
 
-      expect(response.newTotalSupply).to.equal(
-        (Number(nonFungibleMetadata.length) - 1).toString(),
-      );
+      const newTotalSupply = (
+        Number(nonFungibleMetadata.length) - 1
+      ).toString();
+      expect(response.newTotalSupply).to.equal(newTotalSupply);
       await verifyNonFungibleTokenBurn(tokenId, "1");
     });
 
@@ -356,7 +357,7 @@ describe("TokenBurnTransaction", function () {
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
         commonTransactionParams: {
-          singers: [pauseKey],
+          signers: [pauseKey],
         },
       });
 
@@ -711,9 +712,10 @@ describe("TokenBurnTransaction", function () {
       const tokenId = await createToken(this, false, supplyKey);
       const serialNumbers = ["1", "2", "3"];
 
+      const lastSerialNumber = serialNumbers[serialNumbers.length - 1];
       await JSONRPCRequest(this, "burnToken", {
         tokenId,
-        serialNumbers: [serialNumbers[serialNumbers.length - 1]],
+        serialNumbers: [lastSerialNumber],
         commonTransactionParams: {
           signers: [supplyKey],
         },
