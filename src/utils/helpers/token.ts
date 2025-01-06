@@ -71,7 +71,7 @@ export async function createToken(
   maxSupply: string | null = null,
   freezeKey: string | null = null,
 ): Promise<string> {
-  const params: any = {
+  const params: Record<string, string | number | { signers: string[]}> = {
     name: "testname",
     symbol: "testsymbol",
     treasuryAccountId,

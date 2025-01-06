@@ -270,8 +270,13 @@ describe("TokenMintTransaction", function () {
   });
 
   describe("Amount", function () {
+    let supplyKey: string;
+
+    this.beforeEach(async function () {
+      supplyKey = await getPrivateKey(this, "ed25519");
+    });
+
     it("(#1) Mints an amount of 1,000,000 fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -294,7 +299,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#2) Mints an amount of 0 fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -317,7 +321,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#3) Mints no fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -339,7 +342,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#4) Mints an amount of 9,223,372,036,854,775,806 (int64 max - 1) fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -362,7 +364,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#5) Mints an amount of 9,223,372,036,854,775,807 (int64 max) fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -385,7 +386,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#6) Mints an amount of 9,223,372,036,854,775,808 (int64 max + 1) fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -410,7 +410,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#7) Mints an amount of 18,446,744,073,709,551,614 (uint64 max - 1) fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -435,7 +434,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#8) Mints an amount of 18,446,744,073,709,551,615 (uint64 max) fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -460,7 +458,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#9) Mints an amount of 10,000 fungible tokens with 2 decimals", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const decimals = 2;
       const tokenId = await createToken(
         this,
@@ -485,14 +482,13 @@ describe("TokenMintTransaction", function () {
       expect(newTotalSupply).to.equal(amount);
       await verifyFungibleTokenMint(
         tokenId,
-        amount,
         treasuryAccountId,
+        amount,
         decimals,
       );
     });
 
     it("(#10) Mints an amount of 10,000 fungible tokens with 1,000 max supply", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
@@ -521,7 +517,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#11) Mints fungible tokens with the treasury account frozen", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
       const tokenId = await createToken(
         this,
@@ -560,7 +555,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#12) Mints paused fungible tokens", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
       const tokenId = await createToken(
         this,
@@ -595,7 +589,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#13) Mints an amount of 1,000,000 NFTs", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         false,
@@ -621,8 +614,13 @@ describe("TokenMintTransaction", function () {
   });
 
   describe("Metadata", function () {
+    let supplyKey: string;
+
+    this.beforeEach(async function () {
+      supplyKey = await getPrivateKey(this, "ed25519");
+    });
+
     it("(#1) Mints an NFT", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         false,
@@ -649,7 +647,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#2) Mints an NFT with empty metadata", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         false,
@@ -676,7 +673,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it.skip("(#3) Mints an NFT with non-ASCII metadata", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         false,
@@ -703,7 +699,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#4) Mints 3 NFTs", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         false,
@@ -744,8 +739,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#5) Mints no NFTs", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-
       try {
         await JSONRPCRequest(this, "mintToken", {
           tokenId: await createToken(this, false, treasuryAccountId, supplyKey),
@@ -762,8 +755,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#6) Mints an amount of 3 NFTs with 1 max supply", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-
       try {
         await JSONRPCRequest(this, "mintToken", {
           tokenId: await createToken(
@@ -790,7 +781,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#7) Mints NFTs with the treasury account frozen", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
       const tokenId = await createToken(
         this,
@@ -829,7 +819,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#8) Mints paused NFT", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
       const tokenId = await createToken(
         this,
@@ -864,7 +853,6 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#9) Mints fungible tokens with metadata", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
       const tokenId = await createToken(
         this,
         true,
