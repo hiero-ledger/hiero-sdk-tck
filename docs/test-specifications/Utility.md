@@ -102,7 +102,7 @@ Method used to close the TCK network connections. Network connections can be ree
 
 #### Description
 
-Method used to generate a Hedera Key.
+Method used to generate a Hiero Key.
 
 #### Input Parameters
 
