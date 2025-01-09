@@ -4,7 +4,7 @@ The JSON-RPC 2.0 specification that the TCK and SDK servers use allow for implem
 
 ## Errors
 
-### Hedera Error
+### Hiero Error
 
 #### Error code
 
@@ -26,10 +26,10 @@ The `data` object in the JSON-RPC 2.0 `error` object should contain the status o
     "id": <ID>,
     "error": {
       "code": -32001,
-      "message": "Hedera error",
+      "message": "Hiero error",
       "data": {
         "status": "INVALID_SIGNATURE",
-        "message": "Hedera transaction 0.0.53244@1714166295.670948384 failed precheck with status INVALID_SIGNATURE"
+        "message": "Hiero transaction 0.0.53244@1714166295.670948384 failed precheck with status INVALID_SIGNATURE"
       }
     }
 }

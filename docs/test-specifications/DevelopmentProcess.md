@@ -1,23 +1,23 @@
 # TCK Development Process
 
-This document is meant to describe and outline the process by which TCK tests are written and developed for a specific Hedera request type. Since the work for these TCK tests will not only be contained to this repo but also spread out amongst all the SDK repos, there will be a good amount of coordination required between all developers to make sure TCK and SDK work stays in parity with each other. The outline below will describe how tests should be documented, developed, and tested to keep this parity. This process is always open to changes at any point if the developers find better or more optimal ways to accomplish tasks.
+This document is meant to describe and outline the process by which TCK tests are written and developed for a specific request type. Since the work for these TCK tests will not only be contained to this repo but also spread out amongst all the SDK repos, there will be a good amount of coordination required between all developers to make sure TCK and SDK work stays in parity with each other. The outline below will describe how tests should be documented, developed, and tested to keep this parity. This process is always open to changes at any point if the developers find better or more optimal ways to accomplish tasks.
 
 ## SDK Leads
 
 Since the process outlined will require coordination across all SDKs, having a designated person to represent each SDK will help keep the communication consistent and will allow for everyone to know exactly who to speak to/require reviews from for the various development tasks. Currently, the SDK leads are:
 
-| SDK                   | Lead              | Github handle      |
-|-----------------------|-------------------|--------------------|
-| Javascript/Typescript | Ivaylo Nikolov | @ivaylonikolov7 |
-| Java                  | Nikola Naydenov    | @naydenovn          |
-| Go                    | Ivan Ivanov       | @0xivanov          |
-| C++                   | Rob Walworth      | @rwalworth         |
-| Swift                 | Ricky Saechao     | @RickyLB           |
-| Rust                  | Ricky Saechao     | @RickyLB           |
+| SDK                   | Lead            | Github handle   |
+|-----------------------|-----------------|-----------------|
+| Javascript/Typescript | Ivaylo Nikolov  | @ivaylonikolov7 |
+| Java                  | Nikola Naydenov | @naydenovn      |
+| Go                    | Ivan Ivanov     | @0xivanov       |
+| C++                   | Rob Walworth    | @rwalworth      |
+| Swift                 | Ricky Saechao   | @RickyLB        |
+| Rust                  | Ricky Saechao   | @RickyLB        |
 
 ## Process
 
-The TCK development process encompasses all work done for a Hedera request type, including documentation, development of tests, the actual testing of the tests, and finally synchronously merging all the work.
+The TCK development process encompasses all work done for a request type, including documentation, development of tests, the actual testing of the tests, and finally synchronously merging all the work.
 
 ### Step 1: Documentation
 
@@ -26,9 +26,9 @@ Before any development takes place, the tests to be written need to be thought o
 The items that should be included in a request's test documentation can be seen by looking at the `TestSpecificationsTemplate.md` file. These items include:
  - Description: A description of the test specification. This, for the most part, should be copy-paste between test files with slight changes for names, links, etc.
  - Design: A brief rundown of what is being tested, how it's being tested, and how the test results can be verified.
- - Request properties: A link to the Hedera documentation for the request.
+ - Request properties: A link to the documentation for the request.
  - Request protobuf: A link to the protobuf file located in the [hedera-protobufs](https://github.com/hashgraph/hedera-protobufs) repository for the request type being tested.
- - Response codes: A link to the protobuf file that contains the response codes for gRPC requests sent to a Hedera network.
+ - Response codes: A link to the protobuf file that contains the response codes for gRPC requests sent to a network.
  - Mirror Node APIs: A link to the mirror node APIs that can be used to verify test results.
  - Code snippet: A code snippet that shows how to use the request type in code.
  - JSON-RPC API documentation: The information on how the JSON-RPC servers should implement the method being used to test. This should include:
@@ -108,4 +108,4 @@ Once the development of the SDK server is complete, it should be tested against 
 
 ### Step 3: Merge Pull Requests
 
-Once the development work for the TCK and the SDK servers is complete, three approvals from the SDK leads will be required for any pull requests to be merged. This is a new improvement, to merge PRs early enough while waiting for all the tests to pass on all SDK servers simultaneously. This will then mark the completion of the development work for this specific Hedera request.
+Once the development work for the TCK and the SDK servers is complete, three approvals from the SDK leads will be required for any pull requests to be merged. This is a new improvement, to merge PRs early enough while waiting for all the tests to pass on all SDK servers simultaneously. This will then mark the completion of the development work for this specific request.
