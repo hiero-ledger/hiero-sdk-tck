@@ -1,6 +1,6 @@
 # Common Transaction Parameters
 
-There are common parameters that can be set for all Hedera transaction types. This document specifies a common JSON object that should be added to all transactions that encapsulates these common parameters.
+There are common parameters that can be set for all Hiero transaction types. This document specifies a common JSON object that should be added to all transactions that encapsulates these common parameters.
 
 ## Transaction Parameter Object Definition
 
