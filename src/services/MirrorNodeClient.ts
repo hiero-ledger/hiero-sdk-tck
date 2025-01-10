@@ -1,5 +1,5 @@
-import { fetchData } from "../utils/helpers/fetch-data";
-import { retryOnError } from "../utils/helpers/retry-on-error";
+import { fetchData } from "@helpers/fetch-data";
+import { retryOnError } from "@helpers/retry-on-error";
 
 class MirrorNodeClient {
   private mirrorNodeRestUrl: string | undefined;
