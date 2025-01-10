@@ -1,8 +1,8 @@
 import { proto } from "@hashgraph/proto";
 import { PublicKey } from "@hashgraph/sdk";
 
-import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
+import { JSONRPCRequest } from "@services/Client";
 
 import { keyTypeConvertFunctions } from "@constants/key-type";
 
@@ -53,24 +53,33 @@ export const getEncodedKeyHexFromKeyListConsensus = async (
  * @returns {Promise<PublicKey>} - A promise that resolves to the public key object retrieved from the Mirror Node.
  */
 export const getPublicKeyFromMirrorNode = async (
-  mirrorClientMethod: keyof typeof mirrorNodeClient,
-  searchedId: string,
-  searchedKey: string,
+  keyMirrorNode: any,
 ): Promise<PublicKey | null> => {
-  // Retrieve the desired data from Mirror node
-  const data = await mirrorNodeClient[mirrorClientMethod](searchedId);
-
-  // Access the dynamic key (e.g., fee_schedule_key, admin_key, etc.)
-  const keyMirrorNode = data[searchedKey];
-
+  // If the key doesn't exist, it doesn't exist.
   if (keyMirrorNode === null) {
     return null;
   }
 
   // Use the appropriate key type function to convert the key
-  const publicKeyMirrorNode = keyTypeConvertFunctions[
+  return keyTypeConvertFunctions[
     keyMirrorNode._type as keyof typeof keyTypeConvertFunctions
   ](keyMirrorNode.key);
+};
 
-  return publicKeyMirrorNode;
+/**
+ * Generate a private key of the specified type.
+ *
+ * @async
+ * @param {string} type - The type of private key to generate. MUST be "ed25519PrivateKey" or "ecdsaSecp256k1PrivateKey"
+ * @returns {Promise<string>} - A promise that resolves to the DER-encoded hex string of the generated private key.
+ */
+export const getPrivateKey = async (
+  mochaTestContext: any,
+  type: string,
+): Promise<string> => {
+  return (
+    await JSONRPCRequest(mochaTestContext, "generateKey", {
+      type: type + "PrivateKey",
+    })
+  ).key;
 };
