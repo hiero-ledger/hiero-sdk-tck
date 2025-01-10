@@ -1,5 +1,5 @@
-import { fetchData } from "../utils/helpers/fetch-data";
-import { retryOnError } from "../utils/helpers/retry-on-error";
+import { fetchData } from "@helpers/fetch-data";
+import { retryOnError } from "@helpers/retry-on-error";
 
 class MirrorNodeClient {
   private mirrorNodeRestUrl: string | undefined;
@@ -27,7 +27,7 @@ class MirrorNodeClient {
   }
 
   // TODO: Get mirror node interface with OpenAPI
-  async getTokenRelationships(accountId: string) {
+  async getTokenRelationships(accountId: string): Promise<any> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens`;
     return retryOnError(async () => fetchData(url));
   }
