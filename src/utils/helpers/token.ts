@@ -123,11 +123,132 @@ export async function createToken(
     params.freezeKey = freezeKey;
   }
 
-  const tokenId = (
-    await JSONRPCRequest(mochaTestContext, "createToken", params)
-  ).tokenId;
+  return (await JSONRPCRequest(mochaTestContext, "createToken", params))
+    .tokenId;
+}
 
-  return tokenId;
+/**
+ * Verify an amount of a fungible token was minted.
+ *
+ * @async
+ * @param {string} tokenId - The ID of the token minted.
+ * @param {string} treasuryAccountId - The ID of the treasury account of the token.
+ * @param {string} amount - The amount of fungible token minted.
+ * @param {number?} decimals - The decimals of the token, if they exist.
+ */
+export async function verifyFungibleTokenMint(
+  tokenId: string,
+  treasuryAccountId: string,
+  amount: string,
+  decimals: number | null = null,
+) {
+  const consensusNodeInfo =
+    await consensusInfoClient.getBalance(treasuryAccountId);
+  expect(amount).to.equal(consensusNodeInfo.tokens?.get(tokenId)?.toString());
+
+  if (decimals) {
+    expect(decimals).to.equal(consensusNodeInfo.tokenDecimals?.get(tokenId));
+  }
+
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      treasuryAccountId,
+      tokenId,
+    );
+
+    let foundToken = false;
+    for (
+      let tokenIndex = 0;
+      tokenIndex < mirrorNodeInfo.tokens.length;
+      tokenIndex++
+    ) {
+      const token = mirrorNodeInfo.tokens[tokenIndex];
+      if (token.token_id === tokenId) {
+        // Make sure the balance from the mirror node matches the input amount.
+        expect(String(token.balance)).to.equal(amount);
+
+        // Make sure decimals match as well if input.
+        if (decimals) {
+          expect(token.decimals).to.equal(decimals);
+        }
+        foundToken = true;
+        break;
+      }
+    }
+
+    if (!foundToken) {
+      expect.fail("Token ID not found");
+    }
+  });
+}
+
+/**
+ * Verify an NFT was minted.
+ *
+ * @async
+ * @param tokenId - The ID of the NFT minted.
+ * @param treasuryAccountId - The ID of the treasury account of the NFT.
+ * @param serialNumber - The serial number of the minted NFT.
+ * @param metadata - The metadata of the minted NFT.
+ */
+export async function verifyNonFungibleTokenMint(
+  tokenId: string,
+  treasuryAccountId: string,
+  serialNumber: string,
+  metadata: string,
+) {
+  // Query the consensus node.
+  const consensusNodeInfo = await consensusInfoClient.getTokenNftInfo(
+    tokenId,
+    serialNumber,
+  );
+
+  let foundNft = false;
+  for (let nftIndex = 0; nftIndex < consensusNodeInfo.length; nftIndex++) {
+    const nftInfo = consensusNodeInfo[nftIndex];
+
+    if (
+      nftInfo.nftId.tokenId.toString() === tokenId &&
+      nftInfo.nftId.serial.toString() === serialNumber
+    ) {
+      expect(nftInfo.accountId.toString()).to.equal(treasuryAccountId);
+      foundNft = true;
+      break;
+    }
+  }
+
+  // Make sure the NFT was actually found.
+  expect(foundNft).to.be.true;
+
+  // Query the mirror node.
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
+      treasuryAccountId,
+      tokenId,
+    );
+
+    foundNft = false;
+    for (let nftIndex = 0; nftIndex < mirrorNodeInfo.nfts.length; nftIndex++) {
+      const nft = mirrorNodeInfo.nfts[nftIndex];
+
+      if (
+        nft.token_id === tokenId &&
+        nft.serial_number.toString() === serialNumber
+      ) {
+        expect(nft.account_id).to.equal(treasuryAccountId);
+
+        const nftMetadataHex = Buffer.from(nft.metadata, "base64").toString(
+          "hex",
+        );
+        expect(nftMetadataHex).to.equal(metadata);
+        foundNft = true;
+        break;
+      }
+    }
+
+    // Make sure the NFT was actually found.
+    expect(foundNft).to.be.true;
+  });
 }
 
 /**
@@ -162,8 +283,7 @@ export async function verifyFungibleTokenBurn(
       if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
         expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(
           (BigInt(initialSupply) - BigInt(amount)).toString(),
-        );
-        foundToken = true;
+        );foundToken = true;
         break;
       }
     }

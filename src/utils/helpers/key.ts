@@ -1,8 +1,8 @@
 import { proto } from "@hashgraph/proto";
 import { PublicKey } from "@hashgraph/sdk";
 
-import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
+import { JSONRPCRequest } from "@services/Client";
 
 import { keyTypeConvertFunctions } from "@constants/key-type";
 
@@ -56,7 +56,7 @@ export const getPublicKeyFromMirrorNode = async (
   keyMirrorNode: any,
 ): Promise<PublicKey | null> => {
   // If the key doesn't exist, it doesn't exist.
-  if (keyMirrorNode == null) {
+  if (keyMirrorNode === null) {
     return null;
   }
 
