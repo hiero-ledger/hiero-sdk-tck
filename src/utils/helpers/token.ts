@@ -65,20 +65,20 @@ export async function createToken(
   fungible: boolean,
   treasuryAccountId: string,
   supplyKey: string | null = null,
+  initialSupply: string | null = null,
   adminKey: string | null = null,
   pauseKey: string | null = null,
   decimals: number | null = null,
   maxSupply: string | null = null,
   freezeKey: string | null = null,
 ): Promise<string> {
-  const params: Record<string, string | number | { signers: string[]}> = {
+  const params: Record<string, string | number | { signers: string[] }> = {
     name: "testname",
     symbol: "testsymbol",
     treasuryAccountId,
   };
 
   if (fungible) {
-    params.decimals = 0;
     params.tokenType = "ft";
   } else {
     params.tokenType = "nft";
@@ -87,6 +87,11 @@ export async function createToken(
   // Add the supply key if its provided.
   if (supplyKey) {
     params.supplyKey = supplyKey;
+  }
+
+  // Add the initial supply if its provided.
+  if (initialSupply) {
+    params.initialSupply = initialSupply;
   }
 
   // Add and sign with the admin key if its provided.
@@ -243,5 +248,97 @@ export async function verifyNonFungibleTokenMint(
 
     // Make sure the NFT was actually found.
     expect(foundNft).to.be.true;
+  });
+}
+
+/**
+ * Verify an amount of fungible token was burned.
+ *
+ * @async
+ * @param {string} tokenId - The ID of the token burned.
+ * @param {string} treasuryAccountId - The ID of the treasury account of the burned token.
+ * @param {string} initialSupply - The supply of the token before the burn.
+ * @param {string} amount - The amount of the token burned.
+ */
+export async function verifyFungibleTokenBurn(
+  tokenId: string,
+  treasuryAccountId: string,
+  initialSupply: string,
+  amount: string,
+) {
+  const consensusNodeInfo =
+    await consensusInfoClient.getBalance(treasuryAccountId);
+  expect(consensusNodeInfo.tokens?.get(tokenId)?.toString()).to.equal(
+    (BigInt(initialSupply) - BigInt(amount)).toString(),
+  );
+
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      treasuryAccountId,
+      tokenId,
+    );
+
+    let foundToken = false;
+    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
+      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
+        expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(
+          (BigInt(initialSupply) - BigInt(amount)).toString(),
+        );foundToken = true;
+        break;
+      }
+    }
+
+    if (!foundToken) {
+      expect.fail("Token ID not found");
+    }
+  });
+}
+
+/**
+ * Verify an NFT was burned.
+ *
+ * @async
+ * @param {string} tokenId - The ID of the token burned.
+ * @param {string} treasuryAccountId - The ID of the treasury account of the burned token.
+ * @param {string} serialNumber - The serial number of the NFT burned.
+ */
+export async function verifyNonFungibleTokenBurn(
+  tokenId: string,
+  treasuryAccountId: string,
+  serialNumber: string,
+) {
+  // Query the consensus node. Should throw since the NFT shouldn't exist anymore.
+  let foundNft = true;
+  try {
+    const consensusNodeInfo = await consensusInfoClient.getTokenNftInfo(
+      tokenId,
+      serialNumber,
+    );
+  } catch (err: any) {
+    foundNft = false;
+  }
+
+  // Make sure the NFT was not found.
+  expect(foundNft).to.be.false;
+
+  // Query the mirror node.
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
+      treasuryAccountId,
+      tokenId,
+    );
+    foundNft = false;
+    for (let i = 0; i < mirrorNodeInfo.nfts.length; i++) {
+      if (
+        mirrorNodeInfo.nfts[i].token_id === tokenId &&
+        mirrorNodeInfo.nfts[i].serial_number.toString() === serialNumber
+      ) {
+        foundNft = true;
+        break;
+      }
+    }
+
+    // Make sure the NFT was not found.
+    expect(foundNft).to.be.false;
   });
 }
