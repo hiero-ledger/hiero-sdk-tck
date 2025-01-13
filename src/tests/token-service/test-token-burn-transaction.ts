@@ -13,7 +13,7 @@ import {
 /**
  * Tests for TokenBurnTransaction
  */
-describe("TokenBurnTransaction", function () {
+describe.only("TokenBurnTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -535,7 +535,7 @@ describe("TokenBurnTransaction", function () {
         fungibleInitialSupply,
         null,
         null,
-        2,
+        "2",
       );
 
       const amount = "10000";

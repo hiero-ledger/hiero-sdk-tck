@@ -102,8 +102,10 @@ describe("TokenRevokeKycTransaction", function () {
 
   async function verifyTokenNoKyc(accountId: string, tokenId: string) {
     // No way to get token associations via consensus node, so just query mirror node.
-    const mirrorNodeInfo =
-      await mirrorNodeClient.getTokenRelationships(accountId);
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      accountId,
+      tokenId,
+    );
 
     let foundToken = false;
     for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {

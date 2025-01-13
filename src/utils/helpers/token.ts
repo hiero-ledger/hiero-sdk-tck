@@ -68,7 +68,7 @@ export async function createToken(
   initialSupply: string | null = null,
   adminKey: string | null = null,
   pauseKey: string | null = null,
-  decimals: number | null = null,
+  decimals: string | null = null,
   maxSupply: string | null = null,
   freezeKey: string | null = null,
 ): Promise<string> {
@@ -140,14 +140,16 @@ export async function verifyFungibleTokenMint(
   tokenId: string,
   treasuryAccountId: string,
   amount: string,
-  decimals: number | null = null,
+  decimals: string | null = null,
 ) {
   const consensusNodeInfo =
     await consensusInfoClient.getBalance(treasuryAccountId);
   expect(amount).to.equal(consensusNodeInfo.tokens?.get(tokenId)?.toString());
 
   if (decimals) {
-    expect(decimals).to.equal(consensusNodeInfo.tokenDecimals?.get(tokenId));
+    expect(decimals).to.equal(
+      consensusNodeInfo.tokenDecimals?.get(tokenId)?.toString(),
+    );
   }
 
   await retryOnError(async () => {
@@ -283,7 +285,8 @@ export async function verifyFungibleTokenBurn(
       if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
         expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(
           (BigInt(initialSupply) - BigInt(amount)).toString(),
-        );foundToken = true;
+        );
+        foundToken = true;
         break;
       }
     }

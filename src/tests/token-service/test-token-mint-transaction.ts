@@ -458,7 +458,7 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#9) Mints an amount of 10,000 fungible tokens with 2 decimals", async function () {
-      const decimals = 2;
+      const decimals = "2";
       const tokenId = await createToken(
         this,
         true,
