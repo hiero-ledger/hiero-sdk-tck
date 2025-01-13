@@ -535,7 +535,7 @@ describe("TokenBurnTransaction", function () {
         fungibleInitialSupply,
         null,
         null,
-        2,
+        "2",
       );
 
       const amount = "10000";

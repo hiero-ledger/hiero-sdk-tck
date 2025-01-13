@@ -118,6 +118,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -173,6 +174,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -200,6 +202,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -219,7 +222,7 @@ describe("TokenMintTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#9) Mints a token with no supply key", async function () {
+    it("(#9) Mints a token with no supply key", async function () {
       try {
         await JSONRPCRequest(this, "mintToken", {
           tokenId: await createToken(this, true, treasuryAccountId),
@@ -241,6 +244,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );
@@ -458,12 +462,13 @@ describe("TokenMintTransaction", function () {
     });
 
     it("(#9) Mints an amount of 10,000 fungible tokens with 2 decimals", async function () {
-      const decimals = 2;
+      const decimals = "2";
       const tokenId = await createToken(
         this,
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         null,
         decimals,
@@ -497,6 +502,7 @@ describe("TokenMintTransaction", function () {
         null,
         null,
         null,
+        null,
         "1000",
       );
 
@@ -523,6 +529,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         null,
         null,
@@ -561,6 +568,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );
@@ -765,6 +773,7 @@ describe("TokenMintTransaction", function () {
             null,
             null,
             null,
+            null,
             "1",
           ),
           metadata: ["1234", "5678", "90ab"],
@@ -787,6 +796,7 @@ describe("TokenMintTransaction", function () {
         false,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         null,
         null,
@@ -825,6 +835,7 @@ describe("TokenMintTransaction", function () {
         false,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );
