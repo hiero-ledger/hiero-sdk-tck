@@ -69,8 +69,10 @@ describe("TokenDissociateTransaction", function () {
 
   async function verifyTokenAssociation(accountId: string, tokenId: string) {
     // No way to get token associations via consensus node, so just query mirror node.
-    const mirrorNodeInfo =
-      await mirrorNodeClient.getTokenRelationships(accountId);
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      accountId,
+      tokenId,
+    );
 
     let foundToken = false;
     for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
@@ -85,8 +87,10 @@ describe("TokenDissociateTransaction", function () {
 
   async function verifyNoTokenAssociations(accountId: string) {
     // No way to get token associations via consensus node, so just query mirror node.
-    const mirrorNodeInfo =
-      await mirrorNodeClient.getTokenRelationships(accountId);
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      accountId,
+      tokenId,
+    );
     expect(mirrorNodeInfo.tokens.length).to.equal(0);
   }
 
@@ -368,8 +372,8 @@ describe("TokenDissociateTransaction", function () {
         accountId,
         tokenId: secondTokenId,
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
@@ -389,27 +393,33 @@ describe("TokenDissociateTransaction", function () {
     });
 
     it.skip("(#8) Dissociates two valid and associated tokens and a deleted token from an account", async function () {
-      const secondTokenId = (await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
-      })).tokenId;
+      const secondTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
 
-      const adminKey = (await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })).key;
+      const adminKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ecdsaSecp256k1PrivateKey",
+        })
+      ).key;
 
-      const deletedTokenId = (await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey,
-        tokenType: "ft",
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
-      })).tokenId;
+      const deletedTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          adminKey,
+          tokenType: "ft",
+          commonTransactionParams: {
+            signers: [adminKey],
+          },
+        })
+      ).tokenId;
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId: deletedTokenId,
@@ -422,8 +432,8 @@ describe("TokenDissociateTransaction", function () {
         accountId,
         tokenIds: [secondTokenId],
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
