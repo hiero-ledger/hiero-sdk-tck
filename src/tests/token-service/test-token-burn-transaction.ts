@@ -13,7 +13,7 @@ import {
 /**
  * Tests for TokenBurnTransaction
  */
-describe.only("TokenBurnTransaction", function () {
+describe("TokenBurnTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 

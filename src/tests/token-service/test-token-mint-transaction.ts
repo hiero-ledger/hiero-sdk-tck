@@ -118,6 +118,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -173,6 +174,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -200,6 +202,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         adminKey,
       );
 
@@ -241,6 +244,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );
@@ -466,6 +470,7 @@ describe("TokenMintTransaction", function () {
         supplyKey,
         null,
         null,
+        null,
         decimals,
       );
       const amount = "10000";
@@ -497,6 +502,7 @@ describe("TokenMintTransaction", function () {
         null,
         null,
         null,
+        null,
         "1000",
       );
 
@@ -523,6 +529,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         null,
         null,
@@ -561,6 +568,7 @@ describe("TokenMintTransaction", function () {
         true,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );
@@ -765,6 +773,7 @@ describe("TokenMintTransaction", function () {
             null,
             null,
             null,
+            null,
             "1",
           ),
           metadata: ["1234", "5678", "90ab"],
@@ -787,6 +796,7 @@ describe("TokenMintTransaction", function () {
         false,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         null,
         null,
@@ -825,6 +835,7 @@ describe("TokenMintTransaction", function () {
         false,
         treasuryAccountId,
         supplyKey,
+        null,
         null,
         pauseKey,
       );

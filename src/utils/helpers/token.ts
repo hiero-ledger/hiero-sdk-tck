@@ -148,7 +148,7 @@ export async function verifyFungibleTokenMint(
 
   if (decimals) {
     expect(decimals).to.equal(
-      consensusNodeInfo.tokenDecimals?.get(tokenId)?.toString(),
+      consensusNodeInfo.tokenDecimals?.get(tokenId)?.toString().toString(),
     );
   }
 
@@ -171,7 +171,7 @@ export async function verifyFungibleTokenMint(
 
         // Make sure decimals match as well if input.
         if (decimals) {
-          expect(token.decimals).to.equal(decimals);
+          expect(token.decimals.toString()).to.equal(decimals);
         }
         foundToken = true;
         break;
