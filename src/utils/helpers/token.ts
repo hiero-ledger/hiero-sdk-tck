@@ -109,7 +109,7 @@ export async function createToken(
 
   // Add the decimals if its provided.
   if (decimals) {
-    params.decimals = decimals;
+    params.decimals = Number(decimals);
   }
 
   // Add the max supply if its provided.
