@@ -11,6 +11,7 @@ import {
   verifyTokenKeyList,
   verifyTokenExpirationTimeUpdate,
 } from "@helpers/verify-token-tx";
+
 import {
   verifyTokenCreationWithFixedFee,
   verifyTokenCreationWithFractionalFee,
@@ -1812,7 +1813,7 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      const response = await JSONRPCRequest(this, "createToken", {
+      await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1877,7 +1878,7 @@ describe("TokenCreateTransaction", function () {
         ).toString();
 
         // Create the token with the calculated expiration time in ISO format
-        const response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3228,7 +3229,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#19) Creates a token with a fractional fee with a minimum amount of 0", async function () {
+    it("(#19) Creates a token with a fractional fee with a minimum amount of 0", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -3413,7 +3414,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#25) Creates a token with a fractional fee with a maximum amount of 0", async function () {
+    it("(#25) Creates a token with a fractional fee with a maximum amount of 0", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
@@ -4734,7 +4735,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#62) Creates a token with a fractional fee that is assessed to the receiver", async function () {
+    it("(#62) Creates a token with a fractional fee that is assessed to the receiver", async function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";

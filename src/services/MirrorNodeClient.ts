@@ -1,5 +1,5 @@
-import { fetchData } from "../utils/helpers/fetch-data";
-import { retryOnError } from "../utils/helpers/retry-on-error";
+import { fetchData } from "@helpers/fetch-data";
+import { retryOnError } from "@helpers/retry-on-error";
 
 class MirrorNodeClient {
   private mirrorNodeRestUrl: string | undefined;
@@ -49,6 +49,13 @@ class MirrorNodeClient {
   // TODO: Get mirror node interface with OpenAPI
   async getNftAllowances(accountId: string): Promise<any> {
     const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/allowances/nfts`;
+    return retryOnError(async () => fetchData(url));
+  }
+  async getTokenRelationships(
+    accountId: string,
+    tokenId: string,
+  ): Promise<any> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens?token.id=${tokenId}`;
     return retryOnError(async () => fetchData(url));
   }
 }
