@@ -367,3 +367,68 @@ The tests contained in this specification will assume that valid owner and spend
   }
 }
 ```
+### ApproveMultipleAllowances
+
+- Approves multiple different types of allowances in a single transaction.
+
+| Test no | Name | Input | Expected response | Implemented (Y/N) |
+|---------|------|-------|-------------------|-------------------|
+| 1 | Approves HBAR, token and NFT allowances in a single transaction | allowances=[{ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, hbar.amount="10"}, {ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, token.tokenId=<CREATED_TOKEN_ID>, token.amount="20"}, {ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, nft.tokenId=<CREATED_TOKEN_ID>, nft.serialNumbers=[<NFT_SERIAL_1>]}], commonTransactionParams.signers=[<CREATED_OWNER_PRIVATE_KEY>] | The allowance approval succeeds and the spender account has all three allowances. | N |
+| 2 | Approves multiple allowances with different spender accounts | allowances=[{ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID_1>, hbar.amount="10"}, {ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID_2>, token.tokenId=<CREATED_TOKEN_ID>, token.amount="20"}], commonTransactionParams.signers=[<CREATED_OWNER_PRIVATE_KEY>] | The allowance approval succeeds and each spender account has their respective allowance. | N |
+| 3 | Approves multiple allowances with one invalid allowance | allowances=[{ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, hbar.amount="10"}, {ownerAccountId="invalid.account", spenderAccountId=<CREATED_SPENDER_ID>, token.tokenId=<CREATED_TOKEN_ID>, token.amount="20"}], commonTransactionParams.signers=[<CREATED_OWNER_PRIVATE_KEY>] | The allowance approval fails with an INVALID_ALLOWANCE_OWNER_ID response code from the network. | N |
+| 4 | Approves multiple allowances with duplicate spender/token combinations | allowances=[{ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, token.tokenId=<CREATED_TOKEN_ID>, token.amount="10"}, {ownerAccountId=<CREATED_OWNER_ID>, spenderAccountId=<CREATED_SPENDER_ID>, token.tokenId=<CREATED_TOKEN_ID>, token.amount="20"}], commonTransactionParams.signers=[<CREATED_OWNER_PRIVATE_KEY>] | The allowance approval succeeds and the spender account has the last specified allowance amount. | N |
+| 5 | Approves multiple allowances with empty allowances array | allowances=[], commonTransactionParams.signers=[<CREATED_OWNER_PRIVATE_KEY>] | The allowance approval fails with an SDK internal error. | N |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "method": "approveAllowance",
+  "params": {
+    "allowances": [
+      {
+        "ownerAccountId": "0.0.53232",
+        "spenderAccountId": "0.0.8532",
+        "hbar": {
+          "amount": "100"
+        }
+      },
+      {
+        "ownerAccountId": "0.0.53232",
+        "spenderAccountId": "0.0.8532",
+        "token": {
+          "tokenId": "0.0.573298",
+          "amount": "50"
+        }
+      },
+      {
+        "ownerAccountId": "0.0.53232",
+        "spenderAccountId": "0.0.8532",
+        "nft": {
+          "tokenId": "0.0.573299",
+          "serialNumbers": ["123"]
+        }
+      }
+    ],
+    "commonTransactionParams": {
+      "signers": [
+        "3030020100300706052b8104000a04220420e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35"
+      ]
+    }
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "result": {
+    "status": "SUCCESS"
+  }
+}
+```

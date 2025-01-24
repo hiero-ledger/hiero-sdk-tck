@@ -23,7 +23,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for AccountAllowanceApproveTransaction
  */
-describe.only("AccountAllowanceApproveTransaction", function () {
+describe("AccountAllowanceApproveTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -3186,6 +3186,250 @@ describe.only("AccountAllowanceApproveTransaction", function () {
           tokenId,
         ),
       );
+    });
+  });
+
+  describe("ApproveMultipleAllowances", function () {
+    // Each test here requires tokens to be created
+    let nftTokenId: string, fungibleTokenId: string, supplyKey: string;
+    const metadata = ["1234", "5678", "90ab"];
+
+    this.beforeEach(async function () {
+      // Create NFT token
+      supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
+      nftTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "nft",
+          symbol: "NFT",
+          treasuryAccountId: ownerAccountId,
+          supplyKey,
+          tokenType: "nft",
+          commonTransactionParams: {
+            signers: [ownerPrivateKey],
+          },
+        })
+      ).tokenId;
+
+      await mintToken(this, nftTokenId, metadata, supplyKey);
+
+      // Create fungible token
+      fungibleTokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "ft",
+          symbol: "FUN",
+          treasuryAccountId: ownerAccountId,
+          initialSupply: "1000",
+          commonTransactionParams: {
+            signers: [ownerPrivateKey],
+          },
+        })
+      ).tokenId;
+
+      // Associate tokens with spender
+      await JSONRPCRequest(this, "associateToken", {
+        accountId: spenderAccountId,
+        tokenIds: [nftTokenId, fungibleTokenId],
+        commonTransactionParams: {
+          signers: [spenderPrivateKey],
+        },
+      });
+    });
+
+    it("(#1) Approves HBAR, token and NFT allowances in a single transaction", async function () {
+      await JSONRPCRequest(this, "approveAllowance", {
+        allowances: [
+          {
+            ownerAccountId,
+            spenderAccountId,
+            hbar: {
+              amount: "10",
+            },
+          },
+          {
+            ownerAccountId,
+            spenderAccountId,
+            token: {
+              tokenId: fungibleTokenId,
+              amount: "20",
+            },
+          },
+          {
+            ownerAccountId,
+            spenderAccountId,
+            nft: {
+              tokenId: nftTokenId,
+              serialNumbers: ["1"],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
+
+      // Verify all allowances were set correctly
+      await retryOnError(async () =>
+        verifyHbarAllowance(ownerAccountId, spenderAccountId, "10"),
+      );
+      await retryOnError(async () =>
+        verifyTokenAllowance(
+          ownerAccountId,
+          spenderAccountId,
+          fungibleTokenId,
+          "20",
+        ),
+      );
+      await retryOnError(async () =>
+        verifyNftAllowance(
+          true,
+          ownerAccountId,
+          spenderAccountId,
+          nftTokenId,
+          "1",
+        ),
+      );
+    });
+
+    it("(#2) Approves multiple allowances with different spender accounts", async function () {
+      const spenderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const spenderAccountId2 = await createAccount(this, spenderPrivateKey2);
+
+      // Associate token with second spender
+      await JSONRPCRequest(this, "associateToken", {
+        accountId: spenderAccountId2,
+        tokenIds: [fungibleTokenId],
+        commonTransactionParams: {
+          signers: [spenderPrivateKey2],
+        },
+      });
+
+      await JSONRPCRequest(this, "approveAllowance", {
+        allowances: [
+          {
+            ownerAccountId,
+            spenderAccountId,
+            hbar: {
+              amount: "10",
+            },
+          },
+          {
+            ownerAccountId,
+            spenderAccountId: spenderAccountId2,
+            token: {
+              tokenId: fungibleTokenId,
+              amount: "20",
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
+
+      // Verify allowances were set correctly for each spender
+      await retryOnError(async () =>
+        verifyHbarAllowance(ownerAccountId, spenderAccountId, "10"),
+      );
+
+      await retryOnError(async () =>
+        verifyTokenAllowance(
+          ownerAccountId,
+          spenderAccountId2,
+          fungibleTokenId,
+          "20",
+        ),
+      );
+    });
+
+    it("(#3) Approves multiple allowances with one invalid allowance", async function () {
+      try {
+        await JSONRPCRequest(this, "approveAllowance", {
+          allowances: [
+            {
+              ownerAccountId,
+              spenderAccountId,
+              hbar: {
+                amount: "10",
+              },
+            },
+            {
+              // Invalid owner account ID
+              ownerAccountId: "",
+              spenderAccountId,
+              token: {
+                tokenId: fungibleTokenId,
+                amount: "20",
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [ownerPrivateKey],
+          },
+        });
+
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+    });
+
+    it("(#4) Approves multiple allowances with duplicate spender/token combinations", async function () {
+      await JSONRPCRequest(this, "approveAllowance", {
+        allowances: [
+          {
+            ownerAccountId,
+            spenderAccountId,
+            token: {
+              tokenId: fungibleTokenId,
+              amount: "10",
+            },
+          },
+          {
+            ownerAccountId,
+            spenderAccountId,
+            token: {
+              tokenId: fungibleTokenId,
+              amount: "20",
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
+
+      // Verify only the last allowance amount is set
+      await retryOnError(async () =>
+        verifyTokenAllowance(
+          ownerAccountId,
+          spenderAccountId,
+          fungibleTokenId,
+          "20",
+        ),
+      );
+    });
+
+    it("(#5) Approves multiple allowances with empty allowances array", async function () {
+      try {
+        await JSONRPCRequest(this, "approveAllowance", {
+          allowances: [],
+          commonTransactionParams: {
+            signers: [ownerPrivateKey],
+          },
+        });
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+      }
     });
   });
 });
