@@ -3422,13 +3422,10 @@ describe("AccountAllowanceApproveTransaction", function () {
             signers: [ownerPrivateKey],
           },
         });
+
         assert.fail("Should throw an error");
       } catch (err: any) {
-        assert.equal(
-          err.code,
-          ErrorStatusCodes.INTERNAL_ERROR,
-          "Internal error",
-        );
+        assert.equal(err.data.status, "EMPTY_ALLOWANCES");
       }
     });
   });
