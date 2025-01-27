@@ -1,17 +1,24 @@
-import { assert, expect } from "chai";
+import { assert } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
-import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+import { createAccount } from "@helpers/account";
+import { defaultNftTokenCreate } from "@helpers/token";
+import { verifyNoNftAllowance } from "@helpers/allowances";
+
 /**
  * Tests for AccountAllowanceDeleteTransaction
  */
-describe("AccountAllowanceDeleteTransaction", function () {
+describe.only("AccountAllowanceDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -34,74 +41,33 @@ describe("AccountAllowanceDeleteTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    ownerPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
+    ownerPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
+    spenderPrivateKey = await generateEd25519PrivateKey(this);
+    supplyKey = await generateEd25519PrivateKey(this);
 
-    spenderPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    ownerAccountId = await createAccount(this, ownerPrivateKey);
+    spenderAccountId = await createAccount(this, spenderPrivateKey);
 
-    ownerAccountId = (
-      await JSONRPCRequest(this, "createAccount", {
-        key: ownerPrivateKey,
-      })
-    ).accountId;
+    tokenId1 = await defaultNftTokenCreate(
+      this,
+      ownerAccountId,
+      supplyKey,
+      ownerPrivateKey,
+    );
 
-    spenderAccountId = (
-      await JSONRPCRequest(this, "createAccount", {
-        key: spenderPrivateKey,
-      })
-    ).accountId;
+    tokenId2 = await defaultNftTokenCreate(
+      this,
+      ownerAccountId,
+      supplyKey,
+      ownerPrivateKey,
+    );
 
-    supplyKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
-    tokenId1 = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: ownerAccountId,
-        supplyKey,
-        tokenType: "nft",
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      })
-    ).tokenId;
-
-    tokenId2 = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: ownerAccountId,
-        supplyKey,
-        tokenType: "nft",
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      })
-    ).tokenId;
-
-    tokenId3 = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: ownerAccountId,
-        supplyKey,
-        tokenType: "nft",
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      })
-    ).tokenId;
+    tokenId3 = await defaultNftTokenCreate(
+      this,
+      ownerAccountId,
+      supplyKey,
+      ownerPrivateKey,
+    );
 
     const metadata = ["1234"];
 
@@ -178,33 +144,6 @@ describe("AccountAllowanceDeleteTransaction", function () {
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
-
-  async function verifyNoNftAllowance(
-    ownerAccountId: string,
-    spenderAccountId: string,
-    tokenId: string,
-    serialNumber: string,
-  ) {
-    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
-      ownerAccountId,
-      tokenId,
-    );
-
-    let foundAllowance = false;
-    for (let i = 0; i < mirrorNodeInfo.nfts.length; i++) {
-      if (
-        mirrorNodeInfo.nfts[i].account_id === ownerAccountId &&
-        mirrorNodeInfo.nfts[i].spender === spenderAccountId &&
-        mirrorNodeInfo.nfts[i].token_id === tokenId &&
-        mirrorNodeInfo.nfts[i].serial_number.toString() === serialNumber
-      ) {
-        foundAllowance = true;
-        break;
-      }
-    }
-
-    expect(foundAllowance).to.be.false;
-  }
 
   describe("DeleteAllTokenNftAllowances", function () {
     it("(#1) Deletes an allowance to a spender account from an owner account", async function () {
@@ -380,17 +319,8 @@ describe("AccountAllowanceDeleteTransaction", function () {
     });
 
     it("(#7) Deletes an allowance to a spender account from an owner account with a deleted token ID", async function () {
-      const adminKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
-
-      const supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const adminKey = await generateEd25519PrivateKey(this);
+      const supplyKey = await generateEd25519PrivateKey(this);
 
       tokenId1 = (
         await JSONRPCRequest(this, "createToken", {
@@ -597,11 +527,7 @@ describe("AccountAllowanceDeleteTransaction", function () {
     });
 
     it("(#11) Approves an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId1 = (
         await JSONRPCRequest(this, "createToken", {
@@ -683,11 +609,7 @@ describe("AccountAllowanceDeleteTransaction", function () {
     });
 
     it("(#12) Approves an NFT allowance to a spender account from an owner account with a paused token", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId1 = (
         await JSONRPCRequest(this, "createToken", {
