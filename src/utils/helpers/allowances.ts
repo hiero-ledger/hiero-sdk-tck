@@ -88,3 +88,26 @@ export const verifyApprovedForAllAllowance = async (
 
   expect(foundAllowance).to.equal(approvedForAll);
 };
+
+export const verifyNoNftAllowance = async (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  tokenId: string,
+  serialNumber: string,
+) => {
+  const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
+    ownerAccountId,
+    tokenId,
+  );
+
+  const foundAllowance = mirrorNodeInfo.nfts.some(
+    // TODO: Get mirror node interface with OpenAPI
+    (nft: any) =>
+      nft.account_id === ownerAccountId &&
+      nft.spender === spenderAccountId &&
+      nft.token_id === tokenId &&
+      nft.serial_number.toString() === serialNumber,
+  );
+
+  expect(foundAllowance).to.be.false;
+};
