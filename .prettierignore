@@ -1,0 +1,14 @@
+# Ignore artifacts
+node_modules
+mochawesome-report
+package-lock.json
+
+# Ignore compiled code
+dist
+build
+
+# Ignore environment variables
+.env
+
+# Ignore Markdown files
+*.md
