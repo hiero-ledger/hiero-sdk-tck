@@ -316,7 +316,7 @@ export async function verifyNonFungibleTokenBurn(
   let foundNft = true;
   try {
     await consensusInfoClient.getTokenNftInfo(tokenId, serialNumber);
-  } catch (err: any) {
+  } catch {
     foundNft = false;
   }
 
