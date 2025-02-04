@@ -15,11 +15,10 @@ import { retryOnError } from "@helpers/retry-on-error";
  * @throws {Error} Will throw an error if the token is not marked as deleted in either Consensus Info or Mirror Node.
  */
 export const verifyTokenIsDeleted = async (tokenId: string) => {
-  expect(await (await consensusInfoClient.getTokenInfo(tokenId)).isDeleted).to
-    .be.true;
-
-  expect(await (await mirrorNodeClient.getTokenData(tokenId)).deleted).to.be
+  expect((await consensusInfoClient.getTokenInfo(tokenId)).isDeleted).to.be
     .true;
+
+  expect((await mirrorNodeClient.getTokenData(tokenId)).deleted).to.be.true;
 };
 
 /**
@@ -161,11 +160,11 @@ export async function verifyFungibleTokenMint(
     let foundToken = false;
     for (
       let tokenIndex = 0;
-      tokenIndex < mirrorNodeInfo.tokens.length;
+      tokenIndex < mirrorNodeInfo?.tokens?.length!;
       tokenIndex++
     ) {
-      const token = mirrorNodeInfo.tokens[tokenIndex];
-      if (token.token_id === tokenId) {
+      const token = mirrorNodeInfo?.tokens?.[tokenIndex];
+      if (token?.token_id === tokenId) {
         // Make sure the balance from the mirror node matches the input amount.
         expect(String(token.balance)).to.equal(amount);
 
@@ -224,22 +223,24 @@ export async function verifyNonFungibleTokenMint(
 
   // Query the mirror node.
   await retryOnError(async () => {
-    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
-      treasuryAccountId,
-      tokenId,
-    );
+    const mirrorNodeInfo =
+      await mirrorNodeClient.getAccountNfts(treasuryAccountId);
 
     foundNft = false;
-    for (let nftIndex = 0; nftIndex < mirrorNodeInfo.nfts.length; nftIndex++) {
-      const nft = mirrorNodeInfo.nfts[nftIndex];
+    for (
+      let nftIndex = 0;
+      nftIndex < mirrorNodeInfo.nfts?.length!;
+      nftIndex++
+    ) {
+      const nft = mirrorNodeInfo.nfts?.[nftIndex];
 
       if (
-        nft.token_id === tokenId &&
-        nft.serial_number.toString() === serialNumber
+        nft?.token_id === tokenId &&
+        nft?.serial_number?.toString() === serialNumber
       ) {
         expect(nft.account_id).to.equal(treasuryAccountId);
 
-        const nftMetadataHex = Buffer.from(nft.metadata, "base64").toString(
+        const nftMetadataHex = Buffer.from(nft.metadata!, "base64").toString(
           "hex",
         );
         expect(nftMetadataHex).to.equal(metadata);
@@ -281,9 +282,10 @@ export async function verifyFungibleTokenBurn(
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].balance.toString()).to.equal(
+
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
+        expect(mirrorNodeInfo?.tokens?.[i]?.balance.toString()).to.equal(
           (BigInt(initialSupply) - BigInt(amount)).toString(),
         );
         foundToken = true;
@@ -313,10 +315,7 @@ export async function verifyNonFungibleTokenBurn(
   // Query the consensus node. Should throw since the NFT shouldn't exist anymore.
   let foundNft = true;
   try {
-    const consensusNodeInfo = await consensusInfoClient.getTokenNftInfo(
-      tokenId,
-      serialNumber,
-    );
+    await consensusInfoClient.getTokenNftInfo(tokenId, serialNumber);
   } catch (err: any) {
     foundNft = false;
   }
@@ -326,15 +325,14 @@ export async function verifyNonFungibleTokenBurn(
 
   // Query the mirror node.
   await retryOnError(async () => {
-    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
-      treasuryAccountId,
-      tokenId,
-    );
+    const mirrorNodeInfo =
+      await mirrorNodeClient.getAccountNfts(treasuryAccountId);
+
     foundNft = false;
-    for (let i = 0; i < mirrorNodeInfo.nfts.length; i++) {
+    for (let i = 0; i < mirrorNodeInfo.nfts?.length!; i++) {
       if (
-        mirrorNodeInfo.nfts[i].token_id === tokenId &&
-        mirrorNodeInfo.nfts[i].serial_number.toString() === serialNumber
+        mirrorNodeInfo.nfts?.[i]?.token_id === tokenId &&
+        mirrorNodeInfo.nfts?.[i]?.serial_number?.toString() === serialNumber
       ) {
         foundNft = true;
         break;

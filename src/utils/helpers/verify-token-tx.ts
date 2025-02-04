@@ -10,6 +10,8 @@ import {
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
+import { TokenInfo as TokenInfoMirrorNode } from "@models/mirror-node-models.ts";
+
 export const verifyTokenKey = async (
   tokenId: string,
   key: string,
@@ -27,7 +29,9 @@ export const verifyTokenKey = async (
   const mirrorNodeKey = transformConsensusToMirrorNodeProp(keyType);
   // Fetch the key from the mirror node
   const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-    (await mirrorNodeClient.getTokenData(tokenId))[mirrorNodeKey],
+    (await mirrorNodeClient.getTokenData(tokenId))[
+      mirrorNodeKey as keyof TokenInfoMirrorNode
+    ],
   );
 
   // Verify that the key from the mirror node matches the raw key
@@ -52,19 +56,23 @@ export const verifyTokenKeyList = async (
 
   const mirrorNodeKeyName = transformConsensusToMirrorNodeProp(keyType);
   // Mirror node check
-  const mirrorNodeKey = await (
-    await mirrorNodeClient.getTokenData(tokenId)
-  )[mirrorNodeKeyName].key;
+  const tokenData = await mirrorNodeClient.getTokenData(tokenId);
+  const keyData = tokenData[mirrorNodeKeyName as keyof TokenInfoMirrorNode] as {
+    key: string;
+  };
+  const mirrorNodeKey = keyData?.key;
 
   // Verify that the key from the mirror node matches the expected key
   expect(key).to.equal(
     // Removing the unnecessary prefix from the mirror node key
-    mirrorNodeKey.slice(mirrorNodeKey.length - key.length),
+    mirrorNodeKey.slice(mirrorNodeKey?.length - key.length),
   );
 };
 
-const transformConsensusToMirrorNodeProp = (key: string) => {
-  return key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+const transformConsensusToMirrorNodeProp = (key: string): keyof TokenInfo => {
+  return key
+    .replace(/([a-z])([A-Z])/g, "$1_$2")
+    .toLowerCase() as keyof TokenInfo;
 };
 
 export const verifyTokenUpdateWithNullKey = async (
@@ -82,7 +90,9 @@ export const verifyTokenUpdateWithNullKey = async (
 
   // Fetch the key from the mirror node and check if it is null
   const mirrorNodeKey = await getPublicKeyFromMirrorNode(
-    (await mirrorNodeClient.getTokenData(tokenId))[mirrorNodeKeyName],
+    (await mirrorNodeClient.getTokenData(tokenId))[
+      mirrorNodeKeyName as keyof TokenInfoMirrorNode
+    ],
   );
   expect(null).to.equal(mirrorNodeKey);
 };
@@ -105,7 +115,7 @@ export const verifyTokenExpirationTimeUpdate = async (
 
   // Convert nanoseconds got back from to timestamp
   const mirrorNodeTimestamp = Timestamp.fromDate(
-    new Date(mirrorNodeExpirationDateNanoseconds / 1000000),
+    new Date(mirrorNodeExpirationDateNanoseconds! / 1000000),
   );
 
   expect(parsedExpirationTime).to.deep.equal(mirrorNodeTimestamp);
