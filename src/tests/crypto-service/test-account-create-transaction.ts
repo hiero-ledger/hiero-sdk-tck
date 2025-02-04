@@ -987,6 +987,10 @@ describe("AccountCreateTransaction", function () {
       accountId: string,
       alias: string,
     ) => {
+      if (alias.startsWith("0x")) {
+        alias = alias.substring(2)
+      }
+
       // If the account was created successfully, the queried account's aliases should be equal.
       expect(alias).to.equal(
         (await consensusInfoClient.getAccountInfo(accountId)).contractAccountId,
