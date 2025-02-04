@@ -83,3 +83,23 @@ export const getPrivateKey = async (
     })
   ).key;
 };
+
+export async function generateEd25519PrivateKey(
+  thisContext: any,
+): Promise<string> {
+  return (
+    await JSONRPCRequest(thisContext, "generateKey", {
+      type: "ed25519PrivateKey",
+    })
+  ).key;
+}
+
+export async function generateEcdsaSecp256k1PrivateKey(
+  thisContext: any,
+): Promise<string> {
+  return (
+    await JSONRPCRequest(thisContext, "generateKey", {
+      type: "ecdsaSecp256k1PrivateKey",
+    })
+  ).key;
+}

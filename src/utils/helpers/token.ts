@@ -109,7 +109,7 @@ export async function createToken(
 
   // Add the decimals if its provided.
   if (decimals) {
-    params.decimals = decimals;
+    params.decimals = Number(decimals);
   }
 
   // Add the max supply if its provided.
@@ -345,3 +345,23 @@ export async function verifyNonFungibleTokenBurn(
     expect(foundNft).to.be.false;
   });
 }
+
+export const defaultNftTokenCreate = async (
+  mochaTestContext: any,
+  treasuryAccountId: string,
+  supplyKey: string,
+  signerKey: string,
+): Promise<string> => {
+  const response = await JSONRPCRequest(mochaTestContext, "createToken", {
+    name: "testname",
+    symbol: "testsymbol",
+    treasuryAccountId,
+    supplyKey,
+    tokenType: "nft",
+    commonTransactionParams: {
+      signers: [signerKey],
+    },
+  });
+
+  return response.tokenId;
+};
