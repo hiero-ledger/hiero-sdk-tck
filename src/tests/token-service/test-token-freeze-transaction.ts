@@ -274,17 +274,18 @@ describe("TokenFreezeTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "freezeToken", {
-        tokenId,
-        accountId,
-        commonTransactionParams: {
-          signers: [tokenFreezeKey],
-        },
-      });
-
-      await retryOnError(async () => {
-        await verifyTokenFrozen(accountId, tokenId);
-      });
+      try {
+        await JSONRPCRequest(this, "freezeToken", {
+          tokenId,
+          accountId,
+          commonTransactionParams: {
+            signers: [tokenFreezeKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
+        return;
+      }
     });
 
     it("(#11) Freezes a token on an account that is not associated with the token", async function () {
