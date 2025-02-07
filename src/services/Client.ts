@@ -10,11 +10,15 @@ const createID: CreateID = () => nextID++;
 const JSONRPClient = new JSONRPCClient(
   async (jsonRPCRequest): Promise<void> => {
     try {
-      const response = await axios.post("http://localhost", jsonRPCRequest, {
-        headers: {
-          "Content-Type": "application/json",
+      const response = await axios.post(
+        process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8545",
+        jsonRPCRequest,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (response.status === 200) {
         return JSONRPClient.receive(response.data);
