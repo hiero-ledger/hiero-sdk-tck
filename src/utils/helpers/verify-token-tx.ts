@@ -10,7 +10,7 @@ import {
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
-import { TokenInfo as TokenInfoMirrorNode } from "@models/mirror-node-models.ts";
+import { TokenInfo as TokenInfoMirrorNode } from "@models/mirror-node-models";
 
 export const verifyTokenKey = async (
   tokenId: string,
@@ -109,7 +109,7 @@ export const verifyTokenExpirationTimeUpdate = async (
     (await consensusInfoClient.getTokenInfo(tokenId)).expirationTime,
   );
 
-  const mirrorNodeExpirationDateNanoseconds = await (
+  const mirrorNodeExpirationDateNanoseconds = (
     await mirrorNodeClient.getTokenData(tokenId)
   ).expiry_timestamp;
 

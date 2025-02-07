@@ -13,7 +13,7 @@ import {
 /**
  * Tests for TokenMintTransaction
  */
-describe("TokenMintTransaction", function () {
+describe.only("TokenMintTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 

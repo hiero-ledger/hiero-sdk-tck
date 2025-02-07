@@ -2,12 +2,13 @@ import { fetchData } from "@helpers/fetch-data";
 import { retryOnError } from "@helpers/retry-on-error";
 
 import {
+  TokenRelationshipResponse,
   AccountInfo,
   CryptoAllowancesResponse,
   NftAllowancesResponse,
   Nfts,
   TokenInfo,
-} from "@models/mirror-node-models.ts";
+} from "@models/mirror-node-models";
 
 class MirrorNodeClient {
   private mirrorNodeRestUrl: string | undefined;
@@ -56,7 +57,7 @@ class MirrorNodeClient {
   async getTokenRelationships(
     accountId: string,
     tokenId: string,
-  ): Promise<any> {
+  ): Promise<TokenRelationshipResponse> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens?token.id=${tokenId}`;
     return retryOnError(async () => fetchData(url));
   }

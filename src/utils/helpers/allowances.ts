@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import mirrorNodeClient from "@services/MirrorNodeClient";
 
-import { Allowance, Nft, NftAllowance } from "@models/mirror-node-models.ts";
+import { Allowance, Nft, NftAllowance } from "@models/mirror-node-models";
 
 export const verifyHbarAllowance = async (
   ownerAccountId: string,

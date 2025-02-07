@@ -1,8 +1,0 @@
-/* generated using openapi-typescript-codegen -- do not edit */
-/* istanbul ignore file */
-/* tslint:disable */
-
-/**
- * A network entity encoded as an EVM address in hex.
- */
-export type EvmAddressNullable = Blob | null;
