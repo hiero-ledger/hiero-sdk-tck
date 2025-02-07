@@ -3,11 +3,12 @@
 <script>
   const toggleDarkMode = document.querySelector('.js-toggle-dark-mode');
   toggleDarkMode.textContent = `${localStorage.getItem('theme') === 'dark' ? 'Light' : 'Dark'} Mode`;
+  document.getElementsByClassName("site-header")[0].style.backgroundColor = localStorage.getItem('theme') === 'dark' ? '#302d36' : '#fff';
 
   function setTheme(theme) {
     if (['light', 'dark'].includes(theme)) {
-      localStorage.setItem('theme', theme)
-      jtd.setTheme(theme)
+      localStorage.setItem('theme', theme);
+      jtd.setTheme(theme);
     }
   }
 
@@ -15,5 +16,6 @@
     const newTheme = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     toggleDarkMode.textContent = `${newTheme === 'dark' ? 'Light' : 'Dark'} Mode`;
+    document.getElementsByClassName("site-header")[0].style.backgroundColor = newTheme === 'dark' ? '#302d36' : '#fff';
   });
 </script>

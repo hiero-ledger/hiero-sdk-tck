@@ -1,0 +1,48 @@
+.side-bar {
+  @media (min-width: 66.5rem) {
+    width: 350px !important;
+    min-width: unset !important; // removes the min-width constraint
+  }
+
+  overflow: scroll;
+  padding-top: 4rem;
+}
+
+.btn {
+  font-size: .75rem !important;
+  font-weight: 400;
+  border-width: 0;
+  box-shadow: none !important;
+  border-radius: 0;
+}
+
+.side-bar {
+  flex-flow: wrap !important;
+}
+
+.main-content-wrap {
+  padding-top: 3rem;
+}
+
+.site-nav {
+  padding-top: 0 !important;
+}
+
+header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 999;
+}
+
+.search-input-wrap {
+  max-width: 100% !important;
+}
+
+.search-active .search-input-wrap {
+  width: 100% !important;
+}
+
+.search-results {
+  width: 100%;
+}
