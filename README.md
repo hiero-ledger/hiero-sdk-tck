@@ -74,12 +74,6 @@ To **format** the code run:
 npm run format
 ```
 
-## Contributing
-
-Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
-
-Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
-
 ### OpenAPI Model Generation
 
 The TCK uses OpenAPI model generation to create TypeScript interfaces and types from the `Hiero Mirror Node API` specification. This allows for type-safe interaction with the Mirror Node API and provides better development experience with autocompletion and type checking.
@@ -114,6 +108,13 @@ task generate-mirror-node-models
 ```
 
 This command uses `openapi-typescript-codegen` to parse the `mirror-node.yaml` file and generate corresponding TypeScript models in `src/utils/models/mirror-node-models`
+
+
+## Contributing
+
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
 
 ## Code of Conduct
