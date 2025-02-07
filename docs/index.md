@@ -2,10 +2,13 @@
 title: Home
 layout: home
 permalink: /
+nav_enabled: false
 ---
 # Test Specifications
 
 Welcome to the test specifications documentation. Below are the available test specifications:
+
+- [Design](design.md)
 
 ### Account and Transaction Specifications:
 - [AccountAllowanceApproveTransaction](test-specifications/crypto-service/AccountAllowanceApproveTransaction.md)
