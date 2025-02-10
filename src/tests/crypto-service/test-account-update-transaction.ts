@@ -140,15 +140,12 @@ describe("AccountUpdateTransaction", function () {
       );
 
       // Mirror node check
-      const mirrorNodeKey = (
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).key
-      ).key;
+      const mirrorNodeKey = (await mirrorNodeClient.getAccountData(accountId))
+        .key.key;
 
       expect(updatedKey).to.equal(
         // Removing the unnecessary prefix from the mirror node key
-        mirrorNodeKey.slice(mirrorNodeKey.length - updatedKey.length),
+        mirrorNodeKey?.slice(mirrorNodeKey.length - updatedKey.length),
       );
     };
 
@@ -425,9 +422,9 @@ describe("AccountUpdateTransaction", function () {
         ).autoRenewPeriod.seconds.toString(),
       );
       expect(autoRenewPeriodSeconds).to.equal(
-        await (
+        (
           await mirrorNodeClient.getAccountData(accountId)
-        ).auto_renew_period.toString(),
+        ).auto_renew_period?.toString(),
       );
     };
 
@@ -556,9 +553,7 @@ describe("AccountUpdateTransaction", function () {
       );
       expect(expirationTime).to.equal(
         Number(
-          await (
-            await mirrorNodeClient.getAccountData(accountId)
-          ).expiry_timestamp,
+          (await mirrorNodeClient.getAccountData(accountId)).expiry_timestamp,
         ).toString(),
       );
     };
@@ -605,7 +600,7 @@ describe("AccountUpdateTransaction", function () {
     it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async function () {
       // Get the account's expiration time.
       const accountInfo = await mirrorNodeClient.getAccountData(accountId);
-      const expirationTimeSeconds = await accountInfo.expiry_timestamp;
+      const expirationTimeSeconds = accountInfo.expiry_timestamp;
       const expirationTime = Math.floor(
         Number(expirationTimeSeconds) - 1,
       ).toString();
@@ -662,9 +657,8 @@ describe("AccountUpdateTransaction", function () {
           .isReceiverSignatureRequired,
       );
       expect(receiverSignatureRequired).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).receiver_sig_required,
+        (await mirrorNodeClient.getAccountData(accountId))
+          .receiver_sig_required,
       );
     };
 
@@ -712,9 +706,7 @@ describe("AccountUpdateTransaction", function () {
         (await consensusInfoClient.getAccountInfo(accountId)).accountMemo,
       );
       expect(memo).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).memo,
+        (await mirrorNodeClient.getAccountData(accountId)).memo,
       );
     };
 
@@ -800,9 +792,8 @@ describe("AccountUpdateTransaction", function () {
       );
       expect(maxAutomaticTokenAssociations).to.equal(
         Number(
-          await (
-            await mirrorNodeClient.getAccountData(accountId)
-          ).max_automatic_token_associations,
+          (await mirrorNodeClient.getAccountData(accountId))
+            .max_automatic_token_associations,
         ),
       );
     };
@@ -898,9 +889,7 @@ describe("AccountUpdateTransaction", function () {
         ).stakingInfo?.stakedAccountId?.toString(),
       );
       expect(stakedAccountId).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).staked_account_id,
+        (await mirrorNodeClient.getAccountData(accountId)).staked_account_id,
       );
     };
 
@@ -913,9 +902,9 @@ describe("AccountUpdateTransaction", function () {
       );
 
       expect(stakedAccountId).to.equal(
-        (await (
+        (
           await mirrorNodeClient.getAccountData(accountId)
-        ).staked_account_id?.toString()) || "0",
+        ).staked_account_id?.toString() || "0",
       );
     };
 

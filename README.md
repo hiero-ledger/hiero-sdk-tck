@@ -34,7 +34,7 @@ In near future hedera-local-node will be transfered to Hiero (see our [transitio
 
 Start only the JSON-RPC server for the SDK you want to test. The JSON-RPC server for the specified SDK will parse the JSON formatted request received by the test driver. The JSON-RPC server will execute the corresponding function or procedure associated with that method and prepare the response in JSON format to send back to the test driver. 
 
-By default, the TCK will look for a JSON-RPC Server at: `http://localhost:8545/`, but this can be configured by changing the `JSON_RPC_SERVER_URL` in your `.env` file:
+By default, the TCK will look for a JSON-RPC Server at: `http://localhost:8544/`, but this can be configured by changing the `JSON_RPC_SERVER_URL` in your `.env` file:
 
 ### Install and run
 
@@ -76,11 +76,48 @@ To **format** the code run:
 npm run format
 ```
 
+### OpenAPI Model Generation
+
+The TCK uses OpenAPI model generation to create TypeScript interfaces and types from the `Hiero Mirror Node API` specification. This allows for type-safe interaction with the Mirror Node API and provides better development experience with autocompletion and type checking.
+
+The OpenAPI specification is defined in `mirror-node.yaml` and contains the complete API schema, including:
+- API endpoints and their paths
+- Request/response structures
+- Data types and models
+- Query parameters
+- Authentication methods
+
+#### Generation Process
+
+1. Generate the TypeScript models:
+```bash
+npm run generate-mirror-node-models
+```
+
+2. Clean up and reorganize the generated files:
+```bash
+task cleanup-generated-mirror-node-models
+```
+
+The cleanup task (defined in `Taskfile.yaml`) performs the following:
+- Removes unnecessary `core` and `services` directories
+- Flattens the directory structure by moving files from `models/` to the root
+- Updates import paths in `index.ts` to reflect the new structure
+
+### You can also run both steps together using (*recommended*):
+```bash
+task generate-mirror-node-models
+```
+
+This command uses `openapi-typescript-codegen` to parse the `mirror-node.yaml` file and generate corresponding TypeScript models in `src/utils/models/mirror-node-models`
+
+
 ## Contributing
 
 Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
+
 
 ## Code of Conduct
 

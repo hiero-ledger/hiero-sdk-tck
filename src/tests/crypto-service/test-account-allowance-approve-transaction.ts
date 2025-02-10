@@ -243,7 +243,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       await retryOnError(async () => {
         const mirrorNodeInfo =
           await mirrorNodeClient.getHbarAllowances(spenderAccountId);
-        expect(mirrorNodeInfo.allowances.length).to.equal(0);
+        expect(mirrorNodeInfo.allowances?.length).to.equal(0);
       });
     });
 
@@ -618,7 +618,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       await retryOnError(async () => {
         const mirrorNodeInfo =
           await mirrorNodeClient.getTokenAllowances(spenderAccountId);
-        expect(mirrorNodeInfo.allowances.length).to.equal(0);
+        expect(mirrorNodeInfo.allowances?.length).to.equal(0);
       });
     });
 
@@ -1730,7 +1730,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       await retryOnError(async () => {
         const mirrorNodeInfo =
           await mirrorNodeClient.getNftAllowances(spenderAccountId);
-        expect(mirrorNodeInfo.allowances.length).to.equal(0);
+        expect(mirrorNodeInfo.allowances?.length).to.equal(0);
       });
     });
 

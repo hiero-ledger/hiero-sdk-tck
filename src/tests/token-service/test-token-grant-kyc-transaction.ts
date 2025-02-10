@@ -100,9 +100,9 @@ describe("TokenGrantKycTransaction", function () {
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].kyc_status).to.equal("GRANTED");
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
+        expect(mirrorNodeInfo?.tokens?.[i]?.kyc_status).to.equal("GRANTED");
         foundToken = true;
         break;
       }

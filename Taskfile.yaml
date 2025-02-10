@@ -1,0 +1,35 @@
+version: "3"
+
+tasks:
+  cleanup-generated-mirror-node-models:
+    desc: Cleans up generated OpenAPI files and reorganizes the structure
+    cmds:
+      # Remove core and services directories
+      - rm -rf src/utils/models/mirror-node-models/core
+      - rm -rf src/utils/models/mirror-node-models/services
+
+      # Move all files from models directory to mirror-node-models
+      - mv src/utils/models/mirror-node-models/models/* src/utils/models/mirror-node-models/
+
+      # Remove the now-empty models directory
+      - rm -rf src/utils/models/mirror-node-models/models
+
+      # Update index.ts using Node.js
+      - node -e "
+        const fs = require('fs');
+        const path = 'src/utils/models/mirror-node-models/index.ts';
+        let content = fs.readFileSync(path, 'utf8');
+        content = content.split('\n')
+        .filter(line => !line.includes('/core/') && !line.includes('/services/'))
+        .map(line => line.replace('./models/', './'))
+        .join('\n');
+        fs.writeFileSync(path, content);
+        "
+  status:
+    - test ! -d src/utils/models/mirror-node-models
+
+  generate-mirror-node-models:
+    desc: Generates OpenAPI models and cleans up the structure
+    cmds:
+      - npm run generate-mirror-node-models
+      - task: cleanup-generated-mirror-node-models

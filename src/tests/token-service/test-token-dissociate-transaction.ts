@@ -75,8 +75,8 @@ describe("TokenDissociateTransaction", function () {
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
         foundToken = true;
         break;
       }
@@ -91,7 +91,7 @@ describe("TokenDissociateTransaction", function () {
       accountId,
       tokenId,
     );
-    expect(mirrorNodeInfo.tokens.length).to.equal(0);
+    expect(mirrorNodeInfo?.tokens?.length).to.equal(0);
   }
 
   describe("Account ID", function () {

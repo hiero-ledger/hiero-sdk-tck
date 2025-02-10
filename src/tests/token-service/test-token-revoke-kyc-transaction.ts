@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -108,9 +109,9 @@ describe("TokenRevokeKycTransaction", function () {
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].kyc_status).to.equal("REVOKED");
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
+        expect(mirrorNodeInfo?.tokens?.[i]?.kyc_status).to.equal("REVOKED");
         foundToken = true;
         break;
       }

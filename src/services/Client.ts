@@ -11,7 +11,7 @@ const JSONRPClient = new JSONRPCClient(
   async (jsonRPCRequest): Promise<void> => {
     try {
       const response = await axios.post(
-        process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8545",
+        process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8544",
         jsonRPCRequest,
         {
           headers: {

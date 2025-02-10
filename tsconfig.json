@@ -14,7 +14,8 @@
       "@helpers/*": ["src/utils/helpers/*"],
       "@services/*": ["src/services/*"],
       "@constants/*": ["src/utils/constants/*"],
-      "@enums/*": ["src/utils/enums/*"]
+      "@enums/*": ["src/utils/enums/*"],
+      "@models/*": ["src/utils/models/*"]
     }
   },
   "include": ["src/**/*.ts", "src/tests/**/*.ts"],
