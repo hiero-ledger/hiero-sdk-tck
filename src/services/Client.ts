@@ -10,7 +10,7 @@ const getHost = () => {
   if (process.env.RUNNING_IN_DOCKER) {
     return "http://host.docker.internal";
   }
-  return "http://localhost";
+  return process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8544";
 };
 
 // JSONRPCClient needs to know how to send a JSON-RPC request.
