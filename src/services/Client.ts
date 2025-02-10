@@ -7,10 +7,12 @@ const createID: CreateID = () => nextID++;
 
 // Determine the host based on environment
 const getHost = () => {
+  const url = process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8544";
+
   if (process.env.RUNNING_IN_DOCKER) {
-    return "http://host.docker.internal";
+    return url.replace("localhost", "host.docker.internal");
   }
-  return process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8544";
+  return url;
 };
 
 // JSONRPCClient needs to know how to send a JSON-RPC request.
