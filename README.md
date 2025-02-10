@@ -34,7 +34,7 @@ In near future hedera-local-node will be transfered to Hiero (see our [transitio
 
 Start only the JSON-RPC server for the SDK you want to test. The JSON-RPC server for the specified SDK will parse the JSON formatted request received by the test driver. The JSON-RPC server will execute the corresponding function or procedure associated with that method and prepare the response in JSON format to send back to the test driver. 
 
-By default, the TCK will look for a JSON-RPC Server at: `http://localhost:8545/`, but this can be configured by changing the `JSON_RPC_SERVER_URL` in your `.env` file:
+By default, the TCK will look for a JSON-RPC Server at: `http://localhost:8544/`, but this can be configured by changing the `JSON_RPC_SERVER_URL` in your `.env` file:
 
 ### Install and run
 
