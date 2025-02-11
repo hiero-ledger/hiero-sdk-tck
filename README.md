@@ -180,6 +180,9 @@ If you want to build the image locally:
 ```bash
 docker build -t tck-client .
 ```
+
+Then run it using the same commands as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
+
 ### Docker additional notes
 
 ```bash
@@ -200,8 +203,6 @@ Please read our [contributing guide](https://github.com/hiero-ledger/.github/blo
 ## Code of Conduct
 
 Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
-
-Then run it using the same commands as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
 
 ## License
 
