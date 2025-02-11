@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { TEST_CONFIGURATIONS } from "./test-paths";
-import { setNetworkEnvironment } from "./network-config";
+import { TEST_CONFIGURATIONS } from "../utils/constants/test-paths";
+import { setNetworkEnvironment } from "../utils/helpers/network-config";
 
 const runTests = async (testName: string, network: string): Promise<void> => {
   try {

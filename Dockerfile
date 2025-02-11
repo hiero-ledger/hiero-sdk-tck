@@ -16,4 +16,4 @@ ENV NETWORK=local \
 COPY . .
 
 # Use the runner script
-CMD ["npx", "ts-node", "--files", "/app/src/utils/docker/run-tests.ts"]
+CMD ["npx", "ts-node", "--files", "/app/src/services/RunTestsInContainer.ts"]

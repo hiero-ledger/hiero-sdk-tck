@@ -111,19 +111,6 @@ task generate-mirror-node-models
 
 This command uses `openapi-typescript-codegen` to parse the `mirror-node.yaml` file and generate corresponding TypeScript models in `src/utils/models/mirror-node-models`
 
-
-## Contributing
-
-Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
-
-Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
-
-
-## Code of Conduct
-
-Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
-
-
 ## Docker
 
 The TCK is also available as a Docker image, providing an easy way to run tests in an isolated environment.
@@ -193,6 +180,26 @@ If you want to build the image locally:
 ```bash
 docker build -t tck-client .
 ```
+### Docker additional notes
+
+```bash
+# entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. 
+
+RunTestsInContainer.ts
+```
+
+**Note:** This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the "Install and run" section above.
+
+## Contributing
+
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
+
+
+## Code of Conduct
+
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 Then run it using the same commands as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
 
