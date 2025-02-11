@@ -42,9 +42,7 @@ describe("AccountCreateTransaction", function () {
       );
 
       expect(accountId).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).account,
+        (await mirrorNodeClient.getAccountData(accountId)).account,
       );
     };
 
@@ -189,9 +187,9 @@ describe("AccountCreateTransaction", function () {
         ).balance._valueInTinybar.toString(),
       );
       expect(initialBalance).to.equal(
-        await (
+        (
           await mirrorNodeClient.getAccountData(accountId)
-        ).balance.balance.toString(),
+        ).balance.balance?.toString(),
       );
     };
 
@@ -300,9 +298,8 @@ describe("AccountCreateTransaction", function () {
           .isReceiverSignatureRequired,
       );
       expect(receiverSignatureRequired).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).receiver_sig_required,
+        (await mirrorNodeClient.getAccountData(accountId))
+          .receiver_sig_required,
       );
     };
 
@@ -389,9 +386,9 @@ describe("AccountCreateTransaction", function () {
         ).autoRenewPeriod.seconds.toString(),
       );
       expect(autoRenewPeriodSeconds).to.equal(
-        await (
+        (
           await mirrorNodeClient.getAccountData(accountId)
-        ).auto_renew_period.toString(),
+        ).auto_renew_period?.toString(),
       );
     };
 
@@ -531,9 +528,7 @@ describe("AccountCreateTransaction", function () {
         (await consensusInfoClient.getAccountInfo(accountId)).accountMemo,
       );
       expect(memo).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).memo,
+        (await mirrorNodeClient.getAccountData(accountId)).memo,
       );
     };
 
@@ -649,9 +644,8 @@ describe("AccountCreateTransaction", function () {
       );
       expect(maxAutomaticTokenAssociations).to.equal(
         Number(
-          await (
-            await mirrorNodeClient.getAccountData(accountId)
-          ).max_automatic_token_associations,
+          (await mirrorNodeClient.getAccountData(accountId))
+            .max_automatic_token_associations,
         ),
       );
     };
@@ -754,9 +748,7 @@ describe("AccountCreateTransaction", function () {
         ).stakingInfo?.stakedAccountId?.toString(),
       );
       expect(stakedAccountId).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).staked_account_id,
+        (await mirrorNodeClient.getAccountData(accountId)).staked_account_id,
       );
     };
 
@@ -771,9 +763,9 @@ describe("AccountCreateTransaction", function () {
         ).stakingInfo?.stakedNodeId?.toString(),
       );
       expect(stakedNodeId).to.equal(
-        await (
+        (
           await mirrorNodeClient.getAccountData(accountId)
-        ).staked_node_id.toString(),
+        ).staked_node_id?.toString(),
       );
     };
 
@@ -935,9 +927,7 @@ describe("AccountCreateTransaction", function () {
           ?.declineStakingReward,
       );
       expect(declineRewards).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).decline_reward,
+        (await mirrorNodeClient.getAccountData(accountId)).decline_reward,
       );
     };
 
@@ -987,15 +977,17 @@ describe("AccountCreateTransaction", function () {
       accountId: string,
       alias: string,
     ) => {
+      if (alias.startsWith("0x")) {
+        alias = alias.substring(2)
+      }
+
       // If the account was created successfully, the queried account's aliases should be equal.
       expect(alias).to.equal(
         (await consensusInfoClient.getAccountInfo(accountId)).contractAccountId,
       );
 
       expect("0x" + alias).to.equal(
-        await (
-          await mirrorNodeClient.getAccountData(accountId)
-        ).evm_address,
+        (await mirrorNodeClient.getAccountData(accountId)).evm_address,
       );
     };
 

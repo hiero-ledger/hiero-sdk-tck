@@ -2,6 +2,8 @@ import { expect } from "chai";
 
 import mirrorNodeClient from "@services/MirrorNodeClient";
 
+import { Allowance, Nft, NftAllowance } from "@models/mirror-node-models";
+
 export const verifyHbarAllowance = async (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -10,12 +12,11 @@ export const verifyHbarAllowance = async (
   const mirrorNodeInfo =
     await mirrorNodeClient.getHbarAllowances(ownerAccountId);
 
-  const foundAllowance = mirrorNodeInfo.allowances.some(
-    // TODO: Get mirror node interface with OpenAPI
-    (allowance: any) =>
+  const foundAllowance = mirrorNodeInfo.allowances?.some(
+    (allowance: Allowance) =>
       allowance.owner === ownerAccountId &&
       allowance.spender === spenderAccountId &&
-      allowance.amount.toString() === amount,
+      allowance.amount?.toString() === amount,
   );
 
   expect(foundAllowance).to.be.true;
@@ -29,14 +30,12 @@ export const verifyTokenAllowance = async (
 ) => {
   const mirrorNodeInfo =
     await mirrorNodeClient.getTokenAllowances(ownerAccountId);
-
-  const foundAllowance = mirrorNodeInfo.allowances.some(
-    // TODO: Get mirror node interface with OpenAPI
-    (allowance: any) =>
+  const foundAllowance = mirrorNodeInfo.allowances?.some(
+    (allowance: Allowance) =>
       allowance.owner === ownerAccountId &&
       allowance.spender === spenderAccountId &&
-      allowance.token_id === tokenId &&
-      allowance.amount.toString() === amount,
+      (allowance as Nft).token_id === tokenId &&
+      allowance.amount?.toString() === amount,
   );
 
   expect(foundAllowance).to.be.true;
@@ -50,13 +49,9 @@ export const verifyNftAllowance = async (
   serialNumber: string,
   delegatingSpenderAccountId: string | null = null,
 ) => {
-  const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
-    ownerAccountId,
-    tokenId,
-  );
+  const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(ownerAccountId);
 
-  const foundAllowance = mirrorNodeInfo.nfts.some(
-    // TODO: Get mirror node interface with OpenAPI
+  const foundAllowance = mirrorNodeInfo.nfts?.some(
     (allowance: any) =>
       allowance.account_id === ownerAccountId &&
       allowance.spender === spenderAccountId &&
@@ -78,9 +73,8 @@ export const verifyApprovedForAllAllowance = async (
   const mirrorNodeInfo =
     await mirrorNodeClient.getNftAllowances(ownerAccountId);
 
-  const foundAllowance = mirrorNodeInfo.allowances.some(
-    // TODO: Get mirror node interface with OpenAPI
-    (allowance: any) =>
+  const foundAllowance = mirrorNodeInfo.allowances?.some(
+    (allowance: NftAllowance) =>
       allowance.token_id === tokenId &&
       allowance.owner === ownerAccountId &&
       allowance.spender === spenderAccountId,
@@ -95,18 +89,14 @@ export const verifyNoNftAllowance = async (
   tokenId: string,
   serialNumber: string,
 ) => {
-  const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(
-    ownerAccountId,
-    tokenId,
-  );
+  const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(ownerAccountId);
 
-  const foundAllowance = mirrorNodeInfo.nfts.some(
-    // TODO: Get mirror node interface with OpenAPI
-    (nft: any) =>
+  const foundAllowance = mirrorNodeInfo.nfts?.some(
+    (nft: Nft) =>
       nft.account_id === ownerAccountId &&
       nft.spender === spenderAccountId &&
       nft.token_id === tokenId &&
-      nft.serial_number.toString() === serialNumber,
+      nft.serial_number?.toString() === serialNumber,
   );
 
   expect(foundAllowance).to.be.false;
