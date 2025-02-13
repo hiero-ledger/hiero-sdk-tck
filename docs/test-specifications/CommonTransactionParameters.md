@@ -4,14 +4,14 @@ There are common parameters that can be set for all Hiero transaction types. Thi
 
 ## Transaction Parameter Object Definition
 
-| Parameter Name           | Type         | Required/Optional | Description/Notes                                                                |
-|--------------------------|--------------|-------------------|----------------------------------------------------------------------------------|
-| transactionId            | string       | optional          |                                                                                  |
-| maxTransactionFee        | int64        | optional          | Units of tinybars                                                                |
-| validTransactionDuration | int64        | optional          | Units of seconds                                                                 |
-| memo                     | string       | optional          |                                                                                  |
-| regenerateTransactionId  | bool         | optional          |                                                                                  |
-| signers                  | list<string> | optional          | List of DER-encoded hex strings of all additional private keys required to sign. |
+| Parameter Name           | Type         | Required/Optional | Description/Notes                                                                                                                  |
+|--------------------------|--------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| transactionId            | string       | optional          | This can be the full transaction ID with account ID and valid start time, or just the account ID if the start time doesn't matter. |
+| maxTransactionFee        | int64        | optional          | Units of tinybars                                                                                                                  |
+| validTransactionDuration | int64        | optional          | Units of seconds                                                                                                                   |
+| memo                     | string       | optional          |                                                                                                                                    |
+| regenerateTransactionId  | bool         | optional          |                                                                                                                                    |
+| signers                  | list<string> | optional          | List of DER-encoded hex strings of all additional private keys required to sign.                                                   |
 
 ## Example Usage
 
