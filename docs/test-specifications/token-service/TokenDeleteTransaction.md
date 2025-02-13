@@ -1,3 +1,8 @@
+---
+title: Token Delete Transaction
+parent: Token Service
+nav_order: 5
+---
 # TokenDeleteTransaction - Test specification
 
 ## Description:

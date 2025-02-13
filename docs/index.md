@@ -2,15 +2,17 @@
 title: Home
 layout: home
 permalink: /
-nav_enabled: false
+nav_order: 6
+nav_exclude: true
 ---
 # Test Specifications
 
 Welcome to the test specifications documentation. Below are the available test specifications:
 
 - [Design](design.md)
+- [README](README.md)
 
-### Account and Transaction Specifications:
+### Crypto Service Specifications:
 - [AccountAllowanceApproveTransaction](test-specifications/crypto-service/AccountAllowanceApproveTransaction.md)
 - [AccountAllowanceDeleteTransaction](test-specifications/crypto-service/AccountAllowanceDeleteTransaction.md)
 - [AccountBalanceQuery](test-specifications/crypto-service/AccountBalanceQuery.md)

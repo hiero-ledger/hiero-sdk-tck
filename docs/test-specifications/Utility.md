@@ -1,3 +1,7 @@
+---
+title: Utility
+nav_order: 6
+---
 # Utility JSON RPC Methods
 
 ## Description
