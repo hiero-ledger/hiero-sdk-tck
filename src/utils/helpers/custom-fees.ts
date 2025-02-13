@@ -174,10 +174,10 @@ export const verifyTokenCreationWithFixedFee = async (
     }
   }
 
-  for (let i = 0; i < mirrorNodeInfo.custom_fees.fixed_fees.length; i++) {
+  for (let i = 0; i < mirrorNodeInfo?.custom_fees?.fixed_fees?.length!; i++) {
     if (
       mirrorNodeFeeEqualsCustomFixedFee(
-        mirrorNodeInfo.custom_fees.fixed_fees[i],
+        mirrorNodeInfo?.custom_fees?.fixed_fees![i],
         feeCollectorAccountId,
         amount,
       )
@@ -226,10 +226,14 @@ export const verifyTokenCreationWithFractionalFee = async (
     }
   }
 
-  for (let i = 0; i < mirrorNodeInfo.custom_fees.fractional_fees.length; i++) {
+  for (
+    let i = 0;
+    i < mirrorNodeInfo?.custom_fees?.fractional_fees?.length!;
+    i++
+  ) {
     if (
       mirrorNodeFeeEqualsCustomFractionalFee(
-        mirrorNodeInfo.custom_fees.fractional_fees[i],
+        mirrorNodeInfo?.custom_fees?.fractional_fees![i],
         feeCollectorAccountId,
         numerator,
         denominator,
@@ -278,10 +282,10 @@ export const verifyTokenCreationWithRoyaltyFee = async (
     }
   }
 
-  for (let i = 0; i < mirrorNodeInfo.custom_fees.royalty_fees.length; i++) {
+  for (let i = 0; i < mirrorNodeInfo?.custom_fees?.royalty_fees?.length!; i++) {
     if (
       mirrorNodeFeeEqualsCustomRoyaltyFee(
-        mirrorNodeInfo.custom_fees.royalty_fees[i],
+        mirrorNodeInfo?.custom_fees?.royalty_fees![i],
         feeCollectorAccountId,
         numerator,
         denominator,

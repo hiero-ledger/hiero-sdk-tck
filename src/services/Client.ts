@@ -5,12 +5,22 @@ import "dotenv/config";
 let nextID = 0;
 const createID: CreateID = () => nextID++;
 
+// Determine the host based on environment
+const getHost = () => {
+  const url = process.env.JSON_RPC_SERVER_URL ?? "http://localhost:8544";
+
+  if (process.env.RUNNING_IN_DOCKER) {
+    return url.replace("localhost", "host.docker.internal");
+  }
+  return url;
+};
+
 // JSONRPCClient needs to know how to send a JSON-RPC request.
 // Tell it by passing a function to its constructor. The function must take a JSON-RPC request and send it.
 const JSONRPClient = new JSONRPCClient(
   async (jsonRPCRequest): Promise<void> => {
     try {
-      const response = await axios.post("http://localhost", jsonRPCRequest, {
+      const response = await axios.post(getHost(), jsonRPCRequest, {
         headers: {
           "Content-Type": "application/json",
         },

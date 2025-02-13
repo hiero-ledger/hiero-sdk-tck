@@ -139,9 +139,7 @@ describe("TokenUpdateTransaction", function () {
         (await consensusInfoClient.getTokenInfo(tokenId)).symbol,
       );
       expect(symbol).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).symbol,
+        (await mirrorNodeClient.getTokenData(tokenId)).symbol,
       );
     };
 
@@ -245,9 +243,7 @@ describe("TokenUpdateTransaction", function () {
       );
 
       expect(name).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).name,
+        (await mirrorNodeClient.getTokenData(tokenId)).name,
       );
     };
 
@@ -2063,9 +2059,7 @@ describe("TokenUpdateTransaction", function () {
       );
 
       expect(autoRenewPeriod).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).auto_renew_period,
+        (await mirrorNodeClient.getTokenData(tokenId)).auto_renew_period,
       );
     };
 
@@ -2482,9 +2476,7 @@ describe("TokenUpdateTransaction", function () {
       );
 
       expect(memo).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).memo,
+        (await mirrorNodeClient.getTokenData(tokenId)).memo,
       );
     };
 

@@ -52,9 +52,7 @@ describe("TokenCreateTransaction", function () {
         (await consensusInfoClient.getTokenInfo(tokenId)).name,
       );
       expect(name).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).name,
+        (await mirrorNodeClient.getTokenData(tokenId)).name,
       );
     };
 
@@ -146,9 +144,7 @@ describe("TokenCreateTransaction", function () {
         (await consensusInfoClient.getTokenInfo(tokenId)).symbol,
       );
       expect(symbol).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).symbol,
+        (await mirrorNodeClient.getTokenData(tokenId)).symbol,
       );
     };
 
@@ -231,7 +227,7 @@ describe("TokenCreateTransaction", function () {
       );
 
       expect(decimals).to.equal(
-        Number(await (await mirrorNodeClient.getTokenData(tokenId)).decimals),
+        Number((await mirrorNodeClient.getTokenData(tokenId)).decimals),
       );
     };
 
@@ -414,9 +410,8 @@ describe("TokenCreateTransaction", function () {
         await consensusInfoClient.getTokenInfo(tokenId)
       ).totalSupply;
 
-      const totalSupplyMirror = await (
-        await mirrorNodeClient.getTokenData(tokenId)
-      ).initial_supply;
+      const totalSupplyMirror = (await mirrorNodeClient.getTokenData(tokenId))
+        .initial_supply;
 
       expect(initialSupply).to.equal(totalSupplyConsensus.toString());
       expect(initialSupply).to.equal(totalSupplyMirror);
@@ -619,9 +614,7 @@ describe("TokenCreateTransaction", function () {
         ).treasuryAccountId?.toString(),
       );
       expect(treasuryAccountId).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).treasury_account_id,
+        (await mirrorNodeClient.getTokenData(tokenId)).treasury_account_id,
       );
     };
 
@@ -1639,15 +1632,11 @@ describe("TokenCreateTransaction", function () {
       freezeDefault: boolean,
     ) => {
       expect(freezeDefault).to.equal(
-        await (
-          await consensusInfoClient.getTokenInfo(tokenId)
-        ).defaultFreezeStatus,
+        (await consensusInfoClient.getTokenInfo(tokenId)).defaultFreezeStatus,
       );
 
       expect(freezeDefault).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).freeze_default,
+        (await mirrorNodeClient.getTokenData(tokenId)).freeze_default,
       );
     };
 
@@ -1925,9 +1914,7 @@ describe("TokenCreateTransaction", function () {
         ).autoRenewAccountId?.toString(),
       );
       expect(accountId).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).auto_renew_account,
+        (await mirrorNodeClient.getTokenData(tokenId)).auto_renew_account,
       );
     });
 
@@ -2045,9 +2032,9 @@ describe("TokenCreateTransaction", function () {
       );
 
       expect(autoRenewPeriod).to.equal(
-        await (
+        (
           await mirrorNodeClient.getTokenData(tokenId)
-        ).auto_renew_period.toString(),
+        ).auto_renew_period?.toString(),
       );
     };
 
@@ -2241,9 +2228,7 @@ describe("TokenCreateTransaction", function () {
         (await consensusInfoClient.getTokenInfo(tokenId)).tokenMemo,
       );
       expect(memo).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).memo,
+        (await mirrorNodeClient.getTokenData(tokenId)).memo,
       );
     };
 
@@ -2311,9 +2296,7 @@ describe("TokenCreateTransaction", function () {
       );
 
       expect(type).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).type,
+        (await mirrorNodeClient.getTokenData(tokenId)).type,
       );
     };
 
@@ -2364,9 +2347,7 @@ describe("TokenCreateTransaction", function () {
         ).supplyType?.toString(),
       );
       expect(type).to.equal(
-        await (
-          await mirrorNodeClient.getTokenData(tokenId)
-        ).supply_type,
+        (await mirrorNodeClient.getTokenData(tokenId)).supply_type,
       );
     };
 
@@ -2403,7 +2384,7 @@ describe("TokenCreateTransaction", function () {
         await consensusInfoClient.getTokenInfo(tokenId)
       ).maxSupply;
 
-      const totalMaxSupplyMirror = await (
+      const totalMaxSupplyMirror = (
         await mirrorNodeClient.getTokenData(tokenId)
       ).max_supply;
 
@@ -5109,11 +5090,10 @@ describe("TokenCreateTransaction", function () {
 
       expect(metadataConsensus?.toString()).to.equal(expectedMetadata);
 
-      const metadataMirror = await (
-        await mirrorNodeClient.getTokenData(tokenId)
-      ).metadata;
+      const metadataMirror = (await mirrorNodeClient.getTokenData(tokenId))
+        .metadata;
 
-      expect(Buffer.from(metadataMirror, "base64").toString("utf8")).to.equal(
+      expect(Buffer.from(metadataMirror!, "base64").toString("utf8")).to.equal(
         expectedMetadata,
       );
     };

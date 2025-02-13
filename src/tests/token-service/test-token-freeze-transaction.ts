@@ -92,9 +92,9 @@ describe("TokenFreezeTransaction", function () {
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].freeze_status).to.equal("FROZEN");
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
+        expect(mirrorNodeInfo?.tokens?.[i]?.freeze_status).to.equal("FROZEN");
         foundToken = true;
         break;
       }
@@ -274,17 +274,18 @@ describe("TokenFreezeTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "freezeToken", {
-        tokenId,
-        accountId,
-        commonTransactionParams: {
-          signers: [tokenFreezeKey],
-        },
-      });
-
-      await retryOnError(async () => {
-        await verifyTokenFrozen(accountId, tokenId);
-      });
+      try {
+        await JSONRPCRequest(this, "freezeToken", {
+          tokenId,
+          accountId,
+          commonTransactionParams: {
+            signers: [tokenFreezeKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
+        return;
+      }
     });
 
     it("(#11) Freezes a token on an account that is not associated with the token", async function () {

@@ -100,9 +100,9 @@ describe("TokenUnfreezeTransaction", function () {
     );
 
     let foundToken = false;
-    for (let i = 0; i < mirrorNodeInfo.tokens.length; i++) {
-      if (mirrorNodeInfo.tokens[i].token_id === tokenId) {
-        expect(mirrorNodeInfo.tokens[i].freeze_status).to.equal("UNFROZEN");
+    for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
+      if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
+        expect(mirrorNodeInfo?.tokens?.[i]?.freeze_status).to.equal("UNFROZEN");
         foundToken = true;
         break;
       }
