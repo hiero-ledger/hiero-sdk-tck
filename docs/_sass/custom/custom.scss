@@ -1,31 +1,98 @@
+// noinspection SassScssUnresolvedVariable
 .side-bar {
-  @media (min-width: 66.5rem) {
-    width: 350px !important;
-    min-width: unset !important; // removes the min-width constraint
+  @media (max-width: 50rem) {
+    z-index: 100;
+    position: absolute;
+    padding-top: 125px;
+    width: 100%;
   }
 
-  overflow: scroll;
+  @media (min-width: 50rem) {
+    width: 264px !important;
+    min-width: unset !important;
+  }
+
   padding-top: 4rem;
+  flex-flow: wrap !important;
+  align-items: baseline;
+  background-color: $sidebar-color;
+  overflow-y: scroll;
+}
+
+.main {
+  @media (max-width: 50rem) {
+    padding-top: 70px;
+  }
+}
+
+.main-header {
+  @media (max-width: 50rem) {
+    height: 125px;
+    position: fixed;
+    width: 100%;
+  }
+
+  background-color: $sidebar-color;
+}
+
+.aux-nav {
+  @media (max-width: 50rem) {
+    visibility: hidden;
+  }
+
+  background-color: $body-background-color;
+}
+
+.js-toggle-dark-mode {
+  @media (max-width: 50rem) {
+    visibility: hidden
+  }
 }
 
 .btn {
-  font-size: .75rem !important;
+  font-size: 0.75rem !important;
   font-weight: 400;
   border-width: 0;
   box-shadow: none !important;
   border-radius: 0;
 }
 
-.side-bar {
-  flex-flow: wrap !important;
+.side-bar-scroll-container {
+  overflow: scroll;
+  @media (min-width: 50rem) {
+    padding-bottom: 64px;
+  }
+  @media (max-width: 50rem) {
+    width: 100%;
+  }
 }
 
 .main-content-wrap {
   padding-top: 3rem;
 }
 
+.site-footer {
+  position: fixed !important;
+  border-right: #44434d;
+  border-right-width: 1px;
+  background-color: $sidebar-color;
+  width: 263px;
+
+  @media (max-width: 50rem) {
+    visibility: hidden;
+  }
+}
+
 .site-nav {
   padding-top: 0 !important;
+}
+
+.site-header {
+  width: 264px;
+
+  @media (max-width: 50rem) {
+    width: auto;
+  }
 }
 
 header {
@@ -45,4 +112,46 @@ header {
 
 .search-results {
   width: 100%;
+  @media (max-width: 50rem) {
+    position: fixed;
+    width: 100vw;
+  }
+}
+
+
+// callouts
+$warning-border-color: if($color-scheme == dark, #ff966e, #FF4500FF);
+$warning-background-color: if($color-scheme == dark, #885747FF, #ffd3c7);
+$tip-border-color: if($color-scheme == dark, #93b4f3, #6495EDFF);
+$tip-background-color: if($color-scheme == dark, #4d68a8, #dce6ff);
+$note-border-color: if($color-scheme == dark, #ffe794, #ffd53c);
+$note-background-color: if($color-scheme == dark, #80763a, #fffccb);
+$box-shadow-start: if($color-scheme == dark, rgba(159, 159, 159, 0.2), rgba(31, 31, 31, 0.2));
+$box-shadow-end: if($color-scheme == dark, rgba(197, 197, 197, 0.19), rgba(58, 58, 58, 0.19));
+
+.warning {
+  border-left: 4px solid $warning-border-color;
+  background-color: $warning-background-color;
+  padding: 10px;
+  margin: 20px 0 20px 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
+}
+
+.tip {
+  border-left: 4px solid $tip-border-color;
+  background-color: $tip-background-color;
+  padding: 10px;
+  margin: 20px 0 20px 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
+}
+
+.note {
+  border-left: 4px solid $note-border-color;
+  background-color: $note-background-color;
+  padding: 10px;
+  margin: 20px 0 20px 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
 }

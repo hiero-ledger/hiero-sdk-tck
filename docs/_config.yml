@@ -9,4 +9,25 @@ url: https://hiero-ledger.github.io/hiero-sdk-tck
 aux_links:
   Github Repository: https://github.com/hiero-ledger/hiero-sdk-tck
 
-nav_enabled: true
+markdown: GFM
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+sass:
+  load_paths:
+    - _sass
