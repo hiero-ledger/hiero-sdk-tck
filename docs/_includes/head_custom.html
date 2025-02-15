@@ -1,0 +1,8 @@
+<!-- Theme persistence script -->
+<script>
+  if (localStorage.getItem("theme") === null) {
+    localStorage.setItem("theme", "light");
+  }
+
+  jtd.setTheme(localStorage.getItem("theme"));
+</script>
