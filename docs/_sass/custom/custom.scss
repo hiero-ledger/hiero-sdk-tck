@@ -20,8 +20,8 @@
 
 .main {
   max-width: unset;
+
   @media (min-width: 50rem) {
-    padding-top: 30px;
     margin-left: 264px !important;
   }
 }
@@ -31,6 +31,9 @@
 }
 
 .main-content-wrap {
+  @media (min-width: 50rem) {
+    padding-top: 60px;
+  }
   padding-top: unset;
 }
 
