@@ -1,28 +1,37 @@
 // noinspection SassScssUnresolvedVariable
 .side-bar {
   @media (max-width: 50rem) {
-    z-index: 100;
-    position: absolute;
     padding-top: 125px;
     width: 100%;
+
   }
 
   @media (min-width: 50rem) {
     width: 264px !important;
     min-width: unset !important;
   }
-
   padding-top: 4rem;
-  flex-flow: wrap !important;
-  align-items: baseline;
   background-color: $sidebar-color;
-  overflow-y: scroll;
+}
+
+.side-bar.no-side-bar {
+  display: none;
 }
 
 .main {
-  @media (max-width: 50rem) {
-    padding-top: 70px;
+  max-width: unset;
+  @media (min-width: 50rem) {
+    padding-top: 30px;
+    margin-left: 264px !important;
   }
+}
+
+.main.no-side-bar {
+  margin-left: 10px !important;
+}
+
+.main-content-wrap {
+  padding-top: unset;
 }
 
 .main-header {
@@ -58,7 +67,8 @@
 }
 
 .side-bar-scroll-container {
-  overflow: scroll;
+  overflow-y: scroll;
+  z-index: 10;
   @media (min-width: 50rem) {
     padding-bottom: 64px;
   }
@@ -67,20 +77,22 @@
   }
 }
 
-.main-content-wrap {
-  padding-top: 3rem;
-}
-
 .site-footer {
   position: fixed !important;
   border-right: #44434d;
   border-right-width: 1px;
   background-color: $sidebar-color;
   width: 263px;
-
+  display: flex;
+  justify-content: center;
   @media (max-width: 50rem) {
     visibility: hidden;
   }
+}
+
+.site-footer.no-side-bar {
+  justify-content: flex-start;
+  background-color: unset !important;
 }
 
 .site-nav {
@@ -118,6 +130,11 @@ header {
   }
 }
 
+.site-footer-button {
+  padding: 10px;
+  border-radius: 8px;
+  background-color: $base-button-color;
+}
 
 // callouts
 $warning-border-color: if($color-scheme == dark, #ff966e, #FF4500FF);

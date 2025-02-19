@@ -2,8 +2,6 @@
 layout: table_wrappers
 ---
 
-<!doctype html>
-
 <html lang="{{ site.lang | default: 'en-US' }}">
   {% include head.html %}
   <body>
@@ -36,7 +34,28 @@ layout: table_wrappers
       {% if site.search_enabled != false %} {% include
       components/search_footer.html %} {% endif %}
     </div>
+    <div class="site-footer">
+      <button class="site-footer-button">Hide Sidebar</button>
+    </div>
 
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const button = document.querySelector(".site-footer-button");
+        const sidebar = document.querySelector(".side-bar");
+        const footer = document.querySelector(".site-footer");
+        const main = document.querySelector(".main");
+
+        button.addEventListener("click", () => {
+          sidebar.classList.toggle("no-side-bar");
+          footer.classList.toggle("no-side-bar");
+          button.textContent =
+            button.textContent === "Hide Sidebar"
+              ? "Show Sidebar"
+              : "Hide Sidebar";
+          main.classList.toggle("no-side-bar");
+        });
+      });
+    </script>
     {% if site.mermaid %} {% include components/mermaid.html %} {% endif %}
   </body>
 </html>
