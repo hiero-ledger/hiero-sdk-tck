@@ -44,12 +44,12 @@ body.scroll-toggle {
 }
 
 .main-content-wrap {
+  @media (max-width: 50rem) {
+    padding-top: 120px !important;
+  }
   overflow-y: auto;
-  //@media (min-width: 50rem) {
-    padding-top: 60px;
-  //}
-  //padding-top: unset;
-}
+  padding-top: 60px;
+ }
 
 .main-content-wrap.scroll-toggle {
   overflow-y: unset;
