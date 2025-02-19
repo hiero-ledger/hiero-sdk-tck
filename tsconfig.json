@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "CommonJS",
+    "strict": true,
+    "esModuleInterop": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@helpers/*": ["src/utils/helpers/*"],
+      "@services/*": ["src/services/*"],
+      "@constants/*": ["src/utils/constants/*"],
+      "@enums/*": ["src/utils/enums/*"],
+      "@models/*": ["src/utils/models/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/tests/**/*.ts"],
+  "exclude": ["node_modules"]
+}
