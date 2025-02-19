@@ -111,6 +111,87 @@ task generate-mirror-node-models
 
 This command uses `openapi-typescript-codegen` to parse the `mirror-node.yaml` file and generate corresponding TypeScript models in `src/utils/models/mirror-node-models`
 
+## Docker
+
+The TCK is also available as a Docker image, providing an easy way to run tests in an isolated environment.
+
+### Pull the Docker Image
+
+You can pull the pre-built Docker image from DockerHub:
+
+```bash
+docker pull ivaylogarnev/tck-client
+```
+
+### Running Tests
+
+The Docker image supports running tests against both local and testnet environments.
+
+#### Local Network (Default)
+To run tests against a local network:
+```bash
+# Run specific test
+docker run --network host -e TEST=AccountCreate ivaylogarnev/tck-client
+
+# Run all tests
+docker run --network host ivaylogarnev/tck-client
+```
+
+#### Testnet
+To run tests against Hedera Testnet:
+```bash
+docker run --network host \
+  -e NETWORK=testnet \
+  -e OPERATOR_ACCOUNT_ID=your-account-id \
+  -e OPERATOR_ACCOUNT_PRIVATE_KEY=your-private-key \
+  # Run specific test
+  -e TEST=AccountCreate \
+  ivaylogarnev/tck-client
+```
+
+### Available Tests
+Some of the available test options include:
+- AccountCreate
+- AccountUpdate
+- AccountDelete
+- AccountAllowanceDelete
+- AccountAllowanceApprove
+- TokenCreate
+- TokenUpdate
+- TokenDelete
+- TokenBurn
+- TokenMint
+- TokenAssociate
+- TokenDissociate
+- TokenFeeScheduleUpdate
+- TokenGrantKyc
+- TokenRevokeKyc
+- TokenPause
+- TokenUnpause
+- TokenFreeze
+- TokenUnfreeze
+- ALL (runs all tests)
+
+Running an invalid test name will display the complete list of available tests.
+
+### Building the Docker Image Locally
+
+If you want to build the image locally:
+```bash
+docker build -t tck-client .
+```
+
+Then run it using the same commands as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
+
+### Docker additional notes
+
+```bash
+# entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. 
+
+RunTestsInContainer.ts
+```
+
+**Note:** This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the "Install and run" section above.
 
 ## Contributing
 
