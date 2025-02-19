@@ -1,3 +1,7 @@
+---
+title: Test Specifications Template
+nav_exclude: true
+---
 # RequestName - Test specification
 
 ## Description:
