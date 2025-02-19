@@ -12,5 +12,12 @@
       jtd.setTheme(newTheme);
       toggle.textContent = `${isDark ? "Dark" : "Light"} Mode`;
     });
+
+
+    document.querySelector(".site-button").addEventListener("click", () => {
+      document.querySelector(".side-bar").classList.toggle("small-screen-show");
+      document.querySelector(".main-content-wrap").classList.toggle("scroll-toggle");
+      document.querySelector('main').classList.toggle("scroll-toggle");
+    });
   });
 </script>

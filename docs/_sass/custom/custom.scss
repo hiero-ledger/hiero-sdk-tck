@@ -1,9 +1,17 @@
-// noinspection SassScssUnresolvedVariable
+body {
+  overflow-y: scroll;
+}
+body.scroll-toggle {
+  overflow-y: unset;
+}
+
 .side-bar {
   @media (max-width: 50rem) {
     padding-top: 125px;
     width: 100%;
-
+    height: 100vh;
+    position: fixed;
+    display: none;
   }
 
   @media (min-width: 50rem) {
@@ -11,16 +19,21 @@
     min-width: unset !important;
   }
   padding-top: 4rem;
+  overflow-y: scroll;
   background-color: $sidebar-color;
+  z-index: 100;
 }
 
 .side-bar.no-side-bar {
   display: none;
 }
 
+.side-bar.small-screen-show {
+  display: flex;
+}
+
 .main {
   max-width: unset;
-
   @media (min-width: 50rem) {
     margin-left: 264px !important;
   }
@@ -31,10 +44,15 @@
 }
 
 .main-content-wrap {
-  @media (min-width: 50rem) {
+  overflow-y: auto;
+  //@media (min-width: 50rem) {
     padding-top: 60px;
-  }
-  padding-top: unset;
+  //}
+  //padding-top: unset;
+}
+
+.main-content-wrap.scroll-toggle {
+  overflow-y: unset;
 }
 
 .main-header {
@@ -57,7 +75,7 @@
 
 .js-toggle-dark-mode {
   @media (max-width: 50rem) {
-    visibility: hidden
+    visibility: hidden;
   }
 }
 
@@ -67,17 +85,6 @@
   border-width: 0;
   box-shadow: none !important;
   border-radius: 0;
-}
-
-.side-bar-scroll-container {
-  overflow-y: scroll;
-  z-index: 10;
-  @media (min-width: 50rem) {
-    padding-bottom: 64px;
-  }
-  @media (max-width: 50rem) {
-    width: 100%;
-  }
 }
 
 .site-footer {
@@ -140,14 +147,22 @@ header {
 }
 
 // callouts
-$warning-border-color: if($color-scheme == dark, #ff966e, #FF4500FF);
-$warning-background-color: if($color-scheme == dark, #885747FF, #ffd3c7);
-$tip-border-color: if($color-scheme == dark, #93b4f3, #6495EDFF);
+$warning-border-color: if($color-scheme == dark, #ff966e, #ff4500ff);
+$warning-background-color: if($color-scheme == dark, #885747ff, #ffd3c7);
+$tip-border-color: if($color-scheme == dark, #93b4f3, #6495edff);
 $tip-background-color: if($color-scheme == dark, #4d68a8, #dce6ff);
 $note-border-color: if($color-scheme == dark, #ffe794, #ffd53c);
 $note-background-color: if($color-scheme == dark, #80763a, #fffccb);
-$box-shadow-start: if($color-scheme == dark, rgba(159, 159, 159, 0.2), rgba(31, 31, 31, 0.2));
-$box-shadow-end: if($color-scheme == dark, rgba(197, 197, 197, 0.19), rgba(58, 58, 58, 0.19));
+$box-shadow-start: if(
+  $color-scheme == dark,
+  rgba(159, 159, 159, 0.2),
+  rgba(31, 31, 31, 0.2)
+);
+$box-shadow-end: if(
+  $color-scheme == dark,
+  rgba(197, 197, 197, 0.19),
+  rgba(58, 58, 58, 0.19)
+);
 
 .warning {
   border-left: 4px solid $warning-border-color;
@@ -155,7 +170,9 @@ $box-shadow-end: if($color-scheme == dark, rgba(197, 197, 197, 0.19), rgba(58, 5
   padding: 10px;
   margin: 20px 0 20px 0;
   border-radius: 5px;
-  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
+  box-shadow:
+    0 2px 4px 0 $box-shadow-start,
+    0 3px 10px 0 $box-shadow-end;
 }
 
 .tip {
@@ -164,7 +181,9 @@ $box-shadow-end: if($color-scheme == dark, rgba(197, 197, 197, 0.19), rgba(58, 5
   padding: 10px;
   margin: 20px 0 20px 0;
   border-radius: 5px;
-  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
+  box-shadow:
+    0 2px 4px 0 $box-shadow-start,
+    0 3px 10px 0 $box-shadow-end;
 }
 
 .note {
@@ -173,5 +192,7 @@ $box-shadow-end: if($color-scheme == dark, rgba(197, 197, 197, 0.19), rgba(58, 5
   padding: 10px;
   margin: 20px 0 20px 0;
   border-radius: 5px;
-  box-shadow: 0 2px 4px 0 $box-shadow-start, 0 3px 10px 0 $box-shadow-end;
+  box-shadow:
+    0 2px 4px 0 $box-shadow-start,
+    0 3px 10px 0 $box-shadow-end;
 }

@@ -5,9 +5,7 @@ Should not be cached, because nav_footer_custom.html might depend on page. {%-
 endcomment -%}
 
 <div class="side-bar">
-  <div class="side-bar-scroll-container">
-    {% include_cached components/site_nav.html %}
-  </div>
+  {% include_cached components/site_nav.html %}
   {% capture nav_footer_custom %} {%- include nav_footer_custom.html -%} {% endcapture %} {% if nav_footer_custom != "" %} {{ nav_footer_custom }} {% else %}
   <footer class="site-footer">
     This site uses
