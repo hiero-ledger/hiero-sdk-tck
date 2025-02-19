@@ -1,0 +1,33 @@
+title: Hiero TCK Docs
+description: TCK docs for Hiero
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+
+url: https://hiero-ledger.github.io/hiero-sdk-tck
+
+aux_links:
+  Github Repository: https://github.com/hiero-ledger/hiero-sdk-tck
+
+markdown: GFM
+
+callouts_level: quiet # or loud
+callouts:
+  highlight:
+    color: yellow
+  important:
+    title: Important
+    color: blue
+  new:
+    title: New
+    color: green
+  note:
+    title: Note
+    color: purple
+  warning:
+    title: Warning
+    color: red
+
+sass:
+  load_paths:
+    - _sass

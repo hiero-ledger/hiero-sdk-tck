@@ -1,0 +1,68 @@
+---
+layout: table_wrappers
+---
+
+<html lang="{{ site.lang | default: 'en-US' }}">
+  {% include head.html %}
+  <body>
+  <noscript>
+    <style>
+        body {
+            opacity: 1 !important; /* Show content if JS is off */
+        }
+    </style>
+  </noscript>
+    <header>{% include components/header.html %}</header>
+    <a class="skip-to-main" href="#main-content">Skip to main content</a>
+    {% include icons/icons.html %} {% if page.nav_enabled == true %} {% include
+    components/sidebar.html %} {% elsif layout.nav_enabled == true and
+    page.nav_enabled == nil %} {% include components/sidebar.html %} {% elsif
+    site.nav_enabled != false and layout.nav_enabled == nil and page.nav_enabled
+    == nil %} {% include components/sidebar.html %} {% endif %}
+    <div class="main" id="top">
+      <div class="main-content-wrap">
+        <div id="main-content" class="main-content">
+          <main>
+            {% if site.heading_anchors != false %}
+            <!-- prettier-ignore -->
+            {% include vendor/anchor_headings.html
+            html=content
+            beforeHeading="true"
+            anchorBody='<svg viewBox="0 0 16 16" aria-hidden="true">
+              <use xlink:href="#svg-link"></use></svg
+            >' anchorClass="anchor-heading"
+            anchorAttrs='aria-labelledby="%html_id%"' %} {% else %} {{ content
+            }} {% endif %} {% if page.has_toc != false %} {% include
+            components/children_nav.html %} {% endif %}
+          </main>
+          {% include components/footer.html %}
+        </div>
+      </div>
+      {% if site.search_enabled != false %} {% include
+      components/search_footer.html %} {% endif %}
+    </div>
+    <div class="site-footer">
+      <button class="site-footer-button">Hide Sidebar</button>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const button = document.querySelector(".site-footer-button");
+        const sidebar = document.querySelector(".side-bar");
+        const footer = document.querySelector(".site-footer");
+        const main = document.querySelector(".main");
+
+        button.addEventListener("click", () => {
+          sidebar.classList.toggle("no-side-bar");
+          footer.classList.toggle("no-side-bar");
+          button.textContent =
+            button.textContent === "Hide Sidebar"
+              ? "Show Sidebar"
+              : "Hide Sidebar";
+          main.classList.toggle("no-side-bar");
+        });
+      });
+    </script>
+    {% if site.mermaid %} {% include components/mermaid.html %} {% endif %}
+  </body>
+</html>

@@ -1,3 +1,8 @@
+---
+title: Token Pause Transaction
+parent: Token Service
+nav_order: 11
+---
 # TokenPauseTransaction - Test specification
 
 ## Description:

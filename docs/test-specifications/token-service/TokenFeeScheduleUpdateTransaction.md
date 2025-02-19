@@ -1,3 +1,8 @@
+---
+title: Token Fee Schedule Update Transaction
+parent: Token Service
+nav_order: 7
+---
 # TokenFeeScheduleUpdateTransaction - Test specification
 
 ## Description:
