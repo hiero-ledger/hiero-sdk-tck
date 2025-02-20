@@ -1,0 +1,23 @@
+<button class="btn js-toggle-dark-mode">Dark Mode</button>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.querySelector(".js-toggle-dark-mode");
+
+    toggle.addEventListener("click", () => {
+      const isDark = localStorage.getItem("theme") === "dark";
+      const newTheme = isDark ? "light" : "dark";
+
+      localStorage.setItem("theme", newTheme);
+      jtd.setTheme(newTheme);
+      toggle.textContent = `${isDark ? "Dark" : "Light"} Mode`;
+    });
+
+
+    document.querySelector(".site-button").addEventListener("click", () => {
+      document.querySelector(".side-bar").classList.toggle("small-screen-show");
+      document.querySelector(".main-content-wrap").classList.toggle("scroll-toggle");
+      document.querySelector('body').classList.toggle("scroll-toggle");
+    });
+  });
+</script>

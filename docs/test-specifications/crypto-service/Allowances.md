@@ -1,3 +1,8 @@
+---
+title: Allowances
+parent: Crypto Service
+nav_order: 7
+---
 # Allowance
 
 Allowances can be granted to accounts to allow that account to spend on behalf of another account. These allowances can be granted or removed via an `AccountApproveAllowanceTransaction` or an `AccountAllowanceDeleteTransaction`.

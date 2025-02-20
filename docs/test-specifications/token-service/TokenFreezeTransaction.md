@@ -1,3 +1,8 @@
+---
+title: Token Freeze Transaction
+parent: Token Service
+nav_order: 8
+---
 # TokenFreezeTransaction - Test specification
 
 ## Description:
