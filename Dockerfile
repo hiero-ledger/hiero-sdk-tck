@@ -9,7 +9,6 @@ RUN npm ci
 
 # Environment Variables
 ENV NETWORK=local \
-    RUNNING_IN_DOCKER=true \
     TEST="ALL" 
 
 # Copy the rest of the application

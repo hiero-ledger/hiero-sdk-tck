@@ -131,10 +131,13 @@ The Docker image supports running tests against both local and testnet environme
 To run tests against a local network:
 ```bash
 # Run specific test
-docker run --network host -e TEST=AccountCreate ivaylogarnev/tck-client
+docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/tck-client
+
+#the default port is 8544
 
 # Run all tests
-docker run --network host ivaylogarnev/tck-client
+docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
+
 ```
 
 #### Testnet
@@ -144,6 +147,7 @@ docker run --network host \
   -e NETWORK=testnet \
   -e OPERATOR_ACCOUNT_ID=your-account-id \
   -e OPERATOR_ACCOUNT_PRIVATE_KEY=your-private-key \
+  -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} 
   # Run specific test
   -e TEST=AccountCreate \
   ivaylogarnev/tck-client
