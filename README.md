@@ -140,6 +140,17 @@ docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${Y
 
 ```
 
+### Configuring any custom local network
+To run tests against any other custom local network, you need to set the following environment variables:
+
+| Environment Variable         | Description                              |
+|------------------------------|------------------------------------------     |
+| `OPERATOR_ACCOUNT_ID`        | The account ID of the operator           |
+| `OPERATOR_ACCOUNT_PRIVATE_KEY` | The private key of the operator account |
+| `JSON_RPC_SERVER_URL`        | The URL of the JSON-RPC server           |
+
+For a complete list of configurable environment variables, refer to the `.env.custom_node` file. This file contains default values and descriptions for each variable, which can be adjusted to fit your custom network setup.
+
 #### Testnet
 To run tests against Hedera Testnet:
 ```bash
@@ -199,7 +210,7 @@ RunTestsInContainer.ts
 
 ## Contributing
 
-Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
