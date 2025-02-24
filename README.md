@@ -131,11 +131,25 @@ The Docker image supports running tests against both local and testnet environme
 To run tests against a local network:
 ```bash
 # Run specific test
-docker run --network host -e TEST=AccountCreate ivaylogarnev/tck-client
+docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/tck-client
+
+#the default port is 8544
 
 # Run all tests
-docker run --network host ivaylogarnev/tck-client
+docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
+
 ```
+
+### Configuring any custom local network
+To run tests against any other custom local network, you need to set the following environment variables:
+
+| Environment Variable         | Description                              |
+|------------------------------|------------------------------------------     |
+| `OPERATOR_ACCOUNT_ID`        | The account ID of the operator           |
+| `OPERATOR_ACCOUNT_PRIVATE_KEY` | The private key of the operator account |
+| `JSON_RPC_SERVER_URL`        | The URL of the JSON-RPC server           |
+
+For a complete list of configurable environment variables, refer to the `.env.custom_node` file. This file contains default values and descriptions for each variable, which can be adjusted to fit your custom network setup.
 
 #### Testnet
 To run tests against Hedera Testnet:
@@ -144,6 +158,7 @@ docker run --network host \
   -e NETWORK=testnet \
   -e OPERATOR_ACCOUNT_ID=your-account-id \
   -e OPERATOR_ACCOUNT_PRIVATE_KEY=your-private-key \
+  -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} 
   # Run specific test
   -e TEST=AccountCreate \
   ivaylogarnev/tck-client
@@ -195,7 +210,7 @@ RunTestsInContainer.ts
 
 ## Contributing
 
-Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
