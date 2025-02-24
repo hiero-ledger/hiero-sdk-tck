@@ -1,19 +1,12 @@
-name: "PR Formatting"
+name: CI
+
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - "*" # Triggers on push to any branch
   pull_request:
-    types:
-      - opened
-      - reopened
-      - edited
-      - synchronize
-
-defaults:
-  run:
-    shell: bash
-
-permissions:
-  contents: read
+    branches:
+      - main # Triggers on pull requests to the main branch
 
 jobs:
   build:
@@ -25,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "14" # or the version you are using
+          node-version: "21"
 
       - name: Install dependencies
         run: npm install
