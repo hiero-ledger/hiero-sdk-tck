@@ -108,3 +108,5 @@ dist
 .vscode
 
 mochawesome-report/
+/docs/_site/
+/docs/Gemfile.lock

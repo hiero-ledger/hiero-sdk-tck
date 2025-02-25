@@ -1,3 +1,8 @@
+---
+title: Token Update Transaction
+parent: Token Service
+nav_order: 15
+---
 # TokenUpdateTransaction - Test specification
 
 ## Description:
