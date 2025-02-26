@@ -148,6 +148,17 @@ docker run --network host \
   -e TEST=AccountCreate \
   ivaylogarnev/tck-client
 ```
+### macOS Docker setup
+macOS lacks native support for Docker due to its lack of native support for Linux.
+You'll have to do two things to run the TCK as a Docker image on macOS.
+
+1. Download the Docker Desktop app (https://docs.docker.com/desktop/setup/install/mac-install/)
+2. Enable Host Networking; after downloading the Docker Desktop app, go to  
+   Settings -> Resources -> Network, turn on "Enable Host Networking."
+   (I'd recommend reducing Docker's access to memory, RAM, and other various resources; by default,
+   it has access to more resources than most Macs have.)
+
+Once you download Docker Desktop and enable Host Networking, you can run the test commands in the CLI as shown above.
 
 ### Available Tests
 Some of the available test options include:
