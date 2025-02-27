@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ExchangeRate = {
-    cent_equivalent?: number;
-    expiration_time?: number;
-    hbar_equivalent?: number;
+  cent_equivalent?: number;
+  expiration_time?: number;
+  hbar_equivalent?: number;
 };
-

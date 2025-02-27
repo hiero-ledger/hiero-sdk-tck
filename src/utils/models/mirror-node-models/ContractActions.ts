@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContractAction } from './ContractAction';
+import type { ContractAction } from "./ContractAction";
 export type ContractActions = Array<ContractAction>;

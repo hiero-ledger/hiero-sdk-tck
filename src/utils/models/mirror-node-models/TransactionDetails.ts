@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TransactionDetail } from './TransactionDetail';
+import type { TransactionDetail } from "./TransactionDetail";
 export type TransactionDetails = Array<TransactionDetail>;

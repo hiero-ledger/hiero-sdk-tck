@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CryptoAllowance } from './CryptoAllowance';
+import type { CryptoAllowance } from "./CryptoAllowance";
 export type CryptoAllowances = Array<CryptoAllowance>;

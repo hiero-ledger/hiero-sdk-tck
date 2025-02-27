@@ -2,6 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Allowance } from './Allowance';
+import type { Allowance } from "./Allowance";
 export type CryptoAllowance = Allowance;
-

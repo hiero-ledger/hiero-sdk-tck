@@ -2,15 +2,14 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { EntityId } from "./EntityId";
 /**
  * A staking reward transfer
  */
 export type StakingRewardTransfer = {
-    account: EntityId;
-    /**
-     * The number of tinybars awarded
-     */
-    amount: number;
+  account: EntityId;
+  /**
+   * The number of tinybars awarded
+   */
+  amount: number;
 };
-

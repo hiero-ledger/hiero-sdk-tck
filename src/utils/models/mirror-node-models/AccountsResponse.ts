@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Accounts } from './Accounts';
-import type { Links } from './Links';
+import type { Accounts } from "./Accounts";
+import type { Links } from "./Links";
 export type AccountsResponse = {
-    accounts: Accounts;
-    links: Links;
+  accounts: Accounts;
+  links: Links;
 };
-
