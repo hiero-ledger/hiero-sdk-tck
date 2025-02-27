@@ -3592,7 +3592,7 @@ describe("TransferTransaction", function () {
     let tokenId: string,
       tokenKey: string,
       supplyKey: string,
-      serialNumber: string;
+      serialNumbers: string[];
     beforeEach(async function () {
       tokenKey = (
         await JSONRPCRequest(this, "generateKey", {
@@ -3623,15 +3623,15 @@ describe("TransferTransaction", function () {
         })
       ).tokenId;
 
-      serialNumber = (
+      serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
           tokenId,
-          metadata: ["1234"],
+          metadata: ["1234", "5678", "90ab"],
           commonTransactionParams: {
             signers: [supplyKey],
           },
         })
-      ).serialNumbers[0];
+      ).serialNumbers;
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -3640,7 +3640,7 @@ describe("TransferTransaction", function () {
               senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
               receiverAccountId: senderAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -3658,7 +3658,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -3668,10 +3668,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -3684,7 +3684,7 @@ describe("TransferTransaction", function () {
                 senderAccountId: "123.456.789",
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3706,7 +3706,7 @@ describe("TransferTransaction", function () {
                 senderAccountId: "",
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3732,7 +3732,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: "123.456.789",
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3757,7 +3757,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: "",
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3794,7 +3794,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3819,7 +3819,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId: "123.456.789",
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3844,7 +3844,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId: "",
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3880,7 +3880,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3951,7 +3951,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3976,7 +3976,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -3989,7 +3989,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Transfers an NFT from a sender account to a receiver account without signing", async function () {
+    it("(#13) Transfers an NFT from a sender account that doesn't possess the NFT to a receiver account", async function () {
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
           {
@@ -3997,7 +3997,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId: process.env.OPERATOR_ACCOUNT_ID,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -4014,7 +4014,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4046,7 +4046,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -4056,10 +4056,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -4080,7 +4080,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4105,7 +4105,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: senderAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4152,7 +4152,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4207,7 +4207,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4253,7 +4253,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4285,7 +4285,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -4295,10 +4295,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -4339,7 +4339,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
           ],
@@ -4355,7 +4355,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#22) Transfers an NFT with an inclusive fee from a sender account to a receiver account", async function () {
+    it("(#22) Transfers an NFT with a royalty fee from a sender account to a receiver account", async function () {
       const feeCollectorAccountKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
@@ -4418,7 +4418,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
           {
@@ -4440,10 +4440,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
       await retryOnError(async () =>
         verifyHbarBalance(feeCollectorAccountId, feeAmount),
@@ -4522,7 +4522,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
             {
@@ -4550,7 +4550,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#24) Transfers an NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
+    it("(#24) Transfers an NFT with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
       const feeScheduleKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
@@ -4595,7 +4595,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
             },
             {
@@ -4620,6 +4620,844 @@ describe("TransferTransaction", function () {
           err.data.status,
           "INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE",
         );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#25) Transfers NFTs from several sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId2,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId3,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId2, tokenId, serialNumbers[1], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId3, tokenId, serialNumbers[2], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[1], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[2], true),
+      );
+    });
+
+    it("(#26) Transfers NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: "123.456.789",
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#27) Transfers NFTs from several sender accounts to one receiver account with a sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: "",
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#28) Transfers NFTs from several sender accounts to one receiver account with a sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: senderAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [senderPrivateKey3],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#29) Transfers NFTs from several sender accounts to one receiver account with one not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#30) Transfers NFTs from several sender accounts to one receiver account with an invalid serial number", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: "1000000",
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NFT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#31) Transfers NFTs from several sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId2,
+              receiverAccountId: receiverAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId3,
+              receiverAccountId: receiverAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId2, tokenId, serialNumbers[1], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId3, tokenId, serialNumbers[2], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId2, tokenId, serialNumbers[1], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId3, tokenId, serialNumbers[2], true),
+      );
+    });
+
+    it("(#32) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: "123.456.789",
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#33) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: "",
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#34) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: receiverAccountId3,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
 
@@ -5948,6 +6786,1160 @@ describe("TransferTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
+    it("(#28) Transfers an amount of fungible token from several sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount * 3;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+              decimals,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+    });
+
+    it("(#29) Transfers an amount of fungible token from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "123.456.789",
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#30) Transfers an amount of fungible token from several sender accounts to one receiver account with a sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#31) Transfers an amount of fungible token from several sender accounts to one receiver account with a sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: senderAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [senderPrivateKey3],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#32) Transfers an amount of fungible token from several sender accounts to one receiver account with one not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#33) Transfers an amount of fungible token from several sender accounts to one receiver account with the amounts not adding up", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 2.5),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#34) Transfers an amount of fungible token from several sender accounts to one receiver account with one incorrect decimals amount", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals: 3,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "UNEXPECTED_TOKEN_DECIMALS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#35) Transfers an amount of fungible token from several sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount / 2;
+      const receiverAmount2 = amount * 1.5;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId2,
+              tokenId,
+              amount: String(receiverAmount2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId2, tokenId, receiverAmount2),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId3, tokenId, amount),
+      );
+    });
+
+    it("(#36) Transfers an amount of fungible token from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "123.456.798",
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#37) Transfers an amount of fungible token from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#38) Transfers an amount of fungible token from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId3,
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("AddApprovedHbarTransfer", function () {
@@ -6529,6 +8521,723 @@ describe("TransferTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.data.status, "SPENDER_DOES_NOT_HAVE_ALLOWANCE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#18) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAmount = amount * 3;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            hbar: {
+              accountId: senderAccountId,
+              amount: amountNegatedStr,
+            },
+            approved: true,
+          },
+          {
+            hbar: {
+              accountId: senderAccountId2,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: senderAccountId3,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: receiverAccountId,
+              amount: String(receiverAmount),
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () => verifyHbarBalance(senderAccountId, 0));
+      await retryOnError(async () => verifyHbarBalance(senderAccountId2, 0));
+      await retryOnError(async () => verifyHbarBalance(senderAccountId3, 0));
+      await retryOnError(async () =>
+        verifyHbarBalance(receiverAccountId, receiverAmount),
+      );
+    });
+
+    it("(#19) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account with an approved sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: "123.456.789",
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#20) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account with an approved sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: "",
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#21) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account with an approved sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: spenderAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [spenderPrivateKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#22) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account with an approved sender not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#23) Transfers an approved amount of hbar from a sender account and other sender accounts to one receiver account with the amounts not adding up", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: String(amount * 2.5),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#24) Transfers an approved amount of hbar from a sender account and other sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            hbar: {
+              accountId: senderAccountId,
+              amount: amountNegatedStr,
+            },
+            approved: true,
+          },
+          {
+            hbar: {
+              accountId: senderAccountId2,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: senderAccountId3,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: receiverAccountId,
+              amount: amountStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: receiverAccountId2,
+              amount: amountStr,
+            },
+          },
+          {
+            hbar: {
+              accountId: receiverAccountId3,
+              amount: amountStr,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () => verifyHbarBalance(senderAccountId, 0));
+      await retryOnError(async () => verifyHbarBalance(senderAccountId2, 0));
+      await retryOnError(async () => verifyHbarBalance(senderAccountId3, 0));
+      await retryOnError(async () =>
+        verifyHbarBalance(receiverAccountId, amount),
+      );
+      await retryOnError(async () =>
+        verifyHbarBalance(receiverAccountId2, amount),
+      );
+      await retryOnError(async () =>
+        verifyHbarBalance(receiverAccountId3, amount),
+      );
+    });
+
+    it("(#25) Transfers an approved amount of hbar from a sender account and other sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId2,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: "123.456.789",
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#26) Transfers an approved amount of hbar from a sender account and other sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId2,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: "",
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#27) Transfers an approved amount of hbar from a sender account and other sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          initialBalance: amountStr,
+        })
+      ).accountId;
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              hbar: {
+                accountId: senderAccountId2,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: senderAccountId3,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId2,
+                amount: amountStr,
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId3,
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
 
@@ -8014,13 +10723,1051 @@ describe("TransferTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
+    it("(#30) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount * 3;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+            approved: true,
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+    });
+
+    it("(#31) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: "123.456.789",
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#32) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#33) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: spenderAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [spenderPrivateKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#34) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderPrivateKey,
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#35) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with the amounts not adding up", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 2.5),
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderPrivateKey,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#36) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount / 2;
+      const receiverAmount2 = amount * 1.5;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+            approved: true,
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId2,
+              tokenId,
+              amount: String(receiverAmount2),
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId2, tokenId, receiverAmount2),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId3, tokenId, amount),
+      );
+    });
+
+    it("(#37) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+              },
+            },
+            {
+              token: {
+                accountId: "123.456.798",
+                tokenId,
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#38) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+              },
+            },
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#39) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId3,
+                tokenId,
+                amount: amountStr,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("AddApprovedNftTransfer", function () {
     let tokenId: string,
       tokenKey: string,
       supplyKey: string,
-      serialNumber: string,
+      serialNumbers: string[],
       spenderAccountId: string,
       spenderPrivateKey: string;
     beforeEach(async function () {
@@ -8053,7 +11800,7 @@ describe("TransferTransaction", function () {
         })
       ).tokenId;
 
-      serialNumber = (
+      serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
           tokenId,
           metadata: ["1234"],
@@ -8061,7 +11808,7 @@ describe("TransferTransaction", function () {
             signers: [supplyKey],
           },
         })
-      ).serialNumbers[0];
+      ).serialNumbers;
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -8127,7 +11874,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
             approved: true,
           },
@@ -8139,10 +11886,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -8155,7 +11902,7 @@ describe("TransferTransaction", function () {
                 senderAccountId: "123.456.789",
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8178,7 +11925,7 @@ describe("TransferTransaction", function () {
                 senderAccountId: "",
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8205,7 +11952,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: "123.456.789",
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8232,7 +11979,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: "",
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8271,7 +12018,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8298,7 +12045,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId: "123.456.789",
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8325,7 +12072,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId: "",
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8363,7 +12110,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8438,7 +12185,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8465,7 +12212,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8490,7 +12237,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId: process.env.OPERATOR_ACCOUNT_ID,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
@@ -8507,7 +12254,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8541,7 +12288,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
             approved: true,
           },
@@ -8553,10 +12300,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -8577,7 +12324,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8604,7 +12351,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId: senderAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8653,7 +12400,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8710,7 +12457,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8758,7 +12505,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8792,7 +12539,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
             approved: true,
           },
@@ -8804,10 +12551,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
     });
 
@@ -8848,7 +12595,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -8944,7 +12691,7 @@ describe("TransferTransaction", function () {
               senderAccountId,
               receiverAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
             },
             approved: true,
           },
@@ -8969,10 +12716,10 @@ describe("TransferTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumber, false),
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
       await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumber, true),
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
       );
       await retryOnError(async () =>
         verifyHbarBalance(feeCollectorAccountId, feeAmount),
@@ -9051,7 +12798,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -9141,7 +12888,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -9184,7 +12931,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -9210,7 +12957,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -9233,7 +12980,7 @@ describe("TransferTransaction", function () {
           {
             ownerAccountId: senderAccountId,
             tokenId,
-            serialNumbers: [serialNumber],
+            serialNumbers,
           },
         ],
         commonTransactionParams: {
@@ -9249,7 +12996,7 @@ describe("TransferTransaction", function () {
                 senderAccountId,
                 receiverAccountId,
                 tokenId,
-                serialNumber,
+                serialNumber: serialNumbers[0],
               },
               approved: true,
             },
@@ -9261,6 +13008,910 @@ describe("TransferTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.data.status, "SPENDER_DOES_NOT_HAVE_ALLOWANCE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#28) Transfers an approved NFT from a sender account and other sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[0],
+            },
+            approved: true,
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId2,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId3,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId2, tokenId, serialNumbers[1], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId3, tokenId, serialNumbers[2], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[1], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[2], true),
+      );
+    });
+
+    it("(#29) Transfers an approved NFT from a sender account and other sender accounts to one receiver account with an approved sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId: "123.456.789",
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#30) Transfers an approved NFT from a sender account and other sender accounts to one receiver account with an approved sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId: "",
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: "",
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#31) Transfers an approved NFT from a sender account and other sender accounts to one receiver account with an approved sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: spenderAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [spenderPrivateKey],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#32) Transfers an approved NFT from a sender account and other sender accounts to one receiver account with an approved sender not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#33) Transfers an approved NFT from a sender account and other sender accounts to one receiver account with an invalid serial number", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: "1000000",
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NFT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#34) Transfers an approved NFT from a sender account and other sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[0],
+            },
+            approved: true,
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId2,
+              receiverAccountId: receiverAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: senderAccountId3,
+              receiverAccountId: receiverAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId2, tokenId, serialNumbers[1], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId3, tokenId, serialNumbers[2], false),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId2, tokenId, serialNumbers[1], true),
+      );
+      await retryOnError(async () =>
+        verifyNftBalance(receiverAccountId3, tokenId, serialNumbers[2], true),
+      );
+    });
+
+    it("(#35) Transfers an approved NFT from a sender account and other sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: "123.456.789",
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#36) Transfers an approved NFT from a sender account and other sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: "",
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#37) Transfers an approved NFT from a sender account and other sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+              approved: true,
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: receiverAccountId3,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionid: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
 
@@ -10836,6 +15487,1121 @@ describe("TransferTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.data.status, "SPENDER_DOES_NOT_HAVE_ALLOWANCE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#31) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount * 3;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+            approved: true,
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+              decimals,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+    });
+
+    it("(#32) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: "123.456.789",
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#33) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#34) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: spenderAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [spenderPrivateKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#35) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with an approved sender not signing", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 3),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderPrivateKey,
+            signers: [senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#36) Transfers an approved amount of fungible token from a sender account and other sender accounts to one receiver account with the amounts not adding up", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount * 2.5),
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderPrivateKey,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#37) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      const receiverAmount = amount / 2;
+      const receiverAmount2 = amount * 1.5;
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+            approved: true,
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountNegatedStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId,
+              tokenId,
+              amount: String(receiverAmount),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId2,
+              tokenId,
+              amount: String(receiverAmount2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: receiverAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          transactionId: spenderAccountId,
+          signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+        },
+      });
+
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId2, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(senderAccountId3, tokenId, 0),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId2, tokenId, receiverAmount2),
+      );
+      await retryOnError(async () =>
+        verifyTokenBalance(receiverAccountId3, tokenId, amount),
+      );
+    });
+
+    it("(#38) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+              approved: true,
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "123.456.798",
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#39) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that is empty", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: "",
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#40) Transfers an approved amount of fungible token from a sender account and other sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: String(-amount * 2),
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId2,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+          {
+            token: {
+              accountId: senderAccountId3,
+              tokenId,
+              amount: amountStr,
+              decimals,
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "transferCrypto", {
+          transfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId2,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: senderAccountId3,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId,
+                tokenId,
+                amount: String(amount / 2),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId2,
+                tokenId,
+                amount: String(amount * 1.5),
+                decimals,
+              },
+            },
+            {
+              token: {
+                accountId: receiverAccountId3,
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
+            },
+          ],
+          commonTransactionParams: {
+            transactionId: spenderAccountId,
+            signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
       }
 
