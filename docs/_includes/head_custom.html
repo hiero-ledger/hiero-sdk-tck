@@ -1,0 +1,11 @@
+<!-- Theme persistence script -->
+<script>
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    jtd.setTheme("dark");
+    localStorage.setItem("theme", "dark");
+  }
+  else {
+    jtd.setTheme("light");
+    localStorage.setItem("theme", "light");
+  }
+</script>

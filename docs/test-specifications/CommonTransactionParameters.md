@@ -1,3 +1,7 @@
+---
+title: Common Transaction Parameters
+nav_order: 3
+---
 # Common Transaction Parameters
 
 There are common parameters that can be set for all Hiero transaction types. This document specifies a common JSON object that should be added to all transactions that encapsulates these common parameters.

@@ -1,3 +1,8 @@
+---
+title: Token Burn Transaction
+parent: Token Service
+nav_order: 3
+---
 # TokenBurnTransaction - Test specification
 
 ## Description:
