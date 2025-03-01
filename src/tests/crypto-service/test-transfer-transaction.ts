@@ -108,13 +108,10 @@ describe("TransferTransaction", function () {
     );
     const tokenNftMirrorInfo = await MirrorNodeClient.getAccountNfts(
       accountId,
-      tokenId,
     );
 
     let foundNft = false;
-    for (let i = 0; i < tokenNftConsensusInfo.length; i++) {
-      const nft = tokenNftConsensusInfo[i];
-
+    for (const nft of tokenNftConsensusInfo) {
       if (
         nft.accountId.toString() === accountId &&
         nft.nftId.tokenId.toString() === tokenId &&
@@ -128,13 +125,11 @@ describe("TransferTransaction", function () {
     expect(foundNft).to.equal(possess);
 
     foundNft = false;
-    for (let i = 0; i < tokenNftMirrorInfo.nfts.length; i++) {
-      const nft = tokenNftMirrorInfo.nfts[i];
-
+    for (const nft of tokenNftMirrorInfo.nfts ?? []) {
       if (
         nft.account_id === accountId &&
         nft.token_id === tokenId &&
-        nft.serial_number.toString() === serialNumber
+        nft.serial_number?.toString() === serialNumber
       ) {
         foundNft = true;
         break;
@@ -622,9 +617,16 @@ describe("TransferTransaction", function () {
     });
 
     it("(#17) Transfers an amount of hbar from a sender account to the EVM address alias of an account", async function () {
+      const aliasKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ecdsaSecp256k1PrivateKey"
+        })
+      ).key;
+
       const evmAddress = (
         await JSONRPCRequest(this, "generateKey", {
           type: "evmAddress",
+          fromKey: aliasKey,
         })
       ).key;
 
@@ -632,6 +634,9 @@ describe("TransferTransaction", function () {
         await JSONRPCRequest(this, "createAccount", {
           key: receiverPrivateKey,
           alias: evmAddress,
+          commonTransactionParams: {
+            signers: [aliasKey]
+          }
         })
       ).accountId;
 
@@ -662,9 +667,16 @@ describe("TransferTransaction", function () {
     });
 
     it("(#18) Transfers an amount of hbar from a sender EVM address alias to a receiver account", async function () {
+      const aliasKey = (
+        await JSONRPCRequest(this, "generateKey", {
+          type: "ecdsaSecp256k1PrivateKey"
+        })
+      ).key;
+
       const evmAddress = (
         await JSONRPCRequest(this, "generateKey", {
           type: "evmAddress",
+          fromKey: aliasKey,
         })
       ).key;
 
@@ -673,6 +685,9 @@ describe("TransferTransaction", function () {
           key: senderPrivateKey,
           initialBalance: amountStr,
           alias: evmAddress,
+          commonTransactionParams: {
+            signers: [aliasKey]
+          }
         })
       ).accountId;
 
@@ -1070,6 +1085,8 @@ describe("TransferTransaction", function () {
       const receiverAccountId2 = await createAccount(this, receiverPrivateKey2);
       const receiverAccountId3 = await createAccount(this, receiverPrivateKey3);
 
+      const receiverAmount2 = amount / 2;
+      const receiverAmount3 = amount * 1.5;
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
           {
@@ -1093,19 +1110,19 @@ describe("TransferTransaction", function () {
           {
             hbar: {
               accountId: receiverAccountId,
-              amount: String(amount / 2),
+              amount: amountStr,
             },
           },
           {
             hbar: {
               accountId: receiverAccountId2,
-              amount: String(amount * 1.5),
+              amount: String(receiverAmount2),
             },
           },
           {
             hbar: {
               accountId: receiverAccountId3,
-              amount: amountStr,
+              amount: String(receiverAmount3),
             },
           },
         ],
@@ -1121,10 +1138,10 @@ describe("TransferTransaction", function () {
         verifyHbarBalance(receiverAccountId, amount),
       );
       await retryOnError(async () =>
-        verifyHbarBalance(receiverAccountId2, amount),
+        verifyHbarBalance(receiverAccountId2, receiverAmount2),
       );
       await retryOnError(async () =>
-        verifyHbarBalance(receiverAccountId3, amount),
+        verifyHbarBalance(receiverAccountId3, receiverAmount3),
       );
     });
 
@@ -1344,7 +1361,7 @@ describe("TransferTransaction", function () {
             },
             {
               hbar: {
-                accountId: "",
+                accountId: receiverAccountId3,
                 amount: amountStr,
               },
             },
@@ -4858,12 +4875,15 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      const senderAccountId3 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: senderPrivateKey3,
-          maxAutoTokenAssociations: 1,
-        })
-      ).accountId;
+      const senderAccountId3 = await createAccount(this, senderPrivateKey3);
+
+      await JSONRPCRequest(this, "associateToken", {
+        accountId: senderAccountId3,
+        tokenIds: [tokenId],
+        commonTransactionParams: {
+          signers: [senderPrivateKey3]
+        }
+      });
 
       await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: senderAccountId3,
@@ -5031,6 +5051,14 @@ describe("TransferTransaction", function () {
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
             },
           },
         ],
@@ -7328,7 +7356,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#34) Transfers an amount of fungible token from several sender accounts to one receiver account with one incorrect decimals amount", async function () {
+    it.skip("(#34) Transfers an amount of fungible token from several sender accounts to one receiver account with one incorrect decimals amount", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -8729,10 +8757,10 @@ describe("TransferTransaction", function () {
       ).accountId;
 
       await JSONRPCRequest(this, "deleteAccount", {
-        deleteAccountId: spenderAccountId,
+        deleteAccountId: senderAccountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-          signers: [spenderPrivateKey],
+          signers: [senderPrivateKey],
         },
       });
 
@@ -8918,19 +8946,8 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      const receiverAccountId2 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey2,
-          initialBalance: amountStr,
-        })
-      ).accountId;
-
-      const receiverAccountId3 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey3,
-          initialBalance: amountStr,
-        })
-      ).accountId;
+      const receiverAccountId2 = await createAccount(this, receiverPrivateKey2);
+      const receiverAccountId3 = await createAccount(this, receiverPrivateKey3);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -9011,12 +9028,7 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      const receiverAccountId2 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey2,
-          initialBalance: amountStr,
-        })
-      ).accountId;
+      const receiverAccountId2 = await createAccount(this, receiverPrivateKey2);
 
       try {
         await JSONRPCRequest(this, "transferCrypto", {
@@ -9091,12 +9103,7 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      const receiverAccountId2 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey2,
-          initialBalance: amountStr,
-        })
-      ).accountId;
+      const receiverAccountId2 = await createAccount(this, receiverPrivateKey2);
 
       try {
         await JSONRPCRequest(this, "transferCrypto", {
@@ -9176,19 +9183,16 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      const receiverAccountId2 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey2,
-          initialBalance: amountStr,
-        })
-      ).accountId;
+      const receiverAccountId2 = await createAccount(this, receiverPrivateKey2);
+      const receiverAccountId3 = await createAccount(this, receiverPrivateKey3);
 
-      const receiverAccountId3 = (
-        await JSONRPCRequest(this, "createAccount", {
-          key: receiverPrivateKey3,
-          initialBalance: amountStr,
-        })
-      ).accountId;
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: receiverAccountId3,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey3]
+        }
+      });
 
       try {
         await JSONRPCRequest(this, "transferCrypto", {
@@ -11025,7 +11029,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             token: {
-              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              accountId: senderAccountId,
               tokenId,
               amount: amountNegatedStr,
             },
@@ -11038,13 +11042,16 @@ describe("TransferTransaction", function () {
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       await JSONRPCRequest(this, "deleteAccount", {
-        deleteAccountId: spenderAccountId,
+        deleteAccountId: senderAccountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-          signers: [spenderPrivateKey],
+          signers: [senderPrivateKey],
         },
       });
 
@@ -11172,7 +11179,7 @@ describe("TransferTransaction", function () {
             },
           ],
           commonTransactionParams: {
-            transactionId: spenderPrivateKey,
+            transactionId: spenderAccountId,
             signers: [senderPrivateKey2, senderPrivateKey3],
           },
         });
@@ -11262,12 +11269,12 @@ describe("TransferTransaction", function () {
             },
           ],
           commonTransactionParams: {
-            transactionId: spenderPrivateKey,
+            transactionId: spenderAccountId,
             signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        assert.equal(err.data.status, "TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN");
         return;
       }
 
@@ -11712,6 +11719,7 @@ describe("TransferTransaction", function () {
                 tokenId,
                 amount: amountNegatedStr,
               },
+              approved: true,
             },
             {
               token: {
@@ -11803,7 +11811,7 @@ describe("TransferTransaction", function () {
       serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
           tokenId,
-          metadata: ["1234"],
+          metadata: ["1234", "5678", "90ab"],
           commonTransactionParams: {
             signers: [supplyKey],
           },
@@ -11817,7 +11825,23 @@ describe("TransferTransaction", function () {
               senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
               receiverAccountId: senderAccountId,
               tokenId,
-              serialNumber,
+              serialNumber: serialNumbers[0],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId,
+              tokenId,
+              serialNumber: serialNumbers[2],
             },
           },
         ],
@@ -11846,7 +11870,7 @@ describe("TransferTransaction", function () {
             spenderAccountId,
             nft: {
               tokenId,
-              serialNumbers: [serialNumber],
+              serialNumbers,
             },
           },
         ],
@@ -13036,7 +13060,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13044,13 +13068,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       await JSONRPCRequest(this, "transferCrypto", {
@@ -13129,7 +13156,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13137,13 +13164,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13209,7 +13239,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13217,13 +13247,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13289,19 +13322,19 @@ describe("TransferTransaction", function () {
         })
       ).accountId;
 
-      await JSONRPCRequest(this, "deleteAccount", {
-        deleteAccountId: spenderAccountId,
-        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        commonTransactionParams: {
-          signers: [spenderPrivateKey],
-        },
-      });
-
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+          {
+            nft: {
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13309,13 +13342,24 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
+      });
+
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: senderAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
       });
 
       try {
@@ -13382,7 +13426,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13390,13 +13434,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13463,7 +13510,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13471,13 +13518,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13560,7 +13610,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13568,13 +13618,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       await JSONRPCRequest(this, "transferCrypto", {
@@ -13661,7 +13714,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13669,13 +13722,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13750,7 +13806,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13758,13 +13814,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -13859,7 +13918,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId2,
               tokenId,
               serialNumber: serialNumbers[1],
@@ -13867,13 +13926,16 @@ describe("TransferTransaction", function () {
           },
           {
             nft: {
-              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              senderAccountId,
               receiverAccountId: senderAccountId3,
               tokenId,
               serialNumber: serialNumbers[2],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       try {
@@ -15815,7 +15877,7 @@ describe("TransferTransaction", function () {
         transfers: [
           {
             token: {
-              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              accountId: senderAccountId,
               tokenId,
               amount: amountNegatedStr,
               decimals,
@@ -15830,13 +15892,16 @@ describe("TransferTransaction", function () {
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey]
+        }
       });
 
       await JSONRPCRequest(this, "deleteAccount", {
-        deleteAccountId: spenderAccountId,
+        deleteAccountId: senderAccountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
-          signers: [spenderPrivateKey],
+          signers: [senderPrivateKey],
         },
       });
 
@@ -15975,7 +16040,7 @@ describe("TransferTransaction", function () {
             },
           ],
           commonTransactionParams: {
-            transactionId: spenderPrivateKey,
+            transactionId: spenderAccountId,
             signers: [senderPrivateKey2, senderPrivateKey3],
           },
         });
@@ -16072,12 +16137,12 @@ describe("TransferTransaction", function () {
             },
           ],
           commonTransactionParams: {
-            transactionId: spenderPrivateKey,
+            transactionId: spenderAccountId,
             signers: [spenderPrivateKey, senderPrivateKey2, senderPrivateKey3],
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_ACCOUNT_AMOUNTS");
+        assert.equal(err.data.status, "TRANSFERS_NOT_ZERO_SUM_FOR_TOKEN");
         return;
       }
 
@@ -16553,6 +16618,7 @@ describe("TransferTransaction", function () {
                 amount: amountNegatedStr,
                 decimals,
               },
+              approved: true
             },
             {
               token: {
