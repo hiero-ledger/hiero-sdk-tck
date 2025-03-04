@@ -3,13 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 export type NetworkFee = {
-    /**
-     * gas cost in tinybars
-     */
-    gas?: number;
-    /**
-     * type of the transaction
-     */
-    transaction_type?: string;
+  /**
+   * gas cost in tinybars
+   */
+  gas?: number;
+  /**
+   * type of the transaction
+   */
+  transaction_type?: string;
 };
-

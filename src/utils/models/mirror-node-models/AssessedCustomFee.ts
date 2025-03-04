@@ -2,11 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { EntityId } from "./EntityId";
 export type AssessedCustomFee = {
-    amount?: number;
-    collector_account_id?: EntityId;
-    effective_payer_account_ids?: Array<EntityId>;
-    token_id?: EntityId;
+  amount?: number;
+  collector_account_id?: EntityId;
+  effective_payer_account_ids?: Array<EntityId>;
+  token_id?: EntityId;
 };
-

@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { TokenAirdrops } from './TokenAirdrops';
+import type { Links } from "./Links";
+import type { TokenAirdrops } from "./TokenAirdrops";
 export type TokenAirdropsResponse = {
-    airdrops?: TokenAirdrops;
-    links?: Links;
+  airdrops?: TokenAirdrops;
+  links?: Links;
 };
-

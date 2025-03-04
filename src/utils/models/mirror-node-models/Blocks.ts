@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Block } from './Block';
+import type { Block } from "./Block";
 export type Blocks = Array<Block>;

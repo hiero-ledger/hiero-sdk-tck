@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AccountInfo } from './AccountInfo';
+import type { AccountInfo } from "./AccountInfo";
 export type Accounts = Array<AccountInfo>;

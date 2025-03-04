@@ -129,7 +129,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Check for a bug in services
     it.skip("(#3) Updates a token's fee schedule with a token ID that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "updateTokenFeeSchedule", {
@@ -1900,7 +1899,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Check for a bug in services
     it.skip("(#55) Updates a token's fee schedule with a fixed fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -1946,7 +1944,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Check for a bug in services
     it.skip("(#56) Updates a token's fee schedule with a fractional fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -1996,7 +1993,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Check for a bug in services
     it.skip("(#57) Updates a NFT's fee schedule with a royalty fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
@@ -2098,7 +2094,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // Check for a bug in services
     it.skip("(#60) Updates a token's fee schedule with a fixed fee that is assessed with a deleted token", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",

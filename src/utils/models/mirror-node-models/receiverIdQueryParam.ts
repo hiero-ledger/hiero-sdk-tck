@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityIdQuery } from './EntityIdQuery';
+import type { EntityIdQuery } from "./EntityIdQuery";
 /**
  * The ID of the receiver to return information for
  */

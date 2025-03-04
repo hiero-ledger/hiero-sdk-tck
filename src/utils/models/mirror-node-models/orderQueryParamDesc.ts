@@ -6,6 +6,6 @@
  * The order in which items are listed
  */
 export enum orderQueryParamDesc {
-    ASC = 'asc',
-    DESC = 'desc',
+  ASC = "asc",
+  DESC = "desc",
 }

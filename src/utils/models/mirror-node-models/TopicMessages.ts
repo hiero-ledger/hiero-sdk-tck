@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TopicMessage } from './TopicMessage';
+import type { TopicMessage } from "./TopicMessage";
 export type TopicMessages = Array<TopicMessage>;

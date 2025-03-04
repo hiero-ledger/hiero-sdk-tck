@@ -1797,6 +1797,7 @@ describe("TokenCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
     it("(#7) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000

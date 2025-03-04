@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { EntityId } from "./EntityId";
 /**
  * Entity id
  */

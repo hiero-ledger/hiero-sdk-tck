@@ -2,9 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { EntityId } from "./EntityId";
 export type TokenDistribution = Array<{
-    account: EntityId;
-    balance: number;
-    decimals: number;
+  account: EntityId;
+  balance: number;
+  decimals: number;
 }>;

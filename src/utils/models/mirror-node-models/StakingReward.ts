@@ -2,14 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
-import type { Timestamp } from './Timestamp';
+import type { EntityId } from "./EntityId";
+import type { Timestamp } from "./Timestamp";
 export type StakingReward = {
-    account_id: EntityId;
-    /**
-     * The number of tinybars awarded
-     */
-    amount: number;
-    timestamp: Timestamp;
+  account_id: EntityId;
+  /**
+   * The number of tinybars awarded
+   */
+  amount: number;
+  timestamp: Timestamp;
 };
-

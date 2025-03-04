@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { StakingRewardTransfer } from './StakingRewardTransfer';
+import type { StakingRewardTransfer } from "./StakingRewardTransfer";
 export type StakingRewardTransfers = Array<StakingRewardTransfer>;

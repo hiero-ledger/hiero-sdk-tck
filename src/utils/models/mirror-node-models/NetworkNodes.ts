@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { NetworkNode } from './NetworkNode';
+import type { NetworkNode } from "./NetworkNode";
 export type NetworkNodes = Array<NetworkNode>;
