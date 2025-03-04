@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TokenAirdrop } from './TokenAirdrop';
+import type { TokenAirdrop } from "./TokenAirdrop";
 export type TokenAirdrops = Array<TokenAirdrop>;

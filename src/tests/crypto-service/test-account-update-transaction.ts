@@ -100,7 +100,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Key", () => {
+  describe("Key", async function () {
     const verifyAccountUpdateKey = async (
       accountId: string,
       updatedKey: string,
@@ -411,7 +411,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe("Auto Renew Period", () => {
+  describe("Auto Renew Period", async function () {
     const verifyAccountAutoRenewPeriodUpdate = async (
       autoRenewPeriodSeconds: string,
     ) => {

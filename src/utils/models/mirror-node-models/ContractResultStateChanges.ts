@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContractResultStateChange } from './ContractResultStateChange';
+import type { ContractResultStateChange } from "./ContractResultStateChange";
 export type ContractResultStateChanges = Array<ContractResultStateChange>;
