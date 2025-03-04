@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { CryptoAllowances } from './CryptoAllowances';
-import type { Links } from './Links';
+import type { CryptoAllowances } from "./CryptoAllowances";
+import type { Links } from "./Links";
 export type CryptoAllowancesResponse = {
-    allowances?: CryptoAllowances;
-    links?: Links;
+  allowances?: CryptoAllowances;
+  links?: Links;
 };
-

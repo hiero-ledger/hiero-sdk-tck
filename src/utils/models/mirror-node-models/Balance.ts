@@ -2,14 +2,13 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
-import type { TimestampNullable } from './TimestampNullable';
+import type { EntityId } from "./EntityId";
+import type { TimestampNullable } from "./TimestampNullable";
 export type Balance = {
-    timestamp: TimestampNullable;
-    balance: number | null;
-    tokens: Array<{
-        token_id?: EntityId;
-        balance?: number;
-    }>;
+  timestamp: TimestampNullable;
+  balance: number | null;
+  tokens: Array<{
+    token_id?: EntityId;
+    balance?: number;
+  }>;
 };
-

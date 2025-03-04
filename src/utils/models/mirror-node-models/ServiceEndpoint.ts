@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type ServiceEndpoint = {
-    domain_name: string;
-    ip_address_v4: string;
-    port: number;
+  domain_name: string;
+  ip_address_v4: string;
+  port: number;
 };
-

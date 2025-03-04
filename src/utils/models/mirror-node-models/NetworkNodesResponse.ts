@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { NetworkNodes } from './NetworkNodes';
+import type { Links } from "./Links";
+import type { NetworkNodes } from "./NetworkNodes";
 export type NetworkNodesResponse = {
-    nodes: NetworkNodes;
-    links: Links;
+  nodes: NetworkNodes;
+  links: Links;
 };
-

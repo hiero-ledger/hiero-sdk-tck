@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Blocks } from './Blocks';
-import type { Links } from './Links';
+import type { Blocks } from "./Blocks";
+import type { Links } from "./Links";
 export type BlocksResponse = {
-    blocks?: Blocks;
-    links?: Links;
+  blocks?: Blocks;
+  links?: Links;
 };
-

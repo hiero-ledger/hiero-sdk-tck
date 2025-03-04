@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { TokenRelationship } from './TokenRelationship';
+import type { Links } from "./Links";
+import type { TokenRelationship } from "./TokenRelationship";
 export type TokenRelationshipResponse = {
-    tokens?: Array<TokenRelationship>;
-    links?: Links;
+  tokens?: Array<TokenRelationship>;
+  links?: Links;
 };
-

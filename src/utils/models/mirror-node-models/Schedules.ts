@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Schedule } from './Schedule';
+import type { Schedule } from "./Schedule";
 export type Schedules = Array<Schedule>;
