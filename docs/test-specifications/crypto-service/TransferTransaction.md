@@ -30,10 +30,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes         |
-|-------------------------|--------------------------------------------------|-------------------|---------------------------|
-| transfers               | list<[json object](Transfers.md)>                | optional          | The transfer information. |
-| commonTransactionParams | [json object](../CommonTransactionParameters.md) | optional          |                           |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes         |
+|-------------------------|---------------------------------------------------------|-------------------|---------------------------|
+| transfers               | list<[json object](../common/Transfers.md)>             | optional          | The transfer information. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                           |
 
 ### Output Parameters
 

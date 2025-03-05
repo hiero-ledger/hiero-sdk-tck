@@ -30,11 +30,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                            |
-|-------------------------|--------------------------------------------------|-------------------|----------------------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token of which to grant KYC.   |
-| accountId               | string                                           | optional          | The ID of the account to which to grant KYC. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                              |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                            |
+|-------------------------|---------------------------------------------------------|-------------------|----------------------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token of which to grant KYC.   |
+| accountId               | string                                                  | optional          | The ID of the account to which to grant KYC. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                              |
 
 ### Output Parameters
 

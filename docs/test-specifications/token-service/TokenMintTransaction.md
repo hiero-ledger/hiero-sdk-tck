@@ -30,12 +30,12 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                                                 |
-|-------------------------|--------------------------------------------------|-------------------|-------------------------------------------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token to mint.                                      |
-| amount                  | string                                           | optional          | The amount of fungible tokens to mint.                            |
-| metadata                | list<string>                                     | optional          | The metadata for the non-fungible tokens to mint, as hex strings. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                                   |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                 |
+|-------------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token to mint.                                      |
+| amount                  | string                                                  | optional          | The amount of fungible tokens to mint.                            |
+| metadata                | list<string>                                            | optional          | The metadata for the non-fungible tokens to mint, as hex strings. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                   |
 
 ### Output Parameters
 
