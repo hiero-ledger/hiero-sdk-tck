@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@hashgraph/sdk": "^2.59.0",
+    "@hashgraph/sdk": "^2.60.1",
     "axios": "^1.6.0",
     "chai": "^4.3.6",
     "dotenv": "^16.4.5",
