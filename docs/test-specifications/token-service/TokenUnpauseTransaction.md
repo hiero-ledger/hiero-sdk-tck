@@ -30,10 +30,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes               |
-|-------------------------|--------------------------------------------------|-------------------|---------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token to unpause. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                 |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes               |
+|-------------------------|---------------------------------------------------------|-------------------|---------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token to unpause. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                 |
 
 ### Output Parameters
 
