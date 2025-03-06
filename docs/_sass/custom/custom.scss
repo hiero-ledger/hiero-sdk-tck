@@ -1,10 +1,5 @@
 body {
   overflow-y: scroll;
-  opacity: 0;
-}
-
-body.loaded {
-  opacity: 1;
 }
 
 body.scroll-toggle {
@@ -79,11 +74,6 @@ body.scroll-toggle {
   background-color: $body-background-color;
 }
 
-.js-toggle-dark-mode {
-  @media (max-width: 50rem) {
-    visibility: hidden;
-  }
-}
 
 .btn {
   font-size: 0.75rem !important;
@@ -162,22 +152,16 @@ header {
 }
 
 // callouts
-$warning-border-color: if($color-scheme == dark, #ff966e, #ff4500ff);
-$warning-background-color: if($color-scheme == dark, #885747ff, #ffd3c7);
-$tip-border-color: if($color-scheme == dark, #93b4f3, #6495edff);
-$tip-background-color: if($color-scheme == dark, #4d68a8, #dce6ff);
-$note-border-color: if($color-scheme == dark, #ffe794, #ffd53c);
-$note-background-color: if($color-scheme == dark, #80763a, #fffccb);
-$box-shadow-start: if(
-  $color-scheme == dark,
-  rgba(159, 159, 159, 0.2),
-  rgba(31, 31, 31, 0.2)
-);
-$box-shadow-end: if(
-  $color-scheme == dark,
-  rgba(197, 197, 197, 0.19),
-  rgba(58, 58, 58, 0.19)
-);
+$warning-border-color: #ff4500ff;
+$warning-background-color: #ffd3c7;
+$tip-border-color: #6495edff;
+$tip-background-color: #dce6ff;
+$note-border-color: #ffd53c;
+$note-background-color: #fffccb;
+$box-shadow-start: rgba(31, 31, 31, 0.2);
+
+$box-shadow-end: rgba(58, 58, 58, 0.19);
+
 
 .warning {
   border-left: 4px solid $warning-border-color;

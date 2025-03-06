@@ -1,71 +1,5 @@
-<button class="btn js-toggle-dark-mode">Dark Mode</button>
-
 <script>
-  function loadInitialTheme(themeButton) {
-    if (localStorage.getItem('theme') === 'match-system') {
-      themeButton.textContent = "Match System";
-      localStorage.setItem('theme', 'match-system');
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        jtd.setTheme("dark");
-      } else {
-        jtd.setTheme("light");
-      }
-    } else if (localStorage.getItem('theme') === 'dark') {
-      jtd.setTheme("dark");
-      themeButton.textContent = "Dark Mode";
-    } else if (localStorage.getItem('theme') === 'light') {
-      jtd.setTheme("light");
-      themeButton.textContent = "Light Mode";
-    } else {
-      jtd.setTheme("light");
-      localStorage.setItem("theme", "light");
-      themeButton.textContent = "Light Mode";
-    }
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
-    const toggle = document.querySelector(".js-toggle-dark-mode");
-    loadInitialTheme(toggle);
-
-    toggle.addEventListener("click", () => {
-      const themeState = localStorage.getItem("theme");
-      const newTheme = themeState === "dark" ? "light" : (themeState === "light" ? "match-system" : "dark");
-      console.log(`Old theme: ${themeState}: New Theme: ${newTheme}`);
-
-      localStorage.setItem("theme", newTheme);
-
-      if (newTheme === "match-system") {
-        console.log("Match System Theme");
-
-        toggle.textContent = "Match System";
-        localStorage.setItem("theme", "match-system");
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          console.log("Match System Theme: Dark Mode");
-          jtd.setTheme("dark");
-        } else {
-          console.log("Match System Theme: Light Mode");
-          jtd.setTheme("light");
-        }
-      } else {
-        toggle.textContent = `${newTheme === "dark" ? "Dark" : "Light"} Mode`;
-        jtd.setTheme(newTheme === "dark" ? "dark" : "light");
-      }
-    });
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-      if (localStorage.getItem("theme") === "match-system") {
-        const newTheme = event.matches ? 'dark' : 'light';
-        jtd.setTheme(newTheme);
-      }
-    });
-
-    const ua = navigator.userAgent.toLowerCase();
-    const isSafari = /safari/.test(ua) && !/chrome/.test(ua);
-
-    if (isSafari) {
-      document.body.classList.toggle('loaded');
-    } else {
-    }
-
     document.querySelector(".site-button").addEventListener("click", () => {
       document.querySelector(".side-bar").classList.toggle("small-screen-show");
       document
@@ -73,6 +7,5 @@
         .classList.toggle("scroll-toggle");
       document.querySelector("body").classList.toggle("scroll-toggle");
     });
-
   });
 </script>
