@@ -1,3 +1,7 @@
+---
+title: Error Codes
+nav_order: 5
+---
 # TCK Errors
 
 The JSON-RPC 2.0 specification that the TCK and SDK servers use allow for implementation-specific error codes and server errors. This document specifies all the custom error codes that the TCK uses, what they mean, as well as any additional information the SDK servers should supply to the TCK when sending an error response with these specific error codes.

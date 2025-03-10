@@ -181,6 +181,64 @@ describe("AccountDeleteTransaction", function () {
       // The test failed, no error was thrown.
       assert.fail("Should throw an error");
     });
+
+    it("(#8) Deletes an account with a token balance", async function () {
+      const tokenId = (
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          initialSupply: "1000000",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          tokenType: "ft",
+        })
+      ).tokenId;
+
+      await JSONRPCRequest(this, "associateToken", {
+        accountId,
+        tokenIds: [tokenId],
+        commonTransactionParams: {
+          signers: [accountPrivateKey],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            token: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              tokenId,
+              amount: "-10",
+            },
+          },
+          {
+            token: {
+              accountId: accountId,
+              tokenId,
+              amount: "10",
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "deleteAccount", {
+          deleteAccountId: accountId,
+          transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES",
+        );
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Transfer Account Id", async function () {

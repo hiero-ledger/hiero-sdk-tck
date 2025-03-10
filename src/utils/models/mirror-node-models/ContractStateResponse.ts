@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContractState } from './ContractState';
-import type { Links } from './Links';
+import type { ContractState } from "./ContractState";
+import type { Links } from "./Links";
 export type ContractStateResponse = {
-    state?: Array<ContractState>;
-    links?: Links;
+  state?: Array<ContractState>;
+  links?: Links;
 };
-
