@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContractResultLog } from './ContractResultLog';
+import type { ContractResultLog } from "./ContractResultLog";
 export type ContractResultLogs = Array<ContractResultLog>;

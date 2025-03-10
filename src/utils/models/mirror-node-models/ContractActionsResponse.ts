@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ContractActions } from './ContractActions';
-import type { Links } from './Links';
+import type { ContractActions } from "./ContractActions";
+import type { Links } from "./Links";
 export type ContractActionsResponse = {
-    actions?: ContractActions;
-    links?: Links;
+  actions?: ContractActions;
+  links?: Links;
 };
-

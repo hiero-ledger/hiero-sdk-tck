@@ -2,11 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { AccountInfo } from './AccountInfo';
-import type { Links } from './Links';
-import type { Transactions } from './Transactions';
-export type AccountBalanceTransactions = (AccountInfo & {
-    transactions: Transactions;
-    links: Links;
-});
-
+import type { AccountInfo } from "./AccountInfo";
+import type { Links } from "./Links";
+import type { Transactions } from "./Transactions";
+export type AccountBalanceTransactions = AccountInfo & {
+  transactions: Transactions;
+  links: Links;
+};

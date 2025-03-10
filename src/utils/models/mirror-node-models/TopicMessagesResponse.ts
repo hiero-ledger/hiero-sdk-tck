@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { TopicMessages } from './TopicMessages';
+import type { Links } from "./Links";
+import type { TopicMessages } from "./TopicMessages";
 export type TopicMessagesResponse = {
-    messages?: TopicMessages;
-    links?: Links;
+  messages?: TopicMessages;
+  links?: Links;
 };
-

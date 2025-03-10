@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Contracts } from './Contracts';
-import type { Links } from './Links';
+import type { Contracts } from "./Contracts";
+import type { Links } from "./Links";
 export type ContractsResponse = {
-    contracts?: Contracts;
-    links?: Links;
+  contracts?: Contracts;
+  links?: Links;
 };
-
