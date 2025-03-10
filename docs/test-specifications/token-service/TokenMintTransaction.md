@@ -1,3 +1,8 @@
+---
+title: Token Mint Transaction
+parent: Token Service
+nav_order: 10
+---
 # TokenMintTransaction - Test specification
 
 ## Description:
