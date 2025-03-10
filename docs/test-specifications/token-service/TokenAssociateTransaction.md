@@ -1,3 +1,9 @@
+---
+title: Token Associate Transaction
+parent: Token Service
+nav_order: 2
+---
+
 # TokenAssociateTransaction - Test specification
 
 ## Description:

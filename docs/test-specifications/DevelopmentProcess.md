@@ -1,3 +1,7 @@
+---
+title: Development Process
+nav_order: 4
+---
 # TCK Development Process
 
 This document is meant to describe and outline the process by which TCK tests are written and developed for a specific request type. Since the work for these TCK tests will not only be contained to this repo but also spread out amongst all the SDK repos, there will be a good amount of coordination required between all developers to make sure TCK and SDK work stays in parity with each other. The outline below will describe how tests should be documented, developed, and tested to keep this parity. This process is always open to changes at any point if the developers find better or more optimal ways to accomplish tasks.

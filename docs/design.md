@@ -1,3 +1,7 @@
+---
+title: Design
+nav_order: 7
+---
 # Client SDK TCK
 
 ## Requirements
