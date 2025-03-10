@@ -3,7 +3,6 @@ title: Account Allowance Approve Transaction
 parent: Crypto Service
 nav_order: 1
 ---
-
 # AccountAllowanceApproveTransaction - Test specification
 
 ## Description:
