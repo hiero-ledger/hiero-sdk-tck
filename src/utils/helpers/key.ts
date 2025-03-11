@@ -70,7 +70,7 @@ export const getPublicKeyFromMirrorNode = async (
  * Generate a private key of the specified type.
  *
  * @async
- * @param {string} type - The type of private key to generate. MUST be "ed25519PrivateKey" or "ecdsaSecp256k1PrivateKey"
+ * @param {string} type - The type of private key to generate. MUST be "ed25519" or "ecdsaSecp256k1"
  * @returns {Promise<string>} - A promise that resolves to the DER-encoded hex string of the generated private key.
  */
 export const getPrivateKey = async (
