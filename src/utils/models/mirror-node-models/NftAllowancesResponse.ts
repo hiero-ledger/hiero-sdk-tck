@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { NftAllowances } from './NftAllowances';
+import type { Links } from "./Links";
+import type { NftAllowances } from "./NftAllowances";
 export type NftAllowancesResponse = {
-    allowances?: NftAllowances;
-    links?: Links;
+  allowances?: NftAllowances;
+  links?: Links;
 };
-

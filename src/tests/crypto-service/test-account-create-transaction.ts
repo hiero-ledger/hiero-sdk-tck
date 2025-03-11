@@ -978,7 +978,7 @@ describe("AccountCreateTransaction", function () {
       alias: string,
     ) => {
       if (alias.startsWith("0x")) {
-        alias = alias.substring(2)
+        alias = alias.substring(2);
       }
 
       // If the account was created successfully, the queried account's aliases should be equal.

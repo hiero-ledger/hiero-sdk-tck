@@ -1,0 +1,23 @@
+<div id="main-header" class="main-header">
+  <div class="site-header" role="banner">
+    <a href="{{ '/' | relative_url }}" class="site-title lh-tight"
+      >{% include title.html %}</a
+    >
+    <button
+      id="menu-button"
+      class="site-button btn-reset"
+      aria-label="Toggle menu"
+      aria-pressed="false"
+    >
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true">
+        <use xlink:href="#svg-menu"></use>
+      </svg>
+    </button>
+  </div>
+
+  {% if site.search_enabled != false %} {% include components/search_header.html
+  %} {% else %}
+  <div></div>
+  {% endif %} {% include header_custom.html %} {% if site.aux_links %} {%
+  include components/aux_nav.html %} {% endif %}
+</div>

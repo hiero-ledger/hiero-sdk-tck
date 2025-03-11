@@ -3,6 +3,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type Links = {
-    next?: string | null;
+  next?: string | null;
 };
-

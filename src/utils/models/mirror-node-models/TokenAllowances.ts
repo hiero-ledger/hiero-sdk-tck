@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TokenAllowance } from './TokenAllowance';
+import type { TokenAllowance } from "./TokenAllowance";
 export type TokenAllowances = Array<TokenAllowance>;

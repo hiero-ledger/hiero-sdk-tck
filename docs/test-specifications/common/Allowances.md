@@ -1,3 +1,8 @@
+---
+title: Allowances
+parent: Other
+nav_order: 1
+---
 # Allowance
 
 Allowances can be granted to accounts to allow that account to spend on behalf of another account. These allowances can be granted or removed via an `AccountApproveAllowanceTransaction` or an `AccountAllowanceDeleteTransaction`.

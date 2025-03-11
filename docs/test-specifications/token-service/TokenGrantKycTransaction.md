@@ -1,3 +1,8 @@
+---
+title: Token Grant Kyc Transaction
+parent: Token Service
+nav_order: 9
+---
 # TokenGrantKycTransaction - Test specification
 
 ## Description:

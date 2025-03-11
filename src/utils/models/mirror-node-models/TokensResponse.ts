@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { Tokens } from './Tokens';
+import type { Links } from "./Links";
+import type { Tokens } from "./Tokens";
 export type TokensResponse = {
-    tokens?: Tokens;
-    links?: Links;
+  tokens?: Tokens;
+  links?: Links;
 };
-

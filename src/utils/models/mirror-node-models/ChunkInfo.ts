@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TransactionId } from './TransactionId';
+import type { TransactionId } from "./TransactionId";
 export type ChunkInfo = {
-    initial_transaction_id?: TransactionId;
-    number?: number;
-    total?: number;
+  initial_transaction_id?: TransactionId;
+  number?: number;
+  total?: number;
 };
-

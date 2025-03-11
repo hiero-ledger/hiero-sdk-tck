@@ -1,3 +1,8 @@
+---
+title: Custom Fee
+parent: Other
+nav_order: 3
+---
 # Custom Fee
 
 Custom fees can be added to tokens that will be charged users automatically when being transferred based on a variety of parameters. These fees can be specified when a token is created (`TokenCreateTransaction`) or added/updated at a later time (`TokenFeeScheduleUpdateTransaction`).
