@@ -1,6 +1,6 @@
 ---
 title: Utility
-parent: Other
+parent: Helpers
 nav_order: 6
 ---
 # Utility JSON RPC Methods

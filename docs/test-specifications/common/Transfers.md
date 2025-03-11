@@ -1,6 +1,6 @@
 ---
 title: Transfers
-parent: Other
+parent: Helpers
 nav_order: 5
 ---
 # Transfer

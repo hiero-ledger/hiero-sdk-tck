@@ -1,6 +1,6 @@
 ---
 title: Allowances
-parent: Other
+parent: Helpers
 nav_order: 1
 ---
 # Allowance

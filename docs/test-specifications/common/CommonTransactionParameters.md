@@ -1,6 +1,6 @@
 ---
 title: Common Transaction Parameters
-parent: Other
+parent: Helpers
 nav_order: 2
 ---
 # Common Transaction Parameters

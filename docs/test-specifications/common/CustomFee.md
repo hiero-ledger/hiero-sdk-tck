@@ -1,6 +1,6 @@
 ---
 title: Custom Fee
-parent: Other
+parent: Helpers
 nav_order: 3
 ---
 # Custom Fee
