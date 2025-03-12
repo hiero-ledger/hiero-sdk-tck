@@ -1,3 +1,8 @@
+---
+title: Transfers
+parent: Crypto Service
+nav_order: 8
+---
 # Transfer
 
 Transfers involve the moving of Hbar or a token from one account to another account. The parameters required for a transfer are different for Hbar, fungible tokens, and NFTs.
