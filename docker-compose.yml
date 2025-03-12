@@ -6,8 +6,6 @@ services:
       - hedera-mirror-node
     environment:
       NETWORK: "${NETWORK:-local}"
-    build:
-      context: .
     ports:
       - "8544:8544"
   tck-client:
