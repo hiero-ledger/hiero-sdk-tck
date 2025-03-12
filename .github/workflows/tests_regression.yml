@@ -1,0 +1,58 @@
+name: Start All Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  start-all-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Start local Hedera network
+        run: |
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          sleep 30
+
+      - name: Pull Docker image for tck-client
+        run: docker pull ivaylogarnev/tck-client
+
+      - name: Build Docker image for js-tck-server
+        run: docker pull ivaylogarnev/js-tck-server
+
+      - name: Create Docker Compose file
+        run: |
+          echo "
+          version: '3'
+          services:
+            service1:
+              image: ivaylogarnev/tck-client
+              environment:
+                - TEST=ALL
+                - NETWORK=local
+                - OPERATOR_ACCOUNT_ID=0.0.1022
+                - OPERATOR_ACCOUNT_PRIVATE_KEY=302e020100300506032b657004220420a608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4
+                - MIRROR_NODE_REST_URL=http://mirror-node-rest:5551
+                - MIRROR_NODE_REST_JAVA_URL=http://mirror-node-rest-java:8084
+            service2:
+              image: ivaylogarnev/js-tck-server
+          " > docker-compose.yml
+
+      - name: Start Docker Compose services
+        run: docker compose up
+
+      - name: Stop the local node
+        if: ${{ !cancelled() && always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
