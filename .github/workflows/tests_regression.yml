@@ -8,8 +8,8 @@ on:
     branches:
       - main
 
-  env:
-    CG_EXEC: ionice -c 2 -n 2 nice -n 19
+env:
+  CG_EXEC: ionice -c 2 -n 2 nice -n 19
 
 jobs:
   start-all-tests:
