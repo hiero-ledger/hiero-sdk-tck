@@ -15,10 +15,6 @@ jobs:
   start-all-tests:
     name: Run tests for regressions
     runs-on: hiero-client-sdk-linux-medium
-    strategy:
-      matrix:
-        node: ["20", "22"]
-
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
@@ -30,16 +26,10 @@ jobs:
         with:
           submodules: true
 
-      # Note: After Step-Security is enabled return to step-security/action-setup version
-      - name: Install PNPM
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-        with:
-          version: 9.15.5
-
       - name: Setup Node
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22
           cache: pnpm
 
       - name: Start the local node
