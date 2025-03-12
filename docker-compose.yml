@@ -9,7 +9,8 @@ services:
     ports:
       - "8544:8544"
   tck-client:
-    image: ivaylogarnev/tck-client
+    build:
+      context: .
     networks:
       - hedera-network-node
       - hedera-mirror-node

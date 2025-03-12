@@ -26,9 +26,8 @@ jobs:
           ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
           sleep 30
 
-      - name: Pull Docker images
+      - name: Pull JS TCK Server
         run: |
-          docker pull ivaylogarnev/tck-client
           docker pull ivaylogarnev/js-tck-server
 
       - name: Start Docker Compose services
