@@ -10,7 +10,7 @@ on:
 
 jobs:
   start-all-tests:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout repository
