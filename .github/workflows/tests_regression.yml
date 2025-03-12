@@ -13,7 +13,7 @@ on:
 
 jobs:
   start-all-tests:
-    name: Build using Node ${{ matrix.node }}
+    name: Run tests for regressions
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
@@ -44,10 +44,8 @@ jobs:
 
       - name: Start the local node
         id: start-local-node
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.60.0-alpha.0
-          # Wait for the network to fully start
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d --network local --balance=100000 --network-tag=0.60.0-alpha.0
           sleep 30
 
       - name: Pull Docker images
@@ -59,5 +57,5 @@ jobs:
         run: docker compose -f ./docker-compose.yml up --abort-on-container-exit
 
       - name: Stop the local node
-        if: ${{ always() }}
-        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+        id: stop-local-node
+        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
