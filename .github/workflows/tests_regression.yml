@@ -8,28 +8,22 @@ on:
     branches:
       - main
 
-env:
-  CG_EXEC: ionice -c 2 -n 2 nice -n 19
-
 jobs:
   start-all-tests:
-    name: Run tests for regressions
     runs-on: hiero-client-sdk-linux-medium
+
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
-        with:
-          egress-policy: audit
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          submodules: true
+          node-version: "20"
 
-      - name: Start the local node
-        id: start-local-node
+      - name: Start local Hedera network
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d --network local --balance=100000 --network-tag=0.60.0-alpha.0
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
           sleep 30
 
       - name: Pull Docker images
@@ -41,5 +35,5 @@ jobs:
         run: docker compose -f ./docker-compose.yml up --abort-on-container-exit
 
       - name: Stop the local node
-        id: stop-local-node
-        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
+        if: ${{ always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
