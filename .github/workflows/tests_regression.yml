@@ -10,7 +10,7 @@ on:
 
 jobs:
   start-all-tests:
-    runs-on: hiero-client-sdk-linux-large
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
