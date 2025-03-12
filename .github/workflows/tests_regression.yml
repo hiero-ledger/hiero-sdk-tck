@@ -23,7 +23,7 @@ jobs:
 
       - name: Start local Hedera network
         run: |
-          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          npx @hashgraph/hedera-local start -d --network local --balance=10000000
           sleep 30
 
       - name: Pull JS TCK Server
@@ -35,4 +35,4 @@ jobs:
 
       - name: Stop the local node
         if: ${{ always() }}
-        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+        run: npx @hashgraph/hedera-local stop
