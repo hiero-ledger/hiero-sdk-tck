@@ -1,6 +1,6 @@
 services:
   tck-server:
-    image: tck-js-server
+    image: ivaylogarnev/tck-js-server
     networks:
       - hedera-network-node
       - hedera-mirror-node
