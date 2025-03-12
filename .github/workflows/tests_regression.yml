@@ -21,6 +21,13 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Ensure Docker is running
+        run: |
+          brew install --cask docker
+          open /Applications/Docker.app
+          # Wait for Docker to start
+          while ! docker system info > /dev/null 2>&1; do sleep 1; done
+
       - name: Start local Hedera network
         run: |
           npx @hashgraph/hedera-local start -d --network local --balance=10000000
