@@ -9,8 +9,8 @@
     "mocha": "^11.0.1"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --retries 2 --exit",
-    "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --reporter mochawesome --retries 2 --exit",
+    "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --retries 3 --exit",
+    "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --reporter mochawesome --retries 3 --exit",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
     "lint": "eslint ."

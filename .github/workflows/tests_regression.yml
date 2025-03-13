@@ -59,7 +59,11 @@ jobs:
       - name: Start tck-server in background
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
-          sleep 10
+
+      - name: Wait for tck-server to become healthy
+        run: |
+          timeout 60s bash -c "until docker inspect --format='{{.State.Health.Status}}' \$(docker compose -f ./docker-compose.yml ps -q tck-server) | grep -q 'healthy'; do sleep 5; echo 'Waiting for tck-server...'; done"
+          if [ $? -ne 0 ]; then echo "tck-server failed to become healthy"; exit 1; fi
 
       - name: Run ${{ matrix.suite }} tests
         run: |
