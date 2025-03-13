@@ -60,29 +60,37 @@ jobs:
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
 
-      - name: Wait for tck-server to start
-        run: |
-          # Show container logs for debugging
-          docker compose -f ./docker-compose.yml logs tck-server
+          # Wait for tck-server to start responding (with timeout)
+          echo "Waiting for tck-server to respond on port 8544..."
+          start_time=$(date +%s)
+          max_wait=60
 
-          # Check if container is running
-          if ! docker compose -f ./docker-compose.yml ps | grep -q "tck-server.*Up"; then
-            echo "tck-server failed to start"
-            exit 1
-          fi
-
-          # Wait a fixed amount of time for the server to initialize
-          echo "Waiting 60 seconds for tck-server to initialize..."
-          sleep 60
-
-          # Check if the server is responding
-          if docker exec $(docker compose -f ./docker-compose.yml ps -q tck-server) sh -c "echo > /dev/tcp/localhost/8544"; then
-            echo "tck-server is responding on port 8544"
-          else
-            echo "tck-server is not responding on port 8544"
-            docker compose -f ./docker-compose.yml logs tck-server
-            exit 1
-          fi
+          while true; do
+            # Check if container is running
+            if ! docker compose -f ./docker-compose.yml ps | grep -q "tck-server.*Up"; then
+              echo "Error: tck-server container is not running"
+              docker compose -f ./docker-compose.yml logs tck-server
+              exit 1
+            fi
+            
+            # Try to connect to the port
+            if docker exec $(docker compose -f ./docker-compose.yml ps -q tck-server) sh -c "echo > /dev/tcp/localhost/8544" 2>/dev/null; then
+              echo "Success: tck-server is responding on port 8544"
+              break
+            fi
+            
+            # Check timeout
+            current_time=$(date +%s)
+            elapsed=$((current_time - start_time))
+            if [ $elapsed -ge $max_wait ]; then
+              echo "Error: Timed out waiting for tck-server to respond"
+              docker compose -f ./docker-compose.yml logs tck-server
+              exit 1
+            fi
+            
+            echo "Still waiting for tck-server to respond... ($elapsed seconds elapsed)"
+            sleep 2
+          done
 
       - name: Run ${{ matrix.suite }} tests
         run: |
