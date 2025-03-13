@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
         suite:
