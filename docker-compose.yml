@@ -15,7 +15,7 @@ services:
       - hedera-network-node
       - hedera-mirror-node
     environment:
-      TEST: "ALL"
+      TEST: "${TEST:-ALL}"
       NETWORK: "local"
       OPERATOR_ACCOUNT_ID: "0.0.1022"
       OPERATOR_ACCOUNT_PRIVATE_KEY: "302e020100300506032b657004220420a608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4"
