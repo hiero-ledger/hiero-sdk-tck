@@ -59,6 +59,7 @@ jobs:
       - name: Start tck-server in background
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
+          sleep 10
 
       - name: Run ${{ matrix.suite }} tests
         run: |
