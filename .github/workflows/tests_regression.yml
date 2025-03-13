@@ -50,7 +50,7 @@ jobs:
             --network local \
             --balance=10000000 \
             --cache-dir=/tmp/hedera-cache
-          sleep 20
+          sleep 25
 
       - name: Pull JS TCK Server
         run: |
@@ -62,8 +62,31 @@ jobs:
 
       - name: Wait for tck-server to become healthy
         run: |
-          timeout 60s bash -c "until docker inspect --format='{{.State.Health.Status}}' \$(docker compose -f ./docker-compose.yml ps -q tck-server) | grep -q 'healthy'; do sleep 5; echo 'Waiting for tck-server...'; done"
-          if [ $? -ne 0 ]; then echo "tck-server failed to become healthy"; exit 1; fi
+          # Show container logs for debugging
+          docker compose -f ./docker-compose.yml logs tck-server
+
+          # Check container status
+          docker ps
+
+          # Try with longer timeout and more detailed output
+          timeout 120s bash -c "while true; do 
+            status=\$(docker inspect --format='{{.State.Health.Status}}' \$(docker compose -f ./docker-compose.yml ps -q tck-server) 2>/dev/null)
+            echo \"Current health status: \$status\"
+            if [ \"\$status\" = \"healthy\" ]; then
+              echo 'tck-server is healthy!'
+              break
+            fi
+            # Show last health check result
+            docker inspect --format='{{json .State.Health}}' \$(docker compose -f ./docker-compose.yml ps -q tck-server) | jq
+            sleep 10
+            echo 'Waiting for tck-server...'
+          done"
+
+          if [ $? -ne 0 ]; then 
+            echo "tck-server failed to become healthy within timeout"
+            docker compose -f ./docker-compose.yml logs tck-server
+            exit 1
+          fi
 
       - name: Run ${{ matrix.suite }} tests
         run: |
