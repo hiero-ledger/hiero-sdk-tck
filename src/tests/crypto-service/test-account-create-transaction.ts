@@ -158,9 +158,14 @@ describe("AccountCreateTransaction", function () {
     it("(#8) Creates an account with an invalid key", async function () {
       try {
         // Attempt to create an account with an invalid key (random 88 bytes, which is equal to the byte length of a valid public key). The SDK should throw an internal error.
-        await JSONRPCRequest(this, "createAccount", {
-          key: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createAccount",
+          {
+            key: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,

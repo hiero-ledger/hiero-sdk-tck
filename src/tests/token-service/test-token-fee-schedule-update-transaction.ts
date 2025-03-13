@@ -145,9 +145,14 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
     it("(#4) Updates a token's fee schedule with a token ID that isn't set", async function () {
       try {
-        await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-          tokenId: "",
-        });
+        await JSONRPCRequest(
+          this,
+          "updateTokenFeeSchedule",
+          {
+            tokenId: "",
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1823,21 +1828,26 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
     it("(#52) Updates a token's fee schedule with a fixed fee with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-          tokenId: fungibleTokenId,
-          customFees: [
-            {
-              feeCollectorAccountId: "",
-              feeCollectorsExempt: false,
-              fixedFee: {
-                amount: "10",
+        await JSONRPCRequest(
+          this,
+          "updateTokenFeeSchedule",
+          {
+            tokenId: fungibleTokenId,
+            customFees: [
+              {
+                feeCollectorAccountId: "",
+                feeCollectorsExempt: false,
+                fixedFee: {
+                  amount: "10",
+                },
               },
+            ],
+            commonTransactionParams: {
+              signers: [fungibleTokenFeeScheduleKey],
             },
-          ],
-          commonTransactionParams: {
-            signers: [fungibleTokenFeeScheduleKey],
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1852,25 +1862,30 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
     it("(#53) Updates a token's fee schedule with a fractional with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-          tokenId: fungibleTokenId,
-          customFees: [
-            {
-              feeCollectorAccountId: "",
-              feeCollectorsExempt: false,
-              fractionalFee: {
-                numerator: "1",
-                denominator: "10",
-                minimumAmount: "1",
-                maximumAmount: "10",
-                assessmentMethod: "inclusive",
+        await JSONRPCRequest(
+          this,
+          "updateTokenFeeSchedule",
+          {
+            tokenId: fungibleTokenId,
+            customFees: [
+              {
+                feeCollectorAccountId: "",
+                feeCollectorsExempt: false,
+                fractionalFee: {
+                  numerator: "1",
+                  denominator: "10",
+                  minimumAmount: "1",
+                  maximumAmount: "10",
+                  assessmentMethod: "inclusive",
+                },
               },
+            ],
+            commonTransactionParams: {
+              signers: [fungibleTokenFeeScheduleKey],
             },
-          ],
-          commonTransactionParams: {
-            signers: [fungibleTokenFeeScheduleKey],
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1885,25 +1900,30 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
     it("(#54) Updates a NFT's fee schedule with a royalty fee with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-          tokenId: nonFungibleTokenId,
-          customFees: [
-            {
-              feeCollectorAccountId: "",
-              feeCollectorsExempt: false,
-              royaltyFee: {
-                numerator: "1",
-                denominator: "10",
-                fallbackFee: {
-                  amount: "10",
+        await JSONRPCRequest(
+          this,
+          "updateTokenFeeSchedule",
+          {
+            tokenId: nonFungibleTokenId,
+            customFees: [
+              {
+                feeCollectorAccountId: "",
+                feeCollectorsExempt: false,
+                royaltyFee: {
+                  numerator: "1",
+                  denominator: "10",
+                  fallbackFee: {
+                    amount: "10",
+                  },
                 },
               },
+            ],
+            commonTransactionParams: {
+              signers: [nonFungibleTokenFeeScheduleKey],
             },
-          ],
-          commonTransactionParams: {
-            signers: [nonFungibleTokenFeeScheduleKey],
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -2087,22 +2107,27 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
 
     it("(#59) Updates a token's fee schedule with a fixed fee that is assessed with an empty token", async function () {
       try {
-        await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-          tokenId: fungibleTokenId,
-          customFees: [
-            {
-              feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
-              feeCollectorsExempt: false,
-              fixedFee: {
-                amount: "10",
-                denominatingTokenId: "",
+        await JSONRPCRequest(
+          this,
+          "updateTokenFeeSchedule",
+          {
+            tokenId: fungibleTokenId,
+            customFees: [
+              {
+                feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+                feeCollectorsExempt: false,
+                fixedFee: {
+                  amount: "10",
+                  denominatingTokenId: "",
+                },
               },
+            ],
+            commonTransactionParams: {
+              signers: [fungibleTokenFeeScheduleKey],
             },
-          ],
-          commonTransactionParams: {
-            signers: [fungibleTokenFeeScheduleKey],
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,

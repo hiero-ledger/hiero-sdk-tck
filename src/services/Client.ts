@@ -67,6 +67,9 @@ export const JSONRPCRequest = async (
         !expectInternal;
 
       if (shouldRetry) {
+        console.warn(
+          `Internal error occurred for method ${method}. Retrying (${retries + 1}/${maxRetries})...`,
+        );
         retries++;
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
         continue;

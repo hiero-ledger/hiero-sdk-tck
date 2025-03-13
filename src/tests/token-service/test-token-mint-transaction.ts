@@ -90,9 +90,14 @@ describe("TokenMintTransaction", function () {
 
     it("(#3) Mints a token with an empty token ID", async function () {
       try {
-        await JSONRPCRequest(this, "mintToken", {
-          tokenId: "",
-        });
+        await JSONRPCRequest(
+          this,
+          "mintToken",
+          {
+            tokenId: "",
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.message,

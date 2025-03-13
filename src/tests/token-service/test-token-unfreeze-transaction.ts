@@ -144,10 +144,15 @@ describe("TokenUnfreezeTransaction", function () {
 
     it("(#3) Unfreezes a token with an empty token ID on an account", async function () {
       try {
-        await JSONRPCRequest(this, "unfreezeToken", {
-          tokenId: "",
-          accountId,
-        });
+        await JSONRPCRequest(
+          this,
+          "unfreezeToken",
+          {
+            tokenId: "",
+            accountId,
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -365,13 +370,18 @@ describe("TokenUnfreezeTransaction", function () {
 
     it("(#2) Unfreezes a token on an account with an empty account ID", async function () {
       try {
-        await JSONRPCRequest(this, "unfreezeToken", {
-          tokenId,
-          accountId: "",
-          commonTransactionParams: {
-            signers: [tokenFreezeKey],
+        await JSONRPCRequest(
+          this,
+          "unfreezeToken",
+          {
+            tokenId,
+            accountId: "",
+            commonTransactionParams: {
+              signers: [tokenFreezeKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,

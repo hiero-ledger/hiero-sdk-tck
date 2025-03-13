@@ -144,10 +144,15 @@ describe("TokenGrantKycTransaction", function () {
 
     it("(#3) Grants KYC of a token with an empty token ID to an account", async function () {
       try {
-        await JSONRPCRequest(this, "grantTokenKyc", {
-          tokenId: "",
-          accountId,
-        });
+        await JSONRPCRequest(
+          this,
+          "grantTokenKyc",
+          {
+            tokenId: "",
+            accountId,
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -390,13 +395,18 @@ describe("TokenGrantKycTransaction", function () {
 
     it("(#2) Grants KYC of a token to an empty account ID", async function () {
       try {
-        await JSONRPCRequest(this, "grantTokenKyc", {
-          tokenId,
-          accountId: "",
-          commonTransactionParams: {
-            signers: [tokenKycKey],
+        await JSONRPCRequest(
+          this,
+          "grantTokenKyc",
+          {
+            tokenId,
+            accountId: "",
+            commonTransactionParams: {
+              signers: [tokenKycKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,

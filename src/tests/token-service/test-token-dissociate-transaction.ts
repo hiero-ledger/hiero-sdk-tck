@@ -189,10 +189,15 @@ describe("TokenDissociateTransaction", function () {
 
     it("(#6) Dissociates a token from an empty account", async function () {
       try {
-        await JSONRPCRequest(this, "dissociateToken", {
-          accountId: "",
-          tokenIds: [tokenId],
-        });
+        await JSONRPCRequest(
+          this,
+          "dissociateToken",
+          {
+            accountId: "",
+            tokenIds: [tokenId],
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -282,13 +287,18 @@ describe("TokenDissociateTransaction", function () {
 
     it("(#4) Dissociates a token that is empty from an account", async function () {
       try {
-        await JSONRPCRequest(this, "dissociateToken", {
-          accountId,
-          tokenIds: [""],
-          commonTransactionParams: {
-            signers: [accountPrivateKey],
+        await JSONRPCRequest(
+          this,
+          "dissociateToken",
+          {
+            accountId,
+            tokenIds: [""],
+            commonTransactionParams: {
+              signers: [accountPrivateKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,

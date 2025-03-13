@@ -153,10 +153,15 @@ describe("TokenRevokeKycTransaction", function () {
 
     it("(#3) Revokes KYC of a token with an empty token ID to an account", async function () {
       try {
-        await JSONRPCRequest(this, "revokeTokenKyc", {
-          tokenId: "",
-          accountId,
-        });
+        await JSONRPCRequest(
+          this,
+          "revokeTokenKyc",
+          {
+            tokenId: "",
+            accountId,
+          },
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -399,13 +404,18 @@ describe("TokenRevokeKycTransaction", function () {
 
     it("(#2) Revokes KYC of a token to an empty account ID", async function () {
       try {
-        await JSONRPCRequest(this, "revokeTokenKyc", {
-          tokenId,
-          accountId: "",
-          commonTransactionParams: {
-            signers: [tokenKycKey],
+        await JSONRPCRequest(
+          this,
+          "revokeTokenKyc",
+          {
+            tokenId,
+            accountId: "",
+            commonTransactionParams: {
+              signers: [tokenKycKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
