@@ -219,20 +219,15 @@ describe("AccountAllowanceDeleteTransaction", function () {
 
     it("(#3) Deletes an allowance to a spender account from an empty owner account", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "deleteAllowance",
-          {
-            allowances: [
-              {
-                ownerAccountId: "",
-                tokenId: tokenId1,
-                serialNumbers: ["1", "2", "3"],
-              },
-            ],
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "deleteAllowance", {
+          allowances: [
+            {
+              ownerAccountId: "",
+              tokenId: tokenId1,
+              serialNumbers: ["1", "2", "3"],
+            },
+          ],
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -299,23 +294,18 @@ describe("AccountAllowanceDeleteTransaction", function () {
 
     it("(#6) Deletes an allowance to a spender account from an owner account with an empty token ID", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "deleteAllowance",
-          {
-            allowances: [
-              {
-                ownerAccountId,
-                tokenId: "",
-                serialNumbers: [tokenId1SerialNumber],
-              },
-            ],
-            commonTransactionParams: {
-              signers: [ownerPrivateKey],
+        await JSONRPCRequest(this, "deleteAllowance", {
+          allowances: [
+            {
+              ownerAccountId,
+              tokenId: "",
+              serialNumbers: [tokenId1SerialNumber],
             },
+          ],
+          commonTransactionParams: {
+            signers: [ownerPrivateKey],
           },
-          true,
-        );
+        });
       } catch (err: any) {
         assert.equal(
           err.code,

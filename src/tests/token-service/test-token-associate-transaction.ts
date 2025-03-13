@@ -161,15 +161,10 @@ describe("TokenAssociateTransaction", function () {
 
     it("(#6) Associates a token with an empty account", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "associateToken",
-          {
-            accountId: "",
-            tokenIds: [tokenId],
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "associateToken", {
+          accountId: "",
+          tokenIds: [tokenId],
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -263,18 +258,13 @@ describe("TokenAssociateTransaction", function () {
 
     it("(#4) Associates a token that is empty with an account", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "associateToken",
-          {
-            accountId,
-            tokenIds: [""],
-            commonTransactionParams: {
-              signers: [accountPrivateKey],
-            },
+        await JSONRPCRequest(this, "associateToken", {
+          accountId,
+          tokenIds: [""],
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
           },
-          true,
-        );
+        });
       } catch (err: any) {
         assert.equal(
           err.code,

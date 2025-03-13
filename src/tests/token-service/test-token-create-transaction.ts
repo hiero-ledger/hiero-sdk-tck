@@ -944,17 +944,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a token with an invalid key as its admin key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            adminKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          adminKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1120,17 +1115,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its KYC key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            kycKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          kycKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1297,17 +1287,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its freeze key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            freezeKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          freezeKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1473,17 +1458,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its wipe key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            wipeKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          wipeKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1649,17 +1629,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its supply key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            supplyKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          supplyKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -2012,17 +1987,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with the auto renew account not set", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            autoRenewAccountId: "",
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          autoRenewAccountId: "",
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -2721,17 +2691,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its fee schedule key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            feeScheduleKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -4428,25 +4393,20 @@ describe("TokenCreateTransaction", function () {
 
     it("(#52) Creates a token with a fixed fee with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            customFees: [
-              {
-                feeCollectorAccountId: "",
-                feeCollectorsExempt: false,
-                fixedFee: {
-                  amount: "10",
-                },
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          customFees: [
+            {
+              feeCollectorAccountId: "",
+              feeCollectorsExempt: false,
+              fixedFee: {
+                amount: "10",
               },
-            ],
-          },
-          true,
-        );
+            },
+          ],
+        });
       } catch (err: any) {
         assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
@@ -4457,29 +4417,24 @@ describe("TokenCreateTransaction", function () {
 
     it("(#53) Creates a token with a fractional with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            customFees: [
-              {
-                feeCollectorAccountId: "",
-                feeCollectorsExempt: false,
-                fractionalFee: {
-                  numerator: "1",
-                  denominator: "10",
-                  minimumAmount: "1",
-                  maximumAmount: "10",
-                  assessmentMethod: "inclusive",
-                },
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          customFees: [
+            {
+              feeCollectorAccountId: "",
+              feeCollectorsExempt: false,
+              fractionalFee: {
+                numerator: "1",
+                denominator: "10",
+                minimumAmount: "1",
+                maximumAmount: "10",
+                assessmentMethod: "inclusive",
               },
-            ],
-          },
-          true,
-        );
+            },
+          ],
+        });
       } catch (err: any) {
         assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
@@ -4496,31 +4451,26 @@ describe("TokenCreateTransaction", function () {
       const key = response.key;
 
       try {
-        response = await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            supplyKey: key,
-            tokenType: "nft",
-            customFees: [
-              {
-                feeCollectorAccountId: "",
-                feeCollectorsExempt: false,
-                royaltyFee: {
-                  numerator: "1",
-                  denominator: "10",
-                  fallbackFee: {
-                    amount: "10",
-                  },
+        response = await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          supplyKey: key,
+          tokenType: "nft",
+          customFees: [
+            {
+              feeCollectorAccountId: "",
+              feeCollectorsExempt: false,
+              royaltyFee: {
+                numerator: "1",
+                denominator: "10",
+                fallbackFee: {
+                  amount: "10",
                 },
               },
-            ],
-          },
-          true,
-        );
+            },
+          ],
+        });
       } catch (err: any) {
         assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
@@ -4736,26 +4686,21 @@ describe("TokenCreateTransaction", function () {
 
     it("(#60) Creates a token with a fixed fee that is assessed with an empty token", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            customFees: [
-              {
-                feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
-                feeCollectorsExempt: false,
-                fixedFee: {
-                  amount: "10",
-                  denominatingTokenId: "",
-                },
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          customFees: [
+            {
+              feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              feeCollectorsExempt: false,
+              fixedFee: {
+                amount: "10",
+                denominatingTokenId: "",
               },
-            ],
-          },
-          true,
-        );
+            },
+          ],
+        });
       } catch (err: any) {
         assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
@@ -5150,17 +5095,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its pause key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            pauseKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          pauseKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -5371,17 +5311,12 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its metadata key", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "createToken",
-          {
-            name: "testname",
-            symbol: "testsymbol",
-            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            metadataKey: crypto.randomBytes(88).toString("hex"),
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "createToken", {
+          name: "testname",
+          symbol: "testsymbol",
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          metadataKey: crypto.randomBytes(88).toString("hex"),
+        });
       } catch (err: any) {
         assert.equal(
           err.code,

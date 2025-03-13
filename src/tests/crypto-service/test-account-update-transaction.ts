@@ -985,18 +985,13 @@ describe("AccountUpdateTransaction", function () {
     it("(#5) Updates the staked account ID of an account to an empty account ID", async function () {
       try {
         // Attempt to update the staked account ID of the account to an empty account ID. The SDK should throw an internal error.
-        await JSONRPCRequest(
-          this,
-          "updateAccount",
-          {
-            accountId,
-            stakedAccountId: "",
-            commonTransactionParams: {
-              signers: [accountPrivateKey],
-            },
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId,
+          stakedAccountId: "",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
           },
-          true,
-        );
+        });
       } catch (err: any) {
         assert.equal(
           err.code,

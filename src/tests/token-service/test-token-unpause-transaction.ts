@@ -168,14 +168,9 @@ describe("TokenUnpauseTransaction", function () {
 
     it("(#7) Unpauses a token that is empty", async function () {
       try {
-        await JSONRPCRequest(
-          this,
-          "unpauseToken",
-          {
-            tokenId: "",
-          },
-          true,
-        );
+        await JSONRPCRequest(this, "unpauseToken", {
+          tokenId: "",
+        });
       } catch (err: any) {
         assert.equal(
           err.code,
