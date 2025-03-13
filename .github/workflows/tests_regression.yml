@@ -79,12 +79,6 @@ jobs:
             --abort-on-container-exit \
             --exit-code-from tck-client tck-client
 
-      - name: Collect logs on failure
-        if: ${{ failure() }}
-        run: |
-          docker logs $(docker compose -f ./docker-compose.yml ps -q tck-server)
-          docker logs $(docker compose -f ./docker-compose.yml ps -q tck-client)
-
       - name: Stop the local node and containers
         if: ${{ always() }}
         run: |
