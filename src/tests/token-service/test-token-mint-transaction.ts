@@ -99,11 +99,7 @@ describe("TokenMintTransaction", function () {
           true,
         );
       } catch (err: any) {
-        assert.equal(
-          err.message,
-          ErrorStatusCodes.INTERNAL_ERROR,
-          "Internal error",
-        );
+        assert.equal(err.message, "Internal error");
         return;
       }
 

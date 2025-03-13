@@ -53,6 +53,8 @@ export const JSONRPCRequest = async (
   while (retries <= maxRetries) {
     const jsonRPCResponse = await JSONRPClient.requestAdvanced(jsonRPCRequest);
 
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     if (jsonRPCResponse.error) {
       // Method not found - skip the test
       if (mochaTestContext && jsonRPCResponse.error.code === -32601) {
