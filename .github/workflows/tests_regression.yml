@@ -68,21 +68,6 @@ jobs:
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
 
-      - name: Wait for tck-server to become healthy
-        run: |
-          for i in {1..12}; do # Retry 12 times (60s total)
-            if docker inspect --format='{{.State.Health.Status}}' \
-              $(docker compose -f ./docker-compose.yml ps -q tck-server) | grep -q 'healthy'; then
-              echo "tck-server is healthy"
-              exit 0
-            fi
-            echo "Waiting for tck-server..."
-            sleep 5
-          done
-          echo "Error: tck-server failed to become healthy after 60s"
-          docker logs $(docker compose -f ./docker-compose.yml ps -q tck-server)
-          exit 1
-
       - name: Run ${{ matrix.suite }} tests
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up \
