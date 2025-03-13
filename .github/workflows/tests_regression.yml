@@ -37,20 +37,36 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "20"
+
       - name: Start local Hedera network
         run: |
           ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
           sleep 50
+
       - name: Pull JS TCK Server
         run: |
           docker pull ivaylogarnev/js-tck-server-amd
-      - name: Start Docker Compose with Tests
+
+      - name: Start tck-server in Background
         run: |
-          TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up --abort-on-container-exit
-      - name: Stop the local node
+          TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
+
+      - name: Wait for tck-server to be Healthy
+        run: |
+          timeout 60s bash -c "until docker inspect --format='{{.State.Health.Status}}' \$(docker compose -f ./docker-compose.yml ps -q tck-server) | grep -q 'healthy'; do sleep 5; echo 'Waiting for tck-server...'; done"
+          if [ $? -ne 0 ]; then echo "tck-server failed to become healthy"; exit 1; fi
+
+      - name: Run tck-client Tests
+        run: |
+          TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up --abort-on-container-exit tck-client
+
+      - name: Stop the local node and containers
         if: ${{ always() }}
-        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+        run: |
+          docker compose -f ./docker-compose.yml down
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
