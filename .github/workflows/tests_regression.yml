@@ -57,6 +57,7 @@ jobs:
 
       - name: Start tck-server in background
         run: |
+          echo "Starting tck-server with TEST=${{ matrix.suite }}"
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
 
           # Get container ID
@@ -67,29 +68,50 @@ jobs:
             exit 1
           fi
 
-          # Check if container is running
+          echo "Container ID: $container_id"
+          echo "Container status:"
+          docker inspect $container_id | grep -i "Status"
+
+          # Check initial logs
+          echo "Initial tck-server logs:"
+          docker compose -f ./docker-compose.yml logs tck-server
+
+          # Check network bindings
+          echo "Checking network ports inside container:"
+          docker exec $container_id netstat -tuln | grep 8544 || echo "Port 8544 not found in netstat"
+
+          # Verify container is running and port is responsive
           max_attempts=30
           attempt=1
           while [ $attempt -le $max_attempts ]; do
             if docker inspect $container_id | grep -q '"Running": true'; then
               echo "tck-server is running (container ID: $container_id)"
               
-              # Verify port is listening
               if docker exec $container_id nc -z localhost 8544; then
                 echo "tck-server is responding on port 8544"
                 break
               else
                 echo "Waiting for tck-server to respond on port 8544 (attempt $attempt/$max_attempts)"
+                
+                # Additional diagnostics on every 5th attempt
+                if [ $((attempt % 5)) -eq 0 ]; then
+                  echo "Additional diagnostics:"
+                  docker exec $container_id ps aux
+                  docker compose -f ./docker-compose.yml logs tck-server --tail 20
+                fi
               fi
             else
-              echo "tck-server container is not running (attempt $attempt/$max_attempts)"
+              echo "Error: tck-server container stopped running (attempt $attempt/$max_attempts)"
               docker compose -f ./docker-compose.yml logs tck-server
               exit 1
             fi
             
             if [ $attempt -eq $max_attempts ]; then
               echo "Error: tck-server failed to become ready after $max_attempts attempts"
+              echo "Final container logs:"
               docker compose -f ./docker-compose.yml logs tck-server
+              echo "Network inspection:"
+              docker inspect $container_id | grep -i "NetworkMode\|Ports"
               exit 1
             fi
             attempt=$((attempt + 1))
