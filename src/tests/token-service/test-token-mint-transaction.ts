@@ -10,6 +10,8 @@ import {
   verifyNonFungibleTokenMint,
 } from "@helpers/token";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenMintTransaction
  */
@@ -92,7 +94,11 @@ describe("TokenMintTransaction", function () {
           tokenId: "",
         });
       } catch (err: any) {
-        assert.equal(err.message, "Internal error");
+        assert.equal(
+          err.message,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

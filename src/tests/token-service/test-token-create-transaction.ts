@@ -24,6 +24,8 @@ import {
   fourKeysKeyListParams,
 } from "@constants/key-list";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenCreateTransaction
  */
@@ -942,14 +944,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a token with an invalid key as its admin key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            adminKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1109,14 +1120,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its KYC key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          kycKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            kycKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1277,14 +1297,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its freeze key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          freezeKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            freezeKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1444,14 +1473,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its wipe key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          wipeKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            wipeKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1611,14 +1649,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its supply key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            supplyKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1965,14 +2012,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with the auto renew account not set", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          autoRenewAccountId: "",
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            autoRenewAccountId: "",
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2665,14 +2721,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its fee schedule key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -4378,7 +4443,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4406,7 +4471,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4442,7 +4507,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4672,7 +4737,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -5065,14 +5130,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its pause key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          pauseKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            pauseKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -5277,14 +5351,23 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with an invalid key as its metadata key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          metadataKey: crypto.randomBytes(88).toString("hex"),
-        });
+        await JSONRPCRequest(
+          this,
+          "createToken",
+          {
+            name: "testname",
+            symbol: "testsymbol",
+            treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            metadataKey: crypto.randomBytes(88).toString("hex"),
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

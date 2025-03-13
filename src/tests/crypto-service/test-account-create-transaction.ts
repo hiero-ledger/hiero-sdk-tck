@@ -859,12 +859,21 @@ describe("AccountCreateTransaction", function () {
 
       try {
         // Attempt to create an account with a staked node ID that doesn't exist. The SDK should throw an internal error.
-        await JSONRPCRequest(this, "createAccount", {
-          key: key.key,
-          stakedAccountId: "",
-        });
+        await JSONRPCRequest(
+          this,
+          "createAccount",
+          {
+            key: key.key,
+            stakedAccountId: "",
+          },
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

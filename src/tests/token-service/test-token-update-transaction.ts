@@ -20,6 +20,8 @@ import {
   twoThresholdKeyParams,
 } from "@constants/key-list";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenUpdateTransaction
  */
@@ -746,15 +748,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token with an invalid key as its admin key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          adminKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            adminKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1016,15 +1027,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its KYC key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          kycKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            kycKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1298,15 +1318,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its freeze key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          freezeKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            freezeKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1580,15 +1609,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its wipe key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          wipeKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            wipeKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1862,15 +1900,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its supply key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          supplyKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            supplyKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1967,15 +2014,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#5) Updates a mutable token with an empty auto renew account", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          autoRenewAccountId: "",
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            autoRenewAccountId: "",
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2806,15 +2862,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its fee schedule key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3062,15 +3127,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its pause key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3376,15 +3450,24 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#11) Updates a mutable token with an invalid key as its metadata key", async function () {
       try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: mutableTokenId,
-          metadataKey: crypto.randomBytes(88).toString("hex"),
-          commonTransactionParams: {
-            signers: [mutableTokenKey],
+        await JSONRPCRequest(
+          this,
+          "updateToken",
+          {
+            tokenId: mutableTokenId,
+            metadataKey: crypto.randomBytes(88).toString("hex"),
+            commonTransactionParams: {
+              signers: [mutableTokenKey],
+            },
           },
-        });
+          true,
+        );
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

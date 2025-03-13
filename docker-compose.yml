@@ -8,11 +8,6 @@ services:
       NETWORK: "local"
     ports:
       - "8544:8544"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8544"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
   tck-client:
     build:
       context: .
