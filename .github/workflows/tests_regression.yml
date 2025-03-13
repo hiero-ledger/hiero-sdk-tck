@@ -1,4 +1,4 @@
-name: Start All Tests
+name: Run TCK Test Suites in Parallel
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
       - main
 
 jobs:
-  start-all-tests:
+  test-token-burn:
     runs-on: hiero-client-sdk-linux-large
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -30,8 +29,131 @@ jobs:
         run: |
           docker pull ivaylogarnev/js-tck-server-amd
 
-      - name: Start Docker Compose services
-        run: docker compose -f ./docker-compose.yml up --abort-on-container-exit
+      - name: Start Docker Compose with TokenBurn Tests
+        env:
+          TEST: "TokenBurn"
+        run: |
+          docker compose -f ./docker-compose.yml up --abort-on-container-exit
+
+      - name: Stop the local node
+        if: ${{ always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+
+  test-token-create:
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Start local Hedera network
+        run: |
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          sleep 30
+
+      - name: Pull JS TCK Server
+        run: |
+          docker pull ivaylogarnev/js-tck-server-amd
+
+      - name: Start Docker Compose with TokenCreate Tests
+        env:
+          TEST: "TokenCreate"
+        run: |
+          docker compose -f ./docker-compose.yml up --abort-on-container-exit
+
+      - name: Stop the local node
+        if: ${{ always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+
+  test-token-mint:
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Start local Hedera network
+        run: |
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          sleep 30
+
+      - name: Pull JS TCK Server
+        run: |
+          docker pull ivaylogarnev/js-tck-server-amd
+
+      - name: Start Docker Compose with TokenMint Tests
+        env:
+          TEST: "TokenMint"
+        run: |
+          docker compose -f ./docker-compose.yml up --abort-on-container-exit
+
+      - name: Stop the local node
+        if: ${{ always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+
+  test-account-create:
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Start local Hedera network
+        run: |
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          sleep 30
+
+      - name: Pull JS TCK Server
+        run: |
+          docker pull ivaylogarnev/js-tck-server-amd
+
+      - name: Start Docker Compose with AccountCreate Tests
+        env:
+          TEST: "AccountCreate"
+        run: |
+          docker compose -f ./docker-compose.yml up --abort-on-container-exit
+
+      - name: Stop the local node
+        if: ${{ always() }}
+        run: ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local stop
+
+  test-account-update:
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Start local Hedera network
+        run: |
+          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local start -d --network local --balance=10000000
+          sleep 30
+
+      - name: Pull JS TCK Server
+        run: |
+          docker pull ivaylogarnev/js-tck-server-amd
+
+      - name: Start Docker Compose with AccountUpdate Tests
+        env:
+          TEST: "AccountUpdate"
+        run: |
+          docker compose -f ./docker-compose.yml up --abort-on-container-exit
 
       - name: Stop the local node
         if: ${{ always() }}
