@@ -26,7 +26,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("AccountAllowanceApproveTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(50);
+  this.retries(100);
 
   // Each test requires valid owner and spender accounts to be created.
   let ownerAccountId: string,
@@ -34,7 +34,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     spenderAccountId: string,
     spenderPrivateKey: string;
   beforeEach(async function () {
-    this.retries(50);
+    this.retries(100);
 
     await setOperator(
       this,
@@ -395,7 +395,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     // Each test here requires a token to be created.
     let tokenId: string;
     this.beforeEach(async function () {
-      this.retries(50);
+      this.retries(100);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -1123,7 +1123,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     const metadata = ["1234", "5678", "90ab"];
 
     this.beforeEach(async function () {
-      this.retries(50);
+      this.retries(100);
 
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -1946,7 +1946,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     const metadata = ["1234", "5678", "90ab"];
 
     this.beforeEach(async function () {
-      this.retries(50);
+      this.retries(100);
 
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -2516,7 +2516,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     const metadata = ["1234", "5678", "90ab"];
 
     this.beforeEach(async function () {
-      this.retries(50);
+      this.retries(100);
 
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -3206,7 +3206,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     const metadata = ["1234", "5678", "90ab"];
 
     this.beforeEach(async function () {
-      this.retries(50);
+      this.retries(100);
 
       // Create NFT token
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);

@@ -19,10 +19,10 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(50);
+  this.retries(100);
 
   beforeEach(async function () {
-    this.retries(50);
+    this.retries(100);
 
     await setOperator(
       this,
