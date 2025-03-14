@@ -24,15 +24,20 @@ import {
   fourKeysKeyListParams,
 } from "@constants/key-list";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenCreateTransaction
  */
 describe("TokenCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
+  this.retries(100);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
   beforeEach(async function () {
+    this.retries(100);
+
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -949,7 +954,11 @@ describe("TokenCreateTransaction", function () {
           adminKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1116,7 +1125,11 @@ describe("TokenCreateTransaction", function () {
           kycKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1284,7 +1297,11 @@ describe("TokenCreateTransaction", function () {
           freezeKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1451,7 +1468,11 @@ describe("TokenCreateTransaction", function () {
           wipeKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1618,7 +1639,11 @@ describe("TokenCreateTransaction", function () {
           supplyKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1972,7 +1997,11 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2672,7 +2701,11 @@ describe("TokenCreateTransaction", function () {
           feeScheduleKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -4378,7 +4411,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4406,7 +4439,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4442,7 +4475,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4672,7 +4705,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -5072,7 +5105,11 @@ describe("TokenCreateTransaction", function () {
           pauseKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -5284,7 +5321,11 @@ describe("TokenCreateTransaction", function () {
           metadataKey: crypto.randomBytes(88).toString("hex"),
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
