@@ -13,7 +13,7 @@ export const getNetworkConfig = (
   network: string,
 ): Record<string, string | undefined> => {
   if (network === "testnet") {
-    dotenv.config({ path: ".env.testnet" });
+    dotenv.config({ path: ".env" });
 
     if (
       process.env.OPERATOR_ACCOUNT_ID === "***" ||
