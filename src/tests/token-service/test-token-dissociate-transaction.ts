@@ -21,6 +21,8 @@ describe("TokenDissociateTransaction", function () {
     accountId: string,
     accountPrivateKey: string;
   beforeEach(async function () {
+    this.retries(50);
+
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

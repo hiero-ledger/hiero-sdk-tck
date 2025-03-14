@@ -15,6 +15,8 @@ describe("AccountDeleteTransaction", function () {
   let accountPrivateKey: string, accountId: string;
 
   beforeEach(async function () {
+    this.retries(50);
+
     // Initialize the network and operator.
     await setOperator(
       this,
