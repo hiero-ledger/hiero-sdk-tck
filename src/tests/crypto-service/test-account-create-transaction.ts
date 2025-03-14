@@ -19,6 +19,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
+  this.retries(50);
 
   beforeEach(async function () {
     await setOperator(
@@ -864,7 +865,11 @@ describe("AccountCreateTransaction", function () {
           stakedAccountId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

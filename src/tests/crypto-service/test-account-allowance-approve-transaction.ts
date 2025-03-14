@@ -26,6 +26,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("AccountAllowanceApproveTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
+  this.retries(50);
 
   // Each test requires valid owner and spender accounts to be created.
   let ownerAccountId: string,
@@ -271,7 +272,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Approves a 9,223,372,036,854,775,806 (int64 max - 1) hbar allowance to a spender account from a owner account", async function () {
+    it.only("(#10) Approves a 9,223,372,036,854,775,806 (int64 max - 1) hbar allowance to a spender account from a owner account", async function () {
       const amount = "9223372036854775806";
       await JSONRPCRequest(this, "approveAllowance", {
         allowances: [

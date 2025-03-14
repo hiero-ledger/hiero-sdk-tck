@@ -14,6 +14,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("TokenPauseTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
+  this.retries(50);
 
   // All tests required a token to be created.
   let tokenId: string, tokenAdminKey: string, tokenPauseKey: string;

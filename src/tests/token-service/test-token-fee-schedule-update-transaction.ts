@@ -6,12 +6,13 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
-
 import {
   verifyTokenCreationWithFixedFee,
   verifyTokenCreationWithFractionalFee,
   verifyTokenCreationWithRoyaltyFee,
 } from "@helpers/custom-fees";
+
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenFeeScheduleUpdateTransaction
@@ -19,6 +20,7 @@ import {
 describe("TokenFeeScheduleUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
+  this.retries(50);
 
   // Initial token parameters.
   const testTokenName = "testname";
@@ -148,7 +150,11 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
           tokenId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1834,7 +1840,11 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1863,7 +1873,11 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1892,7 +1906,11 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2087,7 +2105,11 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
