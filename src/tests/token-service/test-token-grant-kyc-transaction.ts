@@ -10,7 +10,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for TokenGrantKycTransaction
  */
-describe.only("TokenGrantKycTransaction", function () {
+describe("TokenGrantKycTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   this.retries(100);

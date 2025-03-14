@@ -9,7 +9,7 @@ import { retryOnError } from "@helpers/retry-on-error";
 /**
  * Tests for TokenDeleteTransaction
  */
-describe.only("TokenDeleteTransaction", function () {
+describe("TokenDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   this.retries(100);
