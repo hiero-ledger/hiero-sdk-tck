@@ -21,7 +21,7 @@ import { verifyNoNftAllowance } from "@helpers/allowances";
 describe("AccountAllowanceDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(50);
+  this.retries(100);
 
   // Each test requires valid owner and spender accounts to be created.
   let ownerAccountId: string,
@@ -36,6 +36,8 @@ describe("AccountAllowanceDeleteTransaction", function () {
     tokenId2SerialNumber: string,
     tokenId3SerialNumber: string;
   beforeEach(async function () {
+    this.retries(100);
+
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

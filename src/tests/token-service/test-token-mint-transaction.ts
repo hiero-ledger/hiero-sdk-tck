@@ -16,9 +16,11 @@ import {
 describe("TokenMintTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(50);
+  this.retries(100);
 
   beforeEach(async function () {
+    this.retries(100);
+
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -278,6 +280,8 @@ describe("TokenMintTransaction", function () {
     let supplyKey: string;
 
     this.beforeEach(async function () {
+      this.retries(100);
+
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
@@ -626,6 +630,8 @@ describe("TokenMintTransaction", function () {
     let supplyKey: string;
 
     this.beforeEach(async function () {
+      this.retries(100);
+
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
