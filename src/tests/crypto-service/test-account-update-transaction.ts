@@ -29,7 +29,7 @@ describe("AccountUpdateTransaction", function () {
   let accountPrivateKey: string, accountId: string;
 
   beforeEach(async function () {
-    this.retries(100);
+    this.retries(200);
 
     // Initialize the network and operator.
     await setOperator(

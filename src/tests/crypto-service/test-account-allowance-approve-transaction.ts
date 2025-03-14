@@ -274,7 +274,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#10) Approves a 9,223,372,036,854,775,806 (int64 max - 1) hbar allowance to a spender account from a owner account", async function () {
+    it("(#10) Approves a 9,223,372,036,854,775,806 (int64 max - 1) hbar allowance to a spender account from a owner account", async function () {
       const amount = "9223372036854775806";
       await JSONRPCRequest(this, "approveAllowance", {
         allowances: [

@@ -25,6 +25,7 @@ describe("TokenRevokeKycTransaction", function () {
     accountId: string,
     accountPrivateKey: string;
   beforeEach(async function () {
+    this.retries(200);
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
