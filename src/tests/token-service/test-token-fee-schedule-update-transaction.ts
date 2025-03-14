@@ -17,7 +17,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for TokenFeeScheduleUpdateTransaction
  */
-describe("TokenFeeScheduleUpdateTransaction", function () {
+describe.only("TokenFeeScheduleUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   this.retries(100);
@@ -34,8 +34,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     nonFungibleTokenFeeScheduleKey: string;
 
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string as string,

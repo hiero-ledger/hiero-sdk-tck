@@ -11,7 +11,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for TokenRevokeKycTransaction
  */
-describe("TokenRevokeKycTransaction", function () {
+describe.only("TokenRevokeKycTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   this.retries(100);
@@ -25,8 +25,6 @@ describe("TokenRevokeKycTransaction", function () {
     accountId: string,
     accountPrivateKey: string;
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

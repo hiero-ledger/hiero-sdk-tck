@@ -10,7 +10,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for TokenAssociateTransaction
  */
-describe("TokenAssociateTransaction", function () {
+describe.only("TokenAssociateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   this.retries(100);
@@ -18,8 +18,6 @@ describe("TokenAssociateTransaction", function () {
   // All tests require an account and a token to be created.
   let tokenId: string, accountId: string, accountPrivateKey: string;
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
