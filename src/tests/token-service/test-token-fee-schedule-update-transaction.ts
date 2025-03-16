@@ -34,8 +34,6 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     nonFungibleTokenFeeScheduleKey: string;
 
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string as string,

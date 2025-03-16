@@ -23,8 +23,6 @@ describe("TokenUnfreezeTransaction", function () {
     accountId: string,
     accountPrivateKey: string;
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

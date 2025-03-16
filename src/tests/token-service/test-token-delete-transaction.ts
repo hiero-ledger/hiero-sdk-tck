@@ -16,8 +16,6 @@ describe("TokenDeleteTransaction", function () {
 
   // Each test should first establish the network to use, and then teardown the network when complete.
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

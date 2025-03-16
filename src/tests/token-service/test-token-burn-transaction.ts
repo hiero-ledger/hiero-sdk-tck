@@ -19,8 +19,6 @@ describe("TokenBurnTransaction", function () {
   this.retries(100);
 
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -305,8 +303,6 @@ describe("TokenBurnTransaction", function () {
     let supplyKey: string;
 
     this.beforeEach(async function () {
-      this.retries(100);
-
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
@@ -705,8 +701,6 @@ describe("TokenBurnTransaction", function () {
     let supplyKey: string;
 
     this.beforeEach(async function () {
-      this.retries(100);
-
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 

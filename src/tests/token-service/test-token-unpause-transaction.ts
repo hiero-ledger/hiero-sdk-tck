@@ -19,8 +19,6 @@ describe("TokenUnpauseTransaction", function () {
   // All tests required a token to be created and paused.
   let tokenId: string, tokenAdminKey: string, tokenPauseKey: string;
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

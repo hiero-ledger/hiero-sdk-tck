@@ -40,8 +40,6 @@ describe("TokenUpdateTransaction", function () {
   let immutableTokenId: string, mutableTokenId: string, mutableTokenKey: string;
 
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -63,8 +61,6 @@ describe("TokenUpdateTransaction", function () {
   });
 
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
