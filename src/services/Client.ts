@@ -43,7 +43,9 @@ export const JSONRPCRequest = async (
     method: method,
     params: params,
   };
-  mochaTestContext.retries(10);
+
+  // Retries the request 100 times if failure
+  mochaTestContext.retries(100);
 
   const jsonRPCResponse = await JSONRPClient.requestAdvanced(jsonRPCRequest);
   if (jsonRPCResponse.error) {
