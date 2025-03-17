@@ -392,7 +392,8 @@ describe("AccountAllowanceApproveTransaction", function () {
   describe("ApproveTokenAllowance", function () {
     // Each test here requires a token to be created.
     let tokenId: string;
-    this.beforeEach(async function () {
+
+    beforeEach(async function () {
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1118,7 +1119,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     let tokenId: string, supplyKey: string;
     const metadata = ["1234", "5678", "90ab"];
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
@@ -1939,7 +1940,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     let tokenId: string, supplyKey: string;
     const metadata = ["1234", "5678", "90ab"];
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
@@ -2507,7 +2508,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     let tokenId: string, supplyKey: string;
     const metadata = ["1234", "5678", "90ab"];
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
@@ -3195,7 +3196,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     let nftTokenId: string, fungibleTokenId: string, supplyKey: string;
     const metadata = ["1234", "5678", "90ab"];
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       // Create NFT token
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
       nftTokenId = (

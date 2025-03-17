@@ -302,7 +302,7 @@ describe("TokenBurnTransaction", function () {
   describe("Amount", function () {
     let supplyKey: string;
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
@@ -700,7 +700,7 @@ describe("TokenBurnTransaction", function () {
   describe("Serial Numbers", function () {
     let supplyKey: string;
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
