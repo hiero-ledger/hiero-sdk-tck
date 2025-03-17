@@ -5,7 +5,7 @@ export const setOperator = async (
   accountId: string,
   privateKey: string,
 ) => {
-  // Retries the request 100 times
+  // Retries the request 100 times if failure
   mochaTestContext.retries(100);
 
   // sets funding and fee-paying account for CRUD ops

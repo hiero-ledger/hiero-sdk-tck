@@ -36,8 +36,6 @@ describe("AccountAllowanceDeleteTransaction", function () {
     tokenId2SerialNumber: string,
     tokenId3SerialNumber: string;
   beforeEach(async function () {
-    this.retries(100);
-
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,

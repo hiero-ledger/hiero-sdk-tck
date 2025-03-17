@@ -34,6 +34,8 @@ export const getNewFungibleTokenId = async (
   adminKey?: string,
   treasuryAccountId?: string,
 ): Promise<string> => {
+  // Retries the request 100 times if failure
+  mochaTestContext.retries(100);
   const tokenResponse = await JSONRPCRequest(mochaTestContext, "createToken", {
     name: "testname",
     symbol: "testsymbol",
@@ -122,6 +124,7 @@ export async function createToken(
     params.freezeKey = freezeKey;
   }
 
+  mochaTestContext.retries(100);
   return (await JSONRPCRequest(mochaTestContext, "createToken", params))
     .tokenId;
 }
@@ -350,6 +353,8 @@ export const defaultNftTokenCreate = async (
   supplyKey: string,
   signerKey: string,
 ): Promise<string> => {
+  mochaTestContext.retries(100);
+
   const response = await JSONRPCRequest(mochaTestContext, "createToken", {
     name: "testname",
     symbol: "testsymbol",

@@ -77,6 +77,9 @@ export const getPrivateKey = async (
   mochaTestContext: any,
   type: string,
 ): Promise<string> => {
+  // Retries the request 100 times if failure
+  mochaTestContext.retries(100);
+
   return (
     await JSONRPCRequest(mochaTestContext, "generateKey", {
       type: type + "PrivateKey",
@@ -87,6 +90,8 @@ export const getPrivateKey = async (
 export async function generateEd25519PrivateKey(
   thisContext: any,
 ): Promise<string> {
+  thisContext.retries(100);
+
   return (
     await JSONRPCRequest(thisContext, "generateKey", {
       type: "ed25519PrivateKey",
@@ -97,6 +102,8 @@ export async function generateEd25519PrivateKey(
 export async function generateEcdsaSecp256k1PrivateKey(
   thisContext: any,
 ): Promise<string> {
+  thisContext.retries(100);
+
   return (
     await JSONRPCRequest(thisContext, "generateKey", {
       type: "ecdsaSecp256k1PrivateKey",
