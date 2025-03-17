@@ -9,7 +9,6 @@ url: https://hiero-ledger.github.io/hiero-sdk-tck
 aux_links:
   Github Repository: https://github.com/hiero-ledger/hiero-sdk-tck
 aux_links_new_tab: true
-permalink: /:path/:basename/index.html
 markdown: GFM
 
 callouts_level: quiet # or loud
