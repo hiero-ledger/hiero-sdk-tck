@@ -32,7 +32,6 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("TokenCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(100);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
   beforeEach(async function () {

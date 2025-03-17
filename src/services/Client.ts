@@ -44,14 +44,21 @@ export const JSONRPCRequest = async (
     params: params,
   };
 
-  // Retries the request 100 times if failure
-  mochaTestContext.retries(100);
-
   const jsonRPCResponse = await JSONRPClient.requestAdvanced(jsonRPCRequest);
   if (jsonRPCResponse.error) {
     if (mochaTestContext && jsonRPCResponse.error.code === -32601) {
       console.warn("Method", method, "not found.");
 
+      mochaTestContext.skip();
+    }
+
+    // Retry on network connectivity issue
+    if (
+      jsonRPCResponse.error.data.message.startsWith(
+        "Network connectivity issue",
+      )
+    ) {
+      console.warn("Skipping test due to network connectivity issue");
       mochaTestContext.skip();
     }
 

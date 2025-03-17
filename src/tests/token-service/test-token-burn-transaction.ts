@@ -16,7 +16,6 @@ import {
 describe("TokenBurnTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-  this.retries(100);
 
   beforeEach(async function () {
     await setOperator(

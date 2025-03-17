@@ -6,8 +6,6 @@ export async function mintToken(
   metadata: string[],
   supplyKey: string,
 ): Promise<void> {
-  // Retries the request 100 times if failure
-  thisContext.retries(100);
   await JSONRPCRequest(thisContext, "mintToken", {
     tokenId,
     metadata,
@@ -23,8 +21,6 @@ export async function getMintedTokenSerialNumber(
   metadata: string[],
   supplyKey: string,
 ): Promise<string> {
-  // Retries the request 100 times if failure
-  thisContext.retries(100);
   return (
     await JSONRPCRequest(thisContext, "mintToken", {
       tokenId,
