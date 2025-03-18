@@ -1,6 +1,6 @@
 ---
 title: Local Development Guide
-nav_order: 8
+nav_order: 6
 ---
 # Local Development Guide  
 

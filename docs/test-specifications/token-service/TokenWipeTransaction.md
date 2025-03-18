@@ -1,5 +1,5 @@
 ---
-title: Token Update Transaction
+title: Token Wipe Transaction
 parent: Token Service
 nav_order: 16
 ---

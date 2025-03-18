@@ -35,11 +35,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                                           |
-|-------------------------|--------------------------------------------------|-------------------|-------------------------------------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token whose fee schedule shall be updated.    |
-| customFees              | list<[json object](customFee.md)>                | optional          | The new fees to be assessed during a transfer of the token. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                             |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                           |
+|-------------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token whose fee schedule shall be updated.    |
+| customFees              | list<[json object](customFee.md)>                       | optional          | The new fees to be assessed during a transfer of the token. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                             |
 
 ### Output Parameters
 

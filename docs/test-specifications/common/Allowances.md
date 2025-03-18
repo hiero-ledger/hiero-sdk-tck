@@ -1,7 +1,7 @@
 ---
 title: Allowances
-parent: Crypto Service
-nav_order: 7
+parent: Helpers
+nav_order: 1
 ---
 # Allowance
 
