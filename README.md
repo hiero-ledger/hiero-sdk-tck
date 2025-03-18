@@ -4,6 +4,8 @@ A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test 
 The TCK aims to verify compliant implementations of a Hiero SDK.
 It will encompass tests that validate the implementation of consensus node software transactions and queries, performance and longevity testing.
 
+Check out all our test specifications at [our website](https://hiero-ledger.github.io/hiero-sdk-tck/) for a better viewing experience!
+
 ## Setup
 
 First you need to clone the repository
@@ -12,19 +14,18 @@ First you need to clone the repository
 git clone git@github.com:hiero-ledger/hiero-sdk-tck.git
 ```
 
-The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hedera-local-node](https://github.com/hashgraph/hedera-local-node).
-In near future hedera-local-node will be transfered to Hiero (see our [transition document](https://github.com/hiero-ledger/hiero/blob/main/transition.md) for more details).
+The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hiero-local-node](https://github.com/hiero-ledger/hiero-local-node).
 
 ### Configure usage of Hedera Testnet
 
 - Get a Hedera testnet account ID and private key [here](https://portal.hedera.com/register)
-- rename `.env.testnet` to `.env`
+- Rename `.env.testnet` to `.env`
 - Add ECDSA account ID and private key to `.env`
 
 ### Configure usage of local node
 
-- Start your [hedera-local-node](https://github.com/hashgraph/hedera-local-node)
-- rename `.env.custom_node` to `.env`
+- Start your [hiero-local-node](https://github.com/hiero-ledger/hiero-local-node)
+- Rename `.env.custom_node` to `.env`
 
 ### Configure usage of a custom network
 
@@ -104,7 +105,7 @@ The cleanup task (defined in `Taskfile.yaml`) performs the following:
 - Flattens the directory structure by moving files from `models/` to the root
 - Updates import paths in `index.ts` to reflect the new structure
 
-### You can also run both steps together using (*recommended*):
+**You can also run both steps together using (recommended):**
 ```bash
 task generate-mirror-node-models
 ```
@@ -133,21 +134,20 @@ To run tests against a local network:
 # Run specific test
 docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/tck-client
 
-#the default port is 8544
-
 # Run all tests
 docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
-
 ```
+
+*NOTE: The default port is 8544.*
 
 ### Configuring any custom local network
 To run tests against any other custom local network, you need to set the following environment variables:
 
-| Environment Variable         | Description                              |
-|------------------------------|------------------------------------------     |
-| `OPERATOR_ACCOUNT_ID`        | The account ID of the operator           |
+| Environment Variable           | Description                             |
+|--------------------------------|-----------------------------------------|
+| `OPERATOR_ACCOUNT_ID`          | The account ID of the operator          |
 | `OPERATOR_ACCOUNT_PRIVATE_KEY` | The private key of the operator account |
-| `JSON_RPC_SERVER_URL`        | The URL of the JSON-RPC server           |
+| `JSON_RPC_SERVER_URL`          | The URL of the JSON-RPC server          |
 
 For a complete list of configurable environment variables, refer to the `.env.custom_node` file. This file contains default values and descriptions for each variable, which can be adjusted to fit your custom network setup.
 
@@ -196,17 +196,11 @@ If you want to build the image locally:
 docker build -t tck-client .
 ```
 
-Then run it using the same commands as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
+Then run it using the [same commands](#local-network-default) as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
 
-### Docker additional notes
+### Docker Additional Notes
 
-```bash
-# entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. 
-
-RunTestsInContainer.ts
-```
-
-**Note:** This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the "Install and run" section above.
+`RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
 
 ## Contributing
 
