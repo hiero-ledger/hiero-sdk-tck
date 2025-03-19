@@ -59,6 +59,7 @@ jobs:
           done
           echo "Hedera local network is ready!"
 
+      # TODO: Update this once we have a dynamically updated image
       - name: Pull JS TCK Server
         run: |
           docker pull ivaylogarnev/js-tck-server-amd
