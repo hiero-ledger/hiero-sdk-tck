@@ -864,7 +864,11 @@ describe("AccountCreateTransaction", function () {
           stakedAccountId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
