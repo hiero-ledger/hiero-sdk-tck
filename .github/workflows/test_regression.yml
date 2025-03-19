@@ -50,7 +50,14 @@ jobs:
             --network local \
             --balance=10000000 \
             --cache-dir=/tmp/hedera-cache
-          sleep 20
+      - name: Wait for Hedera local network
+        run: |
+          echo "Waiting for Hedera local network on port 50211..."
+          until bash -c 'exec 3>/dev/tcp/localhost/50211'; do
+            echo "Still waiting..."
+            sleep 1
+          done
+          echo "Hedera local network is ready!"
 
       - name: Pull JS TCK Server
         run: |
@@ -59,7 +66,14 @@ jobs:
       - name: Start tck-server in background
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
-          sleep 30
+      - name: Wait for TCK server
+        run: |
+          echo "Waiting for TCK server on port 8544..."
+          until bash -c 'exec 3>/dev/tcp/localhost/8544'; do
+            echo "Still waiting..."
+            sleep 1
+          done
+          echo "TCK server is ready!"
 
       - name: Run ${{ matrix.suite }} tests
         run: |
