@@ -20,6 +20,8 @@ import {
   twoThresholdKeyParams,
 } from "@constants/key-list";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenUpdateTransaction
  */
@@ -754,7 +756,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1024,7 +1030,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1306,7 +1316,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1588,7 +1602,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1870,7 +1888,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1975,7 +1997,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2814,7 +2840,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3070,7 +3100,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3384,7 +3418,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
