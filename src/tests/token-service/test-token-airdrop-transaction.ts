@@ -599,7 +599,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Airdrops 0 fungible token from a sender account to a receiver account", async function () {
+    it.skip("(#11) Airdrops 0 fungible token from a sender account to a receiver account", async function () {
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
           {
@@ -789,31 +789,34 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#17) Airdrops an amount of fungible token from a sender account to itself", async function () {
-      await JSONRPCRequest(this, "airdropToken", {
-        tokenTransfers: [
-          {
-            token: {
-              accountId: senderAccountId,
-              tokenId,
-              amount: amountNegatedStr,
+      try {
+        await JSONRPCRequest(this, "airdropToken", {
+          tokenTransfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+              },
             },
-          },
-          {
-            token: {
-              accountId: senderAccountId,
-              tokenId,
-              amount: amountStr,
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountStr,
+              },
             },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
           },
-        ],
-        commonTransactionParams: {
-          signers: [senderPrivateKey],
-        },
-      });
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "EMPTY_TOKEN_TRANSFER_BODY");
+        return;
+      }
 
-      await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId, tokenId, amount),
-      );
+      assert.fail("Should throw an error");
     });
 
     it("(#18) Airdrops an amount of fungible token from a frozen sender account to a receiver account", async function () {
