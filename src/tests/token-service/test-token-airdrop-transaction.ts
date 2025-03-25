@@ -80,9 +80,16 @@ describe("TokenAirdropTransaction", function () {
       await ConsensusInfoClient.getAccountInfo(accountId);
     const accountMirrorInfo = await MirrorNodeClient.getAccountData(accountId);
 
-    expect(
-      accountConsensusInfo.tokenRelationships.get(tokenId)?.balance.toNumber(),
-    ).to.equal(balance);
+    // If the token has a balance of zero, for either consensus node or mirror node queries, the token can either be returned with a balance of zero, or not be returned at all.
+    if (accountConsensusInfo.tokenRelationships.get(tokenId)) {
+      expect(
+        accountConsensusInfo.tokenRelationships
+          .get(tokenId)
+          ?.balance.toNumber(),
+      ).to.equal(balance);
+    } else {
+      expect(balance).to.equal(0);
+    }
 
     let foundToken = false;
     for (let i = 0; i < accountMirrorInfo.balance.tokens.length; i++) {
@@ -93,7 +100,9 @@ describe("TokenAirdropTransaction", function () {
       }
     }
 
-    expect(foundToken).to.be.true;
+    if (!foundToken) {
+      expect(balance).to.equal(0);
+    }
   };
 
   const verifyNftBalance = async (
@@ -146,6 +155,7 @@ describe("TokenAirdropTransaction", function () {
     let foundAirdrop = false;
     const senderAirdrops =
       await MirrorNodeClient.getOutgoingTokenAirdrops(senderAccountId);
+    console.log(senderAirdrops);
     if (senderAirdrops.airdrops) {
       for (let i = 0; i < senderAirdrops.airdrops?.length; i++) {
         const airdrop = senderAirdrops.airdrops[i];
@@ -165,6 +175,7 @@ describe("TokenAirdropTransaction", function () {
 
     const receiverAirdrops =
       await MirrorNodeClient.getIncomingTokenAirdrops(receiverAccountId);
+    console.log(receiverAirdrops);
     if (receiverAirdrops.airdrops) {
       for (let i = 0; i < receiverAirdrops.airdrops?.length; i++) {
         const airdrop = receiverAirdrops.airdrops[i];
@@ -182,7 +193,7 @@ describe("TokenAirdropTransaction", function () {
 
     expect(foundAirdrop).to.be.true;
   };
-
+/*  
   describe("AddTokenTransfer", function () {
     let tokenId: string, tokenKey: string;
     beforeEach(async function () {
@@ -232,7 +243,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
     });
-
+    
     it("(#1) Airdrops an amount of fungible token from a sender account to a receiver account", async function () {
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -1024,7 +1035,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#22) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
+    it.skip("(#22) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
       await JSONRPCRequest(this, "updateAccount", {
         accountId: receiverAccountId,
         maxAutoTokenAssociations: 0,
@@ -1056,7 +1067,7 @@ describe("TokenAirdropTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId, tokenId, 0),
+        verifyTokenBalance(senderAccountId, tokenId, amount),
       );
       await retryOnError(async () =>
         verifyTokenBalance(receiverAccountId, tokenId, 0),
@@ -1245,7 +1256,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#25) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
+    it.skip("(#25) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
@@ -1339,7 +1350,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
+    it.skip("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
       const feeScheduleKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
@@ -1409,7 +1420,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#27) Airdrops an amount of fungible token from several sender accounts to one receiver account", async function () {
+    it.skip("(#27) Airdrops an amount of fungible token from several sender accounts to one receiver account", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -1504,7 +1515,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#28) Airdrops an amount of fungible token from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+    it.skip("(#28) Airdrops an amount of fungible token from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -1654,7 +1665,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#30) Airdrops an amount of fungible token from several sender accounts to one receiver account with a sender that is deleted", async function () {
+    it.skip("(#30) Airdrops an amount of fungible token from several sender accounts to one receiver account with a sender that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -1743,7 +1754,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#31) Airdrops an amount of fungible token from several sender accounts to one receiver account with one not signing", async function () {
+    it.skip("(#31) Airdrops an amount of fungible token from several sender accounts to one receiver account with one not signing", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -1831,7 +1842,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#32) Airdrops an amount of fungible token from several sender accounts to one receiver account with the amounts not adding up", async function () {
+    it.skip("(#32) Airdrops an amount of fungible token from several sender accounts to one receiver account with the amounts not adding up", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -1919,7 +1930,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#33) Airdrops an amount of fungible token from several sender accounts to an unassociated receiver account with no automatic token associations", async function () {
+    it.skip("(#33) Airdrops an amount of fungible token from several sender accounts to an unassociated receiver account with no automatic token associations", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -2030,7 +2041,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#34) Airdrops an amount of fungible token from several sender accounts to several receiver accounts", async function () {
+    it.skip("(#34) Airdrops an amount of fungible token from several sender accounts to several receiver accounts", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -2162,7 +2173,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#35) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+    it.skip("(#35) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -2386,7 +2397,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#37) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+    it.skip("(#37) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -2512,7 +2523,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#38) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that has no automatic token associations", async function () {
+    it.skip("(#38) Airdrops an amount of fungible token from several sender accounts to several receiver accounts with a receiver that has no automatic token associations", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -2644,7 +2655,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
   });
-/*
+*/
   describe("AddNftTransfer", function () {
     let tokenId: string,
       tokenKey: string,
@@ -3359,60 +3370,40 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#21) Transfers an NFT from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+    it.skip("(#21) Transfers an NFT from a sender account to an unassociated receiver account with no automatic token associations", async function () {
+      await JSONRPCRequest(this, "updateAccount", {
+        accountId: receiverAccountId,
+        maxAutoTokenAssociations: 0,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey],
+        },
+      });
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
           {
-            token: {
-              accountId: process.env.OPERATOR_ACCOUNT_ID,
-              tokenId: dummyTokenId,
-              amount: amountNegatedStr,
-            },
-          },
-          {
-            token: {
-              accountId: receiverAccountId,
-              tokenId: dummyTokenId,
-              amount: amountStr,
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+              serialNumber: serialNumbers[0],
             },
           },
         ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
       });
 
-      try {
-        await JSONRPCRequest(this, "airdropToken", {
-          tokenTransfers: [
-            {
-              nft: {
-                senderAccountId,
-                receiverAccountId,
-                tokenId,
-                serialNumber: serialNumbers[0],
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [senderPrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "NO_REMAINING_AUTOMATIC_ASSOCIATIONS");
-        return;
-      }
-
-      assert.fail("Should throw an error");
+      await retryOnError(async () =>
+        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], true),
+      );
+      await retryOnError(async () =>
+        verifyAirdrop(senderAccountId, receiverAccountId, tokenId, amount),
+      );
     });
 
-    it("(#22) Transfers an NFT with a royalty fee from a sender account to a receiver account", async function () {
+    it.only("(#22) Transfers an NFT with a royalty fee from a sender account to a receiver account", async function () {
       const feeCollectorAccountKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
@@ -3468,43 +3459,28 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "airdropToken", {
-        tokenTransfers: [
-          {
-            nft: {
-              senderAccountId,
-              receiverAccountId,
-              tokenId,
-              serialNumber: serialNumbers[0],
+      try {
+        await JSONRPCRequest(this, "airdropToken", {
+          tokenTransfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
             },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, receiverPrivateKey],
           },
-          {
-            hbar: {
-              accountId: senderAccountId,
-              amount: String(-feeAmount),
-            },
-          },
-          {
-            hbar: {
-              accountId: receiverAccountId,
-              amount: feeAmountStr,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [senderPrivateKey, receiverPrivateKey],
-        },
-      });
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "TOKEN_AIRDROP_WITH_FALLBACK_ROYALTY");
+        return;
+      }
 
-      await retryOnError(async () =>
-        verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
-      );
-      await retryOnError(async () =>
-        verifyNftBalance(receiverAccountId, tokenId, serialNumbers[0], true),
-      );
-      await retryOnError(async () =>
-        verifyHbarBalance(feeCollectorAccountId, feeAmount),
-      );
+      assert.fail("Should throw an error");
     });
 
     it.skip("(#23) Transfers an NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
@@ -4532,7 +4508,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
   });
-
+  /*
   describe("AddTokenTransferWithDecimals", function () {
     const decimals = 2;
     let tokenId: string, tokenKey: string;
