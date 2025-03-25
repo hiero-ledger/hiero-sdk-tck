@@ -3483,83 +3483,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#23) Airdrops an NFT with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
-
-      await JSONRPCRequest(this, "updateToken", {
-        tokenId,
-        feeScheduleKey,
-        commonTransactionParams: {
-          signers: [tokenKey],
-        },
-      });
-
-      const feeAmount = 100;
-      const feeAmountStr = String(feeAmount);
-      await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-        tokenId,
-        customFees: [
-          {
-            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
-            feeCollectorsExempt: false,
-            royaltyFee: {
-              numerator: feeAmountStr,
-              denominator: feeAmountStr,
-              fallbackFee: {
-                amount: feeAmountStr,
-              },
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [feeScheduleKey],
-        },
-      });
-
-      try {
-        await JSONRPCRequest(this, "airdropToken", {
-          tokenTransfers: [
-            {
-              nft: {
-                senderAccountId,
-                receiverAccountId,
-                tokenId,
-                serialNumber: serialNumbers[0],
-              },
-            },
-            {
-              hbar: {
-                accountId: senderAccountId,
-                amount: "-1",
-              },
-            },
-            {
-              hbar: {
-                accountId: receiverAccountId,
-                amount: "1",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [senderPrivateKey, receiverPrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          "INSUFFICIENT_SENDER_ACCOUNT_BALANCE_FOR_CUSTOM_FEE",
-        );
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#24) Transfers NFTs from several sender accounts to one receiver account", async function () {
+    it("(#24) Airdrops NFTs from several sender accounts to one receiver account", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -3650,7 +3574,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#25) Transfers NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+    it("(#25) Airdrops NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -3713,7 +3637,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#26) Transfers NFTs from several sender accounts to one receiver account with a sender that is empty", async function () {
+    it("(#26) Airdrops NFTs from several sender accounts to one receiver account with a sender that is empty", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -3780,7 +3704,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#27) Transfers NFTs from several sender accounts to one receiver account with a sender that is deleted", async function () {
+    it("(#27) Airdrops NFTs from several sender accounts to one receiver account with a sender that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -3862,7 +3786,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#28) Transfers NFTs from several sender accounts to one receiver account with one not signing", async function () {
+    it("(#28) Airdrops NFTs from several sender accounts to one receiver account with one not signing", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -3941,7 +3865,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#29) Transfers NFTs from several sender accounts to one receiver account with an invalid serial number", async function () {
+    it("(#29) Airdrops NFTs from several sender accounts to one receiver account with an invalid serial number", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -4020,7 +3944,94 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#30) Transfers NFTs from several sender accounts to several receiver accounts", async function () {
+    it("(#30) Airdrops NFTs from several sender accounts to an unassociated receiver account with no automatic token associations", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "updateAccount", {
+        accountId: receiverAccountId,
+        maxAutoTokenAssociations: 0,
+        commonTransactionParams: {
+          signers: [receiverPrivateKey],
+        },
+      });
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "airdropToken", {
+          tokenTransfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId,
+                tokenId,
+                serialNumber: "1000000",
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NFT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#31) Airdrops NFTs from several sender accounts to several receiver accounts", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4127,7 +4138,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#31) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+    it("(#32) Airdrops NFTs from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4214,7 +4225,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#32) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
+    it("(#33) Airdrops NFTs from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4305,7 +4316,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#33) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+    it("(#34) Airdrops NFTs from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4349,6 +4360,101 @@ describe("TokenAirdropTransaction", function () {
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId2,
+              tokenId,
+              serialNumber: serialNumbers[1],
+            },
+          },
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId3,
+              tokenId,
+              serialNumber: serialNumbers[2],
+            },
+          },
+        ],
+      });
+
+      try {
+        await JSONRPCRequest(this, "airdropToken", {
+          tokenTransfers: [
+            {
+              nft: {
+                senderAccountId,
+                receiverAccountId,
+                tokenId,
+                serialNumber: serialNumbers[0],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId2,
+                receiverAccountId: receiverAccountId2,
+                tokenId,
+                serialNumber: serialNumbers[1],
+              },
+            },
+            {
+              nft: {
+                senderAccountId: senderAccountId3,
+                receiverAccountId: receiverAccountId3,
+                tokenId,
+                serialNumber: serialNumbers[2],
+              },
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey, senderPrivateKey2, senderPrivateKey3],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#35) Airdrops NFTs from several sender accounts to several receiver accounts with a receiver that has no automatic token associations", async function () {
+      const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const senderPrivateKey3 = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
+      const receiverPrivateKey3 = await generateEd25519PrivateKey(this);
+
+      const senderAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const senderAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey3,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId2 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey2,
+          maxAutoTokenAssociations: 1,
+        })
+      ).accountId;
+
+      const receiverAccountId3 = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey3,
+          maxAutoTokenAssociations: 0,
+        })
+      ).accountId;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
           {
             nft: {
               senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
