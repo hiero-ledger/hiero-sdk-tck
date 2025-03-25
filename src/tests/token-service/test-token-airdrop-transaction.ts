@@ -3403,7 +3403,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it.only("(#22) Transfers an NFT with a royalty fee from a sender account to a receiver account", async function () {
+    it("(#22) Transfers an NFT with a royalty fee from a sender account to a receiver account", async function () {
       const feeCollectorAccountKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ed25519PrivateKey",
@@ -3483,107 +3483,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#23) Transfers an NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
-
-      const feeCollectorAccountId = await createAccount(
-        this,
-        feeCollectorAccountKey,
-      );
-
-      await JSONRPCRequest(this, "associateToken", {
-        accountId: feeCollectorAccountId,
-        tokenIds: [tokenId],
-        commonTransactionParams: {
-          signers: [feeCollectorAccountKey],
-        },
-      });
-
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
-
-      await JSONRPCRequest(this, "updateToken", {
-        tokenId,
-        feeScheduleKey,
-        commonTransactionParams: {
-          signers: [tokenKey],
-        },
-      });
-
-      const feeAmount = 1;
-      const feeAmountStr = String(feeAmount);
-      await JSONRPCRequest(this, "updateTokenFeeSchedule", {
-        tokenId,
-        customFees: [
-          {
-            feeCollectorAccountId,
-            feeCollectorsExempt: false,
-            royaltyFee: {
-              numerator: feeAmountStr,
-              denominator: feeAmountStr,
-              fallbackFee: {
-                amount: feeAmountStr,
-              },
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [feeScheduleKey],
-        },
-      });
-
-      await JSONRPCRequest(this, "dissociateToken", {
-        accountId: feeCollectorAccountId,
-        tokenIds: [tokenId],
-        commonTransactionParams: {
-          signers: [feeCollectorAccountKey],
-        },
-      });
-
-      try {
-        await JSONRPCRequest(this, "airdropToken", {
-          tokenTransfers: [
-            {
-              nft: {
-                senderAccountId,
-                receiverAccountId,
-                tokenId,
-                serialNumber: serialNumbers[0],
-              },
-            },
-            {
-              hbar: {
-                accountId: senderAccountId,
-                amount: String(-feeAmount),
-              },
-            },
-            {
-              hbar: {
-                accountId: receiverAccountId,
-                amount: feeAmountStr,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [senderPrivateKey, receiverPrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#24) Transfers an NFT with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
+    it("(#23) Transfers an NFT with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
       const feeScheduleKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
@@ -3659,7 +3559,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#25) Transfers NFTs from several sender accounts to one receiver account", async function () {
+    it("(#24) Transfers NFTs from several sender accounts to one receiver account", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -3750,7 +3650,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#26) Transfers NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+    it("(#25) Transfers NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -3813,7 +3713,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#27) Transfers NFTs from several sender accounts to one receiver account with a sender that is empty", async function () {
+    it("(#26) Transfers NFTs from several sender accounts to one receiver account with a sender that is empty", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -3880,7 +3780,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#28) Transfers NFTs from several sender accounts to one receiver account with a sender that is deleted", async function () {
+    it("(#27) Transfers NFTs from several sender accounts to one receiver account with a sender that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -3962,7 +3862,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#29) Transfers NFTs from several sender accounts to one receiver account with one not signing", async function () {
+    it("(#28) Transfers NFTs from several sender accounts to one receiver account with one not signing", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -4041,7 +3941,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#30) Transfers NFTs from several sender accounts to one receiver account with an invalid serial number", async function () {
+    it("(#29) Transfers NFTs from several sender accounts to one receiver account with an invalid serial number", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -4120,7 +4020,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#31) Transfers NFTs from several sender accounts to several receiver accounts", async function () {
+    it("(#30) Transfers NFTs from several sender accounts to several receiver accounts", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4227,7 +4127,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#32) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
+    it("(#31) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4314,7 +4214,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#33) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
+    it("(#32) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is empty", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
@@ -4405,7 +4305,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#34) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
+    it("(#33) Transfers NFTs from several sender accounts to several receiver accounts with a receiver that is deleted", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
       const receiverPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
