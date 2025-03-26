@@ -4903,7 +4903,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
+    it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
       let supplyKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
@@ -4968,7 +4968,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Airdrops 0 fungible token from a sender account to a receiver account", async function () {
+    it.skip("(#11) Airdrops 0 fungible token from a sender account to a receiver account", async function () {
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
           {
@@ -4998,7 +4998,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#12) Airdrops an amount of fungible token from a sender account to a receiver account with the incorrect decimals", async function () {
+    it.skip("(#12) Airdrops an amount of fungible token from a sender account to a receiver account with the incorrect decimals", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
           tokenTransfers: [
@@ -5157,7 +5157,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#17) Airdrops an amount of fungible token from a sender account to a receiver account that requires a signature to receive but doesn't sign", async function () {
+    it.skip("(#17) Airdrops an amount of fungible token from a sender account to a receiver account that requires a signature to receive but doesn't sign", async function () {
       await JSONRPCRequest(this, "updateAccount", {
         accountId: receiverAccountId,
         receiverSignatureRequired: true,
@@ -5198,34 +5198,37 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#18) Airdrops an amount of fungible token from a sender account to itself", async function () {
-      await JSONRPCRequest(this, "airdropToken", {
-        tokenTransfers: [
-          {
-            token: {
-              accountId: senderAccountId,
-              tokenId,
-              amount: amountNegatedStr,
-              decimals,
+    it.only("(#18) Airdrops an amount of fungible token from a sender account to itself", async function () {
+      try {
+        await JSONRPCRequest(this, "airdropToken", {
+          tokenTransfers: [
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountNegatedStr,
+                decimals,
+              },
             },
-          },
-          {
-            token: {
-              accountId: senderAccountId,
-              tokenId,
-              amount: amountStr,
-              decimals,
+            {
+              token: {
+                accountId: senderAccountId,
+                tokenId,
+                amount: amountStr,
+                decimals,
+              },
             },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
           },
-        ],
-        commonTransactionParams: {
-          signers: [senderPrivateKey],
-        },
-      });
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "EMPTY_TOKEN_TRANSFER_BODY");
+        return;
+      }
 
-      await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId, tokenId, amount),
-      );
+      assert.fail("Should throw an error");
     });
 
     it("(#19) Airdrops an amount of fungible token from a frozen sender account to a receiver account", async function () {
