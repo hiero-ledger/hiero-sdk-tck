@@ -1,6 +1,7 @@
 ---
 title: Error Codes
-nav_order: 5
+parent: Helpers
+nav_order: 4
 ---
 # TCK Errors
 
