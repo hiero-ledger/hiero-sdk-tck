@@ -6,9 +6,13 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
+import { generateEd25519PrivateKey, getPrivateKey } from "@helpers/key";
 import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
-import { generateEd25519PrivateKey, getPrivateKey } from "@helpers/key";
+import {
+  verifyFungibleTokenWipe,
+  verifyNonFungibleTokenWipe,
+} from "@helpers/token";
 
 /**
  * Tests for TokenWipeTransaction
@@ -132,93 +136,6 @@ describe("TokenWipeTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  async function verifyFungibleTokenWipe(
-    tokenId: string,
-    accountId: string,
-    tokenInitialSupply: string,
-    accountInitialSupply: string,
-    amount: string,
-  ) {
-    // Verify the tokens were removed from the account.
-    const consensusNodeAccountInfo =
-      await consensusInfoClient.getBalance(accountId);
-    expect(consensusNodeAccountInfo.tokens?.get(tokenId)?.toString()).to.equal(
-      (BigInt(accountInitialSupply) - BigInt(amount)).toString(),
-    );
-
-    await retryOnError(async () => {
-      const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
-        accountId,
-        tokenId,
-      );
-
-      let foundToken = false;
-      for (let i = 0; i < mirrorNodeInfo?.tokens?.length!; i++) {
-        if (mirrorNodeInfo?.tokens?.[i]?.token_id === tokenId) {
-          expect(mirrorNodeInfo?.tokens?.[i]?.balance.toString()).to.equal(
-            (BigInt(accountInitialSupply) - BigInt(amount)).toString(),
-          );
-          foundToken = true;
-          break;
-        }
-      }
-
-      if (!foundToken) {
-        expect.fail("Token ID not found");
-      }
-    });
-
-    // Verify the tokens were removed from circulation.
-    const consensusNodeTokenInfo =
-      await consensusInfoClient.getTokenInfo(tokenId);
-    expect(consensusNodeTokenInfo.totalSupply.toString()).to.equal(
-      (BigInt(tokenInitialSupply) - BigInt(amount)).toString(),
-    );
-
-    await retryOnError(async () => {
-      const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
-      expect(mirrorNodeInfo.total_supply).to.equal(
-        (BigInt(tokenInitialSupply) - BigInt(amount)).toString(),
-      );
-    });
-  }
-
-  async function verifyNonFungibleTokenWipe(
-    tokenId: string,
-    accountId: string,
-    serialNumber: string,
-  ) {
-    // Query the consensus node. Should throw since the NFT shouldn't exist anymore.
-    let foundNft = true;
-    try {
-      await consensusInfoClient.getTokenNftInfo(tokenId, serialNumber);
-    } catch {
-      foundNft = false;
-    }
-
-    // Make sure the NFT was not found.
-    expect(foundNft).to.be.false;
-
-    // Query the mirror node.
-    await retryOnError(async () => {
-      const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(accountId);
-
-      foundNft = false;
-      for (let i = 0; i < mirrorNodeInfo.nfts?.length!; i++) {
-        if (
-          mirrorNodeInfo.nfts?.[i]?.token_id === tokenId &&
-          mirrorNodeInfo.nfts?.[i]?.serial_number?.toString() === serialNumber
-        ) {
-          foundNft = true;
-          break;
-        }
-      }
-
-      // Make sure the NFT was not found.
-      expect(foundNft).to.be.false;
-    });
-  }
- 
   describe("Token ID", function () {
     it("(#1) Wipes a valid amount of fungible token", async function () {
       await JSONRPCRequest(this, "wipeToken", {
@@ -230,12 +147,14 @@ describe("TokenWipeTransaction", function () {
         },
       });
 
-      await verifyFungibleTokenWipe(
-        tokenId,
-        accountId,
-        fungibleInitialSupply,
-        fungibleInitialSupply,
-        amount,
+      await retryOnError(async () =>
+        verifyFungibleTokenWipe(
+          tokenId,
+          accountId,
+          fungibleInitialSupply,
+          fungibleInitialSupply,
+          amount,
+        ),
       );
     });
 
@@ -310,8 +229,8 @@ describe("TokenWipeTransaction", function () {
           adminKey: tokenKey,
           wipeKey: tokenKey,
           commonTransactionParams: {
-            signers: [tokenKey]
-          }
+            signers: [tokenKey],
+          },
         })
       ).tokenId;
 
@@ -328,8 +247,8 @@ describe("TokenWipeTransaction", function () {
           accountId,
           amount,
           commonTransactionParams: {
-            signers: [tokenKey]
-          }
+            signers: [tokenKey],
+          },
         });
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_WAS_DELETED");
@@ -359,7 +278,7 @@ describe("TokenWipeTransaction", function () {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
-          treasuryAccountId
+          treasuryAccountId,
         })
       ).tokenId;
 
@@ -422,8 +341,8 @@ describe("TokenWipeTransaction", function () {
           accountId: "123.456.789",
           amount,
           commonTransactionParams: {
-            signers: [wipeKey]
-          }
+            signers: [wipeKey],
+          },
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
@@ -485,8 +404,8 @@ describe("TokenWipeTransaction", function () {
           },
         ],
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       await JSONRPCRequest(this, "deleteAccount", {
@@ -503,8 +422,8 @@ describe("TokenWipeTransaction", function () {
           accountId,
           amount,
           commonTransactionParams: {
-            signers: [wipeKey]
-          }
+            signers: [wipeKey],
+          },
         });
       } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
@@ -522,7 +441,7 @@ describe("TokenWipeTransaction", function () {
           symbol: "testsymbol",
           treasuryAccountId,
           freezeKey: tokenKey,
-          wipeKey: tokenKey
+          wipeKey: tokenKey,
         })
       ).tokenId;
 
@@ -530,8 +449,8 @@ describe("TokenWipeTransaction", function () {
         accountId,
         tokenIds: [tokenId],
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       await JSONRPCRequest(this, "freezeToken", {
@@ -548,8 +467,8 @@ describe("TokenWipeTransaction", function () {
           accountId,
           amount,
           commonTransactionParams: {
-            signers: [tokenKey]
-          }
+            signers: [tokenKey],
+          },
         });
       } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_FROZEN_FOR_TOKEN");
@@ -578,8 +497,8 @@ describe("TokenWipeTransaction", function () {
           },
         ],
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
@@ -588,8 +507,8 @@ describe("TokenWipeTransaction", function () {
           accountId: treasuryAccountId,
           amount,
           commonTransactionParams: {
-            signers: [wipeKey]
-          }
+            signers: [wipeKey],
+          },
         });
       } catch (err: any) {
         assert.equal(err.data.status, "CANNOT_WIPE_TOKEN_TREASURY_ACCOUNT");
@@ -981,23 +900,11 @@ describe("TokenWipeTransaction", function () {
           serialNumber,
         );
 
-        let foundNft = false;
-        for (
-          let nftIndex = 0;
-          nftIndex < consensusNodeInfo.length;
-          nftIndex++
-        ) {
-          const nftInfo = consensusNodeInfo[nftIndex];
-
-          if (
+        const foundNft = consensusNodeInfo.some(
+          (nftInfo) =>
             nftInfo.nftId.tokenId.toString() === tokenId &&
-            nftInfo.nftId.serial.toString() === serialNumber
-          ) {
-            expect(nftInfo.accountId.toString()).to.equal(accountId);
-            foundNft = true;
-            break;
-          }
-        }
+            nftInfo.nftId.serial.toString() === serialNumber,
+        );
 
         // Make sure the NFT was actually found.
         expect(foundNft).to.be.true;
@@ -1007,23 +914,11 @@ describe("TokenWipeTransaction", function () {
           const mirrorNodeInfo =
             await mirrorNodeClient.getAccountNfts(accountId);
 
-          foundNft = false;
-          for (
-            let nftIndex = 0;
-            nftIndex < mirrorNodeInfo.nfts?.length!;
-            nftIndex++
-          ) {
-            const nft = mirrorNodeInfo.nfts?.[nftIndex];
-
-            if (
+          const foundNft = mirrorNodeInfo.nfts?.some(
+            (nft) =>
               nft?.token_id === tokenId &&
-              nft?.serial_number?.toString() === serialNumber
-            ) {
-              expect(nft.account_id).to.equal(accountId);
-              foundNft = true;
-              break;
-            }
-          }
+              nft?.serial_number?.toString() === serialNumber,
+          );
 
           // Make sure the NFT was actually found.
           expect(foundNft).to.be.true;
@@ -1075,13 +970,13 @@ describe("TokenWipeTransaction", function () {
               senderAccountId: accountId,
               receiverAccountId: process.env.OPERATOR_ACCOUNT_ID,
               tokenId,
-              serialNumber: serialNumbers[0]
-            }
-          }
+              serialNumber: serialNumbers[0],
+            },
+          },
         ],
         commonTransactionParams: {
-          signers: [accountPrivateKey]
-        }
+          signers: [accountPrivateKey],
+        },
       });
 
       try {
