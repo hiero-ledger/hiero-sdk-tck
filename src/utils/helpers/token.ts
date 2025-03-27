@@ -344,6 +344,98 @@ export async function verifyNonFungibleTokenBurn(
   });
 }
 
+/**
+ * Verify a fungible token was wiped from an account.
+ *
+ * @param {string} tokenId - The ID of the token to wipe.
+ * @param {string} accountId - The ID of the account from which to wipe the token.
+ * @param {string} tokenInitialSupply - The supply of the token before the wipe.
+ * @param {string} accountInitialSupply - The balance of the token in the account before the wipe.
+ * @param {string} amount - The amount that was wiped.
+ */
+export async function verifyFungibleTokenWipe(
+  tokenId: string,
+  accountId: string,
+  tokenInitialSupply: string,
+  accountInitialSupply: string,
+  amount: string,
+) {
+  const expectedAccountBalance = (
+    BigInt(accountInitialSupply) - BigInt(amount)
+  ).toString();
+  const expectedTotalSupply = (
+    BigInt(tokenInitialSupply) - BigInt(amount)
+  ).toString();
+
+  // Fetch both consensus balances in parallel
+  const [consensusAccountInfo, consensusTokenInfo] = await Promise.all([
+    consensusInfoClient.getBalance(accountId),
+    consensusInfoClient.getTokenInfo(tokenId),
+  ]);
+
+  expect(consensusAccountInfo.tokens?.get(tokenId)?.toString()).to.equal(
+    expectedAccountBalance,
+  );
+  expect(consensusTokenInfo.totalSupply.toString()).to.equal(
+    expectedTotalSupply,
+  );
+
+  // Verify balance on the mirror node
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
+      accountId,
+      tokenId,
+    );
+    const tokenExists = mirrorNodeInfo?.tokens?.some(
+      (token) =>
+        token.token_id === tokenId &&
+        token.balance.toString() === expectedAccountBalance,
+    );
+    expect(tokenExists).to.be.true;
+  });
+
+  // Verify total supply on the mirror node
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getTokenData(tokenId);
+    expect(mirrorNodeInfo.total_supply).to.equal(expectedTotalSupply);
+  });
+}
+
+/**
+ * Verify an NFT was wiped from an account.
+ *
+ * @param {string} tokenId - The ID of the token to wipe.
+ * @param {string} accountId - The ID of the account from which to wipe the token.
+ * @param {string} serialNumber - The serial number of the NFT to wipe.
+ */
+export async function verifyNonFungibleTokenWipe(
+  tokenId: string,
+  accountId: string,
+  serialNumber: string,
+) {
+  // Query the consensus node. Should throw since the NFT shouldn't exist anymore.
+  let foundNft = true;
+  try {
+    await consensusInfoClient.getTokenNftInfo(tokenId, serialNumber);
+  } catch {
+    foundNft = false;
+  }
+
+  // Make sure the NFT was not found.
+  expect(foundNft).to.be.false;
+
+  // Verify NFT is no longer present in the mirror node
+  await retryOnError(async () => {
+    const mirrorNodeInfo = await mirrorNodeClient.getAccountNfts(accountId);
+    const foundNft = mirrorNodeInfo.nfts?.some(
+      (nft) =>
+        nft.token_id === tokenId &&
+        nft.serial_number?.toString() === serialNumber,
+    );
+    expect(foundNft).to.be.false;
+  });
+}
+
 export const defaultNftTokenCreate = async (
   mochaTestContext: any,
   treasuryAccountId: string,
