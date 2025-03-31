@@ -35,9 +35,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name    | Type   | Required/Optional | Description/Notes                                              |
-|-------------------|--------|-------------------|----------------------------------------------------------------|
-| tokenId           | string | optional          | The ID of the token to delete.                                 |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes              |
+|-------------------------|---------------------------------------------------------|-------------------|--------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token to delete. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                |
 
 ### Output Parameters
 
