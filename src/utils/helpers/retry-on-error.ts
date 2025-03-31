@@ -12,7 +12,7 @@
  */
 export const retryOnError = async (
   fn: () => Promise<void>,
-  maxRetries: number = 10,
+  maxRetries: number = 100,
   retryDelay: number = 200,
 ): Promise<any> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {

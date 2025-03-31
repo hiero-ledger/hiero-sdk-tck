@@ -35,19 +35,19 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name            | Type                                             | Required/Optional | Description/Notes                                                                                                                          |
-|---------------------------|--------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| accountId                 | string                                           | optional          | The ID of the account to update.                                                                                                           |
-| key                       | string                                           | optional          | DER-encoded hex string representation for private or public keys. KeyLists and ThresholdKeys are the hex of the serialized protobuf bytes. |
-| autoRenewPeriod           | string                                           | optional          | Units of seconds                                                                                                                           |
-| expirationTime            | string                                           | optional          | Epoch time in seconds                                                                                                                      |
-| receiverSignatureRequired | bool                                             | optional          |                                                                                                                                            |
-| memo                      | string                                           | optional          |                                                                                                                                            |
-| maxAutoTokenAssociations  | int32                                            | optional          |                                                                                                                                            |
-| stakedAccountId           | string                                           | optional          |                                                                                                                                            |
-| stakedNodeId              | string                                           | optional          |                                                                                                                                            |
-| declineStakingReward      | bool                                             | optional          |                                                                                                                                            |
-| commonTransactionParams   | [json object](../commonTransactionParameters.md) | optional          |                                                                                                                                            |
+| Parameter Name            | Type                                                    | Required/Optional | Description/Notes                                                                                                                          |
+|---------------------------|---------------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| accountId                 | string                                                  | optional          | The ID of the account to update.                                                                                                           |
+| key                       | string                                                  | optional          | DER-encoded hex string representation for private or public keys. KeyLists and ThresholdKeys are the hex of the serialized protobuf bytes. |
+| autoRenewPeriod           | string                                                  | optional          | Units of seconds                                                                                                                           |
+| expirationTime            | string                                                  | optional          | Epoch time in seconds                                                                                                                      |
+| receiverSignatureRequired | bool                                                    | optional          |                                                                                                                                            |
+| memo                      | string                                                  | optional          |                                                                                                                                            |
+| maxAutoTokenAssociations  | int32                                                   | optional          |                                                                                                                                            |
+| stakedAccountId           | string                                                  | optional          |                                                                                                                                            |
+| stakedNodeId              | string                                                  | optional          |                                                                                                                                            |
+| declineStakingReward      | bool                                                    | optional          |                                                                                                                                            |
+| commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                            |
 
 ### Output Parameters
 
