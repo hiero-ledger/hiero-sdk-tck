@@ -66,14 +66,14 @@ class MirrorNodeClient {
   async getOutgoingTokenAirdrops(
     accountId: string,
   ): Promise<TokenAirdropsResponse> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/airdrops/outstanding`;
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/airdrops/outstanding`;
     return retryOnError(async () => fetchData(url));
   }
 
   async getIncomingTokenAirdrops(
     accountId: string,
   ): Promise<TokenAirdropsResponse> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/airdrops/pending`;
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/airdrops/pending`;
     return retryOnError(async () => fetchData(url));
   }
 }

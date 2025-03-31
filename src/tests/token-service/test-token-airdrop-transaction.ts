@@ -1035,7 +1035,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it.skip("(#22) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
+    it("(#22) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
       await JSONRPCRequest(this, "updateAccount", {
         accountId: receiverAccountId,
         maxAutoTokenAssociations: 0,
