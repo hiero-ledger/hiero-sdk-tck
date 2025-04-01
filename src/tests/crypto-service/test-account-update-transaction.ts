@@ -540,7 +540,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe.only("Expiration Time", async function () {
+  describe("Expiration Time", async function () {
     const verifyAccountExpirationTimeUpdate = async (
       expirationTime: string,
     ) => {
@@ -623,7 +623,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
+    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
       try {
         // Use Math.ceil to prevent flakiness.
         const expirationTime = (
