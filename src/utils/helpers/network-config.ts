@@ -12,16 +12,16 @@ const toEnvFormat = (str: string): string => {
 export const getNetworkConfig = (
   network: string,
 ): Record<string, string | undefined> => {
-  if (network === "testnet") {
-    dotenv.config({ path: ".env.testnet" });
+  dotenv.config();
 
+  if (network === "testnet") {
     if (
       process.env.OPERATOR_ACCOUNT_ID === "***" ||
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY === "***"
     ) {
       console.log(
         "\n" +
-        "TESTNET_OPERATOR_ACCOUNT_ID and TESTNET_OPERATOR_ACCOUNT_PRIVATE_KEY must be set for testnet!",
+          "TESTNET_OPERATOR_ACCOUNT_ID and TESTNET_OPERATOR_ACCOUNT_PRIVATE_KEY must be set for testnet!",
       );
 
       process.exit(1);
@@ -37,7 +37,6 @@ export const getNetworkConfig = (
     };
   }
 
-  dotenv.config({ path: ".env.custom_node" });
   return {
     nodeType: "local",
     nodeTimeout: process.env.NODE_TIMEOUT,
