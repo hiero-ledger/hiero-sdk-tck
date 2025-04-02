@@ -625,8 +625,9 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
       try {
+        // Use Math.ceil to prevent flakiness.
         const expirationTime = (
-          Math.floor(Date.now() / 1000) + 8000002
+          Math.ceil(Date.now() / 1000) + 8000002
         ).toString();
 
         // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
