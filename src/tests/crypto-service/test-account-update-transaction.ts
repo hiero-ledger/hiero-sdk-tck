@@ -558,7 +558,128 @@ describe("AccountUpdateTransaction", function () {
       );
     };
 
-    it("(#1) Updates the expiration time of an account to 8,000,001 seconds from the current time", async function () {
+    it("(#1) Updates the expiration time of an account to 60 days (5,184,000 seconds) from the current time", async function () {
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 5184000
+      ).toString();
+
+      await JSONRPCRequest(this, "updateAccount", {
+        accountId,
+        expirationTime,
+        commonTransactionParams: {
+          signers: [accountPrivateKey],
+        },
+      });
+
+      // Verify the account was updated with an expiration time set to 5,184,000 seconds from the current time.
+      await retryOnError(async () =>
+        verifyAccountExpirationTimeUpdate(expirationTime),
+      );
+    });
+
+    it("(#2) Updates the expiration time of an account to 0 seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "0",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#3) Updates the expiration time of an account to -1 seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "-1",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Updates the expiration time of an account to 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "9223372036854775807",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Updates the expiration time of an account to 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "9223372036854775806",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Updates the expiration time of an account to -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "-9223372036854775808",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Updates the expiration time of an account to -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateAccount", {
+          accountId: accountId,
+          expirationTime: "-9223372036854775807",
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Updates the expiration time of an account to 8,000,001 seconds from the current time", async function () {
       // Attempt to update the expiration time of the account to 8,000,001 seconds from the current time.
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
@@ -578,12 +699,17 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#2) Updates the expiration time of an account to -1 seconds", async function () {
+    it("(#9) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
       try {
-        // Attempt to update the expiration time of the account to -1 seconds. The network should respond with an INVALID_EXPIRATION_TIME status.
+        // Use Math.ceil to prevent flakiness.
+        const expirationTime = (
+          Math.ceil(Date.now() / 1000) + 8000002
+        ).toString();
+
+        // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          expirationTime: "-1",
+          expirationTime: expirationTime,
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -597,7 +723,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates the expiration time of an account to 1 second less than its current expiration time", async function () {
+    it("(#10) Updates the expiration time of an account to 1 second less than its current expiration time", async function () {
       // Get the account's expiration time.
       const accountInfo = await mirrorNodeClient.getAccountData(accountId);
       const expirationTimeSeconds = accountInfo.expiry_timestamp;
@@ -616,30 +742,6 @@ describe("AccountUpdateTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.data.status, "EXPIRATION_REDUCTION_NOT_ALLOWED");
-        return;
-      }
-
-      // The test failed, no error was thrown.
-      assert.fail("Should throw an error");
-    });
-
-    it("(#4) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
-      try {
-        // Use Math.ceil to prevent flakiness.
-        const expirationTime = (
-          Math.ceil(Date.now() / 1000) + 8000002
-        ).toString();
-
-        // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
-        await JSONRPCRequest(this, "updateAccount", {
-          accountId: accountId,
-          expirationTime: expirationTime,
-          commonTransactionParams: {
-            signers: [accountPrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
 

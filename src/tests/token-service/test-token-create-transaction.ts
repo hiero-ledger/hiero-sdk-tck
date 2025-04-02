@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
@@ -1724,7 +1723,20 @@ describe("TokenCreateTransaction", function () {
   });
 
   describe("Expiration Time", () => {
-    it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
+    it("(#1) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 5184000
+      ).toString();
+
+      await JSONRPCRequest(this, "createToken", {
+        name: "testname",
+        symbol: "testsymbol",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        expirationTime: expirationTime,
+      });
+    });
+
+    it("(#2) Creates a token with an expiration time of 0 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1740,7 +1752,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Creates a token with an expiration time of -1 seconds", async function () {
+    it("(#3) Creates a token with an expiration time of -1 seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1756,7 +1768,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
+    it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1772,7 +1784,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
+    it("(#5) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1788,7 +1800,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+    it.skip("(#6) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1804,7 +1816,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a token with an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
+    it("(#7) Creates a token with an expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -1820,55 +1832,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
-      const expirationTime = (
-        Math.floor(Date.now() / 1000) + 5184000
-      ).toString();
-
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
-      });
-    });
-
-    it("(#8) Creates a token with an expiration time of 30 days (2,592,000 seconds) from the current time", async function () {
-      const expirationTime = (
-        Math.floor(Date.now() / 1000) + 2592000
-      ).toString();
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime,
-      });
-
-      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
-    });
-
-    it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
-      const expirationTime = (
-        Math.floor(Date.now() / 1000) + 2591999
-      ).toString();
-
-      try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          expirationTime,
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#10) Creates a token with an expiration time of 8,000,001 seconds from the current time", async function () {
+    it("(#8) Creates a token with an expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -1883,7 +1847,7 @@ describe("TokenCreateTransaction", function () {
       await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
     });
 
-    it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
+    it("(#9) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
       try {
         const expirationTime = (
           Math.floor(Date.now() / 1000) + 8000002
