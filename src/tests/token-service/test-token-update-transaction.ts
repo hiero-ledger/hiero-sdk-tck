@@ -2283,17 +2283,14 @@ describe("TokenUpdateTransaction", function () {
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      try {
-        await JSONRPCRequest(this, "updateToken", {
-          tokenId: immutableTokenId,
-          expirationTime,
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
-        return;
-      }
+      await JSONRPCRequest(this, "updateToken", {
+        tokenId: immutableTokenId,
+        expirationTime
+      });
 
-      assert.fail("Should throw an error");
+      await retryOnError(async function () {
+        verifyTokenExpirationTimeUpdate(immutableTokenId, expirationTime);
+      });
     });
 
     it.skip("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
