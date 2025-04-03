@@ -2285,7 +2285,7 @@ describe("TokenUpdateTransaction", function () {
     });
   });
 
-  describe.only("Expiration Time", () => {
+  describe("Expiration Time", () => {
     it.skip("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
