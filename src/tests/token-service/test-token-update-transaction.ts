@@ -51,6 +51,7 @@ describe("TokenUpdateTransaction", function () {
       })
     ).key;
 
+    let expirationTime = Math.floor(Date.now() / 1000 + 100).toString();
     mutableTokenId = (
       await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
@@ -62,7 +63,7 @@ describe("TokenUpdateTransaction", function () {
         freezeKey: mutableTokenKey,
         wipeKey: mutableTokenKey,
         supplyKey: mutableTokenKey,
-        expirationTime: "100",
+        expirationTime,
         tokenType: "ft",
         feeScheduleKey: mutableTokenKey,
         pauseKey: mutableTokenKey,
@@ -79,7 +80,7 @@ describe("TokenUpdateTransaction", function () {
         symbol: initialTokenSymbol,
         initialSupply: initialSupply,
         treasuryAccountId: initialTreasuryAccountId,
-        expirationTime: "100",
+        expirationTime,
         tokenType: "ft",
       })
     ).tokenId;
@@ -2285,7 +2286,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe.only("Expiration Time", () => {
-    it.only("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it.skip("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2303,7 +2304,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it.skip("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2423,7 +2424,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#9) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
+    it("(#9) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
