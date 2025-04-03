@@ -86,14 +86,6 @@ describe("TokenUpdateTransaction", function () {
     ).tokenId;
   });
 
-  beforeEach(async function () {
-    await setOperator(
-      this,
-      process.env.OPERATOR_ACCOUNT_ID as string,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
-    );
-  });
-
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
