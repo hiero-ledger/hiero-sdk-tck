@@ -12,9 +12,9 @@ const toEnvFormat = (str: string): string => {
 export const getNetworkConfig = (
   network: string,
 ): Record<string, string | undefined> => {
-  dotenv.config();
-
   if (network === "testnet") {
+    dotenv.config({ path: ".env.testnet" });
+
     if (
       process.env.OPERATOR_ACCOUNT_ID === "***" ||
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY === "***"
@@ -36,6 +36,8 @@ export const getNetworkConfig = (
       jsonRpcServerUrl: process.env.JSON_RPC_SERVER_URL,
     };
   }
+
+  dotenv.config({ path: ".env.custom_node" });
 
   return {
     nodeType: "local",
