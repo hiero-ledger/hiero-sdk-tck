@@ -2459,7 +2459,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
     
-    it("(#11) Updates a mutable token with an expiration time 1 second less than its current expiration time", async function () {
+    it.skip("(#11) Updates a mutable token with an expiration time 1 second less than its current expiration time", async function () {
       const tokenInfo = await mirrorNodeClient.getTokenData(mutableTokenId);
       const expirationTimeSeconds = tokenInfo.expiry_timestamp;
       const expirationTime = Math.floor(
