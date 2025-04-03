@@ -540,7 +540,7 @@ describe("AccountUpdateTransaction", function () {
     });
   });
 
-  describe.only("Expiration Time", async function () {
+  describe("Expiration Time", async function () {
     const verifyAccountExpirationTimeUpdate = async (
       expirationTime: string,
     ) => {
