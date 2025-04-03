@@ -45,18 +45,44 @@ describe("TokenUpdateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    // Generate an immutable token.
-    const response = await JSONRPCRequest(this, "createToken", {
-      name: initialTokenName,
-      symbol: initialTokenSymbol,
-      treasuryAccountId: initialTreasuryAccountId,
-      initialSupply: initialSupply,
-      tokenType: "ft",
-    });
+    mutableTokenKey = (
+      await JSONRPCRequest(this, "generateKey", {
+        type: "ecdsaSecp256k1PrivateKey",
+      })
+    ).key;
 
-    immutableTokenId = response.tokenId;
+    mutableTokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: initialTokenName,
+        symbol: initialTokenSymbol,
+        initialSupply: initialSupply,
+        treasuryAccountId: initialTreasuryAccountId,
+        adminKey: mutableTokenKey,
+        kycKey: mutableTokenKey,
+        freezeKey: mutableTokenKey,
+        wipeKey: mutableTokenKey,
+        supplyKey: mutableTokenKey,
+        expirationTime: "100",
+        tokenType: "ft",
+        feeScheduleKey: mutableTokenKey,
+        pauseKey: mutableTokenKey,
+        metadataKey: mutableTokenKey,
+        commonTransactionParams: {
+          signers: [mutableTokenKey],
+        },
+      })
+    ).tokenId;
 
-    await JSONRPCRequest(this, "reset");
+    immutableTokenId = (
+      await JSONRPCRequest(this, "createToken", {
+        name: initialTokenName,
+        symbol: initialTokenSymbol,
+        initialSupply: initialSupply,
+        treasuryAccountId: initialTreasuryAccountId,
+        expirationTime: "100",
+        tokenType: "ft",
+      })
+    ).tokenId;
   });
 
   beforeEach(async function () {
@@ -65,33 +91,6 @@ describe("TokenUpdateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
-
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
-
-    mutableTokenKey = response.key;
-
-    response = await JSONRPCRequest(this, "createToken", {
-      name: initialTokenName,
-      symbol: initialTokenSymbol,
-      treasuryAccountId: initialTreasuryAccountId,
-      adminKey: mutableTokenKey,
-      kycKey: mutableTokenKey,
-      freezeKey: mutableTokenKey,
-      wipeKey: mutableTokenKey,
-      supplyKey: mutableTokenKey,
-      initialSupply: initialSupply,
-      tokenType: "ft",
-      feeScheduleKey: mutableTokenKey,
-      pauseKey: mutableTokenKey,
-      metadataKey: mutableTokenKey,
-      commonTransactionParams: {
-        signers: [mutableTokenKey],
-      },
-    });
-
-    mutableTokenId = response.tokenId;
   });
 
   afterEach(async function () {
@@ -2285,8 +2284,8 @@ describe("TokenUpdateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", () => {
-    it.skip("(#1) Updates an immutable token with an auto renew period set to 60 days (5,184,000 seconds)", async function () {
+  describe.only("Expiration Time", () => {
+    it.only("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2304,7 +2303,7 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it.only("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2424,14 +2423,14 @@ describe("TokenUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
+    it.only("(#9) Updates a mutable token to an expiration time 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        expirationTime: expirationTime,
+        expirationTime,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -2443,10 +2442,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
+      const expirationTime = (
+        Math.ceil(Date.now() / 1000) + 8000002
+      ).toString();
+
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          expirationTime: "8000002",
+          expirationTime,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
@@ -2458,7 +2461,7 @@ describe("TokenUpdateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
-    
+
     it.skip("(#11) Updates a mutable token with an expiration time 1 second less than its current expiration time", async function () {
       const tokenInfo = await mirrorNodeClient.getTokenData(mutableTokenId);
       const expirationTimeSeconds = tokenInfo.expiry_timestamp;
