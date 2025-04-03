@@ -33,6 +33,8 @@ jobs:
           - TokenUnpause
           - TokenFreeze
           - TokenUnfreeze
+          - TokenWipe
+          - TransferCrypto
       fail-fast: false
     steps:
       - name: Harden Runner
