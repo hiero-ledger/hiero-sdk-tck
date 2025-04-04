@@ -2278,7 +2278,7 @@ describe("TokenUpdateTransaction", function () {
   });
 
   describe("Expiration Time", () => {
-    it.skip("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2293,12 +2293,12 @@ describe("TokenUpdateTransaction", function () {
       });
     });
 
-    it.skip("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      const response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         expirationTime,
         commonTransactionParams: {
@@ -2307,7 +2307,7 @@ describe("TokenUpdateTransaction", function () {
       });
 
       await retryOnError(async function () {
-        verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+        verifyTokenExpirationTimeUpdate(mutableTokenId, expirationTime);
       });
     });
 
