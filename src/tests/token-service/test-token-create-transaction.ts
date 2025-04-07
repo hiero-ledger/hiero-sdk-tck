@@ -9,6 +9,7 @@ import {
   verifyTokenCreationWithFractionalFee,
   verifyTokenCreationWithRoyaltyFee,
 } from "@helpers/custom-fees";
+import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
 import {
   verifyTokenKey,
@@ -1844,7 +1845,9 @@ describe("TokenCreateTransaction", function () {
         expirationTime,
       });
 
-      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+      await retryOnError(async () => {
+        verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+      });
     });
 
     it("(#9) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {

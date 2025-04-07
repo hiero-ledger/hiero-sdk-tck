@@ -2285,10 +2285,10 @@ describe("TokenUpdateTransaction", function () {
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId: immutableTokenId,
-        expirationTime
+        expirationTime,
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenExpirationTimeUpdate(immutableTokenId, expirationTime);
       });
     });
@@ -2306,7 +2306,7 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenExpirationTimeUpdate(mutableTokenId, expirationTime);
       });
     });
@@ -2426,7 +2426,7 @@ describe("TokenUpdateTransaction", function () {
         },
       });
 
-      await retryOnError(async function () {
+      await retryOnError(async () => {
         verifyTokenExpirationTimeUpdate(mutableTokenId, expirationTime);
       });
     });
