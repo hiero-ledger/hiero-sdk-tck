@@ -35,19 +35,19 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name            | Type                                             | Required/Optional | Description/Notes                                                                                                                           |
-|---------------------------|--------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| key                       | string                                           | optional          | DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. |
-| initialBalance            | string                                            | optional          | Units of tinybars                                                                                                                           |
-| receiverSignatureRequired | bool                                             | optional          |                                                                                                                                             |
-| autoRenewPeriod           | string                                            | optional          | Units of seconds                                                                                                                            |
-| memo                      | string                                           | optional          |                                                                                                                                             |
-| maxAutoTokenAssociations  | int32                                            | optional          |                                                                                                                                             |
-| stakedAccountId           | string                                           | optional          |                                                                                                                                             |
-| stakedNodeId              | string                                            | optional          |                                                                                                                                             |
-| declineStakingReward      | bool                                             | optional          |                                                                                                                                             |
-| alias                     | string                                           | optional          | Hex string representation of the keccak-256 hash of an ECDSAsecp256k1 public key type.                                                      |
-| commonTransactionParams   | [json object](../commonTransactionParameters.md) | optional          |                                                                                                                                             |
+| Parameter Name            | Type                                                    | Required/Optional | Description/Notes                                                                                                                           |
+|---------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| key                       | string                                                  | optional          | DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. |
+| initialBalance            | string                                                  | optional          | Units of tinybars                                                                                                                           |
+| receiverSignatureRequired | bool                                                    | optional          |                                                                                                                                             |
+| autoRenewPeriod           | string                                                  | optional          | Units of seconds                                                                                                                            |
+| memo                      | string                                                  | optional          |                                                                                                                                             |
+| maxAutoTokenAssociations  | int32                                                   | optional          |                                                                                                                                             |
+| stakedAccountId           | string                                                  | optional          |                                                                                                                                             |
+| stakedNodeId              | string                                                  | optional          |                                                                                                                                             |
+| declineStakingReward      | bool                                                    | optional          |                                                                                                                                             |
+| alias                     | string                                                  | optional          | Hex string representation of the keccak-256 hash of an ECDSAsecp256k1 public key type.                                                      |
+| commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                             |
 
 ### Output Parameters
 

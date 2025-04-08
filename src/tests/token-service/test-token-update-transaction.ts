@@ -14,11 +14,14 @@ import {
   verifyTokenExpirationTimeUpdate,
 } from "@helpers/verify-token-tx";
 
+import { invalidKey } from "@constants/key-type";
 import {
   fourKeysKeyListParams,
   twoLevelsNestedKeyListParams,
   twoThresholdKeyParams,
 } from "@constants/key-list";
+
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenUpdateTransaction
@@ -748,13 +751,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          adminKey: crypto.randomBytes(88).toString("hex"),
+          adminKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1018,13 +1025,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          kycKey: crypto.randomBytes(88).toString("hex"),
+          kycKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1300,13 +1311,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          freezeKey: crypto.randomBytes(88).toString("hex"),
+          freezeKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1582,13 +1597,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          wipeKey: crypto.randomBytes(88).toString("hex"),
+          wipeKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1864,13 +1883,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          supplyKey: crypto.randomBytes(88).toString("hex"),
+          supplyKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1975,7 +1998,11 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2808,13 +2835,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+          feeScheduleKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3064,13 +3095,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+          feeScheduleKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -3378,13 +3413,17 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          metadataKey: crypto.randomBytes(88).toString("hex"),
+          metadataKey: invalidKey,
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
