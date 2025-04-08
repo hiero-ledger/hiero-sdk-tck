@@ -1,3 +1,8 @@
+---
+title: Token Freeze Transaction
+parent: Token Service
+nav_order: 8
+---
 # TokenFreezeTransaction - Test specification
 
 ## Description:
@@ -30,11 +35,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                |
-|-------------------------|--------------------------------------------------|-------------------|----------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token to freeze.   |
-| accountId               | string                                           | optional          | The ID of the account to freeze. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                  |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                |
+|-------------------------|---------------------------------------------------------|-------------------|----------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token to freeze.   |
+| accountId               | string                                                  | optional          | The ID of the account to freeze. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                  |
 
 ### Output Parameters
 

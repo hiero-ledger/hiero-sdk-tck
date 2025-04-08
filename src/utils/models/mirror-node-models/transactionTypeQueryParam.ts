@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { TransactionTypes } from './TransactionTypes';
+import type { TransactionTypes } from "./TransactionTypes";
 export type transactionTypeQueryParam = TransactionTypes;

@@ -2,5 +2,5 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { NetworkFee } from './NetworkFee';
+import type { NetworkFee } from "./NetworkFee";
 export type NetworkFees = Array<NetworkFee>;

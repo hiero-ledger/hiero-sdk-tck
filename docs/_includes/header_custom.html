@@ -1,0 +1,11 @@
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".site-button").addEventListener("click", () => {
+      document.querySelector(".side-bar").classList.toggle("small-screen-show");
+      document
+        .querySelector(".main-content-wrap")
+        .classList.toggle("scroll-toggle");
+      document.querySelector("body").classList.toggle("scroll-toggle");
+    });
+  });
+</script>

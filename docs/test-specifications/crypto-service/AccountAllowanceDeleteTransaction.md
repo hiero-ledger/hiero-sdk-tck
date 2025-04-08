@@ -1,3 +1,9 @@
+---
+title: Account Allowance Delete Transaction
+parent: Crypto Service
+nav_order: 2
+---
+
 # AccountAllowanceDeleteTransaction - Test specification
 
 ## Description:
@@ -30,10 +36,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                                                                                                             |
-|-------------------------|--------------------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| allowances              | list<[json object](allowances.md)>               | optional          | The allowance information. The allowances input here should ONLY be "nft" allowances. Should return INVALID_PARAMS otherwise. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                                                                                               |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                                                                             |
+|-------------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| allowances              | list<[json object](allowances.md)>                      | optional          | The allowance information. The allowances input here should ONLY be "nft" allowances. Should return INVALID_PARAMS otherwise. |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                               |
 
 ### Output Parameters
 

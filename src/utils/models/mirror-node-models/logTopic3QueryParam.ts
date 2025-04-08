@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { LogTopicQueryParam } from './LogTopicQueryParam';
+import type { LogTopicQueryParam } from "./LogTopicQueryParam";
 /**
  * The fourth topic associated with a contract log. Requires a timestamp range also be populated.
  */

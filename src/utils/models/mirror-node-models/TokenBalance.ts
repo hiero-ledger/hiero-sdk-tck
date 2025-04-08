@@ -2,9 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { EntityId } from './EntityId';
+import type { EntityId } from "./EntityId";
 export type TokenBalance = {
-    token_id: EntityId;
-    balance: number;
+  token_id: EntityId;
+  balance: number;
 };
-

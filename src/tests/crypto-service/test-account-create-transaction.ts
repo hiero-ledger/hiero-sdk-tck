@@ -864,7 +864,11 @@ describe("AccountCreateTransaction", function () {
           stakedAccountId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -978,7 +982,7 @@ describe("AccountCreateTransaction", function () {
       alias: string,
     ) => {
       if (alias.startsWith("0x")) {
-        alias = alias.substring(2)
+        alias = alias.substring(2);
       }
 
       // If the account was created successfully, the queried account's aliases should be equal.

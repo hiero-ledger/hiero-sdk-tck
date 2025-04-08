@@ -5,6 +5,11 @@ import { JSONRPCRequest } from "@services/Client";
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
+import {
+  verifyTokenCreationWithFixedFee,
+  verifyTokenCreationWithFractionalFee,
+  verifyTokenCreationWithRoyaltyFee,
+} from "@helpers/custom-fees";
 import { setOperator } from "@helpers/setup-tests";
 import {
   verifyTokenKey,
@@ -12,17 +17,14 @@ import {
   verifyTokenExpirationTimeUpdate,
 } from "@helpers/verify-token-tx";
 
-import {
-  verifyTokenCreationWithFixedFee,
-  verifyTokenCreationWithFractionalFee,
-  verifyTokenCreationWithRoyaltyFee,
-} from "@helpers/custom-fees";
-
+import { invalidKey } from "@constants/key-type";
 import {
   twoThresholdKeyParams,
   twoLevelsNestedKeyListParams,
   fourKeysKeyListParams,
 } from "@constants/key-list";
+
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenCreateTransaction
@@ -946,10 +948,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: crypto.randomBytes(88).toString("hex"),
+          adminKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1113,10 +1119,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          kycKey: crypto.randomBytes(88).toString("hex"),
+          kycKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1281,10 +1291,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          freezeKey: crypto.randomBytes(88).toString("hex"),
+          freezeKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1448,10 +1462,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          wipeKey: crypto.randomBytes(88).toString("hex"),
+          wipeKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1615,10 +1633,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey: crypto.randomBytes(88).toString("hex"),
+          supplyKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1797,6 +1819,7 @@ describe("TokenCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
     it("(#7) Creates a token with an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
@@ -1971,7 +1994,11 @@ describe("TokenCreateTransaction", function () {
           autoRenewAccountId: "",
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -2668,10 +2695,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          feeScheduleKey: crypto.randomBytes(88).toString("hex"),
+          feeScheduleKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -4377,7 +4408,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4405,7 +4436,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4441,7 +4472,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -4671,7 +4702,7 @@ describe("TokenCreateTransaction", function () {
           ],
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603);
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -5068,10 +5099,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          pauseKey: crypto.randomBytes(88).toString("hex"),
+          pauseKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -5280,10 +5315,14 @@ describe("TokenCreateTransaction", function () {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          metadataKey: crypto.randomBytes(88).toString("hex"),
+          metadataKey: invalidKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, -32603, "Internal error");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 

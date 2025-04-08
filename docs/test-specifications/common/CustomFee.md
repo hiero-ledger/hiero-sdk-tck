@@ -1,3 +1,8 @@
+---
+title: Custom Fee
+parent: Helpers
+nav_order: 3
+---
 # Custom Fee
 
 Custom fees can be added to tokens that will be charged users automatically when being transferred based on a variety of parameters. These fees can be specified when a token is created (`TokenCreateTransaction`) or added/updated at a later time (`TokenFeeScheduleUpdateTransaction`).
@@ -14,27 +19,27 @@ Custom fees can be added to tokens that will be charged users automatically when
 
 ### Fixed Fee Object Definition
 
-| Parameter Name      | Type   | Required/Optional | Description/Notes                                                                                                                                                                                   |
-|---------------------|--------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Parameter Name      | Type    | Required/Optional | Description/Notes                                                                                                                                                                                   |
+|---------------------|---------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | amount              | string  | required          | The amount to be assessed as a fee.                                                                                                                                                                 |
-| denominatingTokenId | string | optional          | The ID of the token to use to assess the fee. The value "0.0.0" SHALL be used to specify the token being created if used in a `TokenCreateTransaction`. Hbar SHALL be used if no value is provided. |
+| denominatingTokenId | string  | optional          | The ID of the token to use to assess the fee. The value "0.0.0" SHALL be used to specify the token being created if used in a `TokenCreateTransaction`. Hbar SHALL be used if no value is provided. |
 
 ### Fractional Fee Object Definition
 
 | Parameter Name   | Type   | Required/Optional | Description/Notes                                                                                                                                                                                                                                                                          |
 |------------------|--------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| numerator        | string  | required          | The numerator of the fraction of the amount to be assessed as a fee.                                                                                                                                                                                                                       |
-| denominator      | string  | required          | The denominator of the fraction of the amount to be assessed as a fee.                                                                                                                                                                                                                     |
-| minimumAmount    | string  | required          | The minimum amount to assess as a fee.                                                                                                                                                                                                                                                     |
-| maximumAmount    | string  | required          | The maximum amount to assess as a fee. 0 implies no maximum.                                                                                                                                                                                                                               |
+| numerator        | string | required          | The numerator of the fraction of the amount to be assessed as a fee.                                                                                                                                                                                                                       |
+| denominator      | string | required          | The denominator of the fraction of the amount to be assessed as a fee.                                                                                                                                                                                                                     |
+| minimumAmount    | string | required          | The minimum amount to assess as a fee.                                                                                                                                                                                                                                                     |
+| maximumAmount    | string | required          | The maximum amount to assess as a fee. 0 implies no maximum.                                                                                                                                                                                                                               |
 | assessmentMethod | string | required          | How should the fee be assessed? It MUST be one of `inclusive` or `exclusive`. `inclusive` means the fee is included in the amount of tokens transferred and will be subtracted from that amount, while `exclusive` means the sender will be charged in addition to the transferred amount. |
 
 ### Royalty Fee Object Definition
 
 | Parameter Name | Type        | Required/Optional | Description/Notes                                                                                          |
 |----------------|-------------|-------------------|------------------------------------------------------------------------------------------------------------|
-| numerator      | string       | required          | The numerator of the fraction of the amount to be assessed as a fee.                                       |
-| denominator    | string       | required          | The denominator of the fraction of the amount to be assessed as a fee.                                     |
+| numerator      | string      | required          | The numerator of the fraction of the amount to be assessed as a fee.                                       |
+| denominator    | string      | required          | The denominator of the fraction of the amount to be assessed as a fee.                                     |
 | fallbackFee    | json object | optional          | The [Fixed Fee](#fixed-fee-object-definition) to assess to the receiver if no fungible value is exchanged. |
 
 ## Example Usage

@@ -1,3 +1,8 @@
+---
+title: Token Associate Transaction
+parent: Token Service
+nav_order: 2
+---
 # TokenAssociateTransaction - Test specification
 
 ## Description:
@@ -30,11 +35,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                                      |
-|-------------------------|--------------------------------------------------|-------------------|--------------------------------------------------------|
-| accountId               | string                                           | optional          | The ID of the account with which to associate a token. |
-| tokenIds                | list<string>                                     | optional          | The IDs of the tokens to associate.                    |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                        |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                      |
+|-------------------------|---------------------------------------------------------|-------------------|--------------------------------------------------------|
+| accountId               | string                                                  | optional          | The ID of the account with which to associate a token. |
+| tokenIds                | list<string>                                            | optional          | The IDs of the tokens to associate.                    |
+| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                        |
 
 ### Output Parameters
 

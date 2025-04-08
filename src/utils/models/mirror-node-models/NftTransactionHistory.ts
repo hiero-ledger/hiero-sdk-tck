@@ -2,10 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Links } from './Links';
-import type { NftTransactionTransfer } from './NftTransactionTransfer';
+import type { Links } from "./Links";
+import type { NftTransactionTransfer } from "./NftTransactionTransfer";
 export type NftTransactionHistory = {
-    transactions: Array<NftTransactionTransfer>;
-    links: Links;
+  transactions: Array<NftTransactionTransfer>;
+  links: Links;
 };
-
