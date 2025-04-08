@@ -1,7 +1,7 @@
 ---
 title: Transfers
-parent: Crypto Service
-nav_order: 8
+parent: Helpers
+nav_order: 5
 ---
 # Transfer
 

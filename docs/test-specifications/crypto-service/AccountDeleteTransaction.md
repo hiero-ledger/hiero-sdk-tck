@@ -35,10 +35,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name    | Type   | Required/Optional | Description/Notes                                              |
-|-------------------|--------|-------------------|----------------------------------------------------------------|
-| deleteAccountId   | string | optional          | The ID of the account to delete.                               |
-| transferAccountId | string | optional          | The ID of the account to which to transfer remaining balances. |
+| Parameter Name            | Type                                                    | Required/Optional | Description/Notes                                              |
+|---------------------------|---------------------------------------------------------|-------------------|----------------------------------------------------------------|
+| deleteAccountId           | string                                                  | optional          | The ID of the account to delete.                               |
+| transferAccountId         | string                                                  | optional          | The ID of the account to which to transfer remaining balances. |
+| commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                |
 
 ### Output Parameters
 

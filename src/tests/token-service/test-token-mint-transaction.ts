@@ -276,7 +276,7 @@ describe("TokenMintTransaction", function () {
   describe("Amount", function () {
     let supplyKey: string;
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
@@ -624,7 +624,7 @@ describe("TokenMintTransaction", function () {
   describe("Metadata", function () {
     let supplyKey: string;
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
       supplyKey = await getPrivateKey(this, "ed25519");
     });
 
