@@ -6,7 +6,7 @@
     "dotenv": "^16.4.5",
     "json-bigint": "^1.0.0",
     "json-rpc-2.0": "^1.7.0",
-    "mocha": "^11.0.1"
+    "mocha": "^11.0.2"
   },
   "scripts": {
     "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit",
