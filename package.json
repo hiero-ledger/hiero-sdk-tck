@@ -5,7 +5,7 @@
     "chai": "^4.5.0",
     "dotenv": "^16.4.5",
     "json-bigint": "^1.0.0",
-    "json-rpc-2.0": "^1.6.0",
+    "json-rpc-2.0": "^1.7.0",
     "mocha": "^11.0.1"
   },
   "scripts": {
