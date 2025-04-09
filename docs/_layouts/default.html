@@ -55,6 +55,13 @@ layout: table_wrappers
           main.classList.toggle("no-side-bar");
         });
       });
+
+      const mdLinks = document.querySelectorAll('a[href$=".md"]');
+      mdLinks.forEach((link) => {
+        let href = link.getAttribute("href");
+        let newHref = href.replace(/\.md$/, ".html");
+        link.setAttribute("href", newHref);
+      });
     </script>
     {% if site.mermaid %} {% include components/mermaid.html %} {% endif %}
   </body>
