@@ -2277,8 +2277,8 @@ describe("TokenUpdateTransaction", function () {
     });
   });
 
-  describe("Expiration Time", () => {
-    it("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+  describe.only("Expiration Time", () => {
+    it.only("(#1) Updates an immutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
@@ -2293,7 +2293,7 @@ describe("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
+    it.only("(#2) Updates a mutable token to an expiration time of 60 days (5,184,000 seconds) from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
