@@ -67,7 +67,7 @@ jobs:
       # TODO: Update this once we have a dynamically updated image
       - name: Pull JS TCK Server
         run: |
-          docker pull ivaylogarnev/js-tck-server-amd
+          docker pull ivaylogarnev/js-tck-server-amd:v0.1.0
 
       - name: Start tck-server in background
         run: |
