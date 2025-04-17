@@ -228,7 +228,7 @@ To release a new version of the TCK, follow these steps:
 4. **Build and Push New Docker Image:**
    ```sh   
    # Builds the Docker image and pushes it with the 'latest' tag
-   task release-tck-client
+   task release-hiero-tck-client
    ```
 
 > **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
