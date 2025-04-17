@@ -54,7 +54,7 @@ export const JSONRPCRequest = async (
 
     // Retry on network connectivity issue
     if (
-      jsonRPCResponse.error.data.message.startsWith(
+      jsonRPCResponse.error?.data?.message?.startsWith(
         "Network connectivity issue",
       )
     ) {
