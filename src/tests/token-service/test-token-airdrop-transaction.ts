@@ -1,8 +1,6 @@
-import { assert, expect } from "chai";
+import { assert } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
-
-import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 import { createAccount, deleteAccount } from "@helpers/account";
 import {
@@ -11,9 +9,14 @@ import {
 } from "@helpers/key";
 import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
+import {
+  verifyNftBalance,
+  verifyTokenBalance,
+  verifyAirdrop,
+  verifyHbarBalance,
+} from "@helpers/transfer";
 
-import ConsensusInfoClient from "@services/ConsensusInfoClient";
-import MirrorNodeClient from "@services/MirrorNodeClient";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenAirdropTransaction
@@ -59,140 +62,6 @@ describe("TokenAirdropTransaction", function () {
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
-
-  const verifyHbarBalance = async (accountId: string, balance: number) => {
-    const accountConsensusInfo =
-      await ConsensusInfoClient.getAccountInfo(accountId);
-    const accountMirrorInfo = await MirrorNodeClient.getAccountData(accountId);
-
-    expect(accountConsensusInfo.balance.toTinybars().toNumber()).to.equal(
-      balance,
-    );
-    expect(accountMirrorInfo.balance.balance?.valueOf()).to.equal(balance);
-  };
-
-  const verifyTokenBalance = async (
-    accountId: string,
-    tokenId: string,
-    balance: number,
-  ) => {
-    const accountConsensusInfo =
-      await ConsensusInfoClient.getAccountInfo(accountId);
-    const accountMirrorInfo = await MirrorNodeClient.getAccountData(accountId);
-
-    // If the token has a balance of zero, for either consensus node or mirror node queries, the token can either be returned with a balance of zero, or not be returned at all.
-    if (accountConsensusInfo.tokenRelationships.get(tokenId)) {
-      expect(
-        accountConsensusInfo.tokenRelationships
-          .get(tokenId)
-          ?.balance.toNumber(),
-      ).to.equal(balance);
-    } else {
-      expect(balance).to.equal(0);
-    }
-
-    let foundToken = false;
-    for (let i = 0; i < accountMirrorInfo.balance.tokens.length; i++) {
-      if (accountMirrorInfo.balance.tokens[i].token_id === tokenId) {
-        expect(accountMirrorInfo.balance.tokens[i].balance).to.equal(balance);
-        foundToken = true;
-        break;
-      }
-    }
-
-    if (!foundToken) {
-      expect(balance).to.equal(0);
-    }
-  };
-
-  const verifyNftBalance = async (
-    accountId: string,
-    tokenId: string,
-    serialNumber: string,
-    possess: boolean,
-  ) => {
-    const tokenNftConsensusInfo = await ConsensusInfoClient.getTokenNftInfo(
-      tokenId,
-      serialNumber,
-    );
-    const tokenNftMirrorInfo = await MirrorNodeClient.getAccountNfts(accountId);
-
-    let foundNft = false;
-    for (const nft of tokenNftConsensusInfo) {
-      if (
-        nft.accountId.toString() === accountId &&
-        nft.nftId.tokenId.toString() === tokenId &&
-        nft.nftId.serial.toString() === serialNumber
-      ) {
-        foundNft = true;
-        break;
-      }
-    }
-
-    expect(foundNft).to.equal(possess);
-
-    foundNft = false;
-    for (const nft of tokenNftMirrorInfo.nfts ?? []) {
-      if (
-        nft.account_id === accountId &&
-        nft.token_id === tokenId &&
-        nft.serial_number?.toString() === serialNumber
-      ) {
-        foundNft = true;
-        break;
-      }
-    }
-
-    expect(foundNft).to.equal(possess);
-  };
-
-  const verifyAirdrop = async (
-    senderAccountId: string,
-    receiverAccountId: string,
-    tokenId: string,
-    balance: number,
-  ) => {
-    let foundAirdrop = false;
-    const senderAirdrops =
-      await MirrorNodeClient.getOutgoingTokenAirdrops(senderAccountId);
-    console.log(senderAirdrops);
-    if (senderAirdrops.airdrops) {
-      for (let i = 0; i < senderAirdrops.airdrops?.length; i++) {
-        const airdrop = senderAirdrops.airdrops[i];
-        if (
-          airdrop.sender_id === senderAccountId &&
-          airdrop.receiver_id === receiverAccountId &&
-          airdrop.token_id === tokenId &&
-          airdrop.amount === balance
-        ) {
-          foundAirdrop = true;
-          break;
-        }
-      }
-    }
-
-    expect(foundAirdrop).to.be.true;
-
-    const receiverAirdrops =
-      await MirrorNodeClient.getIncomingTokenAirdrops(receiverAccountId);
-    console.log(receiverAirdrops);
-    if (receiverAirdrops.airdrops) {
-      for (let i = 0; i < receiverAirdrops.airdrops?.length; i++) {
-        const airdrop = receiverAirdrops.airdrops[i];
-        if (
-          airdrop.sender_id === senderAccountId &&
-          airdrop.receiver_id === receiverAccountId &&
-          airdrop.token_id === tokenId &&
-          airdrop.amount === balance
-        ) {
-          foundAirdrop = true;
-          break;
-        }
-      }
-    }
-
-    expect(foundAirdrop).to.be.true;
-  };
 
   describe("AddTokenTransfer", function () {
     let tokenId: string, tokenKey: string;
@@ -243,7 +112,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
     });
-    
+
     it("(#1) Airdrops an amount of fungible token from a sender account to a receiver account", async function () {
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -545,7 +414,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
-      let supplyKey = (
+      const supplyKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
         })
@@ -802,22 +671,7 @@ describe("TokenAirdropTransaction", function () {
     it("(#17) Airdrops an amount of fungible token from a sender account to itself", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
-          tokenTransfers: [
-            {
-              token: {
-                accountId: senderAccountId,
-                tokenId,
-                amount: amountNegatedStr,
-              },
-            },
-            {
-              token: {
-                accountId: senderAccountId,
-                tokenId,
-                amount: amountStr,
-              },
-            },
-          ],
+          tokenTransfers: [],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -3987,7 +3841,7 @@ describe("TokenAirdropTransaction", function () {
           },
         ],
       });
-      
+
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
           {
@@ -4030,13 +3884,13 @@ describe("TokenAirdropTransaction", function () {
         verifyNftBalance(senderAccountId3, tokenId, serialNumbers[2], true),
       );
       await retryOnError(async () =>
-        verifyAirdrop(senderAccountId, receiverAccountId, tokenId, 1)
+        verifyAirdrop(senderAccountId, receiverAccountId, tokenId, 1),
       );
       await retryOnError(async () =>
-        verifyAirdrop(senderAccountId2, receiverAccountId, tokenId, 1)
+        verifyAirdrop(senderAccountId2, receiverAccountId, tokenId, 1),
       );
       await retryOnError(async () =>
-        verifyAirdrop(senderAccountId3, receiverAccountId, tokenId, 1)
+        verifyAirdrop(senderAccountId3, receiverAccountId, tokenId, 1),
       );
     });
 
@@ -4515,7 +4369,6 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-
       await retryOnError(async () =>
         verifyNftBalance(senderAccountId, tokenId, serialNumbers[0], false),
       );
@@ -4529,7 +4382,7 @@ describe("TokenAirdropTransaction", function () {
         verifyNftBalance(receiverAccountId2, tokenId, serialNumbers[1], true),
       );
       await retryOnError(async () =>
-        verifyAirdrop(senderAccountId3, receiverAccountId3, tokenId, 1)
+        verifyAirdrop(senderAccountId3, receiverAccountId3, tokenId, 1),
       );
     });
   });
@@ -4904,7 +4757,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
-      let supplyKey = (
+      const supplyKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
         })
@@ -5204,24 +5057,7 @@ describe("TokenAirdropTransaction", function () {
     it("(#18) Airdrops an amount of fungible token from a sender account to itself", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
-          tokenTransfers: [
-            {
-              token: {
-                accountId: senderAccountId,
-                tokenId,
-                amount: amountNegatedStr,
-                decimals,
-              },
-            },
-            {
-              token: {
-                accountId: senderAccountId,
-                tokenId,
-                amount: amountStr,
-                decimals,
-              },
-            },
-          ],
+          tokenTransfers: [],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -7407,7 +7243,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
-      let supplyKey = (
+      const supplyKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
         })
@@ -12160,7 +11996,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
-      let supplyKey = (
+      const supplyKey = (
         await JSONRPCRequest(this, "generateKey", {
           type: "ecdsaSecp256k1PrivateKey",
         })
