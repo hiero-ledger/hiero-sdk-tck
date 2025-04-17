@@ -1,6 +1,6 @@
 services:
   tck-server:
-    image: ivaylogarnev/js-tck-server-amd
+    image: ivaylogarnev/js-tck-server
     networks:
       - hedera-network-node
       - hedera-mirror-node
@@ -8,7 +8,7 @@ services:
       NETWORK: "local"
     ports:
       - "8544:8544"
-  tck-client:
+  hiero-tck-client:
     build:
       context: .
     networks:
