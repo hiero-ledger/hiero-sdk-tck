@@ -33,3 +33,28 @@ tasks:
     cmds:
       - npm run generate-mirror-node-models
       - task: cleanup-generated-mirror-node-models
+
+  tag-previous-version:
+    desc: Tags the current 'latest' Docker image with a specific version number
+    silent: true
+    vars:
+      VERSION: "{{.VERSION}}"
+    cmds:
+      - echo "Pulling latest Docker image from DockerHub"
+      - docker pull ivaylogarnev/hiero-tck-client:latest
+      - echo "Tagging latest image as version {{.VERSION}}"
+      - docker tag ivaylogarnev/hiero-tck-client:latest ivaylogarnev/hiero-tck-client:{{.VERSION}}
+      - echo "Pushing tagged image to DockerHub"
+      - docker push ivaylogarnev/hiero-tck-client:{{.VERSION}}
+    preconditions:
+      - sh: test -n "{{.VERSION}}"
+        msg: "VERSION parameter is required. Usage: task tag-previous-version VERSION=x.y.z"
+
+  release-hiero-tck-client:
+    desc: Builds and pushes a new Docker image with the 'latest' tag to DockerHub
+    silent: true
+    cmds:
+      - echo "Building Docker image hiero-tck-client:latest"
+      - docker build -t ivaylogarnev/hiero-tck-client:latest -f Dockerfile .
+      - echo "Pushing Docker image to DockerHub"
+      - docker push ivaylogarnev/hiero-tck-client:latest

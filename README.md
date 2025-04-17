@@ -202,6 +202,39 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 
 `RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
 
+
+## TCK Release Process
+
+To release a new version of the TCK, follow these steps:
+1. **Rename the previous 'latest' Docker image with last tag in the repository**:
+   ```sh
+   # This pulls the current 'latest' image, tags it with the specified
+   # version number, and pushes it to DockerHub
+
+   task tag-previous-version VERSION=v*.*.*
+   ```
+
+2. **Update Test Suites:**
+   - Add new tests to `test_regression.yml` 
+   - Register test paths in `src/utils/constants/test-paths.ts`
+   - Submit a pull request and merge the changes
+
+3. **Tag current version:**
+   ```sh
+   git tag -a v*.*.* -m "Stable tag v*.*.*" 
+   git push origin v*.*.*
+   ```
+
+4. **Build and Push New Docker Image:**
+   ```sh   
+   # Builds the Docker image and pushes it with the 'latest' tag
+   task release-hiero-tck-client
+   ```
+
+> **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
+
+ **Note:** Ensure all tests pass before creating a new release.
+
 ## Contributing
 
 Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
