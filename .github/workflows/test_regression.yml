@@ -87,7 +87,7 @@ jobs:
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up \
             --abort-on-container-exit \
-            --exit-code-from tck-client tck-client
+            --exit-code-from hiero-tck-client hiero-tck-client
 
       - name: Stop the local node and containers
         if: ${{ always() }}
