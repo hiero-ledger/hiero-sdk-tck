@@ -121,7 +121,7 @@ The TCK is also available as a Docker image, providing an easy way to run tests 
 You can pull the pre-built Docker image from DockerHub:
 
 ```bash
-docker pull ivaylogarnev/tck-client
+docker pull ivaylogarnev/hiero-tck-client
 ```
 
 ### Running Tests
@@ -132,7 +132,7 @@ The Docker image supports running tests against both local and testnet environme
 To run tests against a local network:
 ```bash
 # Run specific test
-docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/tck-client
+docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/hiero-tck-client
 
 # Run all tests
 docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
@@ -161,7 +161,7 @@ docker run --network host \
   -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} 
   # Run specific test
   -e TEST=AccountCreate \
-  ivaylogarnev/tck-client
+  ivaylogarnev/hiero-tck-client
 ```
 
 ### Available Tests
@@ -193,10 +193,10 @@ Running an invalid test name will display the complete list of available tests.
 
 If you want to build the image locally:
 ```bash
-docker build -t tck-client .
+docker build -t hiero-tck-client .
 ```
 
-Then run it using the [same commands](#local-network-default) as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
+Then run it using the [same commands](#local-network-default) as above, replacing `ivaylogarnev/hiero-tck-client` with `hiero-tck-client`.
 
 ### Docker Additional Notes
 
