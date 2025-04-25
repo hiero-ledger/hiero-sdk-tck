@@ -23,16 +23,26 @@ export const verifyTokenBalance = async (
     await ConsensusInfoClient.getAccountInfo(accountId);
   const accountMirrorInfo = await MirrorNodeClient.getAccountData(accountId);
 
-  expect(
-    accountConsensusInfo.tokenRelationships.get(tokenId)?.balance.toNumber(),
-  ).to.equal(balance);
+  const foundTokenConsensus = accountConsensusInfo.tokenRelationships
+    .get(tokenId)
+    ?.balance.toNumber();
+
+  if (foundTokenConsensus) {
+    expect(foundTokenConsensus).to.equal(balance);
+  } else {
+    expect(balance).to.equal(0);
+  }
 
   const tokens = accountMirrorInfo.balance.tokens;
-  const foundToken = tokens.some(
+  const foundTokenMirror = tokens.some(
     (token) => token.token_id === tokenId && token.balance === balance,
   );
 
-  expect(foundToken).to.be.true;
+  if (!foundTokenMirror) {
+    expect(balance).to.equal(0);
+  } else {
+    expect(foundTokenMirror).to.be.true;
+  }
 };
 
 export const verifyNftBalance = async (
@@ -65,4 +75,37 @@ export const verifyNftBalance = async (
       nft.serial_number?.toString() === serialNumber,
   );
   expect(foundInMirror).to.equal(possess);
+};
+
+export const verifyAirdrop = async (
+  senderAccountId: string,
+  receiverAccountId: string,
+  tokenId: string,
+  balance: number,
+) => {
+  const senderAirdrops =
+    await MirrorNodeClient.getOutgoingTokenAirdrops(senderAccountId);
+
+  const foundInSenderAirdrops = (senderAirdrops.airdrops ?? []).some(
+    (airdrop) =>
+      airdrop.sender_id === senderAccountId &&
+      airdrop.receiver_id === receiverAccountId &&
+      airdrop.token_id === tokenId &&
+      airdrop.amount === balance,
+  );
+
+  expect(foundInSenderAirdrops).to.be.true;
+
+  const receiverAirdrops =
+    await MirrorNodeClient.getIncomingTokenAirdrops(receiverAccountId);
+
+  const foundInReceiverAirdrops = (receiverAirdrops.airdrops ?? []).some(
+    (airdrop) =>
+      airdrop.sender_id === senderAccountId &&
+      airdrop.receiver_id === receiverAccountId &&
+      airdrop.token_id === tokenId &&
+      airdrop.amount === balance,
+  );
+
+  expect(foundInReceiverAirdrops).to.be.true;
 };
