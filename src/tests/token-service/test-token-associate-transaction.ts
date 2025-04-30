@@ -5,6 +5,11 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -32,11 +37,7 @@ describe("TokenAssociateTransaction", function () {
       })
     ).tokenId;
 
-    accountPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    accountPrivateKey = await generateEd25519PrivateKey(this);
 
     accountId = (
       await JSONRPCRequest(this, "createAccount", {
@@ -214,11 +215,7 @@ describe("TokenAssociateTransaction", function () {
     });
 
     it("(#3) Associates a token that is deleted with an account", async function () {
-      const adminKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       const deletedTokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -359,11 +356,7 @@ describe("TokenAssociateTransaction", function () {
     });
 
     it("(#8) Associates two valid tokens and a deleted token with an account", async function () {
-      const adminKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       const deletedTokenId = (
         await JSONRPCRequest(this, "createToken", {

@@ -130,7 +130,7 @@ export const generateEcdsaSecp256k1PublicKey = async (
 
 export const generateKeyList = async (
   thisContext: any,
-  type: { type: string; keys: { type: string }[] },
+  type: { type: string; threshold?: number; keys: { type: string }[] },
 ) => {
   return await JSONRPCRequest(thisContext, "generateKey", type);
 };

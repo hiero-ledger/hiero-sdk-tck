@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
@@ -25,6 +24,14 @@ import {
 } from "@constants/key-list";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEcdsaSecp256k1PublicKey,
+  generateEd25519PrivateKey,
+  generateEd25519PublicKey,
+  generateKeyList,
+} from "@helpers/key";
 
 /**
  * Tests for TokenCreateTransaction
@@ -366,14 +373,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#10) Creates an NFT with a decimal amount of zero", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
       const decimals = 0;
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         decimals: decimals,
@@ -548,14 +551,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#9) Creates an NFT with an initial supply of zero", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEd25519PrivateKey(this);
       const initialSupply = "0";
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         initialSupply: initialSupply,
@@ -621,19 +620,13 @@ describe("TokenCreateTransaction", function () {
     };
 
     it("(#1) Creates a token with a treasury account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      const response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: accountId,
@@ -642,17 +635,15 @@ describe("TokenCreateTransaction", function () {
         },
       });
 
-      await verifyTokenCreationWithTreasuryAccount(response.tokenId, accountId);
+      await verifyTokenCreationWithTreasuryAccount(
+        tokenResponse.tokenId,
+        accountId,
+      );
     });
 
     it("(#2) Creates a token with a treasury account without signing with the account's private key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PublicKey(this);
+      const response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
 
@@ -690,16 +681,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a treasury account that is deleted", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -731,19 +716,10 @@ describe("TokenCreateTransaction", function () {
 
   describe("Admin Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -758,19 +734,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -785,19 +752,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -812,19 +770,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -891,21 +840,7 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
-      const thresholdKey = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -921,14 +856,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#8) Creates a token with a valid key as its admin key but doesn't sign with it", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -965,12 +896,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("KYC Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -982,12 +910,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -999,19 +924,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1023,19 +939,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1047,70 +954,45 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        kycKey: keyList,
+        kycKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "kycKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "kycKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        kycKey: nestedKeyList,
+        kycKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "kycKey");
+      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "kycKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        kycKey: thresholdKey,
+        kycKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "kycKey");
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "kycKey");
     });
 
     it("(#8) Creates a token with an invalid key as its KYC key", async function () {
@@ -1137,12 +1019,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Freeze Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1154,12 +1033,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1171,19 +1047,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1195,19 +1062,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1219,70 +1077,49 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        freezeKey: keyList,
+        freezeKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "freezeKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "freezeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        freezeKey: nestedKeyList,
+        freezeKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "freezeKey");
+      await verifyTokenKeyList(
+        response.tokenId,
+        nestedKeyList.key,
+        "freezeKey",
+      );
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        freezeKey: thresholdKey,
+        freezeKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "freezeKey");
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "freezeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its freeze key", async function () {
@@ -1308,12 +1145,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Wipe Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1325,12 +1159,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1342,19 +1173,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1366,19 +1188,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1390,70 +1203,45 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        wipeKey: keyList,
+        wipeKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "wipeKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "wipeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        wipeKey: nestedKeyList,
+        wipeKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "wipeKey");
+      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "wipeKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        wipeKey: thresholdKey,
+        wipeKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "wipeKey");
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "wipeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its wipe key", async function () {
@@ -1479,12 +1267,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Supply Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1496,12 +1281,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1513,19 +1295,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1537,19 +1310,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1561,70 +1325,49 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        supplyKey: keyList,
+        supplyKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "supplyKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "supplyKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        supplyKey: nestedKeyList,
+        supplyKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "supplyKey");
+      await verifyTokenKeyList(
+        response.tokenId,
+        nestedKeyList.key,
+        "supplyKey",
+      );
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        supplyKey: thresholdKey,
+        supplyKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "supplyKey");
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "supplyKey");
     });
 
     it("(#8) Creates a token with an invalid key as its supply key", async function () {
@@ -1663,14 +1406,10 @@ describe("TokenCreateTransaction", function () {
     };
 
     it("(#1) Creates a token with a frozen default status", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEd25519PrivateKey(this);
       const freezeDefault = true;
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1701,18 +1440,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with an unfrozen default status", async function () {
-      const responseKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = responseKey.key;
-
+      const responseKey = await generateEd25519PrivateKey(this);
       const freezeDefault = false;
+
       const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        freezeKey: key,
+        freezeKey: responseKey,
         freezeDefault: freezeDefault,
       });
 
@@ -1907,16 +1642,10 @@ describe("TokenCreateTransaction", function () {
 
   describe("Auto Renew Account ID", () => {
     it("(#1) Creates a token with an auto renew account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "createToken", {
@@ -1942,16 +1671,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with an auto renew account without signing with the account's key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       try {
@@ -2007,16 +1730,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with an auto renew account that is deleted", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -2342,13 +2059,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates an NFT", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2533,12 +2246,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Fee Schedule Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2550,12 +2260,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2567,19 +2274,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2591,19 +2289,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2615,76 +2304,51 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        feeScheduleKey: keyList,
+        feeScheduleKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "feeScheduleKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "feeScheduleKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        feeScheduleKey: nestedKeyList,
+        feeScheduleKey: nestedKeyList.key,
       });
 
       await verifyTokenKeyList(
         response.tokenId,
-        nestedKeyList,
+        nestedKeyList.key,
         "feeScheduleKey",
       );
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        feeScheduleKey: thresholdKey,
+        feeScheduleKey: thresholdKey.key,
       });
 
       await verifyTokenKeyList(
         response.tokenId,
-        thresholdKey,
+        thresholdKey.key,
         "feeScheduleKey",
       );
     });
@@ -3628,11 +3292,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#31) Creates a token with a royalty fee with a numerator of 0", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3664,11 +3326,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#32) Creates a token with a royalty fee with a numerator of -1", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3700,11 +3360,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#33) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3736,11 +3394,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#34) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3772,11 +3428,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3808,11 +3462,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#36) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3844,11 +3496,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#37) Creates a token with a royalty fee with a denominator of 0", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3880,11 +3530,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#38) Creates a token with a royalty fee with a denominator of -1", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -3916,18 +3564,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#39) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775807";
       const fallbackFeeAmount = "10";
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3959,18 +3603,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#40) Creates a token with a royalty fee with a denominator of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "9223372036854775806";
       const fallbackFeeAmount = "10";
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4002,11 +3642,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4038,11 +3676,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#42) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4074,11 +3710,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#43) Creates a token with a royalty fee with a fallback fee with an amount of 0", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4110,11 +3744,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#44) Creates a token with a royalty fee with a fallback fee with an amount of -1", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4146,18 +3778,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#45) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775807";
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4189,18 +3817,14 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#46) Creates a token with a royalty fee with a fallback fee with an amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
-
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const numerator = "1";
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775806";
-      response = await JSONRPCRequest(this, "createToken", {
+
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4232,14 +3856,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4268,14 +3888,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#48) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4356,11 +3972,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#51) Creates a token with a royalty fee with a fee collector account that doesn't exist", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4444,14 +4058,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#54) Creates a token with a royalty fee with an empty fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
-
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
+        await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4480,16 +4090,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#55) Creates a token with a fixed fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -4527,16 +4131,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#56) Creates a token with a fractional fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -4578,16 +4176,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#57) Creates a token with a royalty fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -4820,11 +4412,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#64) Creates an NFT with a fractional fee", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      let response = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
+      const key = response;
 
       try {
         response = await JSONRPCRequest(this, "createToken", {
@@ -4955,12 +4545,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Pause Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4972,12 +4559,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4989,19 +4573,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5013,19 +4588,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5043,16 +4609,16 @@ describe("TokenCreateTransaction", function () {
         fourKeysKeyListParams,
       );
 
-      const keyList = response.key;
+      const keyList = response;
 
       response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        pauseKey: keyList,
+        pauseKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "pauseKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "pauseKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
@@ -5062,16 +4628,16 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
+      const nestedKeyList = response;
 
       response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        pauseKey: nestedKeyList,
+        pauseKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "pauseKey");
+      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "pauseKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
@@ -5081,16 +4647,16 @@ describe("TokenCreateTransaction", function () {
         twoThresholdKeyParams,
       );
 
-      const thresholdKey = response.key;
+      const thresholdKey = response;
 
       response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        pauseKey: thresholdKey,
+        pauseKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "pauseKey");
+      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "pauseKey");
     });
 
     it("(#8) Creates a token with an invalid key as its pause key", async function () {
@@ -5160,12 +4726,9 @@ describe("TokenCreateTransaction", function () {
 
   describe("Metadata Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5178,12 +4741,9 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const publicKey = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5195,19 +4755,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5219,19 +4770,10 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -5243,22 +4785,16 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const keyList = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        metadataKey: keyList,
+        metadataKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList, "metadataKey");
+      await verifyTokenKeyList(response.tokenId, keyList.key, "metadataKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
@@ -5268,45 +4804,37 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response.key;
+      const nestedKeyList = response;
 
       response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        metadataKey: nestedKeyList,
+        metadataKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList, "metadataKey");
+      await verifyTokenKeyList(
+        response.tokenId,
+        nestedKeyList.key,
+        "metadataKey",
+      );
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "thresholdKey",
-        threshold: 2,
-        keys: [
-          {
-            type: "ed25519PrivateKey",
-          },
-          {
-            type: "ecdsaSecp256k1PublicKey",
-          },
-          {
-            type: "ed25519PublicKey",
-          },
-        ],
-      });
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const thresholdKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
         treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        metadataKey: thresholdKey,
+        metadataKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey, "metadataKey");
+      await verifyTokenKeyList(
+        response.tokenId,
+        thresholdKey.key,
+        "metadataKey",
+      );
     });
 
     it("(#8) Creates a token with an invalid key as its metadata key", async function () {
