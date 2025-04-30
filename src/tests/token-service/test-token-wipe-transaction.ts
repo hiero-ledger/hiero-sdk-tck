@@ -6,7 +6,10 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-import { generateEd25519PrivateKey, getPrivateKey } from "@helpers/key";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
 import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
 import {
@@ -48,9 +51,9 @@ describe("TokenWipeTransaction", function () {
     ).accountId;
 
     // A bit of a hack but helps reduce code bloat.
-    wipeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+    wipeKey = await generateEcdsaSecp256k1PrivateKey(this);
     if (this.currentTest?.title.includes("NFT")) {
-      const supplyKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -220,7 +223,7 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#6) Wipes a deleted token", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
+      const tokenKey = await generateEd25519PrivateKey(this);
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -297,7 +300,7 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#9) Wipes a paused token", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
+      const tokenKey = await generateEd25519PrivateKey(this);
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -434,7 +437,7 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#5) Wipes a token from an account with the token frozen", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
+      const tokenKey = await generateEd25519PrivateKey(this);
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
@@ -736,7 +739,7 @@ describe("TokenWipeTransaction", function () {
 
     it("(#10) Wipes an amount of 10,000 fungible tokens with 1,000 max supply from an account", async function () {
       const maxSupply = "1000";
-      const supplyKey = await getPrivateKey(this, "ed25519");
+      const supplyKey = await generateEd25519PrivateKey(this);
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
