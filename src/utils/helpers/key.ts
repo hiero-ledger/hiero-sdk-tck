@@ -84,22 +84,65 @@ export const getPrivateKey = async (
   ).key;
 };
 
-export async function generateEd25519PrivateKey(
+export const generateEd25519PrivateKey = async (
   thisContext: any,
-): Promise<string> {
+): Promise<string> => {
   return (
     await JSONRPCRequest(thisContext, "generateKey", {
       type: "ed25519PrivateKey",
     })
   ).key;
-}
+};
 
-export async function generateEcdsaSecp256k1PrivateKey(
+export const generateEcdsaSecp256k1PrivateKey = async (
   thisContext: any,
-): Promise<string> {
+): Promise<string> => {
   return (
     await JSONRPCRequest(thisContext, "generateKey", {
       type: "ecdsaSecp256k1PrivateKey",
     })
   ).key;
-}
+};
+
+export const generateEd25519PublicKey = async (
+  thisContext: any,
+  fromKey?: string,
+): Promise<string> => {
+  return (
+    await JSONRPCRequest(thisContext, "generateKey", {
+      type: "ed25519PublicKey",
+      fromKey,
+    })
+  ).key;
+};
+
+export const generateEcdsaSecp256k1PublicKey = async (
+  thisContext: any,
+  fromKey?: string,
+): Promise<string> => {
+  return (
+    await JSONRPCRequest(thisContext, "generateKey", {
+      type: "ecdsaSecp256k1PublicKey",
+      fromKey,
+    })
+  ).key;
+};
+
+export const generateKeyList = async (
+  thisContext: any,
+  type: { type: string; keys: { type: string }[] },
+) => {
+  return (await JSONRPCRequest(thisContext, "generateKey", type)).key;
+};
+
+export const generateEvmAddress = async (
+  thisContext: any,
+  fromKey?: string,
+) => {
+  return (
+    await JSONRPCRequest(thisContext, "generateKey", {
+      type: "evmAddress",
+      fromKey,
+    })
+  ).key;
+};
