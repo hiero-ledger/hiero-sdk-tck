@@ -5,6 +5,11 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -26,12 +31,7 @@ describe("TokenDissociateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
+    tokenKey = await generateEd25519PrivateKey(this);
     tokenId = (
       await JSONRPCRequest(this, "createToken", {
         name: "testname",
@@ -43,12 +43,7 @@ describe("TokenDissociateTransaction", function () {
       })
     ).tokenId;
 
-    accountPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
+    accountPrivateKey = await generateEd25519PrivateKey(this);
     accountId = (
       await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -238,11 +233,7 @@ describe("TokenDissociateTransaction", function () {
     });
 
     it.skip("(#3) Dissociates a token that is deleted from an account", async function () {
-      const adminKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const adminKey = await generateEd25519PrivateKey(this);
 
       const deletedTokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -402,12 +393,7 @@ describe("TokenDissociateTransaction", function () {
         })
       ).tokenId;
 
-      const adminKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
-
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
       const deletedTokenId = (
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
