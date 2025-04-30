@@ -132,7 +132,7 @@ export const generateKeyList = async (
   thisContext: any,
   type: { type: string; keys: { type: string }[] },
 ) => {
-  return (await JSONRPCRequest(thisContext, "generateKey", type)).key;
+  return await JSONRPCRequest(thisContext, "generateKey", type);
 };
 
 export const generateEvmAddress = async (

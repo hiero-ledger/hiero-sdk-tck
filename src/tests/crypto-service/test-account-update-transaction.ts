@@ -9,6 +9,11 @@ import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
 import { getRawKeyFromHex } from "@helpers/asn1-decoder";
 import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEcdsaSecp256k1PublicKey,
+  generateEd25519PrivateKey,
+  generateEd25519PublicKey,
+  generateKeyList,
   getEncodedKeyHexFromKeyListConsensus,
   getPublicKeyFromMirrorNode,
 } from "@helpers/key";
@@ -36,14 +41,10 @@ describe("AccountUpdateTransaction", function () {
     );
 
     // Generate a private key.
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-
-    accountPrivateKey = response.key;
+    accountPrivateKey = await generateEd25519PrivateKey(this);
 
     // Create an account using the generated private key.
-    response = await JSONRPCRequest(this, "createAccount", {
+    const response = await JSONRPCRequest(this, "createAccount", {
       key: accountPrivateKey,
     });
 
@@ -151,132 +152,110 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#1) Updates the key of an account to a new valid ED25519 public key", async function () {
       // Generate a new ED25519 private key for the account.
-      const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
 
       // Generate the corresponding ED25519 public key.
-      const ed25519PublicKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: ed25519PrivateKey.key,
-      });
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
 
       // Attempt to update the key of the account with the new ED25519 public key.
       await JSONRPCRequest(this, "updateAccount", {
         accountId,
-        key: ed25519PublicKey.key,
+        key: ed25519PublicKey,
         commonTransactionParams: {
-          signers: [accountPrivateKey, ed25519PrivateKey.key],
+          signers: [accountPrivateKey, ed25519PrivateKey],
         },
       });
 
       // Verify the account key was updated (use raw key for comparison, ED25519 public key DER-encoding has a 12 byte prefix).
       await retryOnError(async () =>
-        verifyAccountUpdateKey(accountId, ed25519PublicKey.key),
+        verifyAccountUpdateKey(accountId, ed25519PublicKey),
       );
     });
 
     it("(#2) Updates the key of an account to a new valid ECDSAsecp256k1 public key", async function () {
       // Generate a new ECDSAsecp256k1 private key for the account.
-      const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
-        this,
-        "generateKey",
-        {
-          type: "ecdsaSecp256k1PrivateKey",
-        },
-      );
+      const ecdsaSecp256k1PrivateKey =
+        await generateEcdsaSecp256k1PrivateKey(this);
 
       // Generate the corresponding ECDSAsecp256k1 public key.
       //prettier-ignore
-      const ecdsaSecp256k1PublicKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: ecdsaSecp256k1PrivateKey.key,
-      });
+      const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
+        this,
+        ecdsaSecp256k1PrivateKey,
+      );
 
       // Attempt to update the key of the account with the new ECDSAsecp256k1 public key.
       await JSONRPCRequest(this, "updateAccount", {
         accountId,
-        key: ecdsaSecp256k1PublicKey.key,
+        key: ecdsaSecp256k1PublicKey,
         commonTransactionParams: {
-          signers: [accountPrivateKey, ecdsaSecp256k1PrivateKey.key],
+          signers: [accountPrivateKey, ecdsaSecp256k1PrivateKey],
         },
       });
 
       // Verify the account key was updated (use raw key for comparison, compressed ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix).
       await retryOnError(async () =>
-        verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey.key),
+        verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey),
       );
     });
 
     it("(#3) Updates the key of an account to a new valid ED25519 private key", async function () {
       // Generate a new ED25519 private key for the account.
-      const ed25519PrivateKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
 
       // Generate the corresponding ED25519 public key.
-      const ed25519PublicKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: ed25519PrivateKey.key,
-      });
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
 
       // Attempt to update the key of the account with the new ED25519 private key.
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
-        key: ed25519PrivateKey.key,
+        key: ed25519PrivateKey,
         commonTransactionParams: {
-          signers: [accountPrivateKey, ed25519PrivateKey.key],
+          signers: [accountPrivateKey, ed25519PrivateKey],
         },
       });
 
       // Verify the account key was updated (use raw key for comparison, ED25519 public key DER-encoding has a 12 byte prefix).
       await retryOnError(async () =>
-        verifyAccountUpdateKey(accountId, ed25519PublicKey.key),
+        verifyAccountUpdateKey(accountId, ed25519PublicKey),
       );
     });
 
     it("(#4) Updates the key of an account to a new valid ECDSAsecp256k1 private key", async function () {
       // Generate a new ECDSAsecp256k1 private key for the account.
-      const ecdsaSecp256k1PrivateKey = await JSONRPCRequest(
-        this,
-        "generateKey",
-        {
-          type: "ecdsaSecp256k1PrivateKey",
-        },
-      );
+      const ecdsaSecp256k1PrivateKey =
+        await generateEcdsaSecp256k1PrivateKey(this);
 
       // Generate the corresponding ECDSAsecp256k1 public key.
-      const ecdsaSecp256k1PublicKey = await JSONRPCRequest(
+      const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
         this,
-        "generateKey",
-        {
-          type: "ecdsaSecp256k1PublicKey",
-          fromKey: ecdsaSecp256k1PrivateKey.key,
-        },
+        ecdsaSecp256k1PrivateKey,
       );
 
       // Attempt to update the key of the account with the new ECDSAsecp256k1 public key.
       await JSONRPCRequest(this, "updateAccount", {
         accountId: accountId,
-        key: ecdsaSecp256k1PrivateKey.key,
+        key: ecdsaSecp256k1PrivateKey,
         commonTransactionParams: {
-          signers: [accountPrivateKey, ecdsaSecp256k1PrivateKey.key],
+          signers: [accountPrivateKey, ecdsaSecp256k1PrivateKey],
         },
       });
 
       // Verify the account key was updated (use raw key for comparison, compressed ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix).
       await retryOnError(async () =>
-        verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey.key),
+        verifyAccountUpdateKey(accountId, ecdsaSecp256k1PublicKey),
       );
     });
 
     it("(#5) Updates the key of an account to a new valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
       // Generate a KeyList of ED25519 and ECDSAsecp256k1 private and public keys for the account.
-      const keyList = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
       // Attempt to update the key of the account with the new KeyList of ED25519 and ECDSAsecp256k1 private and public keys.
       await JSONRPCRequest(this, "updateAccount", {
@@ -301,9 +280,8 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#6) Updates the key of an account to a new valid KeyList of nested KeyLists (three levels)", async function () {
       // Generate a KeyList of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
-      const nestedKeyList = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
@@ -332,11 +310,7 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#7) Updates the key of an account to a new valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys", async function () {
       // Generate a ThresholdKey of nested KeyLists of ED25519 and ECDSAsecp256k1 private and public keys for the account.
-      const thresholdKey = await JSONRPCRequest(
-        this,
-        "generateKey",
-        twoThresholdKeyParams,
-      );
+      const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
       // Attempt to update the key of the account with the new ThresholdKey.
       await JSONRPCRequest(this, "updateAccount", {
@@ -359,15 +333,13 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#8) Updates the key of an account to a key without signing with the new key", async function () {
       // Generate a new key for the account.
-      const key = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
         // Attempt to update the key of the account with the new key. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId,
-          key: key.key,
+          key,
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -383,22 +355,18 @@ describe("AccountUpdateTransaction", function () {
 
     it("(#9) Updates the key of an account to a new public key and signs with an incorrect private key", async function () {
       // Generate a new public key for the account.
-      const publicKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
+      const publicKey = await generateEd25519PublicKey(this);
 
       // Generate a random private key.
-      const privateKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
         // Attempt to update the key of the account and sign with the random private key. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId,
-          key: publicKey.key,
+          key: publicKey,
           commonTransactionParams: {
-            signers: [privateKey.key],
+            signers: [privateKey],
           },
         });
       } catch (err: any) {

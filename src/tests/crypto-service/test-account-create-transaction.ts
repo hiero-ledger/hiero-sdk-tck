@@ -115,7 +115,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account.
       const response = await JSONRPCRequest(this, "createAccount", {
-        key: keyList,
+        key: keyList.key,
       });
 
       // Verify the account was created.
@@ -131,7 +131,7 @@ describe("AccountCreateTransaction", function () {
 
       // Attempt to create an account.
       const response = await JSONRPCRequest(this, "createAccount", {
-        key: nestedKeyList,
+        key: nestedKeyList.key,
       });
 
       // Verify the account was created.
