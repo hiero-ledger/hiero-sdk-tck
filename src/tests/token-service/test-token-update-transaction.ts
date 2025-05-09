@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
@@ -13,6 +12,13 @@ import {
   verifyTokenUpdateWithNullKey,
   verifyTokenExpirationTimeUpdate,
 } from "@helpers/verify-token-tx";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEcdsaSecp256k1PublicKey,
+  generateEd25519PrivateKey,
+  generateEd25519PublicKey,
+  generateKeyList,
+} from "@helpers/key";
 
 import { invalidKey } from "@constants/key-type";
 import {
@@ -67,13 +73,9 @@ describe("TokenUpdateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
+    mutableTokenKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    mutableTokenKey = response.key;
-
-    response = await JSONRPCRequest(this, "createToken", {
+    const response = await JSONRPCRequest(this, "createToken", {
       name: initialTokenName,
       symbol: initialTokenSymbol,
       treasuryAccountId: initialTreasuryAccountId,
@@ -358,14 +360,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a treasury account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PrivateKey(this);
 
       // Create with 1 auto token association in order to automatically associate with the created token.
-      response = await JSONRPCRequest(this, "createAccount", {
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
         maxAutoTokenAssociations: 1,
       });
@@ -405,16 +403,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a treasury account without signing with the account's private key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      const response = await JSONRPCRequest(this, "createAccount", {
         key,
       });
-
       const accountId = response.accountId;
 
       try {
@@ -451,16 +443,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a treasury account that is deleted", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -488,16 +474,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#6) Updates a mutable token with a treasury account without signing with the token's admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      const response = await JSONRPCRequest(this, "createAccount", {
         key,
       });
-
       const accountId = response.accountId;
 
       try {
@@ -519,11 +499,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Admin Key", () => {
     it("(#1) Updates an immutable token with a valid key as its admin key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -539,19 +515,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         adminKey: publicKey,
         commonTransactionParams: {
@@ -566,19 +533,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         adminKey: publicKey,
         commonTransactionParams: {
@@ -593,19 +551,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         adminKey: privateKey,
         commonTransactionParams: {
@@ -620,19 +569,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         adminKey: privateKey,
         commonTransactionParams: {
@@ -725,14 +665,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with a valid key as its admin key but doesn't sign with it", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
           adminKey: key,
           commonTransactionParams: {
@@ -771,11 +707,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("KYC Key", () => {
     it("(#1) Updates an immutable token with a valid key as its KYC key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -791,13 +723,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
+      const publicKey = await generateEd25519PublicKey(this);
 
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         kycKey: publicKey,
         commonTransactionParams: {
@@ -812,13 +740,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         kycKey: publicKey,
         commonTransactionParams: {
@@ -833,19 +757,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         kycKey: privateKey,
         commonTransactionParams: {
@@ -860,19 +775,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         kycKey: privateKey,
         commonTransactionParams: {
@@ -965,16 +871,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        kycKey: key,
+        kycKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -986,13 +890,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a KYC key with a valid key as its KYC key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -1006,7 +906,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           kycKey: key,
           commonTransactionParams: {
@@ -1045,11 +945,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Freeze Key", () => {
     it("(#1) Updates an immutable token with a valid key as its freeze key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1065,19 +961,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         freezeKey: publicKey,
         commonTransactionParams: {
@@ -1092,19 +979,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         freezeKey: publicKey,
         commonTransactionParams: {
@@ -1119,19 +997,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         freezeKey: privateKey,
         commonTransactionParams: {
@@ -1146,19 +1015,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         freezeKey: privateKey,
         commonTransactionParams: {
@@ -1251,16 +1111,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        freezeKey: key,
+        freezeKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -1272,13 +1130,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -1292,7 +1146,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           freezeKey: key,
           commonTransactionParams: {
@@ -1331,11 +1185,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Wipe Key", () => {
     it("(#1) Updates an immutable token with a valid key as its wipe key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1351,19 +1201,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         wipeKey: publicKey,
         commonTransactionParams: {
@@ -1378,19 +1219,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         wipeKey: publicKey,
         commonTransactionParams: {
@@ -1405,19 +1237,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         wipeKey: privateKey,
         commonTransactionParams: {
@@ -1432,19 +1255,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         wipeKey: privateKey,
         commonTransactionParams: {
@@ -1537,16 +1351,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        wipeKey: key,
+        wipeKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -1558,13 +1370,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -1578,7 +1386,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           wipeKey: key,
           commonTransactionParams: {
@@ -1617,11 +1425,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Supply Key", () => {
     it("(#1) Updates an immutable token with a valid key as its supply key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1637,19 +1441,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         supplyKey: publicKey,
         commonTransactionParams: {
@@ -1664,19 +1459,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         supplyKey: publicKey,
         commonTransactionParams: {
@@ -1691,19 +1477,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         supplyKey: privateKey,
         commonTransactionParams: {
@@ -1718,19 +1495,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         supplyKey: privateKey,
         commonTransactionParams: {
@@ -1823,16 +1591,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        supplyKey: key,
+        supplyKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -1844,13 +1610,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -1864,7 +1626,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           supplyKey: key,
           commonTransactionParams: {
@@ -1917,16 +1679,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with an auto renew account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "updateToken", {
@@ -1943,16 +1699,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with an auto renew account without signing with the account's private key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       try {
@@ -2010,16 +1760,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#6) Updates a mutable token with an auto renew account that is deleted", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       response = await JSONRPCRequest(this, "deleteAccount", {
@@ -2047,16 +1791,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#7) Updates a mutable token with an auto renew account without signing with the token's admin key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      const key = await generateEd25519PrivateKey(this);
+      const response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
-
       const accountId = response.accountId;
 
       try {
@@ -2587,11 +2325,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Fee Schedule Key", () => {
     it("(#1) Updates an immutable token with a valid key as its fee schedule key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -2607,19 +2341,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: publicKey,
         commonTransactionParams: {
@@ -2634,19 +2359,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: publicKey,
         commonTransactionParams: {
@@ -2661,19 +2377,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
@@ -2688,19 +2395,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
@@ -2775,16 +2473,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        feeScheduleKey: key,
+        feeScheduleKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -2796,13 +2492,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -2816,7 +2508,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           feeScheduleKey: key,
           commonTransactionParams: {
@@ -2855,11 +2547,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Pause Key", () => {
     it("(#1) Updates an immutable token with a valid key as its pause key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -2875,12 +2563,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: key,
         commonTransactionParams: {
@@ -2895,14 +2580,11 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const key = response.key;
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        feeScheduleKey: key,
+        feeScheduleKey: publicKey,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -2910,24 +2592,15 @@ describe("TokenUpdateTransaction", function () {
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
       await retryOnError(async function () {
-        verifyTokenKey(mutableTokenId, key, "pauseKey");
+        verifyTokenKey(mutableTokenId, publicKey, "pauseKey");
       });
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
@@ -2942,19 +2615,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         feeScheduleKey: privateKey,
         commonTransactionParams: {
@@ -3035,16 +2699,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        pauseKey: key,
+        pauseKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -3056,13 +2718,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -3076,7 +2734,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           pauseKey: key,
           commonTransactionParams: {
@@ -3173,11 +2831,7 @@ describe("TokenUpdateTransaction", function () {
 
   describe("Metadata Key", () => {
     it("(#1) Updates an immutable token with a valid key as its metadata key", async function () {
-      const response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -3193,12 +2847,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#2) Updates a mutable token with a valid ED25519 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-      });
-      const key = response.key;
+      const key = await generateEd25519PublicKey(this);
 
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
@@ -3213,12 +2864,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#3) Updates a mutable token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
-      const key = response.key;
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         metadataKey: key,
         commonTransactionParams: {
@@ -3233,19 +2881,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#4) Updates a mutable token with a valid ED25519 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         metadataKey: privateKey,
         commonTransactionParams: {
@@ -3260,19 +2899,10 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#5) Updates a mutable token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const privateKey = response.key;
-
-      response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-        fromKey: privateKey,
-      });
-      const publicKey = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         metadataKey: privateKey,
         commonTransactionParams: {
@@ -3353,16 +2983,14 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#9) Updates a mutable token with an empty KeyList as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
+      const key = await generateKeyList(this, {
         type: "keyList",
         keys: [],
       });
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "updateToken", {
+      await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
-        metadataKey: key,
+        metadataKey: key.key,
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
@@ -3374,13 +3002,9 @@ describe("TokenUpdateTransaction", function () {
     });
 
     it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PublicKey",
-      });
+      const key = await generateEcdsaSecp256k1PublicKey(this);
 
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
+      const response = await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         treasuryAccountId: initialTreasuryAccountId,
@@ -3394,7 +3018,7 @@ describe("TokenUpdateTransaction", function () {
       const tokenId = response.tokenId;
 
       try {
-        response = await JSONRPCRequest(this, "updateToken", {
+        await JSONRPCRequest(this, "updateToken", {
           tokenId: tokenId,
           metadataKey: key,
           commonTransactionParams: {

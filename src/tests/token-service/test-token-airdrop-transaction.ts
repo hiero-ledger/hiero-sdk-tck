@@ -66,11 +66,7 @@ describe("TokenAirdropTransaction", function () {
   describe("AddTokenTransfer", function () {
     let tokenId: string, tokenKey: string;
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -414,11 +410,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
-      const supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -716,11 +708,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops an amount of fungible token from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -769,11 +757,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#20) Airdrops an amount of fungible token from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -830,11 +814,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#21) Airdrops an amount of paused fungible token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -963,11 +943,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#24) Airdrops an amount of fungible token with an inclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -982,11 +958,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -1052,11 +1024,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#25) Airdrops an amount of fungible token with an exclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -1071,11 +1039,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -1142,11 +1106,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -1161,11 +1121,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -1236,11 +1192,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#27) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -2547,17 +2499,9 @@ describe("TokenAirdropTransaction", function () {
       supplyKey: string,
       serialNumbers: string[];
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
-      supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -3072,11 +3016,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#17) Airdrops an NFT from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -3119,11 +3059,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#18) Airdrops an NFT from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -3174,11 +3110,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops a paused NFT token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -3286,11 +3218,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#22) Airdrops an NFT with a royalty fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -3305,11 +3233,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -4422,11 +4346,7 @@ describe("TokenAirdropTransaction", function () {
     const decimals = 2;
     let tokenId: string, tokenKey: string;
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -4788,11 +4708,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
-      const supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -5119,11 +5035,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops an amount of fungible token from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5174,11 +5086,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#20) Airdrops an amount of fungible token from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5237,11 +5145,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#21) Airdrops an amount of paused fungible token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5376,11 +5280,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#24) Airdrops an amount of fungible token with an inclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -5395,11 +5295,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5467,11 +5363,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#25) Airdrops an amount of fungible token with an exclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -5486,11 +5378,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5559,11 +5447,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -5578,11 +5462,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -5655,11 +5535,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#27) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -6895,11 +6771,7 @@ describe("TokenAirdropTransaction", function () {
       spenderAccountId: string,
       spenderPrivateKey: string;
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -6941,11 +6813,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      spenderPrivateKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      spenderPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       spenderAccountId = (
         await JSONRPCRequest(this, "createAccount", {
@@ -7291,11 +7159,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
-      const supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -7634,11 +7498,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#18) Airdrops an approved amount of fungible token from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -7689,11 +7549,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops an approved amount of fungible token from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -7752,11 +7608,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#20) Airdrops an approved amount of paused fungible token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -7908,11 +7760,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#23) Airdrops an approved amount of fungible token with an inclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -7927,11 +7775,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -7999,11 +7843,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#24) Airdrops an approved amount of fungible token with an exclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -8018,11 +7858,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -8091,11 +7927,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#25) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -8110,11 +7942,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -8187,11 +8015,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#26) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -9419,17 +9243,9 @@ describe("TokenAirdropTransaction", function () {
       spenderAccountId: string,
       spenderPrivateKey: string;
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
-      supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -9490,11 +9306,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      spenderPrivateKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      spenderPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       spenderAccountId = (
         await JSONRPCRequest(this, "createAccount", {
@@ -10034,11 +9846,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#17) Airdrops an approved NFT from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -10083,11 +9891,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#18) Airdrops an approved NFT from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -10140,11 +9944,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops an approved paused NFT token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -10278,11 +10078,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#22) Airdrops an approved NFT with a royalty fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -10297,11 +10093,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -10391,11 +10183,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#23) Airdrops an approved NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -10410,11 +10198,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -10493,11 +10277,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#24) Airdrops an approved NFT with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -11628,11 +11408,7 @@ describe("TokenAirdropTransaction", function () {
       spenderAccountId: string,
       spenderPrivateKey: string;
     beforeEach(async function () {
-      tokenKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      tokenKey = await generateEd25519PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -11677,11 +11453,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      spenderPrivateKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      spenderPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       spenderAccountId = (
         await JSONRPCRequest(this, "createAccount", {
@@ -12044,11 +11816,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
-      const supplyKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = (
         await JSONRPCRequest(this, "createToken", {
@@ -12437,11 +12205,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#19) Airdrops an approved amount of fungible token from a frozen sender account to a receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -12494,11 +12258,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#20) Airdrops an approved amount of fungible token from a sender account to a frozen receiver account", async function () {
-      const freezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const freezeKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -12559,11 +12319,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#21) Airdrops an approved amount of paused fungible token from a sender account to a receiver account", async function () {
-      const pauseKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const pauseKey = await generateEd25519PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -12721,11 +12477,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#24) Airdrops an approved amount of fungible token with an inclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -12740,11 +12492,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -12814,11 +12562,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#25) Airdrops an approved amount of fungible token with an exclusive fee from a sender account to a receiver account", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -12833,11 +12577,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -12908,11 +12648,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it.skip("(#26) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
-      const feeCollectorAccountKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
       const feeCollectorAccountId = await createAccount(
         this,
@@ -12927,11 +12663,7 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,
@@ -13006,11 +12738,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#27) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with not enough token balance to pay the fee", async function () {
-      const feeScheduleKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ecdsaSecp256k1PrivateKey",
-        })
-      ).key;
+      const feeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       await JSONRPCRequest(this, "updateToken", {
         tokenId,

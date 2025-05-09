@@ -3,7 +3,10 @@ import { assert, expect } from "chai";
 import { JSONRPCRequest } from "@services/Client";
 
 import { setOperator } from "@helpers/setup-tests";
-import { getPrivateKey } from "@helpers/key";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
 import {
   createToken,
   verifyFungibleTokenBurn,
@@ -37,7 +40,7 @@ describe("TokenBurnTransaction", function () {
 
   describe("Token ID", function () {
     it("(#1) Burns a valid amount of fungible token", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
+      const supplyKey = await generateEd25519PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -69,7 +72,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#2) Burns a valid non-fungible token", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
+      const supplyKey = await generateEd25519PrivateKey(this);
       const tokenId = await createToken(
         this,
         false,
@@ -133,8 +136,8 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#5) Burns a deleted token", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-      const adminKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -167,7 +170,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#6) Burns a token without signing with the token's supply key", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
+      const supplyKey = await generateEd25519PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -189,8 +192,8 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#7) Burns a token but signs with the token's admin key", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-      const adminKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -217,8 +220,8 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#8) Burns a token but signs with an incorrect supply key", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-      const adminKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -228,7 +231,7 @@ describe("TokenBurnTransaction", function () {
         adminKey,
       );
 
-      const incorrectKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const incorrectKey = await generateEcdsaSecp256k1PrivateKey(this);
       try {
         await JSONRPCRequest(this, "burnToken", {
           tokenId,
@@ -262,8 +265,8 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#10) Burns a paused token", async function () {
-      const supplyKey = await getPrivateKey(this, "ed25519");
-      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -302,7 +305,7 @@ describe("TokenBurnTransaction", function () {
     let supplyKey: string;
 
     beforeEach(async function () {
-      supplyKey = await getPrivateKey(this, "ed25519");
+      supplyKey = await generateEd25519PrivateKey(this);
     });
 
     it("(#1) Burns an amount of 1,000,000 fungible tokens", async function () {
@@ -590,7 +593,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#11) Burns fungible tokens with the treasury account frozen", async function () {
-      const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -629,7 +632,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#12) Burns paused fungible tokens", async function () {
-      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         true,
@@ -700,7 +703,7 @@ describe("TokenBurnTransaction", function () {
     let supplyKey: string;
 
     beforeEach(async function () {
-      supplyKey = await getPrivateKey(this, "ed25519");
+      supplyKey = await generateEd25519PrivateKey(this);
     });
 
     it("(#1) Burns an NFT", async function () {
@@ -892,7 +895,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#6) Burns NFTs with the treasury account frozen", async function () {
-      const freezeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         false,
@@ -941,7 +944,7 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#7) Burns paused NFTs", async function () {
-      const pauseKey = await getPrivateKey(this, "ecdsaSecp256k1");
+      const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
       const tokenId = await createToken(
         this,
         false,

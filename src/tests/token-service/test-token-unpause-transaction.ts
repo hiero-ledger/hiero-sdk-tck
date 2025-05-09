@@ -6,6 +6,11 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -24,17 +29,8 @@ describe("TokenUnpauseTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenPauseKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
-    tokenAdminKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
+    tokenPauseKey = await generateEd25519PrivateKey(this);
+    tokenAdminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
     tokenId = (
       await JSONRPCRequest(this, "createToken", {

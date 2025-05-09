@@ -5,6 +5,11 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -28,23 +33,9 @@ describe("TokenUnfreezeTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenFreezeKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
-    tokenAdminKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
-
-    tokenPauseKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
+    tokenFreezeKey = await generateEd25519PrivateKey(this);
+    tokenAdminKey = await generateEd25519PrivateKey(this);
+    tokenPauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
     tokenId = (
       await JSONRPCRequest(this, "createToken", {
@@ -60,11 +51,7 @@ describe("TokenUnfreezeTransaction", function () {
       })
     ).tokenId;
 
-    accountPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    accountPrivateKey = await generateEd25519PrivateKey(this);
 
     accountId = (
       await JSONRPCRequest(this, "createAccount", {
@@ -229,11 +216,7 @@ describe("TokenUnfreezeTransaction", function () {
     });
 
     it("(#8) Unfreezes a token on an account but signs with an incorrect freeze key", async function () {
-      const incorrectFreezeKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const incorrectFreezeKey = await generateEd25519PrivateKey(this);
 
       try {
         await JSONRPCRequest(this, "unfreezeToken", {
