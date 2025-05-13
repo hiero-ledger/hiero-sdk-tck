@@ -14,6 +14,7 @@ import {
 import { createAccount } from "@helpers/account";
 import { defaultNftTokenCreate } from "@helpers/token";
 import { verifyNoNftAllowance } from "@helpers/allowances";
+import { createNftToken, createFtToken } from "@helpers/create-tokens";
 
 /**
  * Tests for AccountAllowanceDeleteTransaction
@@ -322,19 +323,15 @@ describe("AccountAllowanceDeleteTransaction", function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
-      tokenId1 = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          adminKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [adminKey, ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId1 = await createNftToken(this, {
+        treasuryAccountId: ownerAccountId,
+        adminKey,
+        supplyKey,
+        tokenType: "nft",
+        commonTransactionParams: {
+          signers: [adminKey, ownerPrivateKey],
+        },
+      });
 
       tokenId1SerialNumber = (
         await JSONRPCRequest(this, "mintToken", {
@@ -488,14 +485,9 @@ describe("AccountAllowanceDeleteTransaction", function () {
     });
 
     it("(#10) Deletes an allowance to a spender account from an owner account with a fungible token ID", async function () {
-      tokenId1 = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId1 = await createFtToken(this, {
+        tokenType: "ft",
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
@@ -529,19 +521,15 @@ describe("AccountAllowanceDeleteTransaction", function () {
     it("(#11) Approves an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId1 = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId1 = await createNftToken(this, {
+        treasuryAccountId: ownerAccountId,
+        freezeKey,
+        supplyKey,
+        tokenType: "nft",
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       tokenId1SerialNumber = (
         await JSONRPCRequest(this, "mintToken", {
@@ -611,19 +599,15 @@ describe("AccountAllowanceDeleteTransaction", function () {
     it("(#12) Approves an NFT allowance to a spender account from an owner account with a paused token", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId1 = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          pauseKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId1 = await createNftToken(this, {
+        treasuryAccountId: ownerAccountId,
+        pauseKey,
+        supplyKey,
+        tokenType: "nft",
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       tokenId1SerialNumber = (
         await JSONRPCRequest(this, "mintToken", {

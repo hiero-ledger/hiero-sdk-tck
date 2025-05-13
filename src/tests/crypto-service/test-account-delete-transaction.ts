@@ -8,6 +8,7 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/create-tokens";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -182,15 +183,9 @@ describe("AccountDeleteTransaction", function () {
     });
 
     it("(#8) Deletes an account with a token balance", async function () {
-      const tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      const tokenId = await createFtToken(this, {
+        tokenType: "ft",
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,

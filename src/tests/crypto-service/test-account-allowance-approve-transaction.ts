@@ -17,6 +17,7 @@ import {
   generateEd25519PrivateKey,
 } from "@helpers/key";
 import { mintToken } from "@helpers/mint";
+import { createFtToken, createNftToken } from "@helpers/create-tokens";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -393,13 +394,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     let tokenId: string;
 
     beforeEach(async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: ownerAccountId,
@@ -798,17 +793,9 @@ describe("AccountAllowanceApproveTransaction", function () {
     it.skip("(#16) Approves a token allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: ownerAccountId,
@@ -883,15 +870,10 @@ describe("AccountAllowanceApproveTransaction", function () {
     });
 
     it("(#18) Approves a token allowance greater than the token's max supply to a spender account from an owner account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          supplyType: "finite",
-          maxSupply: "1000",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        supplyType: "finite",
+        maxSupply: "1000",
+      });
 
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -920,15 +902,12 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#19) Approves a token allowance of an NFT to a spender account from an owner account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -957,17 +936,13 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#20) Approves a token allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        freezeKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
@@ -1010,17 +985,13 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#21) Approves a token allowance to a spender account from an owner account with a token frozen on the spender account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        freezeKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
@@ -1033,6 +1004,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       await JSONRPCRequest(this, "freezeToken", {
         tokenId,
         accountId: spenderAccountId,
+        treasuryAccountId: ownerAccountId,
         commonTransactionParams: {
           signers: [freezeKey],
         },
@@ -1063,17 +1035,13 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#22) Approves a token allowance to a spender account from an owner account with a paused token", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          pauseKey,
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        pauseKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
@@ -1120,25 +1088,20 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
-
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
         tokenIds: [tokenId],
+        treasuryAccountId: ownerAccountId,
         commonTransactionParams: {
           signers: [spenderPrivateKey],
         },
@@ -1391,19 +1354,13 @@ describe("AccountAllowanceApproveTransaction", function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          adminKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [adminKey, ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        adminKey,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -1646,14 +1603,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     });
 
     it("(#17) Approves an NFT allowance of a fungible token to a spender account from an owner account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -1738,19 +1688,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#19) Approves an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        treasuryAccountId: ownerAccountId,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -1805,19 +1750,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#20) Approves an NFT allowance to a spender account from an owner account with a token frozen on the spender account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        treasuryAccountId: ownerAccountId,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -1871,19 +1811,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#21) Approves an NFT allowance to a spender account from an owner account with a paused token", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          pauseKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        pauseKey,
+        treasuryAccountId: ownerAccountId,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -1942,18 +1877,13 @@ describe("AccountAllowanceApproveTransaction", function () {
     beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2213,19 +2143,13 @@ describe("AccountAllowanceApproveTransaction", function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          adminKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [adminKey, ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        adminKey,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2286,14 +2210,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     });
 
     it("(#12) Approves an NFT allowance with approved for all privileges of a fungible token to a spender account from an owner account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -2322,19 +2239,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#13) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a token frozen on the owner account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2383,19 +2295,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#14) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a token frozen on the spender account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2444,19 +2351,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#15) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a paused token", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          pauseKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        pauseKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2509,19 +2411,13 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     beforeEach(async function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
-
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2794,19 +2690,14 @@ describe("AccountAllowanceApproveTransaction", function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          adminKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [adminKey, ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        adminKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [adminKey, ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -2883,14 +2774,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     });
 
     it("(#12) Deletes an NFT allowance of a fungible token to a spender account from an owner account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -2962,19 +2846,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#14) Deletes an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -3039,19 +2918,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#15) Deletes an NFT allowance to a spender account from an owner account with a token frozen on the spender account", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          freezeKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        freezeKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -3116,19 +2990,14 @@ describe("AccountAllowanceApproveTransaction", function () {
     it("(#16) Deletes an NFT allowance to a spender account from an owner account with a paused token", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: ownerAccountId,
-          pauseKey,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        pauseKey,
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, tokenId, metadata, supplyKey);
 
@@ -3198,33 +3067,25 @@ describe("AccountAllowanceApproveTransaction", function () {
     beforeEach(async function () {
       // Create NFT token
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
-      nftTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "nft",
-          symbol: "NFT",
-          treasuryAccountId: ownerAccountId,
-          supplyKey,
-          tokenType: "nft",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      nftTokenId = await createNftToken(this, {
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       await mintToken(this, nftTokenId, metadata, supplyKey);
 
       // Create fungible token
-      fungibleTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "ft",
-          symbol: "FUN",
-          treasuryAccountId: ownerAccountId,
-          initialSupply: "1000",
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        })
-      ).tokenId;
+      fungibleTokenId = await createFtToken(this, {
+        symbol: "FUN",
+        supplyKey,
+        treasuryAccountId: ownerAccountId,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
 
       // Associate tokens with spender
       await JSONRPCRequest(this, "associateToken", {
