@@ -9,6 +9,7 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -39,20 +40,15 @@ describe("TokenRevokeKycTransaction", function () {
     tokenPauseKey = await generateEcdsaSecp256k1PrivateKey(this);
     tokenKycKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey: tokenAdminKey,
-        kycKey: tokenKycKey,
-        freezeKey: tokenFreezeKey,
-        pauseKey: tokenPauseKey,
-        commonTransactionParams: {
-          signers: [tokenAdminKey],
-        },
-      })
-    ).tokenId;
+    tokenId = await createFtToken(this, {
+      adminKey: tokenAdminKey,
+      kycKey: tokenKycKey,
+      freezeKey: tokenFreezeKey,
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey],
+      },
+    });
 
     accountPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -238,13 +234,7 @@ describe("TokenRevokeKycTransaction", function () {
     });
 
     it("(#9) Revokes KYC of a token with no KYC key to an account", async function () {
-      const tokenIdNoKycKey = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const tokenIdNoKycKey = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "revokeTokenKyc", {
