@@ -13,6 +13,8 @@ export interface TokenCreateParams {
   pauseKey?: string;
   feeScheduleKey?: string;
   memo?: string;
+  metadata?: string;
+  metadataKey?: string;
   maxSupply?: string;
   supplyType?: "infinite" | "finite";
   freezeDefault?: boolean;

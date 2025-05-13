@@ -17,7 +17,7 @@ import {
 /**
  * Tests for TokenMintTransaction
  */
-describe.only("TokenMintTransaction", function () {
+describe("TokenMintTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -586,7 +586,7 @@ describe.only("TokenMintTransaction", function () {
     });
   });
 
-  describe.only("Metadata", function () {
+  describe("Metadata", function () {
     let supplyKey: string;
 
     beforeEach(async function () {
