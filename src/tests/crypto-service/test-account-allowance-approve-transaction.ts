@@ -17,7 +17,7 @@ import {
   generateEd25519PrivateKey,
 } from "@helpers/key";
 import { mintToken } from "@helpers/mint";
-import { createFtToken, createNftToken } from "@helpers/create-tokens";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 

@@ -17,14 +17,14 @@ import {
   verifyTokenBalance,
   verifyNftBalance,
 } from "@helpers/transfer";
-import { createFtToken, createNftToken } from "@helpers/create-tokens";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import MirrorNodeClient from "@services/MirrorNodeClient";
 
 /**
  * Tests for TransferTransaction
  */
-describe.only("TransferTransaction", function () {
+describe("TransferTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 

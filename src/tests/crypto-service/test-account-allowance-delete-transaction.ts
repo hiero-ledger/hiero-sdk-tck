@@ -12,9 +12,8 @@ import {
   generateEd25519PrivateKey,
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
-import { defaultNftTokenCreate } from "@helpers/token";
+import { createNftToken, createFtToken } from "@helpers/token";
 import { verifyNoNftAllowance } from "@helpers/allowances";
-import { createNftToken, createFtToken } from "@helpers/create-tokens";
 
 /**
  * Tests for AccountAllowanceDeleteTransaction
@@ -49,26 +48,29 @@ describe("AccountAllowanceDeleteTransaction", function () {
     ownerAccountId = await createAccount(this, ownerPrivateKey);
     spenderAccountId = await createAccount(this, spenderPrivateKey);
 
-    tokenId1 = await defaultNftTokenCreate(
-      this,
-      ownerAccountId,
+    tokenId1 = await createNftToken(this, {
+      treasuryAccountId: ownerAccountId,
       supplyKey,
-      ownerPrivateKey,
-    );
+      commonTransactionParams: {
+        signers: [ownerPrivateKey],
+      },
+    });
 
-    tokenId2 = await defaultNftTokenCreate(
-      this,
-      ownerAccountId,
+    tokenId2 = await createNftToken(this, {
+      treasuryAccountId: ownerAccountId,
       supplyKey,
-      ownerPrivateKey,
-    );
+      commonTransactionParams: {
+        signers: [ownerPrivateKey],
+      },
+    });
 
-    tokenId3 = await defaultNftTokenCreate(
-      this,
-      ownerAccountId,
+    tokenId3 = await createNftToken(this, {
+      treasuryAccountId: ownerAccountId,
       supplyKey,
-      ownerPrivateKey,
-    );
+      commonTransactionParams: {
+        signers: [ownerPrivateKey],
+      },
+    });
 
     const metadata = ["1234"];
 

@@ -15,7 +15,7 @@ import {
   verifyAirdrop,
   verifyHbarBalance,
 } from "@helpers/transfer";
-import { createFtToken, createNftToken } from "@helpers/create-tokens";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
