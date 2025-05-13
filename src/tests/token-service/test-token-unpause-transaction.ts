@@ -10,6 +10,7 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -32,19 +33,13 @@ describe("TokenUnpauseTransaction", function () {
     tokenPauseKey = await generateEd25519PrivateKey(this);
     tokenAdminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey: tokenAdminKey,
-        tokenType: "ft",
-        pauseKey: tokenPauseKey,
-        commonTransactionParams: {
-          signers: [tokenAdminKey],
-        },
-      })
-    ).tokenId;
+    tokenId = await createFtToken(this, {
+      adminKey: tokenAdminKey,
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey],
+      },
+    });
 
     await JSONRPCRequest(this, "pauseToken", {
       tokenId,

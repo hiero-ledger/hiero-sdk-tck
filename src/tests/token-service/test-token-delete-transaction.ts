@@ -3,7 +3,11 @@ import { assert } from "chai";
 import { JSONRPCRequest } from "@services/Client";
 
 import { setOperator } from "@helpers/setup-tests";
-import { verifyTokenIsDeleted, getNewFungibleTokenId } from "@helpers/token";
+import {
+  verifyTokenIsDeleted,
+  getNewFungibleTokenId,
+  createFtToken,
+} from "@helpers/token";
 import { retryOnError } from "@helpers/retry-on-error";
 import { generateEd25519PrivateKey } from "@helpers/key";
 
@@ -28,13 +32,7 @@ describe("TokenDeleteTransaction", function () {
 
   describe("Token ID", () => {
     it("(#1) Deletes an immutable token", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      const tokenId = response.tokenId;
+      const tokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "deleteToken", {

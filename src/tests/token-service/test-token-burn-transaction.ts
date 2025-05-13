@@ -8,9 +8,10 @@ import {
   generateEd25519PrivateKey,
 } from "@helpers/key";
 import {
-  createToken,
   verifyFungibleTokenBurn,
   verifyNonFungibleTokenBurn,
+  createFtToken,
+  createNftToken,
 } from "@helpers/token";
 
 /**
@@ -41,13 +42,11 @@ describe("TokenBurnTransaction", function () {
   describe("Token ID", function () {
     it("(#1) Burns a valid amount of fungible token", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const amount = "10";
       const newTotalSupply = (
@@ -73,12 +72,10 @@ describe("TokenBurnTransaction", function () {
 
     it("(#2) Burns a valid non-fungible token", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -138,14 +135,14 @@ describe("TokenBurnTransaction", function () {
     it("(#5) Burns a deleted token", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
       const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
         adminKey,
-      );
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId,
@@ -171,12 +168,10 @@ describe("TokenBurnTransaction", function () {
 
     it("(#6) Burns a token without signing with the token's supply key", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -194,14 +189,14 @@ describe("TokenBurnTransaction", function () {
     it("(#7) Burns a token but signs with the token's admin key", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
       const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
         adminKey,
-      );
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -222,14 +217,14 @@ describe("TokenBurnTransaction", function () {
     it("(#8) Burns a token but signs with an incorrect supply key", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
       const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
         adminKey,
-      );
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
 
       const incorrectKey = await generateEcdsaSecp256k1PrivateKey(this);
       try {
@@ -249,7 +244,9 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#9) Burns a token with no supply key", async function () {
-      const tokenId = await createToken(this, true, treasuryAccountId);
+      const tokenId = await createFtToken(this, {
+        treasuryAccountId,
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -267,15 +264,11 @@ describe("TokenBurnTransaction", function () {
     it("(#10) Burns a paused token", async function () {
       const supplyKey = await generateEd25519PrivateKey(this);
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
-        null,
         pauseKey,
-      );
+      });
 
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
@@ -309,13 +302,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#1) Burns an amount of 1,000,000 fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const amount = "1000000";
       const newTotalSupply = (
@@ -340,13 +331,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#2) Burns an amount of 0 fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const amount = "0";
       const newTotalSupply = (
@@ -369,13 +358,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#3) Burns no fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const newTotalSupply = (
         await JSONRPCRequest(this, "burnToken", {
@@ -396,13 +383,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#4) Burns an amount of 9,223,372,036,854,775,806 (int64 max - 1) fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const amount = "9223372036854775806";
       const newTotalSupply = (
@@ -427,13 +412,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#5) Burns an amount of 9,223,372,036,854,775,807 (int64 max) fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const amount = "9223372036854775807";
       const newTotalSupply = (
@@ -458,12 +441,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#6) Burns an amount of 9,223,372,036,854,775,808 (int64 max + 1) fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -482,12 +463,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#7) Burns an amount of 18,446,744,073,709,551,614 (uint64 max - 1) fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -506,12 +485,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#8) Burns an amount of 18,446,744,073,709,551,615 (uint64 max) fungible tokens", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -530,16 +507,12 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#9) Burns an amount of 10,000 fungible tokens with 2 decimals", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-        null,
-        null,
-        "2",
-      );
+        initialSupply: fungibleInitialSupply,
+        decimals: 2,
+      });
 
       const amount = "10000";
       const newTotalSupply = (
@@ -564,17 +537,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#10) Burns an amount of 10,000 fungible tokens with 1,000 max supply", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        "1000",
-        null,
-        null,
-        null,
-        "1000",
-      );
+        initialSupply: "1000",
+      });
 
       try {
         await JSONRPCRequest(this, "burnToken", {
@@ -594,18 +561,11 @@ describe("TokenBurnTransaction", function () {
 
     it("(#11) Burns fungible tokens with the treasury account frozen", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
-        null,
-        null,
-        null,
-        null,
         freezeKey,
-      );
+      });
 
       await JSONRPCRequest(this, "freezeToken", {
         tokenId,
@@ -633,15 +593,11 @@ describe("TokenBurnTransaction", function () {
 
     it("(#12) Burns paused fungible tokens", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
-        null,
         pauseKey,
-      );
+      });
 
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
@@ -667,12 +623,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#13) Burns an amount of 1,000,000 NFTs", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       await JSONRPCRequest(this, "mintToken", {
         tokenId,
@@ -707,12 +661,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#1) Burns an NFT", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -745,12 +697,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#2) Burns 3 NFTs", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -789,12 +739,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#3) Burns 3 NFTs but one is already burned", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -832,12 +780,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#4) Burns no NFTs", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       await JSONRPCRequest(this, "mintToken", {
         tokenId,
@@ -863,12 +809,10 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#5) Burns an NFT that doesn't exist", async function () {
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-      );
+      });
 
       await JSONRPCRequest(this, "mintToken", {
         tokenId,
@@ -896,18 +840,11 @@ describe("TokenBurnTransaction", function () {
 
     it("(#6) Burns NFTs with the treasury account frozen", async function () {
       const freezeKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
-        null,
-        null,
-        null,
-        null,
         freezeKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -945,15 +882,11 @@ describe("TokenBurnTransaction", function () {
 
     it("(#7) Burns paused NFTs", async function () {
       const pauseKey = await generateEcdsaSecp256k1PrivateKey(this);
-      const tokenId = await createToken(
-        this,
-        false,
+      const tokenId = await createNftToken(this, {
         treasuryAccountId,
         supplyKey,
-        null,
-        null,
         pauseKey,
-      );
+      });
 
       const serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -989,13 +922,11 @@ describe("TokenBurnTransaction", function () {
     });
 
     it("(#8) Burns fungible tokens with serial numbers", async function () {
-      const tokenId = await createToken(
-        this,
-        true,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        fungibleInitialSupply,
-      );
+        initialSupply: fungibleInitialSupply,
+      });
 
       const newTotalSupply = (
         await JSONRPCRequest(this, "burnToken", {
