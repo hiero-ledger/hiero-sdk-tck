@@ -711,19 +711,15 @@ describe("TokenWipeTransaction", function () {
     it("(#10) Wipes an amount of 10,000 fungible tokens with 1,000 max supply from an account", async function () {
       const maxSupply = "1000";
       const supplyKey = await generateEd25519PrivateKey(this);
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: maxSupply,
-          treasuryAccountId,
-          wipeKey,
-          supplyKey,
-          tokenType: "ft",
-          supplyType: "finite",
-          maxSupply,
-        })
-      ).tokenId;
+
+      tokenId = await createFtToken(this, {
+        initialSupply: maxSupply,
+        treasuryAccountId,
+        wipeKey,
+        supplyKey,
+        supplyType: "finite",
+        maxSupply,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,

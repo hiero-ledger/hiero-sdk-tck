@@ -1004,7 +1004,6 @@ describe("AccountAllowanceApproveTransaction", function () {
       await JSONRPCRequest(this, "freezeToken", {
         tokenId,
         accountId: spenderAccountId,
-        treasuryAccountId: ownerAccountId,
         commonTransactionParams: {
           signers: [freezeKey],
         },
@@ -1101,7 +1100,6 @@ describe("AccountAllowanceApproveTransaction", function () {
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
         tokenIds: [tokenId],
-        treasuryAccountId: ownerAccountId,
         commonTransactionParams: {
           signers: [spenderPrivateKey],
         },

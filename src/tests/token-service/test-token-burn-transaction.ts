@@ -540,7 +540,6 @@ describe("TokenBurnTransaction", function () {
       const tokenId = await createFtToken(this, {
         treasuryAccountId,
         supplyKey,
-        initialSupply: "1000",
       });
 
       try {

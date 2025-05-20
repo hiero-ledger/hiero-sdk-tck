@@ -329,7 +329,6 @@ describe("AccountAllowanceDeleteTransaction", function () {
         treasuryAccountId: ownerAccountId,
         adminKey,
         supplyKey,
-        tokenType: "nft",
         commonTransactionParams: {
           signers: [adminKey, ownerPrivateKey],
         },
@@ -487,9 +486,7 @@ describe("AccountAllowanceDeleteTransaction", function () {
     });
 
     it("(#10) Deletes an allowance to a spender account from an owner account with a fungible token ID", async function () {
-      tokenId1 = await createFtToken(this, {
-        tokenType: "ft",
-      });
+      tokenId1 = await createFtToken(this);
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: spenderAccountId,
@@ -527,7 +524,6 @@ describe("AccountAllowanceDeleteTransaction", function () {
         treasuryAccountId: ownerAccountId,
         freezeKey,
         supplyKey,
-        tokenType: "nft",
         commonTransactionParams: {
           signers: [ownerPrivateKey],
         },
@@ -605,7 +601,6 @@ describe("AccountAllowanceDeleteTransaction", function () {
         treasuryAccountId: ownerAccountId,
         pauseKey,
         supplyKey,
-        tokenType: "nft",
         commonTransactionParams: {
           signers: [ownerPrivateKey],
         },

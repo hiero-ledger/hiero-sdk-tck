@@ -2700,12 +2700,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3350,7 +3346,6 @@ describe("TokenCreateTransaction", function () {
       try {
         await createFtToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: "",
@@ -3471,7 +3466,6 @@ describe("TokenCreateTransaction", function () {
       try {
         response = await createFtToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: accountId,

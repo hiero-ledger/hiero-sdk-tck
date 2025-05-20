@@ -3447,9 +3447,6 @@ describe("TransferTransaction", function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey: tokenKey,
         freezeKey: tokenKey,
         supplyKey,
@@ -3760,8 +3757,6 @@ describe("TransferTransaction", function () {
 
     it("(#11) Transfers an amount of fungible tokens from a sender account to a receiver account", async function () {
       tokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
         initialSupply: "1000000",
         treasuryAccountId: senderAccountId,
         commonTransactionParams: {
@@ -4125,12 +4120,7 @@ describe("TransferTransaction", function () {
     });
 
     it("(#21) Transfers an NFT from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "1000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -5285,7 +5275,6 @@ describe("TransferTransaction", function () {
       tokenId = await createFtToken(this, {
         decimals,
         initialSupply: "1000000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey: tokenKey,
         freezeKey: tokenKey,
         supplyKey: tokenKey,
@@ -5643,9 +5632,6 @@ describe("TransferTransaction", function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey,
       });
 
@@ -6159,12 +6145,7 @@ describe("TransferTransaction", function () {
     });
 
     it("(#23) Transfers an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "1000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -9359,7 +9340,6 @@ describe("TransferTransaction", function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey,
         commonTransactionParams: {
           signers: [tokenKey],
@@ -9894,12 +9874,7 @@ describe("TransferTransaction", function () {
     });
 
     it("(#22) Transfers an approved amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "1000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -11441,9 +11416,6 @@ describe("TransferTransaction", function () {
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey: tokenKey,
         freezeKey: tokenKey,
         supplyKey,
@@ -12210,12 +12182,7 @@ describe("TransferTransaction", function () {
     });
 
     it("(#21) Transfers an approved NFT from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "1000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -13586,7 +13553,7 @@ describe("TransferTransaction", function () {
     });
   });
 
-  describe("AddApprovedTokenTransferWithDecimals", function () {
+  describe.only("AddApprovedTokenTransferWithDecimals", function () {
     const decimals = 2;
     let tokenId: string,
       tokenKey: string,
@@ -13598,7 +13565,6 @@ describe("TransferTransaction", function () {
       tokenId = await createFtToken(this, {
         decimals,
         initialSupply: "1000000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         adminKey: tokenKey,
         freezeKey: tokenKey,
         supplyKey: tokenKey,
@@ -13999,9 +13965,6 @@ describe("TransferTransaction", function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         supplyKey,
       });
 
@@ -14591,12 +14554,7 @@ describe("TransferTransaction", function () {
     });
 
     it("(#23) Transfers an approved amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "1000",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [

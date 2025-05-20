@@ -12342,7 +12342,6 @@ describe("TokenAirdropTransaction", function () {
 
     it("(#23) Airdrops an approved amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
       const dummyTokenId = await createFtToken(this, {
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [tokenKey],
         },

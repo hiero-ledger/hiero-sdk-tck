@@ -183,10 +183,7 @@ describe("AccountDeleteTransaction", function () {
     });
 
     it("(#8) Deletes an account with a token balance", async function () {
-      const tokenId = await createFtToken(this, {
-        tokenType: "ft",
-      });
-
+      const tokenId = await createFtToken(this);
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         tokenIds: [tokenId],
