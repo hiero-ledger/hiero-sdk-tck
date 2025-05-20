@@ -13553,7 +13553,7 @@ describe("TransferTransaction", function () {
     });
   });
 
-  describe.only("AddApprovedTokenTransferWithDecimals", function () {
+  describe("AddApprovedTokenTransferWithDecimals", function () {
     const decimals = 2;
     let tokenId: string,
       tokenKey: string,
