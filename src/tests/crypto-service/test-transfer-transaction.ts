@@ -11795,8 +11795,6 @@ describe("TransferTransaction", function () {
 
     it("(#11) Transfers an approved amount of fungible tokens from a sender account to a receiver account", async function () {
       tokenId = await createFtToken(this, {
-        name: "testname",
-        symbol: "testsymbol",
         initialSupply: "1000000",
         treasuryAccountId: senderAccountId,
         commonTransactionParams: {

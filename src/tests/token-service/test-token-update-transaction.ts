@@ -334,6 +334,7 @@ describe("TokenUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: immutableTokenId,
+          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_IS_IMMUTABLE");
