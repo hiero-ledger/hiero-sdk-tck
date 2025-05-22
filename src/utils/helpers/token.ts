@@ -5,6 +5,7 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 import { JSONRPCRequest } from "@services/Client";
 
 import { retryOnError } from "@helpers/retry-on-error";
+import { TokenCreateParams } from "@models/TokenCreate";
 
 /**
  * Verifies that a token has been deleted by checking both the Consensus Info
@@ -45,87 +46,51 @@ export const getNewFungibleTokenId = async (
 };
 
 /**
- * Creates a token with given parameters.
- *
- * @async
- * @param {string} mochaTestContext - The context of the Mocha test. If provided, the test will be skipped if the method is not implemented.
- * @param {boolean} fungible - Should the created token be fungible or non-fungible?
- * @param {string} treasuryAccountId - The ID of the desired treasury account for the token.
- * @param {string | null} supplyKey - The desired supply key for the token.
- * @param {string | null} adminKey - The desired admin key for the token.
- * @param {string | null} pauseKey - The desired pause key for the token.
- * @param {string | null} decimals - The desired number of decimals for the token.
- * @param {string | null} maxSupply - The desired max supply for the token.
- * @param {string | null} freezeKey - The desired freeze key for the token.
- * @returns {Promise<string>} - The ID of the newly created token.
+ * Creates a fungible token with default settings and optional custom parameters
+ * @param thisContext The test context
+ * @param params Optional token creation parameters to override defaults
+ * @returns The created token ID
  */
-export async function createToken(
-  mochaTestContext: any,
-  fungible: boolean,
-  treasuryAccountId: string,
-  supplyKey: string | null = null,
-  initialSupply: string | null = null,
-  adminKey: string | null = null,
-  pauseKey: string | null = null,
-  decimals: string | null = null,
-  maxSupply: string | null = null,
-  freezeKey: string | null = null,
-): Promise<string> {
-  const params: Record<string, string | number | { signers: string[] }> = {
+export const createFtToken = async (
+  thisContext: any,
+  params: TokenCreateParams = {},
+): Promise<string> => {
+  const defaultParams: TokenCreateParams = {
     name: "testname",
     symbol: "testsymbol",
-    treasuryAccountId,
+    treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+    tokenType: "ft",
+    initialSupply: "1000",
   };
 
-  if (fungible) {
-    params.tokenType = "ft";
-  } else {
-    params.tokenType = "nft";
-  }
+  const mergedParams = { ...defaultParams, ...params };
 
-  // Add the supply key if its provided.
-  if (supplyKey) {
-    params.supplyKey = supplyKey;
-  }
-
-  // Add the initial supply if its provided.
-  if (initialSupply) {
-    params.initialSupply = initialSupply;
-  }
-
-  // Add and sign with the admin key if its provided.
-  if (adminKey) {
-    params.adminKey = adminKey;
-    params.commonTransactionParams = {
-      signers: [adminKey],
-    };
-  }
-
-  // Add the pause key if its provided.
-  if (pauseKey) {
-    params.pauseKey = pauseKey;
-  }
-
-  // Add the decimals if its provided.
-  if (decimals) {
-    params.decimals = Number(decimals);
-  }
-
-  // Add the max supply if its provided.
-  if (maxSupply) {
-    params.supplyType = "finite";
-    params.maxSupply = maxSupply;
-  }
-
-  // Add the freeze key if its provided.
-  if (freezeKey) {
-    params.freezeKey = freezeKey;
-  }
-
-  return (await JSONRPCRequest(mochaTestContext, "createToken", params))
+  return (await JSONRPCRequest(thisContext, "createToken", mergedParams))
     .tokenId;
-}
+};
 
+/**
+ * Creates an NFT token with default settings and optional custom parameters
+ * @param thisContext The test context
+ * @param params Optional token creation parameters to override defaults
+ * @returns The created token ID
+ */
+export const createNftToken = async (
+  thisContext: any,
+  params: TokenCreateParams = {},
+): Promise<string> => {
+  const defaultParams: TokenCreateParams = {
+    name: "testname",
+    symbol: "testsymbol",
+    treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+    tokenType: "nft",
+  };
+
+  const mergedParams = { ...defaultParams, ...params };
+
+  return (await JSONRPCRequest(thisContext, "createToken", mergedParams))
+    .tokenId;
+};
 /**
  * Verify an amount of a fungible token was minted.
  *

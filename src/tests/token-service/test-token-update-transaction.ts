@@ -19,6 +19,7 @@ import {
   generateEd25519PublicKey,
   generateKeyList,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/token";
 
 import { invalidKey } from "@constants/key-type";
 import {
@@ -39,7 +40,6 @@ describe("TokenUpdateTransaction", function () {
   // Initial token parameters.
   const initialTokenName = "testname";
   const initialTokenSymbol = "testsymbol";
-  const initialTreasuryAccountId = process.env.OPERATOR_ACCOUNT_ID;
   const initialSupply = "1000000";
 
   // Two tokens should be created. One immutable token (no admin key) and another mutable.
@@ -53,15 +53,7 @@ describe("TokenUpdateTransaction", function () {
     );
 
     // Generate an immutable token.
-    const response = await JSONRPCRequest(this, "createToken", {
-      name: initialTokenName,
-      symbol: initialTokenSymbol,
-      treasuryAccountId: initialTreasuryAccountId,
-      initialSupply: initialSupply,
-      tokenType: "ft",
-    });
-
-    immutableTokenId = response.tokenId;
+    immutableTokenId = await createFtToken(this);
 
     await JSONRPCRequest(this, "reset");
   });
@@ -74,27 +66,20 @@ describe("TokenUpdateTransaction", function () {
     );
 
     mutableTokenKey = await generateEcdsaSecp256k1PrivateKey(this);
-
-    const response = await JSONRPCRequest(this, "createToken", {
-      name: initialTokenName,
-      symbol: initialTokenSymbol,
-      treasuryAccountId: initialTreasuryAccountId,
+    mutableTokenId = await createFtToken(this, {
       adminKey: mutableTokenKey,
+      initialSupply: initialSupply,
+      feeScheduleKey: mutableTokenKey,
+      pauseKey: mutableTokenKey,
       kycKey: mutableTokenKey,
       freezeKey: mutableTokenKey,
       wipeKey: mutableTokenKey,
       supplyKey: mutableTokenKey,
-      initialSupply: initialSupply,
-      tokenType: "ft",
-      feeScheduleKey: mutableTokenKey,
-      pauseKey: mutableTokenKey,
       metadataKey: mutableTokenKey,
       commonTransactionParams: {
         signers: [mutableTokenKey],
       },
     });
-
-    mutableTokenId = response.tokenId;
   });
 
   afterEach(async function () {
@@ -891,19 +876,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a KYC key with a valid key as its KYC key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1131,19 +1109,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a freeze key with a valid key as its freeze key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1371,19 +1342,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a wipe key with a valid key as its wipe key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -1611,19 +1575,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a supply key with a valid key as its supply key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -2493,19 +2450,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a fee schedule key with a valid key as its fee schedule key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -2719,19 +2669,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a pause key with a valid key as its pause key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {
@@ -3003,19 +2946,12 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token that doesn't have a metadata key with a valid key as its metadata key", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: initialTokenName,
-        symbol: initialTokenSymbol,
-        treasuryAccountId: initialTreasuryAccountId,
+      const tokenId = await createFtToken(this, {
         adminKey: mutableTokenKey,
-        initialSupply: initialSupply,
-        tokenType: "ft",
         commonTransactionParams: {
           signers: [mutableTokenKey],
         },
       });
-      const tokenId = response.tokenId;
 
       try {
         await JSONRPCRequest(this, "updateToken", {

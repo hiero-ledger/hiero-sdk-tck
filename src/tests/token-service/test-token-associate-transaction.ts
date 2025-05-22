@@ -9,6 +9,7 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -28,14 +29,7 @@ describe("TokenAssociateTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
-      })
-    ).tokenId;
+    tokenId = await createFtToken(this);
 
     accountPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -217,18 +211,12 @@ describe("TokenAssociateTransaction", function () {
     it("(#3) Associates a token that is deleted with an account", async function () {
       const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const deletedTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey,
-          tokenType: "ft",
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
-        })
-      ).tokenId;
+      const deletedTokenId = await createFtToken(this, {
+        adminKey,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId: deletedTokenId,
@@ -292,23 +280,8 @@ describe("TokenAssociateTransaction", function () {
     });
 
     it("(#6) Associates three valid tokens with an account", async function () {
-      const secondTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
-
-      const thirdTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      const secondTokenId = await createFtToken(this);
+      const thirdTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,
@@ -330,14 +303,7 @@ describe("TokenAssociateTransaction", function () {
     });
 
     it("(#7) Associates two valid tokens and an invalid token with an account", async function () {
-      const otherTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      const otherTokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "associateToken", {
@@ -358,18 +324,12 @@ describe("TokenAssociateTransaction", function () {
     it("(#8) Associates two valid tokens and a deleted token with an account", async function () {
       const adminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const deletedTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey,
-          tokenType: "ft",
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
-        })
-      ).tokenId;
+      const deletedTokenId = await createFtToken(this, {
+        adminKey,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId: deletedTokenId,
@@ -378,14 +338,7 @@ describe("TokenAssociateTransaction", function () {
         },
       });
 
-      const otherTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      const otherTokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "associateToken", {
