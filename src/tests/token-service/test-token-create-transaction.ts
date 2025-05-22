@@ -32,6 +32,7 @@ import {
   generateEd25519PublicKey,
   generateKeyList,
 } from "@helpers/key";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 /**
  * Tests for TokenCreateTransaction
@@ -67,33 +68,19 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a name that is a valid length", async function () {
       const name = "testname";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: name,
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithName(response.tokenId, name);
+      const tokenId = await createFtToken(this);
+      await verifyTokenCreationWithName(tokenId, name);
     });
 
     it("(#2) Creates a token with a name that is the minimum length", async function () {
       const name = "t";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: name,
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithName(response.tokenId, name);
+      const tokenId = await createFtToken(this, { name });
+      await verifyTokenCreationWithName(tokenId, name);
     });
 
     it("(#3) Creates a token with a name that is empty", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { name: "" });
       } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
@@ -105,21 +92,14 @@ describe("TokenCreateTransaction", function () {
     it("(#4) Creates a token with a name that is the maximum length", async function () {
       const name =
         "This is a really long name but it is still valid because it is 100 characters exactly on the money!!";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: name,
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithName(response.tokenId, name);
+      const tokenId = await createFtToken(this, { name });
+      await verifyTokenCreationWithName(tokenId, name);
     });
 
     it("(#5) Creates a token with a name that exceeds the maximum length", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
+        await createFtToken(this, {
           name: "This is a long name that is not valid because it exceeds 100 characters and it should fail the test!!",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_NAME_TOO_LONG");
@@ -131,10 +111,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with no name", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { name: "" });
       } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_NAME");
         return;
@@ -159,22 +136,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a symbol that is the minimum length", async function () {
       const symbol = "t";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: symbol,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithSymbol(response.tokenId, symbol);
+      const tokenId = await createFtToken(this, { symbol });
+      await verifyTokenCreationWithSymbol(tokenId, symbol);
     });
 
     it("(#2) Creates a token with a symbol that is empty", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { symbol: "" });
       } catch (err: any) {
         assert.equal(err.data.status, "MISSING_TOKEN_SYMBOL");
         return;
@@ -186,22 +154,15 @@ describe("TokenCreateTransaction", function () {
     it("(#3) Creates a token with a symbol that is the maximum length", async function () {
       const symbol =
         "This is a really long symbol but it is still valid because it is 100 characters exactly on the money";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: symbol,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithSymbol(response.tokenId, symbol);
+      const tokenId = await createFtToken(this, { symbol });
+      await verifyTokenCreationWithSymbol(tokenId, symbol);
     });
 
     it("(#4) Creates a token with a symbol that exceeds the maximum length", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
+        await createFtToken(this, {
           symbol:
             "This is a long symbol that is not valid because it exceeds 100 characters and it should fail the test",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_SYMBOL_TOO_LONG");
@@ -242,24 +203,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a fungible token with 0 decimals", async function () {
       const decimals = 0;
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithDecimals(response.tokenId, decimals);
+      const tokenId = await createFtToken(this, { decimals });
+      await verifyTokenCreationWithDecimals(tokenId, decimals);
     });
 
     it("(#2) Creates a fungible token with -1 decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: -1,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: -1 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -270,36 +220,19 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a fungible token with 2,147,483,647 (int32 max) decimals", async function () {
       const decimals = 2147483647;
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithDecimals(response.tokenId, decimals);
+      const tokenId = await createFtToken(this, { decimals });
+      await verifyTokenCreationWithDecimals(tokenId, decimals);
     });
 
     it("(#4) Creates a fungible token with 2,147,483,646 (int32 max - 1) decimals", async function () {
       const decimals = 2147483646;
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithDecimals(response.tokenId, decimals);
+      const tokenId = await createFtToken(this, { decimals });
+      await verifyTokenCreationWithDecimals(tokenId, decimals);
     });
 
     it("(#5) Creates a fungible token with 2,147,483,648 (int32 max + 1) decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: 2147483648,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: 2147483648 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -310,12 +243,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a fungible token with 4,294,967,295 (uint32 max) decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: 4294967295,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: 4294967295 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -326,12 +254,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a fungible token with 4,294,967,294 (uint32 max - 1) decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: 4294967294,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: 4294967294 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -342,12 +265,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a fungible token with -2,147,483,648 (int32 min) decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: -2147483648,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: -2147483648 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -358,12 +276,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a fungible token with -2,147,483,647 (int32 min + 1) decimals", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: -2147483647,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { decimals: -2147483647 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -376,27 +289,17 @@ describe("TokenCreateTransaction", function () {
       const key = await generateEcdsaSecp256k1PrivateKey(this);
       const decimals = 0;
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
+        decimals,
         supplyKey: key,
-        tokenType: "nft",
       });
 
-      await verifyTokenCreationWithDecimals(response.tokenId, decimals);
+      await verifyTokenCreationWithDecimals(tokenId, decimals);
     });
 
     it("(#11) Creates an NFT with a nonzero decimal amount", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals: 3,
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "nft",
-        });
+        await createNftToken(this, { decimals: 3 });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_DECIMALS");
         return;
@@ -424,27 +327,13 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a fungible token with 0 initial supply", async function () {
       const initialSupply = "0";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      const tokenId = await createFtToken(this, { initialSupply });
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#2) Creates a fungible token with -1 initial supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "-1",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { initialSupply: "-1" });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -455,43 +344,21 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a fungible token with 9,223,372,036,854,775,807 (int64 max) initial supply", async function () {
       const initialSupply = "9223372036854775807";
+      const tokenId = await createFtToken(this, { initialSupply });
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#4) Creates a fungible token with 9,223,372,036,854,775,806 (int64 max - 1) initial supply", async function () {
       const initialSupply = "9223372036854775806";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
+      const tokenId = await createFtToken(this, { initialSupply });
 
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#5) Creates a fungible token with -9,223,372,036,854,775,808 (int64 min) initial supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "-9223372036854775808",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { initialSupply: "-9223372036854775808" });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -502,12 +369,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a fungible token with -9,223,372,036,854,775,807 (int64 min + 1) initial supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "-9223372036854775807",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        });
+        await createFtToken(this, { initialSupply: "-9223372036854775807" });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -519,65 +381,39 @@ describe("TokenCreateTransaction", function () {
     it("(#7) Creates a fungible token with a valid initial supply and decimals", async function () {
       const decimals = 2;
       const initialSupply = "1000000";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        decimals,
+        initialSupply,
       });
 
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#8) Creates a fungible token with a valid initial supply and more decimals", async function () {
       const decimals = 6;
       const initialSupply = "1000000";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        decimals: decimals,
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        decimals,
+        initialSupply,
       });
 
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#9) Creates an NFT with an initial supply of zero", async function () {
       const key = await generateEd25519PrivateKey(this);
       const initialSupply = "0";
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
+        initialSupply,
         supplyKey: key,
-        tokenType: "nft",
       });
 
-      await verifyTokenCreationWithInitialSupply(
-        response.tokenId,
-        initialSupply,
-      );
+      await verifyTokenCreationWithInitialSupply(tokenId, initialSupply);
     });
 
     it("(#10) Creates an NFT with an initial supply of zero without a supply key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "0",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "nft",
-        });
+        await createNftToken(this, { initialSupply: "0" });
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_HAS_NO_SUPPLY_KEY");
         return;
@@ -588,13 +424,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#11) Creates an NFT with a nonzero initial supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "3",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "nft",
-        });
+        await createNftToken(this, { initialSupply: "3" });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_INITIAL_SUPPLY");
         return;
@@ -626,19 +456,15 @@ describe("TokenCreateTransaction", function () {
       });
       const accountId = response.accountId;
 
-      const tokenResponse = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
+      const tokenId = await createFtToken(this, {
         treasuryAccountId: accountId,
+        supplyKey: key,
         commonTransactionParams: {
           signers: [key],
         },
       });
 
-      await verifyTokenCreationWithTreasuryAccount(
-        tokenResponse.tokenId,
-        accountId,
-      );
+      await verifyTokenCreationWithTreasuryAccount(tokenId, accountId);
     });
 
     it("(#2) Creates a token with a treasury account without signing with the account's private key", async function () {
@@ -650,11 +476,7 @@ describe("TokenCreateTransaction", function () {
       const accountId = response.accountId;
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: accountId,
-        });
+        await createFtToken(this, { treasuryAccountId: accountId });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
@@ -666,11 +488,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with a treasury account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: "123.456.789",
-        });
+        await createFtToken(this, { treasuryAccountId: "123.456.789" });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ACCOUNT_ID");
         return;
@@ -696,9 +514,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
+        await createFtToken(this, {
           treasuryAccountId: accountId,
           commonTransactionParams: {
             signers: [key],
@@ -719,72 +535,64 @@ describe("TokenCreateTransaction", function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: publicKey,
+        supplyKey: privateKey,
         commonTransactionParams: {
           signers: [privateKey],
         },
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
+      await verifyTokenKey(tokenId, publicKey, "adminKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its admin key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: publicKey,
+        supplyKey: privateKey,
         commonTransactionParams: {
           signers: [privateKey],
         },
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
+      await verifyTokenKey(tokenId, publicKey, "adminKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its admin key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: privateKey,
+        supplyKey: privateKey,
         commonTransactionParams: {
           signers: [privateKey],
         },
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
+      await verifyTokenKey(tokenId, publicKey, "adminKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its admin key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: privateKey,
+        supplyKey: privateKey,
         commonTransactionParams: {
           signers: [privateKey],
         },
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "adminKey");
+      await verifyTokenKey(tokenId, publicKey, "adminKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
@@ -794,10 +602,7 @@ describe("TokenCreateTransaction", function () {
         fourKeysKeyListParams,
       );
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: keyList.key,
         commonTransactionParams: {
           signers: [
@@ -809,7 +614,7 @@ describe("TokenCreateTransaction", function () {
         },
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "adminKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "adminKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its admin key", async function () {
@@ -819,10 +624,7 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: nestedKeyList.key,
         commonTransactionParams: {
           signers: [
@@ -836,35 +638,28 @@ describe("TokenCreateTransaction", function () {
         },
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "adminKey");
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "adminKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         adminKey: thresholdKey.key,
+        supplyKey: thresholdKey.privateKeys[0],
         commonTransactionParams: {
           signers: [thresholdKey.privateKeys[0], thresholdKey.privateKeys[1]],
         },
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "adminKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "adminKey");
     });
 
     it("(#8) Creates a token with a valid key as its admin key but doesn't sign with it", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: key,
-        });
+        await createFtToken(this, { adminKey: key });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
@@ -875,12 +670,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#9) Creates a token with an invalid key as its admin key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: invalidKey,
-        });
+        await createFtToken(this, { adminKey: invalidKey });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -897,73 +687,50 @@ describe("TokenCreateTransaction", function () {
   describe("KYC Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its KYC key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        kycKey: publicKey,
-      });
+      const tokenId = await createFtToken(this, { kycKey: publicKey });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
+      await verifyTokenKey(tokenId, publicKey, "kycKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its KYC key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        kycKey: publicKey,
-      });
+      const tokenId = await createFtToken(this, { kycKey: publicKey });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
+      await verifyTokenKey(tokenId, publicKey, "kycKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its KYC key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         kycKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
+      await verifyTokenKey(tokenId, publicKey, "kycKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its KYC key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         kycKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "kycKey");
+      await verifyTokenKey(tokenId, publicKey, "kycKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         kycKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "kycKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "kycKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its KYC key", async function () {
@@ -972,35 +739,26 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         kycKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "kycKey");
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "kycKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its KYC key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         kycKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "kycKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "kycKey");
     });
 
     it("(#8) Creates a token with an invalid key as its KYC key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           kycKey: invalidKey,
         });
       } catch (err: any) {
@@ -1021,72 +779,57 @@ describe("TokenCreateTransaction", function () {
     it("(#1) Creates a token with a valid ED25519 public key as its freeze key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
+      await verifyTokenKey(tokenId, publicKey, "freezeKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its freeze key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
+      await verifyTokenKey(tokenId, publicKey, "freezeKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its freeze key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
+      await verifyTokenKey(tokenId, publicKey, "freezeKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its freeze key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "freezeKey");
+      await verifyTokenKey(tokenId, publicKey, "freezeKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "freezeKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "freezeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its freeze key", async function () {
@@ -1095,39 +838,25 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        nestedKeyList.key,
-        "freezeKey",
-      );
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "freezeKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its freeze key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "freezeKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "freezeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its freeze key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           freezeKey: invalidKey,
         });
       } catch (err: any) {
@@ -1146,73 +875,53 @@ describe("TokenCreateTransaction", function () {
   describe("Wipe Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its wipe key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
+      await verifyTokenKey(tokenId, publicKey, "wipeKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its wipe key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
+      await verifyTokenKey(tokenId, publicKey, "wipeKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its wipe key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
+      await verifyTokenKey(tokenId, publicKey, "wipeKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its wipe key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "wipeKey");
+      await verifyTokenKey(tokenId, publicKey, "wipeKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "wipeKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "wipeKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its wipe key", async function () {
@@ -1220,38 +929,25 @@ describe("TokenCreateTransaction", function () {
         this,
         twoLevelsNestedKeyListParams,
       );
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "wipeKey");
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "wipeKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its wipe key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         wipeKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "wipeKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "wipeKey");
     });
 
     it("(#8) Creates a token with an invalid key as its wipe key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          wipeKey: invalidKey,
-        });
+        await createFtToken(this, { wipeKey: invalidKey });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1268,73 +964,53 @@ describe("TokenCreateTransaction", function () {
   describe("Supply Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its supply key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
+      await verifyTokenKey(tokenId, publicKey, "supplyKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its supply key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
+      await verifyTokenKey(tokenId, publicKey, "supplyKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its supply key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
+      await verifyTokenKey(tokenId, publicKey, "supplyKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its supply key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "supplyKey");
+      await verifyTokenKey(tokenId, publicKey, "supplyKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "supplyKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "supplyKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its supply key", async function () {
@@ -1342,42 +1018,25 @@ describe("TokenCreateTransaction", function () {
         this,
         twoLevelsNestedKeyListParams,
       );
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        nestedKeyList.key,
-        "supplyKey",
-      );
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "supplyKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its supply key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "supplyKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "supplyKey");
     });
 
     it("(#8) Creates a token with an invalid key as its supply key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey: invalidKey,
-        });
+        await createFtToken(this, { supplyKey: invalidKey });
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1408,27 +1067,17 @@ describe("TokenCreateTransaction", function () {
     it("(#1) Creates a token with a frozen default status", async function () {
       const key = await generateEd25519PrivateKey(this);
       const freezeDefault = true;
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: key,
         freezeDefault: freezeDefault,
       });
 
-      await verifyTokenCreationWithFreezeDefault(
-        response.tokenId,
-        freezeDefault,
-      );
+      await verifyTokenCreationWithFreezeDefault(tokenId, freezeDefault);
     });
 
     it("(#2) Creates a token with a frozen default status and no freeze key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           freezeDefault: true,
         });
       } catch (err: any) {
@@ -1442,29 +1091,19 @@ describe("TokenCreateTransaction", function () {
     it("(#3) Creates a token with an unfrozen default status", async function () {
       const responseKey = await generateEd25519PrivateKey(this);
       const freezeDefault = false;
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         freezeKey: responseKey,
         freezeDefault: freezeDefault,
       });
 
-      await verifyTokenCreationWithFreezeDefault(
-        response.tokenId,
-        freezeDefault,
-      );
+      await verifyTokenCreationWithFreezeDefault(tokenId, freezeDefault);
     });
   });
 
   describe("Expiration Time", () => {
     it("(#1) Creates a token with an expiration time of 0 seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime: "0",
         });
       } catch (err: any) {
@@ -1477,10 +1116,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with an expiration time of -1 seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime: "-1",
         });
       } catch (err: any) {
@@ -1493,10 +1129,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime: "9223372036854775807",
         });
       } catch (err: any) {
@@ -1509,10 +1142,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with an expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime: "9223372036854775806",
         });
       } catch (err: any) {
@@ -1525,10 +1155,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a token with an expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime: "-9223372036854775808",
         });
       } catch (err: any) {
@@ -1560,11 +1187,8 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 5184000
       ).toString();
 
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        expirationTime: expirationTime,
+      await createFtToken(this, {
+        expirationTime,
       });
     });
 
@@ -1573,14 +1197,11 @@ describe("TokenCreateTransaction", function () {
         Math.floor(Date.now() / 1000) + 2592000
       ).toString();
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         expirationTime,
       });
 
-      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+      await verifyTokenExpirationTimeUpdate(tokenId, expirationTime);
     });
 
     it.skip("(#9) Creates a token with an expiration time of 30 days minus one second (2,591,999 seconds) from the current time", async function () {
@@ -1589,10 +1210,7 @@ describe("TokenCreateTransaction", function () {
       ).toString();
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           expirationTime,
         });
       } catch (err: any) {
@@ -1607,15 +1225,11 @@ describe("TokenCreateTransaction", function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         expirationTime,
       });
 
-      await verifyTokenExpirationTimeUpdate(response.tokenId, expirationTime);
+      await verifyTokenExpirationTimeUpdate(tokenId, expirationTime);
     });
 
     it("(#11) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
@@ -1624,12 +1238,8 @@ describe("TokenCreateTransaction", function () {
           Math.floor(Date.now() / 1000) + 8000002
         ).toString();
 
-        // Create the token with the calculated expiration time in ISO format
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          expirationTime: expirationTime,
+        await createFtToken(this, {
+          expirationTime,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
@@ -1643,22 +1253,16 @@ describe("TokenCreateTransaction", function () {
   describe("Auto Renew Account ID", () => {
     it("(#1) Creates a token with an auto renew account", async function () {
       const key = await generateEd25519PrivateKey(this);
-      let response = await JSONRPCRequest(this, "createAccount", {
+      const response = await JSONRPCRequest(this, "createAccount", {
         key: key,
       });
       const accountId = response.accountId;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         autoRenewAccountId: accountId,
         commonTransactionParams: {
           signers: [key],
         },
       });
-
-      const tokenId = response.tokenId;
 
       expect(accountId).to.equal(
         (
@@ -1694,10 +1298,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an auto renew account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewAccountId: "123.456.789",
         });
       } catch (err: any) {
@@ -1710,10 +1311,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with the auto renew account not set", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewAccountId: "",
         });
       } catch (err: any) {
@@ -1745,10 +1343,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createFtToken(this, {
           autoRenewAccountId: accountId,
           commonTransactionParams: {
             signers: [key],
@@ -1784,10 +1379,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with an auto renew period set to 0 seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "0",
         });
@@ -1818,10 +1410,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with an auto renew period of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewPeriod: "9223372036854775807",
         });
       } catch (err: any) {
@@ -1834,10 +1423,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#4) Creates a token with an auto renew period of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewPeriod: "9223372036854775806",
         });
       } catch (err: any) {
@@ -1850,10 +1436,7 @@ describe("TokenCreateTransaction", function () {
 
     it.skip("(#5) Creates a token with an auto renew period of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewPeriod: "-9223372036854775808",
         });
       } catch (err: any) {
@@ -1866,10 +1449,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with an auto renew period of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewPeriod: "-9223372036854775807",
         });
       } catch (err: any) {
@@ -1882,42 +1462,27 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with an auto renew period of 60 days (5,184,000 seconds)", async function () {
       const autoRenewPeriod = "5184000";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
         autoRenewPeriod: autoRenewPeriod,
       });
 
-      await verifyTokenCreationWithAutoRenewPeriod(
-        response.tokenId,
-        autoRenewPeriod,
-      );
+      await verifyTokenCreationWithAutoRenewPeriod(tokenId, autoRenewPeriod);
     });
 
     it("(#8) Creates a token with an auto renew period of 30 days (2,592,000 seconds)", async function () {
       const autoRenewPeriod = "2592000";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
         autoRenewPeriod: autoRenewPeriod,
       });
 
-      await verifyTokenCreationWithAutoRenewPeriod(
-        response.tokenId,
-        autoRenewPeriod,
-      );
+      await verifyTokenCreationWithAutoRenewPeriod(tokenId, autoRenewPeriod);
     });
 
     it("(#9) Creates a token with an auto renew period of 30 days minus one second (2,591,999 seconds)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "2591999",
         });
@@ -1931,26 +1496,17 @@ describe("TokenCreateTransaction", function () {
 
     it("(#10) Creates a token with an auto renew period set to the maximum period of 8,000,001 seconds", async function () {
       const autoRenewPeriod = "8000001";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
         autoRenewPeriod: autoRenewPeriod,
       });
 
-      await verifyTokenCreationWithAutoRenewPeriod(
-        response.tokenId,
-        autoRenewPeriod,
-      );
+      await verifyTokenCreationWithAutoRenewPeriod(tokenId, autoRenewPeriod);
     });
 
     it("(#11) Creates a token with an auto renew period set to the maximum period plus one second (8,000,002 seconds)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewPeriod: "8000002",
         });
@@ -1978,47 +1534,35 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with a memo that is a valid length", async function () {
       const memo = "testmemo";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         memo: memo,
       });
 
-      await verifyTokenCreationWithMemo(response.tokenId, memo);
+      await verifyTokenCreationWithMemo(tokenId, memo);
     });
 
     it("(#2) Creates a token with a memo that is the minimum length", async function () {
       const memo = "";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         memo: memo,
       });
 
-      await verifyTokenCreationWithMemo(response.tokenId, memo);
+      await verifyTokenCreationWithMemo(tokenId, memo);
     });
 
     it("(#3) Creates a token with a memo that is the maximum length", async function () {
       const memo =
         "This is a really long memo but it is still valid because it is 100 characters exactly on the money!!";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        memo: memo,
+      const tokenId = await createFtToken(this, {
+        memo,
       });
 
-      await verifyTokenCreationWithMemo(response.tokenId, memo);
+      await verifyTokenCreationWithMemo(tokenId, memo);
     });
 
     it("(#4) Creates a token with a memo that exceeds the maximum length", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           memo: "This is a long memo that is not valid because it exceeds 100 characters and it should fail the test!!",
         });
       } catch (err: any) {
@@ -2045,34 +1589,17 @@ describe("TokenCreateTransaction", function () {
     };
 
     it("(#1) Creates a fungible token", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        tokenType: "ft",
-      });
-
-      await verifyTokenCreationWithTokenType(
-        response.tokenId,
-        "FUNGIBLE_COMMON",
-      );
+      const tokenId = await createFtToken(this);
+      await verifyTokenCreationWithTokenType(tokenId, "FUNGIBLE_COMMON");
     });
 
     it("(#2) Creates an NFT", async function () {
       const key = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
         supplyKey: key,
-        tokenType: "nft",
       });
 
-      await verifyTokenCreationWithTokenType(
-        response.tokenId,
-        "NON_FUNGIBLE_UNIQUE",
-      );
+      await verifyTokenCreationWithTokenType(tokenId, "NON_FUNGIBLE_UNIQUE");
     });
   });
 
@@ -2092,26 +1619,20 @@ describe("TokenCreateTransaction", function () {
     };
 
     it("(#1) Creates a token with a finite supply", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyType: "finite",
         maxSupply: "1000000",
       });
 
-      await verifyTokenCreationWithSupplyType(response.tokenId, "FINITE");
+      await verifyTokenCreationWithSupplyType(tokenId, "FINITE");
     });
 
     it("(#2) Creates a token with an infinite supply", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyType: "infinite",
       });
 
-      await verifyTokenCreationWithSupplyType(response.tokenId, "INFINITE");
+      await verifyTokenCreationWithSupplyType(tokenId, "INFINITE");
     });
   });
 
@@ -2134,10 +1655,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with 0 max supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyType: "finite",
           maxSupply: "0",
         });
@@ -2151,10 +1669,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#2) Creates a token with -1 max supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyType: "finite",
           maxSupply: "-1",
         });
@@ -2168,36 +1683,27 @@ describe("TokenCreateTransaction", function () {
 
     it("(#3) Creates a token with 9,223,372,036,854,775,807 (int64 max) max supply", async function () {
       const maxSupply = "9223372036854775807";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyType: "finite",
         maxSupply: maxSupply,
       });
 
-      await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
+      await verifyTokenCreationWithMaxSupply(tokenId, maxSupply);
     });
 
     it("(#4) Creates a token with 9,223,372,036,854,775,806 (int64 max - 1) max supply", async function () {
       const maxSupply = "9223372036854775806";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         supplyType: "finite",
         maxSupply: maxSupply,
       });
 
-      await verifyTokenCreationWithMaxSupply(response.tokenId, maxSupply);
+      await verifyTokenCreationWithMaxSupply(tokenId, maxSupply);
     });
 
     it("(#5) Creates a token with -9,223,372,036,854,775,808 (int64 min) max supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyType: "finite",
           maxSupply: "-9223372036854775808",
         });
@@ -2211,10 +1717,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with -9,223,372,036,854,775,807 (int64 min) max supply", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyType: "finite",
           maxSupply: "-9223372036854775807",
         });
@@ -2228,10 +1731,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with a max supply and an infinite supply type", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyType: "infinite",
           maxSupply: "1000000",
         });
@@ -2247,73 +1747,53 @@ describe("TokenCreateTransaction", function () {
   describe("Fee Schedule Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its fee schedule key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
+      await verifyTokenKey(tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its fee schedule key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
+      await verifyTokenKey(tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its fee schedule key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
+      await verifyTokenKey(tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its fee schedule key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "feeScheduleKey");
+      await verifyTokenKey(tokenId, publicKey, "feeScheduleKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "feeScheduleKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "feeScheduleKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its fee schedule key", async function () {
@@ -2322,43 +1802,25 @@ describe("TokenCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        nestedKeyList.key,
-        "feeScheduleKey",
-      );
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "feeScheduleKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its fee schedule key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         feeScheduleKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        thresholdKey.key,
-        "feeScheduleKey",
-      );
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "feeScheduleKey");
     });
 
     it("(#8) Creates a token with an invalid key as its fee schedule key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           feeScheduleKey: invalidKey,
         });
       } catch (err: any) {
@@ -2377,10 +1839,7 @@ describe("TokenCreateTransaction", function () {
   describe("Custom Fees", () => {
     it("(#1) Creates a token with a fixed fee with an amount of 0", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2427,10 +1886,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775807";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2443,7 +1899,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFixedFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         amount,
@@ -2454,10 +1910,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const feeCollectorsExempt = false;
       const amount = "9223372036854775806";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2470,7 +1923,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFixedFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         amount,
@@ -2479,10 +1932,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#5) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2503,10 +1953,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#6) Creates a token with a fixed fee with an amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2527,10 +1974,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#7) Creates a token with a fractional fee with a numerator of 0", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2555,10 +1999,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#8) Creates a token with a fractional fee with a numerator of -1", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2589,10 +2030,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2609,7 +2047,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -2628,10 +2066,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2648,7 +2083,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -2661,10 +2096,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#11) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2689,10 +2121,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#12) Creates a token with a fractional fee with a numerator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2717,10 +2146,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#13) Creates a token with a fractional fee with a denominator of 0", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2745,10 +2171,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#14) Creates a token with a fractional fee with a denominator of -1", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2779,10 +2202,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2799,7 +2219,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -2818,10 +2238,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2838,7 +2255,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -2851,10 +2268,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#17) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2879,10 +2293,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#18) Creates a token with a fractional fee with a denominator of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2913,10 +2324,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "0";
       const maximumAmount = "10";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -2933,7 +2341,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -2946,10 +2354,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#20) Creates a token with a fractional fee with a minimum amount of -1", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -2974,10 +2379,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#21) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3005,10 +2407,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#22) Creates a token with a fractional fee with a minimum amount of 9,223,372,036,854,775,806 (int64 max - 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3036,10 +2435,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#23) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3064,10 +2460,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#24) Creates a token with a fractional fee with a minimum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3098,10 +2491,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "0";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3118,7 +2508,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3131,10 +2521,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#26) Creates a token with a fractional fee with a maximum amount of -1", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3165,10 +2552,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "9223372036854775807";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3185,7 +2569,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3204,10 +2588,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "9223372036854775806";
       const assessmentMethod = "inclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3224,7 +2605,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3237,10 +2618,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#29) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3265,10 +2643,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#30) Creates a token with a fractional fee with a maximum amount of -9,223,372,036,854,775,807 (int64 min + 1)", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3292,17 +2667,11 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#31) Creates a token with a royalty fee with a numerator of 0", async function () {
-      let response = await generateEcdsaSecp256k1PrivateKey(this);
-
-      const key = response;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3331,12 +2700,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3360,17 +2725,11 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#33) Creates a token with a royalty fee with a numerator of 9,223,372,036,854,775,807 (int64 max)", async function () {
-      let response = await generateEcdsaSecp256k1PrivateKey(this);
-
-      const key = response;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3399,12 +2758,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3433,12 +2788,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3467,12 +2818,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3501,12 +2848,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3535,12 +2878,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3571,12 +2910,8 @@ describe("TokenCreateTransaction", function () {
       const denominator = "9223372036854775807";
       const fallbackFeeAmount = "10";
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
         supplyKey: key,
-        tokenType: "nft",
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3593,7 +2928,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithRoyaltyFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3610,12 +2945,8 @@ describe("TokenCreateTransaction", function () {
       const denominator = "9223372036854775806";
       const fallbackFeeAmount = "10";
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
         supplyKey: key,
-        tokenType: "nft",
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3632,7 +2963,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithRoyaltyFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3647,12 +2978,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createFtToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3681,12 +3008,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3715,12 +3038,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3749,12 +3068,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3785,12 +3100,8 @@ describe("TokenCreateTransaction", function () {
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775807";
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
         supplyKey: key,
-        tokenType: "nft",
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3807,7 +3118,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithRoyaltyFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3824,12 +3135,8 @@ describe("TokenCreateTransaction", function () {
       const denominator = "10";
       const fallbackFeeAmount = "9223372036854775806";
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createNftToken(this, {
         supplyKey: key,
-        tokenType: "nft",
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -3846,7 +3153,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithRoyaltyFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -3859,12 +3166,8 @@ describe("TokenCreateTransaction", function () {
       const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3891,12 +3194,8 @@ describe("TokenCreateTransaction", function () {
       const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -3921,10 +3220,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#49) Creates a token with a fixed fee with a fee collector account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: "123.456.789",
@@ -3945,10 +3241,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#50) Creates a token with a fractional with a fee collector account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: "123.456.789",
@@ -3977,12 +3270,8 @@ describe("TokenCreateTransaction", function () {
       const key = response;
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: "123.456.789",
@@ -4007,10 +3296,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#52) Creates a token with a fixed fee with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: "",
@@ -4031,10 +3317,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#53) Creates a token with a fractional with an empty fee collector account", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: "",
@@ -4061,12 +3344,8 @@ describe("TokenCreateTransaction", function () {
       const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: "",
@@ -4105,10 +3384,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: accountId,
@@ -4146,10 +3422,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: accountId,
@@ -4191,12 +3464,8 @@ describe("TokenCreateTransaction", function () {
       });
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        response = await createFtToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: accountId,
@@ -4227,10 +3496,7 @@ describe("TokenCreateTransaction", function () {
       const feeCollectorsExempt = false;
       const fixedFeeAmount = "10";
       const denominatingTokenId = "0.0.0";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -4244,7 +3510,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFixedFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         fixedFeeAmount,
@@ -4253,10 +3519,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#59) Creates a token with a fixed fee that is assessed with a token that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4278,10 +3541,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#60) Creates a token with a fixed fee that is assessed with an empty token", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4302,24 +3562,16 @@ describe("TokenCreateTransaction", function () {
     });
 
     it.skip("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async function () {
-      let response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
+      const tokenId = await createFtToken(this, {
         adminKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
       });
 
-      const tokenId = response.tokenId;
-
-      response = await JSONRPCRequest(this, "deleteToken", {
+      await JSONRPCRequest(this, "deleteToken", {
         tokenId: tokenId,
       });
 
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4347,10 +3599,7 @@ describe("TokenCreateTransaction", function () {
       const minimumAmount = "1";
       const maximumAmount = "10";
       const assessmentMethod = "exclusive";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         customFees: [
           {
             feeCollectorAccountId: feeCollectorAccountId,
@@ -4367,7 +3616,7 @@ describe("TokenCreateTransaction", function () {
       });
 
       await verifyTokenCreationWithFractionalFee(
-        response.tokenId,
+        tokenId,
         feeCollectorAccountId,
         feeCollectorsExempt,
         numerator,
@@ -4380,10 +3629,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#63) Creates a fungible token with a royalty fee", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4412,17 +3658,11 @@ describe("TokenCreateTransaction", function () {
     });
 
     it("(#64) Creates an NFT with a fractional fee", async function () {
-      let response = await generateEcdsaSecp256k1PrivateKey(this);
-
-      const key = response;
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       try {
-        response = await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createNftToken(this, {
           supplyKey: key,
-          tokenType: "nft",
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4450,10 +3690,7 @@ describe("TokenCreateTransaction", function () {
 
     it("(#65) Creates a token with more than the maximum amount of fees allowed", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           customFees: [
             {
               feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -4546,125 +3783,86 @@ describe("TokenCreateTransaction", function () {
   describe("Pause Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its pause key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
+      await verifyTokenKey(tokenId, publicKey, "pauseKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its pause key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
+      await verifyTokenKey(tokenId, publicKey, "pauseKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its pause key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
+      await verifyTokenKey(tokenId, publicKey, "pauseKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its pause key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "pauseKey");
+      await verifyTokenKey(tokenId, publicKey, "pauseKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
-      let response = await JSONRPCRequest(
-        this,
-        "generateKey",
-        fourKeysKeyListParams,
-      );
-
-      const keyList = response;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const keyList = await generateKeyList(this, fourKeysKeyListParams);
+      const tokenId = await createFtToken(this, {
         pauseKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "pauseKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "pauseKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its pause key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await JSONRPCRequest(
         this,
         "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, nestedKeyList.key, "pauseKey");
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "pauseKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its pause key", async function () {
-      let response = await JSONRPCRequest(
+      const thresholdKey = await JSONRPCRequest(
         this,
         "generateKey",
         twoThresholdKeyParams,
       );
 
-      const thresholdKey = response;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         pauseKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, thresholdKey.key, "pauseKey");
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "pauseKey");
     });
 
     it("(#8) Creates a token with an invalid key as its pause key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
           pauseKey: invalidKey,
         });
       } catch (err: any) {
@@ -4701,148 +3899,109 @@ describe("TokenCreateTransaction", function () {
 
     it("(#1) Creates a token with metadata", async function () {
       const metadataValue = "1234";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         metadata: metadataValue,
       });
 
-      await verifyTokenCreationWithMetadata(response.tokenId, metadataValue);
+      await verifyTokenCreationWithMetadata(tokenId, metadataValue);
     });
 
     it("(#2) Creates a token with empty metadata", async function () {
       const metadata = "";
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         metadata: metadata,
       });
 
-      await verifyTokenCreationWithMetadata(response.tokenId, metadata);
+      await verifyTokenCreationWithMetadata(tokenId, metadata);
     });
   });
 
   describe("Metadata Key", () => {
     it("(#1) Creates a token with a valid ED25519 public key as its metadata key", async function () {
       const publicKey = await generateEd25519PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
         metadata: "1234",
         metadataKey: publicKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
+      await verifyTokenKey(tokenId, publicKey, "metadataKey");
     });
 
     it("(#2) Creates a token with a valid ECDSAsecp256k1 public key as its metadata key", async function () {
       const publicKey = await generateEcdsaSecp256k1PublicKey(this);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: publicKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
+      await verifyTokenKey(tokenId, publicKey, "metadataKey");
     });
 
     it("(#3) Creates a token with a valid ED25519 private key as its metadata key", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: privateKey,
       });
 
       // Compare against raw key, ED25519 public key DER-encoding has a 12 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
+      await verifyTokenKey(tokenId, publicKey, "metadataKey");
     });
 
     it("(#4) Creates a token with a valid ECDSAsecp256k1 private key as its metadata key", async function () {
       const privateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const publicKey = await generateEcdsaSecp256k1PublicKey(this, privateKey);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: privateKey,
       });
 
       // Compare against raw key, ECDSAsecp256k1 public key DER-encoding has a 14 byte prefix.
-      await verifyTokenKey(response.tokenId, publicKey, "metadataKey");
+      await verifyTokenKey(tokenId, publicKey, "metadataKey");
     });
 
     it("(#5) Creates a token with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: keyList.key,
       });
 
-      await verifyTokenKeyList(response.tokenId, keyList.key, "metadataKey");
+      await verifyTokenKeyList(tokenId, keyList.key, "metadataKey");
     });
 
     it("(#6) Creates a token with a valid KeyList of nested Keylists (three levels) as its metadata key", async function () {
-      let response = await JSONRPCRequest(
+      const nestedKeyList = await generateKeyList(
         this,
-        "generateKey",
         twoLevelsNestedKeyListParams,
       );
 
-      const nestedKeyList = response;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: nestedKeyList.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        nestedKeyList.key,
-        "metadataKey",
-      );
+      await verifyTokenKeyList(tokenId, nestedKeyList.key, "metadataKey");
     });
 
     it("(#7) Creates a token with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its metadata key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
-
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      const tokenId = await createFtToken(this, {
+        metadata: "1234",
         metadataKey: thresholdKey.key,
       });
 
-      await verifyTokenKeyList(
-        response.tokenId,
-        thresholdKey.key,
-        "metadataKey",
-      );
+      await verifyTokenKeyList(tokenId, thresholdKey.key, "metadataKey");
     });
 
     it("(#8) Creates a token with an invalid key as its metadata key", async function () {
       try {
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        await createFtToken(this, {
+          metadata: "1234",
           metadataKey: invalidKey,
         });
       } catch (err: any) {
