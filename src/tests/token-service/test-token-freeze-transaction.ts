@@ -9,6 +9,7 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
+import { createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -37,19 +38,14 @@ describe("TokenFreezeTransaction", function () {
     tokenAdminKey = await generateEd25519PrivateKey(this);
     tokenPauseKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey: tokenAdminKey,
-        freezeKey: tokenFreezeKey,
-        pauseKey: tokenPauseKey,
-        commonTransactionParams: {
-          signers: [tokenAdminKey],
-        },
-      })
-    ).tokenId;
+    tokenId = await createFtToken(this, {
+      adminKey: tokenAdminKey,
+      freezeKey: tokenFreezeKey,
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey],
+      },
+    });
 
     accountPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -227,13 +223,7 @@ describe("TokenFreezeTransaction", function () {
     });
 
     it("(#9) Freezes a token with no freeze key on an account", async function () {
-      const tokenIdNoFreezeKey = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const tokenIdNoFreezeKey = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "freezeToken", {

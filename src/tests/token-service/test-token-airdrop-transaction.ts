@@ -15,6 +15,7 @@ import {
   verifyAirdrop,
   verifyHbarBalance,
 } from "@helpers/transfer";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -68,23 +69,16 @@ describe("TokenAirdropTransaction", function () {
     beforeEach(async function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey: tokenKey,
-          tokenType: "ft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        supplyKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -412,15 +406,9 @@ describe("TokenAirdropTransaction", function () {
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: senderAccountId,
@@ -2502,23 +2490,16 @@ describe("TokenAirdropTransaction", function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
-
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey,
-          tokenType: "nft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -2816,18 +2797,12 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#11) Airdrops an amount of fungible tokens from a sender account to a receiver account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: senderAccountId,
-          tokenType: "ft",
-          commonTransactionParams: {
-            signers: [senderPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        treasuryAccountId: senderAccountId,
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: receiverAccountId,
@@ -4348,24 +4323,17 @@ describe("TokenAirdropTransaction", function () {
     beforeEach(async function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals,
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey: tokenKey,
-          tokenType: "ft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        supplyKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        decimals,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -4710,15 +4678,9 @@ describe("TokenAirdropTransaction", function () {
     it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: senderAccountId,
@@ -6773,23 +6735,16 @@ describe("TokenAirdropTransaction", function () {
     beforeEach(async function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey: tokenKey,
-          tokenType: "ft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        supplyKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -7161,15 +7116,16 @@ describe("TokenAirdropTransaction", function () {
     it("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: senderAccountId,
@@ -7699,14 +7655,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#22) Airdrops an approved amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -9247,22 +9196,16 @@ describe("TokenAirdropTransaction", function () {
 
       supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey,
-          tokenType: "nft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -9632,18 +9575,16 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#11) Airdrops an approved amount of fungible tokens from a sender account to a receiver account", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: senderAccountId,
-          tokenType: "ft",
-          commonTransactionParams: {
-            signers: [senderPrivateKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        supplyKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: receiverAccountId,
@@ -10023,14 +9964,7 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#21) Airdrops an approved NFT from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const dummyTokenId = await createFtToken(this);
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -11410,24 +11344,16 @@ describe("TokenAirdropTransaction", function () {
     beforeEach(async function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals,
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey: tokenKey,
-          tokenType: "ft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        supplyKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
@@ -11818,15 +11744,16 @@ describe("TokenAirdropTransaction", function () {
     it.skip("(#10) Airdrops an approved amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      tokenId = await createNftToken(this, {
+        supplyKey,
+        adminKey: tokenKey,
+        freezeKey: tokenKey,
+        feeScheduleKey: tokenKey,
+        pauseKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId: senderAccountId,
@@ -12414,14 +12341,11 @@ describe("TokenAirdropTransaction", function () {
     });
 
     it("(#23) Airdrops an approved amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
-      const dummyTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const dummyTokenId = await createFtToken(this, {
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
