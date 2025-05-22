@@ -13,14 +13,14 @@ import {
   verifyTokenBalance,
   verifyAirdrop,
 } from "@helpers/transfer";
-import { createToken } from "@helpers/token";
+import { createNftToken, createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Tests for TokenAirdropClaimTransaction
  */
-describe.only("TokenAirdropClaimTransaction", function () {
+describe("TokenAirdropClaimTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -66,23 +66,15 @@ describe.only("TokenAirdropClaimTransaction", function () {
     beforeEach(async function () {
       tokenKey = await generateEd25519PrivateKey(this);
 
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: tokenKey,
-          freezeKey: tokenKey,
-          supplyKey: tokenKey,
-          tokenType: "ft",
-          feeScheduleKey: tokenKey,
-          pauseKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        supplyKey: tokenKey,
+        adminKey: tokenKey,
+        pauseKey: tokenKey,
+        freezeKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       // Transfer tokens to sender account
       await JSONRPCRequest(this, "transferCrypto", {
@@ -543,18 +535,15 @@ describe.only("TokenAirdropClaimTransaction", function () {
       nftTokenKey = await generateEd25519PrivateKey(this);
 
       // Create NFT token
-      nftTokenId = await createToken(
-        this,
-        false,
-        process.env.OPERATOR_ACCOUNT_ID as string,
-        nftTokenKey,
-        null,
-        nftTokenKey,
-        nftTokenKey,
-        null,
-        "10",
-        nftTokenKey,
-      );
+      nftTokenId = await createNftToken(this, {
+        supplyKey: nftTokenKey,
+        adminKey: nftTokenKey,
+        pauseKey: nftTokenKey,
+        freezeKey: nftTokenKey,
+        commonTransactionParams: {
+          signers: [nftTokenKey],
+        },
+      });
 
       // Mint an NFT
       const mintResponse = await JSONRPCRequest(this, "mintToken", {
@@ -1000,33 +989,27 @@ describe.only("TokenAirdropClaimTransaction", function () {
     it("(#17) Claims an airdropped NFT with a royalty fee for an account", async function () {
       // Create a token with royalty fees
       const royaltyTokenKey = await generateEd25519PrivateKey(this);
-      const royaltyTokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "royaltytoken",
-          symbol: "RT",
-          initialSupply: "0",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          adminKey: royaltyTokenKey,
-          freezeKey: royaltyTokenKey,
-          supplyKey: royaltyTokenKey,
-          tokenType: "nft",
-          feeScheduleKey: royaltyTokenKey,
-          pauseKey: royaltyTokenKey,
-          customFees: [
-            {
-              feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
-              feeCollectorsExempt: false,
-              royaltyFee: {
-                numerator: "1",
-                denominator: "10",
-              },
+
+      const royaltyTokenId = await createNftToken(this, {
+        supplyKey: royaltyTokenKey,
+        adminKey: royaltyTokenKey,
+        freezeKey: royaltyTokenKey,
+        pauseKey: royaltyTokenKey,
+        feeScheduleKey: royaltyTokenKey,
+        customFees: [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            royaltyFee: {
+              numerator: "1",
+              denominator: "10",
             },
-          ],
-          commonTransactionParams: {
-            signers: [royaltyTokenKey],
           },
-        })
-      ).tokenId;
+        ],
+        commonTransactionParams: {
+          signers: [royaltyTokenKey],
+        },
+      });
 
       // Mint an NFT with royalty fees
       const mintResponse = await JSONRPCRequest(this, "mintToken", {
