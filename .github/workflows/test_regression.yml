@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: hiero-client-sdk-linux-medium
+    runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
         suite:
@@ -50,6 +50,10 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+
+      - name: Check Hedera Local version
+        run: |
+          npx @hashgraph/hedera-local --version
 
       - name: Start local Hedera network
         run: |
