@@ -986,7 +986,7 @@ describe("TokenAirdropClaimTransaction", function () {
       );
     });
 
-    it("(#17) Claims an airdropped NFT with a royalty fee for an account", async function () {
+    it("(#16) Claims an airdropped NFT with a royalty fee for an account", async function () {
       // Create a token with royalty fees
       const royaltyTokenKey = await generateEd25519PrivateKey(this);
 
@@ -1061,7 +1061,7 @@ describe("TokenAirdropClaimTransaction", function () {
       );
     });
 
-    it("(#18) Claims an already claimed airdropped NFT for an account", async function () {
+    it("(#17) Claims an already claimed airdropped NFT for an account", async function () {
       // First claim
       await JSONRPCRequest(this, "claimToken", {
         senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
@@ -1091,7 +1091,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#20) Claims an airdropped NFT without specifying serial numbers", async function () {
+    it("(#18) Claims an airdropped NFT without specifying serial numbers", async function () {
       try {
         await JSONRPCRequest(this, "claimToken", {
           senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
