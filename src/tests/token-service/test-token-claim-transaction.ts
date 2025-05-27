@@ -987,18 +987,13 @@ describe("TokenAirdropClaimTransaction", function () {
     });
 
     it("(#16) Claims an airdropped NFT with a royalty fee for an account", async function () {
-      // Create a token with royalty fees
       const royaltyTokenKey = await generateEd25519PrivateKey(this);
 
       const royaltyTokenId = await createNftToken(this, {
         supplyKey: royaltyTokenKey,
-        adminKey: royaltyTokenKey,
-        freezeKey: royaltyTokenKey,
-        pauseKey: royaltyTokenKey,
-        feeScheduleKey: royaltyTokenKey,
         customFees: [
           {
-            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
             feeCollectorsExempt: false,
             royaltyFee: {
               numerator: "1",
@@ -1006,15 +1001,12 @@ describe("TokenAirdropClaimTransaction", function () {
             },
           },
         ],
-        commonTransactionParams: {
-          signers: [royaltyTokenKey],
-        },
       });
 
       // Mint an NFT with royalty fees
       const mintResponse = await JSONRPCRequest(this, "mintToken", {
         tokenId: royaltyTokenId,
-        metadata: ["royalty-nft"],
+        metadata: ["1234"],
         commonTransactionParams: {
           signers: [royaltyTokenKey],
         },
