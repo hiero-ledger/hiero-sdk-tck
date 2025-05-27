@@ -14,7 +14,7 @@ import { createFtToken } from "@helpers/token";
 /**
  * Tests for TokenAirdropCancelTransaction
  */
-describe.only("TokenAirdropCancelTransaction", function () {
+describe("TokenAirdropCancelTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
