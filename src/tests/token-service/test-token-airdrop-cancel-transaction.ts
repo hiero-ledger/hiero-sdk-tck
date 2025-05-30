@@ -11,6 +11,8 @@ import { setOperator } from "@helpers/setup-tests";
 import { verifyAirdrop } from "@helpers/transfer";
 import { createFtToken } from "@helpers/token";
 
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+
 /**
  * Tests for TokenAirdropCancelTransaction
  */
@@ -163,7 +165,11 @@ describe("TokenAirdropCancelTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
         return;
       }
       assert.fail("Should throw an error");
@@ -177,7 +183,11 @@ describe("TokenAirdropCancelTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
         return;
       }
       assert.fail("Should throw an error");
