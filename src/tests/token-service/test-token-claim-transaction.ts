@@ -161,7 +161,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Claims an airdropped fungible token for an empty account", async function () {
+    it("(#3) Claims an airdropped fungible token for an empty receiver account", async function () {
       try {
         await JSONRPCRequest(this, "claimToken", {
           senderAccountId,
@@ -178,7 +178,24 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Claims an airdropped fungible token for a deleted account", async function () {
+    it("(#4) Claims an airdropped fungible token for an empty sender account", async function () {
+      try {
+        await JSONRPCRequest(this, "claimToken", {
+          senderAccountId: "",
+          receiverAccountId,
+          tokenId,
+          commonTransactionParams: {
+            signers: [receiverPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Claims an airdropped fungible token for a deleted account", async function () {
       // Create a temporary account
       const tempPrivateKey = await generateEd25519PrivateKey(this);
       const tempAccountId = (
@@ -236,7 +253,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Claims an airdropped token that doesn't exist for an account", async function () {
+    it("(#6) Claims an airdropped token that doesn't exist for an account", async function () {
       try {
         await JSONRPCRequest(this, "claimToken", {
           senderAccountId,
@@ -253,7 +270,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Claims an airdropped token that is empty for an account", async function () {
+    it("(#7) Claims an airdropped token that is empty for an account", async function () {
       try {
         await JSONRPCRequest(this, "claimToken", {
           senderAccountId,
@@ -270,7 +287,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Claims an airdropped token that is deleted for an account", async function () {
+    it("(#8) Claims an airdropped token that is deleted for an account", async function () {
       // Delete the token
       await JSONRPCRequest(this, "deleteToken", {
         tokenId,
@@ -295,7 +312,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Claims a non-existing airdrop fungible token for an account", async function () {
+    it("(#9) Claims a non-existing airdrop fungible token for an account", async function () {
       // Create a new account that has no airdrops
       const newPrivateKey = await generateEd25519PrivateKey(this);
       const newAccountId = (
@@ -322,7 +339,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Claims an airdropped fungible token for an account without signing", async function () {
+    it("(#10) Claims an airdropped fungible token for an account without signing", async function () {
       try {
         await JSONRPCRequest(this, "claimToken", {
           senderAccountId,
@@ -336,7 +353,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Claims an airdropped fungible token for an account that is frozen for the token", async function () {
+    it("(#11) Claims an airdropped fungible token for an account that is frozen for the token", async function () {
       // Freeze the receiver account for this token
       await JSONRPCRequest(this, "freezeToken", {
         tokenId,
@@ -362,7 +379,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Claims an airdropped paused fungible token for an account", async function () {
+    it("(#12) Claims an airdropped paused fungible token for an account", async function () {
       // Pause the token
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
@@ -387,7 +404,7 @@ describe("TokenAirdropClaimTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#12) Claims multiple airdropped fungible tokens for an account", async function () {
+    it("(#13) Claims multiple airdropped fungible tokens for an account", async function () {
       // Transfer more tokens to sender account for multiple airdrops
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -451,7 +468,7 @@ describe("TokenAirdropClaimTransaction", function () {
       );
     });
 
-    it("(#13) Claims an airdropped fungible token for an unassociated account without automatic associations", async function () {
+    it("(#14) Claims an airdropped fungible token for an unassociated account without automatic associations", async function () {
       // Create a new account without auto associations
       const noAutoAssocPrivateKey = await generateEd25519PrivateKey(this);
       const noAutoAssocAccountId = (
@@ -500,7 +517,7 @@ describe("TokenAirdropClaimTransaction", function () {
       );
     });
 
-    it("(#14) Claims an already claimed airdropped fungible token for an account", async function () {
+    it("(#15) Claims an already claimed airdropped fungible token for an account", async function () {
       // First claim
       await JSONRPCRequest(this, "claimToken", {
         senderAccountId,
