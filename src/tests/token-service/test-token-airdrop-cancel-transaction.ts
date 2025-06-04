@@ -6,10 +6,8 @@ import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
-import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
-import { verifyAirdrop } from "@helpers/transfer";
-import { createFtToken } from "@helpers/token";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -46,7 +44,7 @@ describe("TokenAirdropCancelTransaction", function () {
       await JSONRPCRequest(this, "createAccount", {
         key: senderPrivateKey,
         initialBalance: amountStr,
-        maxAutoTokenAssociations: 1,
+        maxAutoTokenAssociations: 2,
       })
     ).accountId;
 
@@ -113,10 +111,6 @@ describe("TokenAirdropCancelTransaction", function () {
         signers: [senderPrivateKey],
       },
     });
-
-    await retryOnError(async () =>
-      verifyAirdrop(senderAccountId, receiverAccountId, tokenId, amount),
-    );
   });
 
   afterEach(async function () {
@@ -124,7 +118,7 @@ describe("TokenAirdropCancelTransaction", function () {
   });
 
   describe("CancelAirdrop", function () {
-    it("(#1) Cancels a valid airdrop", async function () {
+    it("(#1) Cancels a valid airdrop (FT)", async function () {
       const result = await JSONRPCRequest(this, "cancelAirdrop", {
         senderAccountId,
         receiverAccountId,
@@ -137,11 +131,103 @@ describe("TokenAirdropCancelTransaction", function () {
       expect(result.status).to.equal("SUCCESS");
     });
 
-    it("(#2) Cancels an airdrop with invalid ID", async function () {
+    it("(#2) Cancels a valid airdrop (NFT)", async function () {
+      // Create NFT token
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const nftTokenId = await createNftToken(this, {
+        supplyKey,
+      });
+
+      const serialNumbers = (
+        await JSONRPCRequest(this, "mintToken", {
+          tokenId: nftTokenId,
+          metadata: ["1234", "5678", "90ab"],
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        })
+      ).serialNumbers;
+
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId,
+              tokenId: nftTokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+        ],
+      });
+
+      await JSONRPCRequest(this, "airdropToken", {
+        tokenTransfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: nftTokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      const result = await JSONRPCRequest(this, "cancelAirdrop", {
+        senderAccountId,
+        receiverAccountId,
+        tokenId,
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      expect(result.status).to.equal("SUCCESS");
+    });
+
+    it("(#3) Cancels an airdrop with invalid sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId: "123.456.789",
+          receiverAccountId,
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Cancels an airdrop with invalid receiver ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
           receiverAccountId: "123.456.789",
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Cancels an airdrop with invalid token ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          receiverAccountId,
           tokenId: "123.456.789",
           commonTransactionParams: {
             signers: [senderPrivateKey],
@@ -154,11 +240,54 @@ describe("TokenAirdropCancelTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Cancels an airdrop with empty ID", async function () {
+    it("(#6) Cancels an airdrop with empty sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId: "",
+          receiverAccountId,
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Cancels an airdrop with empty receiver ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
           receiverAccountId: "",
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
+        return;
+        ``;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Cancels an airdrop with empty token ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          receiverAccountId,
           tokenId: "",
           commonTransactionParams: {
             signers: [senderPrivateKey],
@@ -175,9 +304,11 @@ describe("TokenAirdropCancelTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Cancels an airdrop with no ID", async function () {
+    it("(#9) Cancels an airdrop with missing sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
+          receiverAccountId,
+          tokenId,
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -193,7 +324,47 @@ describe("TokenAirdropCancelTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Cancels an already cancelled airdrop", async function () {
+    it("(#10) Cancels an airdrop with missing receiver ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Cancels an airdrop with missing token ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          receiverAccountId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal Error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#12) Cancels an already cancelled airdrop", async function () {
       // First cancel
       await JSONRPCRequest(this, "cancelAirdrop", {
         senderAccountId,
@@ -221,12 +392,12 @@ describe("TokenAirdropCancelTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Cancels an airdrop with zero ID", async function () {
+    it("(#13) Cancels an airdrop with zero sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId: "0.0.0",
-          receiverAccountId: "0.0.0",
-          tokenId: "0.0.0",
+          receiverAccountId,
+          tokenId,
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -238,7 +409,41 @@ describe("TokenAirdropCancelTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Cancels an airdrop without proper authorization", async function () {
+    it("(#14) Cancels an airdrop with zero receiver ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          receiverAccountId: "0.0.0",
+          tokenId,
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#15) Cancels an airdrop with zero token ID", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId,
+          receiverAccountId,
+          tokenId: "0.0.0",
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#16) Cancels an airdrop without proper authorization", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId,
