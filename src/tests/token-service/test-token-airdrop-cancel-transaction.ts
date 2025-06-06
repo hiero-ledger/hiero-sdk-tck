@@ -14,7 +14,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for TokenAirdropCancelTransaction
  */
-describe("TokenAirdropCancelTransaction", function () {
+describe.only("TokenAirdropCancelTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -180,7 +180,8 @@ describe("TokenAirdropCancelTransaction", function () {
       const result = await JSONRPCRequest(this, "cancelAirdrop", {
         senderAccountId,
         receiverAccountId,
-        tokenId,
+        tokenId: nftTokenId,
+        serialNumbers: serialNumbers[0],
         commonTransactionParams: {
           signers: [senderPrivateKey],
         },
