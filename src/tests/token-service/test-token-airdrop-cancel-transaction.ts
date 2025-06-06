@@ -181,7 +181,7 @@ describe.only("TokenAirdropCancelTransaction", function () {
         senderAccountId,
         receiverAccountId,
         tokenId: nftTokenId,
-        serialNumbers: serialNumbers[0],
+        serialNumbers: [serialNumbers[0]],
         commonTransactionParams: {
           signers: [senderPrivateKey],
         },
