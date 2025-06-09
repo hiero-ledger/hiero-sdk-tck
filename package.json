@@ -16,7 +16,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@types/chai": "^5.0.1",
+    "@types/chai": "^5.2.2",
     "@types/json-bigint": "^1.0.4",
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/parser": "^8.32.0",
