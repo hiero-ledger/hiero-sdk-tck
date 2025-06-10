@@ -58,13 +58,13 @@ describe("TokenUpdateTransaction", function () {
       })
     ).key;
 
-    let expirationTime = Math.floor(Date.now() / 1000 + 100).toString();
+    const expirationTime = Math.floor(Date.now() / 1000 + 100).toString();
     mutableTokenId = (
       await JSONRPCRequest(this, "createToken", {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         initialSupply: initialSupply,
-        treasuryAccountId: initialTreasuryAccountId,
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
         adminKey: mutableTokenKey,
         kycKey: mutableTokenKey,
         freezeKey: mutableTokenKey,
@@ -86,7 +86,7 @@ describe("TokenUpdateTransaction", function () {
         name: initialTokenName,
         symbol: initialTokenSymbol,
         initialSupply: initialSupply,
-        treasuryAccountId: initialTreasuryAccountId,
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
         expirationTime,
         tokenType: "ft",
       })
@@ -1656,6 +1656,7 @@ describe("TokenUpdateTransaction", function () {
       response = await JSONRPCRequest(this, "updateToken", {
         tokenId: mutableTokenId,
         autoRenewAccountId: accountId,
+        autoRenewPeriod: "5184000",
         commonTransactionParams: {
           signers: [mutableTokenKey, key],
         },
