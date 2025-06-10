@@ -6,6 +6,12 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+import { createFtToken } from "@helpers/token";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -24,31 +30,16 @@ describe("TokenPauseTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenPauseKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    tokenPauseKey = await generateEd25519PrivateKey(this);
+    tokenAdminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    tokenAdminKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
-
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey: tokenAdminKey,
-        tokenType: "ft",
-        pauseKey: tokenPauseKey,
-        commonTransactionParams: {
-          signers: [tokenAdminKey],
-        },
-      })
-    ).tokenId;
+    tokenId = await createFtToken(this, {
+      adminKey: tokenAdminKey,
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey],
+      },
+    });
   });
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");

@@ -3,8 +3,13 @@ import { assert } from "chai";
 import { JSONRPCRequest } from "@services/Client";
 
 import { setOperator } from "@helpers/setup-tests";
-import { verifyTokenIsDeleted, getNewFungibleTokenId } from "@helpers/token";
+import {
+  verifyTokenIsDeleted,
+  getNewFungibleTokenId,
+  createFtToken,
+} from "@helpers/token";
 import { retryOnError } from "@helpers/retry-on-error";
+import { generateEd25519PrivateKey } from "@helpers/key";
 
 /**
  * Tests for TokenDeleteTransaction
@@ -27,13 +32,7 @@ describe("TokenDeleteTransaction", function () {
 
   describe("Token ID", () => {
     it("(#1) Deletes an immutable token", async function () {
-      const response = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-      });
-
-      const tokenId = response.tokenId;
+      const tokenId = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "deleteToken", {
@@ -130,11 +129,8 @@ describe("TokenDeleteTransaction", function () {
     it("(#6) Deletes a token without signing with the token's admin key", async function () {
       try {
         // Passing other admin key in order to throw an error
-        const privateKey = await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        });
-
-        const tokenId = await getNewFungibleTokenId(this, privateKey.key);
+        const privateKey = await generateEd25519PrivateKey(this);
+        const tokenId = await getNewFungibleTokenId(this, privateKey);
 
         await JSONRPCRequest(this, "deleteToken", {
           tokenId: tokenId,
@@ -150,14 +146,12 @@ describe("TokenDeleteTransaction", function () {
 
     it("(#7) Deletes a token but signs with an incorrect private key", async function () {
       try {
-        const privateKey = await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        });
+        const privateKey = await generateEd25519PrivateKey(this);
 
         // Creating an account to use its accountId for creating the token
         // and after that signing it with different private key
         const createdAccount = await JSONRPCRequest(this, "createAccount", {
-          key: privateKey.key,
+          key: privateKey,
         });
 
         const tokenId = await getNewFungibleTokenId(

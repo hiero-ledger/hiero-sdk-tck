@@ -52,16 +52,6 @@ export const JSONRPCRequest = async (
       mochaTestContext.skip();
     }
 
-    // Retry on network connectivity issue
-    if (
-      jsonRPCResponse.error.data.message.startsWith(
-        "Network connectivity issue",
-      )
-    ) {
-      console.warn("Skipping test due to network connectivity issue");
-      mochaTestContext.skip();
-    }
-
     throw { name: "Error", ...jsonRPCResponse.error };
   } else {
     if (

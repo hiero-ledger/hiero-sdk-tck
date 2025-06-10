@@ -8,6 +8,7 @@ import {
   NftAllowancesResponse,
   Nfts,
   TokenInfo,
+  TokenAirdropsResponse,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -59,6 +60,20 @@ class MirrorNodeClient {
     tokenId: string,
   ): Promise<TokenRelationshipResponse> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/tokens?token.id=${tokenId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getOutgoingTokenAirdrops(
+    accountId: string,
+  ): Promise<TokenAirdropsResponse> {
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/airdrops/outstanding`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getIncomingTokenAirdrops(
+    accountId: string,
+  ): Promise<TokenAirdropsResponse> {
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/airdrops/pending`;
     return retryOnError(async () => fetchData(url));
   }
 }

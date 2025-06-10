@@ -5,6 +5,12 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+import { createFtToken } from "@helpers/token";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -29,50 +35,22 @@ describe("TokenGrantKycTransaction", function () {
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
 
-    tokenFreezeKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    tokenFreezeKey = await generateEd25519PrivateKey(this);
+    tokenAdminKey = await generateEd25519PrivateKey(this);
+    tokenPauseKey = await generateEcdsaSecp256k1PrivateKey(this);
+    tokenKycKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    tokenAdminKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    tokenId = await createFtToken(this, {
+      adminKey: tokenAdminKey,
+      kycKey: tokenKycKey,
+      freezeKey: tokenFreezeKey,
+      pauseKey: tokenPauseKey,
+      commonTransactionParams: {
+        signers: [tokenAdminKey],
+      },
+    });
 
-    tokenPauseKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
-
-    tokenKycKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      })
-    ).key;
-
-    tokenId = (
-      await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        adminKey: tokenAdminKey,
-        kycKey: tokenKycKey,
-        freezeKey: tokenFreezeKey,
-        pauseKey: tokenPauseKey,
-        commonTransactionParams: {
-          signers: [tokenAdminKey],
-        },
-      })
-    ).tokenId;
-
-    accountPrivateKey = (
-      await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      })
-    ).key;
+    accountPrivateKey = await generateEd25519PrivateKey(this);
 
     accountId = (
       await JSONRPCRequest(this, "createAccount", {
@@ -229,11 +207,7 @@ describe("TokenGrantKycTransaction", function () {
     });
 
     it("(#8) Grants KYC of a token to an account but signs with an incorrect private key", async function () {
-      const incorrectPrivateKey = (
-        await JSONRPCRequest(this, "generateKey", {
-          type: "ed25519PrivateKey",
-        })
-      ).key;
+      const incorrectPrivateKey = await generateEd25519PrivateKey(this);
 
       try {
         await JSONRPCRequest(this, "grantTokenKyc", {
@@ -252,13 +226,7 @@ describe("TokenGrantKycTransaction", function () {
     });
 
     it("(#9) Grants KYC of a token with no KYC key to an account", async function () {
-      const tokenIdNoKycKey = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-        })
-      ).tokenId;
+      const tokenIdNoKycKey = await createFtToken(this);
 
       try {
         await JSONRPCRequest(this, "grantTokenKyc", {

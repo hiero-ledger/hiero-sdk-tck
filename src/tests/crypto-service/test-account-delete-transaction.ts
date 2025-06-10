@@ -4,6 +4,12 @@ import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+import { createFtToken } from "@helpers/token";
+
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 describe("AccountDeleteTransaction", function () {
@@ -22,14 +28,10 @@ describe("AccountDeleteTransaction", function () {
     );
 
     // Generate a private key.
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-
-    accountPrivateKey = response.key;
+    accountPrivateKey = await generateEd25519PrivateKey(this);
 
     // Create an account using the generated private key.
-    response = await JSONRPCRequest(this, "createAccount", {
+    const response = await JSONRPCRequest(this, "createAccount", {
       key: accountPrivateKey,
     });
 
@@ -160,9 +162,7 @@ describe("AccountDeleteTransaction", function () {
 
     it("(#7) Deletes an account but signs with an incorrect private key", async function () {
       // Generate a private key.
-      const key = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const key = await generateEd25519PrivateKey(this);
 
       try {
         // Attempt to delete the account and sign with an incorrect private key. The network should respond with an INVALID_SIGNATURE status.
@@ -170,7 +170,7 @@ describe("AccountDeleteTransaction", function () {
           deleteAccountId: accountId,
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
           commonTransactionParams: {
-            signers: [key.key],
+            signers: [key],
           },
         });
       } catch (err: any) {
@@ -183,16 +183,7 @@ describe("AccountDeleteTransaction", function () {
     });
 
     it("(#8) Deletes an account with a token balance", async function () {
-      const tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: "1000000",
-          treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          tokenType: "ft",
-        })
-      ).tokenId;
-
+      const tokenId = await createFtToken(this);
       await JSONRPCRequest(this, "associateToken", {
         accountId,
         tokenIds: [tokenId],
@@ -308,14 +299,11 @@ describe("AccountDeleteTransaction", function () {
 
     it("(#4) Deletes an account with a transfer account that is a deleted account", async function () {
       // Generate a key.
-      var response = await JSONRPCRequest(this, "generateKey", {
-        type: "ecdsaSecp256k1PrivateKey",
-      });
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const key = response.key;
       // Create an account with the key.
-      response = await JSONRPCRequest(this, "createAccount", {
-        key: key,
+      let response = await JSONRPCRequest(this, "createAccount", {
+        key,
       });
 
       const deletedAccountId = response.accountId;

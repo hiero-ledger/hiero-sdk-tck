@@ -6,10 +6,15 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-import { generateEd25519PrivateKey, getPrivateKey } from "@helpers/key";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
 import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
 import {
+  createFtToken,
+  createNftToken,
   verifyFungibleTokenWipe,
   verifyNonFungibleTokenWipe,
 } from "@helpers/token";
@@ -48,19 +53,14 @@ describe("TokenWipeTransaction", function () {
     ).accountId;
 
     // A bit of a hack but helps reduce code bloat.
-    wipeKey = await getPrivateKey(this, "ecdsaSecp256k1");
+    wipeKey = await generateEcdsaSecp256k1PrivateKey(this);
     if (this.currentTest?.title.includes("NFT")) {
-      const supplyKey = await getPrivateKey(this, "ecdsaSecp256k1");
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId,
-          wipeKey,
-          supplyKey,
-          tokenType: "nft",
-        })
-      ).tokenId;
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
+      tokenId = await createNftToken(this, {
+        treasuryAccountId,
+        supplyKey,
+        wipeKey,
+      });
 
       serialNumbers = (
         await JSONRPCRequest(this, "mintToken", {
@@ -101,16 +101,11 @@ describe("TokenWipeTransaction", function () {
         ],
       });
     } else {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: fungibleInitialSupply,
-          treasuryAccountId,
-          wipeKey,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        treasuryAccountId,
+        wipeKey,
+        initialSupply: fungibleInitialSupply,
+      });
 
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -220,19 +215,15 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#6) Wipes a deleted token", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId,
-          adminKey: tokenKey,
-          wipeKey: tokenKey,
-          commonTransactionParams: {
-            signers: [tokenKey],
-          },
-        })
-      ).tokenId;
+      const tokenKey = await generateEd25519PrivateKey(this);
+      tokenId = await createFtToken(this, {
+        treasuryAccountId,
+        adminKey: tokenKey,
+        wipeKey: tokenKey,
+        commonTransactionParams: {
+          signers: [tokenKey],
+        },
+      });
 
       await JSONRPCRequest(this, "deleteToken", {
         tokenId,
@@ -274,13 +265,9 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#8) Wipes a token with no wipe key", async function () {
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId,
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        treasuryAccountId,
+      });
 
       try {
         await JSONRPCRequest(this, "wipeToken", {
@@ -297,16 +284,12 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#9) Wipes a paused token", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId,
-          wipeKey: tokenKey,
-          pauseKey: tokenKey,
-        })
-      ).tokenId;
+      const tokenKey = await generateEd25519PrivateKey(this);
+      tokenId = await createFtToken(this, {
+        treasuryAccountId,
+        wipeKey: tokenKey,
+        pauseKey: tokenKey,
+      });
 
       await JSONRPCRequest(this, "pauseToken", {
         tokenId,
@@ -434,16 +417,12 @@ describe("TokenWipeTransaction", function () {
     });
 
     it("(#5) Wipes a token from an account with the token frozen", async function () {
-      const tokenKey = await getPrivateKey(this, "ed25519");
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          treasuryAccountId,
-          freezeKey: tokenKey,
-          wipeKey: tokenKey,
-        })
-      ).tokenId;
+      const tokenKey = await generateEd25519PrivateKey(this);
+      tokenId = await createFtToken(this, {
+        treasuryAccountId,
+        freezeKey: tokenKey,
+        wipeKey: tokenKey,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,
@@ -674,17 +653,12 @@ describe("TokenWipeTransaction", function () {
 
     it("(#9) Wipes an amount of 10,000 fungible tokens with 2 decimals from an account", async function () {
       const decimals = 2;
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          decimals,
-          initialSupply: fungibleInitialSupply,
-          treasuryAccountId,
-          wipeKey,
-          tokenType: "ft",
-        })
-      ).tokenId;
+      tokenId = await createFtToken(this, {
+        decimals,
+        initialSupply: fungibleInitialSupply,
+        treasuryAccountId,
+        wipeKey,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,
@@ -736,20 +710,16 @@ describe("TokenWipeTransaction", function () {
 
     it("(#10) Wipes an amount of 10,000 fungible tokens with 1,000 max supply from an account", async function () {
       const maxSupply = "1000";
-      const supplyKey = await getPrivateKey(this, "ed25519");
-      tokenId = (
-        await JSONRPCRequest(this, "createToken", {
-          name: "testname",
-          symbol: "testsymbol",
-          initialSupply: maxSupply,
-          treasuryAccountId,
-          wipeKey,
-          supplyKey,
-          tokenType: "ft",
-          supplyType: "finite",
-          maxSupply,
-        })
-      ).tokenId;
+      const supplyKey = await generateEd25519PrivateKey(this);
+
+      tokenId = await createFtToken(this, {
+        initialSupply: maxSupply,
+        treasuryAccountId,
+        wipeKey,
+        supplyKey,
+        supplyType: "finite",
+        maxSupply,
+      });
 
       await JSONRPCRequest(this, "associateToken", {
         accountId,

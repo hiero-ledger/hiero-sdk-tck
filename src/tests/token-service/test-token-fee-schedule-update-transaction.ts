@@ -11,6 +11,11 @@ import {
   verifyTokenCreationWithFractionalFee,
   verifyTokenCreationWithRoyaltyFee,
 } from "@helpers/custom-fees";
+import {
+  generateEcdsaSecp256k1PrivateKey,
+  generateEd25519PrivateKey,
+} from "@helpers/key";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -20,11 +25,6 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 describe("TokenFeeScheduleUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
-
-  // Initial token parameters.
-  const testTokenName = "testname";
-  const testTokenSymbol = "testsymbol";
-  const testTreasuryAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
   // Create an immutable token.
   let fungibleTokenId: string,
@@ -40,17 +40,9 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     );
 
     // Generate an immutable fungible token.
-    let response = await JSONRPCRequest(this, "generateKey", {
-      type: "ecdsaSecp256k1PrivateKey",
-    });
+    fungibleTokenFeeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-    fungibleTokenFeeScheduleKey = response.key;
-
-    response = await JSONRPCRequest(this, "createToken", {
-      name: testTokenName,
-      symbol: testTokenSymbol,
-      treasuryAccountId: testTreasuryAccountId,
-      tokenType: "ft",
+    let response = await createFtToken(this, {
       feeScheduleKey: fungibleTokenFeeScheduleKey,
       customFees: [
         {
@@ -63,29 +55,19 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       ],
     });
 
-    fungibleTokenId = response.tokenId;
+    fungibleTokenId = response;
 
     // Generate an immutable non-fungible token.
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    nonFungibleTokenFeeScheduleKey = response.key;
+    nonFungibleTokenFeeScheduleKey = await generateEd25519PrivateKey(this);
 
     // Generate its supply key.
-    response = await JSONRPCRequest(this, "generateKey", {
-      type: "ed25519PrivateKey",
-    });
-    const nftSupplyKey = response.key;
+    const nftSupplyKey = await generateEd25519PrivateKey(this);
 
-    response = await JSONRPCRequest(this, "createToken", {
-      name: testTokenName,
-      symbol: testTokenSymbol,
-      treasuryAccountId: testTreasuryAccountId,
-      tokenType: "nft",
+    response = await createNftToken(this, {
       supplyKey: nftSupplyKey,
       feeScheduleKey: nonFungibleTokenFeeScheduleKey,
     });
-    nonFungibleTokenId = response.tokenId;
+    nonFungibleTokenId = response;
   });
 
   afterEach(async function () {
@@ -161,28 +143,18 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     });
 
     it("(#5) Updates a token's fee schedule with a token ID that is deleted", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const key = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: testTokenName,
-        symbol: testTokenSymbol,
-        treasuryAccountId: testTreasuryAccountId,
-        adminKey: key,
+      const adminKey = await generateEd25519PrivateKey(this);
+      const tokenId = await createFtToken(this, {
+        adminKey,
         commonTransactionParams: {
-          signers: [key],
+          signers: [adminKey],
         },
       });
 
-      const tokenId = response.tokenId;
-
-      response = await JSONRPCRequest(this, "deleteToken", {
-        tokenId: tokenId,
+      await JSONRPCRequest(this, "deleteToken", {
+        tokenId,
         commonTransactionParams: {
-          signers: [key],
+          signers: [adminKey],
         },
       });
 
@@ -1917,13 +1889,9 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     });
 
     it.skip("(#55) Updates a token's fee schedule with a fixed fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const accountKey = await generateEd25519PrivateKey(this);
 
-      const accountKey = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: accountKey,
       });
 
@@ -1962,13 +1930,9 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     });
 
     it.skip("(#56) Updates a token's fee schedule with a fractional fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const accountKey = await generateEd25519PrivateKey(this);
 
-      const accountKey = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: accountKey,
       });
 
@@ -2011,13 +1975,9 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     });
 
     it.skip("(#57) Updates a NFT's fee schedule with a royalty fee with a deleted fee collector account", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
+      const accountKey = await generateEd25519PrivateKey(this);
 
-      const accountKey = response.key;
-
-      response = await JSONRPCRequest(this, "createAccount", {
+      let response = await JSONRPCRequest(this, "createAccount", {
         key: accountKey,
       });
 
@@ -2116,25 +2076,15 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     });
 
     it.skip("(#60) Updates a token's fee schedule with a fixed fee that is assessed with a deleted token", async function () {
-      let response = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      const deleteKey = response.key;
-
-      response = await JSONRPCRequest(this, "createToken", {
-        name: testTokenName,
-        symbol: testTokenSymbol,
-        treasuryAccountId: testTreasuryAccountId,
-        adminKey: deleteKey,
+      const deleteKey = await generateEd25519PrivateKey(this);
+      const deleteTokenId = await createNftToken(this, {
+        supplyKey: deleteKey,
         commonTransactionParams: {
           signers: [deleteKey],
         },
       });
 
-      const deleteTokenId = response.tokenId;
-
-      response = await JSONRPCRequest(this, "deleteToken", {
+      await JSONRPCRequest(this, "deleteToken", {
         tokenId: deleteTokenId,
         commonTransactionParams: {
           signers: [deleteKey],

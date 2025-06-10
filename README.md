@@ -121,7 +121,7 @@ The TCK is also available as a Docker image, providing an easy way to run tests 
 You can pull the pre-built Docker image from DockerHub:
 
 ```bash
-docker pull ivaylogarnev/tck-client
+docker pull ivaylogarnev/hiero-tck-client
 ```
 
 ### Running Tests
@@ -132,7 +132,7 @@ The Docker image supports running tests against both local and testnet environme
 To run tests against a local network:
 ```bash
 # Run specific test
-docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/tck-client
+docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/hiero-tck-client
 
 # Run all tests
 docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
@@ -161,7 +161,7 @@ docker run --network host \
   -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} 
   # Run specific test
   -e TEST=AccountCreate \
-  ivaylogarnev/tck-client
+  ivaylogarnev/hiero-tck-client
 ```
 
 ### Available Tests
@@ -193,14 +193,47 @@ Running an invalid test name will display the complete list of available tests.
 
 If you want to build the image locally:
 ```bash
-docker build -t tck-client .
+docker build -t hiero-tck-client .
 ```
 
-Then run it using the [same commands](#local-network-default) as above, replacing `ivaylogarnev/tck-client` with `tck-client`.
+Then run it using the [same commands](#local-network-default) as above, replacing `ivaylogarnev/hiero-tck-client` with `hiero-tck-client`.
 
 ### Docker Additional Notes
 
 `RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
+
+
+## TCK Release Process
+
+To release a new version of the TCK, follow these steps:
+1. **Rename the previous 'latest' Docker image with last tag in the repository**:
+   ```sh
+   # This pulls the current 'latest' image, tags it with the specified
+   # version number, and pushes it to DockerHub
+
+   task tag-previous-version VERSION=v*.*.*
+   ```
+
+2. **Update Test Suites:**
+   - Add new tests to `test_regression.yml` 
+   - Register test paths in `src/utils/constants/test-paths.ts`
+   - Submit a pull request and merge the changes
+
+3. **Tag current version:**
+   ```sh
+   git tag -a v*.*.* -m "Stable tag v*.*.*" 
+   git push origin v*.*.*
+   ```
+
+4. **Build and Push New Docker Image:**
+   ```sh   
+   # Builds the Docker image and pushes it with the 'latest' tag
+   task release-hiero-tck-client
+   ```
+
+> **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
+
+ **Note:** Ensure all tests pass before creating a new release.
 
 ## Contributing
 
