@@ -1,5 +1,8 @@
 # Hiero SDK TCK
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck/badge)](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
+
 A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification.
 The TCK aims to verify compliant implementations of a Hiero SDK.
 It will encompass tests that validate the implementation of consensus node software transactions and queries, performance and longevity testing.
@@ -241,6 +244,13 @@ Whether you're fixing bugs, enhancing features, or improving documentation, your
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
+## Help/Community
+
+Join our [community discussions](https://discord.lfdecentralizedtrust.org/) on discord.
+
+## About Users and Maintainers
+
+Users and Maintainers guidelies are located in **[Hiero-Ledger's roles and groups guidelines](https://github.com/hiero-ledger/governance/blob/main/roles-and-groups.md#maintainers).**
 
 ## Code of Conduct
 
