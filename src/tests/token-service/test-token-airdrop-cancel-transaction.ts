@@ -308,6 +308,7 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#9) Cancels an airdrop with missing sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
+          senderAccountId: "",
           receiverAccountId,
           tokenId,
           commonTransactionParams: {
@@ -329,6 +330,7 @@ describe("TokenAirdropCancelTransaction", function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId,
+          receiverAccountId: "",
           tokenId,
           commonTransactionParams: {
             signers: [senderPrivateKey],
@@ -350,6 +352,7 @@ describe("TokenAirdropCancelTransaction", function () {
         await JSONRPCRequest(this, "cancelAirdrop", {
           senderAccountId,
           receiverAccountId,
+          tokenId: "",
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
