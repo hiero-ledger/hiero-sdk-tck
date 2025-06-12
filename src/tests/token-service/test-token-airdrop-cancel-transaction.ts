@@ -120,9 +120,13 @@ describe("TokenAirdropCancelTransaction", function () {
   describe("CancelAirdrop", function () {
     it("(#1) Cancels a valid airdrop (FT)", async function () {
       const result = await JSONRPCRequest(this, "cancelAirdrop", {
-        senderAccountId,
-        receiverAccountId,
-        tokenId,
+        pendingAirdrops: [
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId,
+          },
+        ],
         commonTransactionParams: {
           signers: [senderPrivateKey],
         },
@@ -178,10 +182,14 @@ describe("TokenAirdropCancelTransaction", function () {
       });
 
       const result = await JSONRPCRequest(this, "cancelAirdrop", {
-        senderAccountId,
-        receiverAccountId,
-        tokenId: nftTokenId,
-        serialNumbers: [serialNumbers[0]],
+        pendingAirdrops: [
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId: nftTokenId,
+            serialNumbers: [serialNumbers[0]],
+          },
+        ],
         commonTransactionParams: {
           signers: [senderPrivateKey],
         },
@@ -193,9 +201,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#3) Cancels an airdrop with invalid sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId: "123.456.789",
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId: "123.456.789",
+              receiverAccountId,
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -210,9 +222,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#4) Cancels an airdrop with invalid receiver ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId: "123.456.789",
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId: "123.456.789",
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -227,9 +243,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#5) Cancels an airdrop with invalid token ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId: "123.456.789",
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: "123.456.789",
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -244,9 +264,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#6) Cancels an airdrop with empty sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId: "",
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId: "",
+              receiverAccountId,
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -265,9 +289,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#7) Cancels an airdrop with empty receiver ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId: "",
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId: "",
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -279,7 +307,6 @@ describe("TokenAirdropCancelTransaction", function () {
           "Internal Error",
         );
         return;
-        ``;
       }
       assert.fail("Should throw an error");
     });
@@ -287,9 +314,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#8) Cancels an airdrop with empty token ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId: "",
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: "",
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -308,9 +339,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#9) Cancels an airdrop with missing sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId: "",
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId: "",
+              receiverAccountId,
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -329,9 +364,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#10) Cancels an airdrop with missing receiver ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId: "",
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId: "",
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -350,9 +389,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#11) Cancels an airdrop with missing token ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId: "",
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: "",
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -371,9 +414,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#12) Cancels an already cancelled airdrop", async function () {
       // First cancel
       await JSONRPCRequest(this, "cancelAirdrop", {
-        senderAccountId,
-        receiverAccountId,
-        tokenId,
+        pendingAirdrops: [
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId,
+          },
+        ],
         commonTransactionParams: {
           signers: [senderPrivateKey],
         },
@@ -382,9 +429,13 @@ describe("TokenAirdropCancelTransaction", function () {
       // Second cancel attempt
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -399,9 +450,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#13) Cancels an airdrop with zero sender ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId: "0.0.0",
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId: "0.0.0",
+              receiverAccountId,
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -416,9 +471,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#14) Cancels an airdrop with zero receiver ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId: "0.0.0",
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId: "0.0.0",
+              tokenId,
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -433,9 +492,13 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#15) Cancels an airdrop with zero token ID", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId: "0.0.0",
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: "0.0.0",
+            },
+          ],
           commonTransactionParams: {
             signers: [senderPrivateKey],
           },
@@ -450,12 +513,180 @@ describe("TokenAirdropCancelTransaction", function () {
     it("(#16) Cancels an airdrop without proper authorization", async function () {
       try {
         await JSONRPCRequest(this, "cancelAirdrop", {
-          senderAccountId,
-          receiverAccountId,
-          tokenId,
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+            },
+          ],
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#17) Cancels multiple valid airdrops (FT)", async function () {
+      // Create second receiver account
+      const receiver2PrivateKey = await generateEd25519PrivateKey(this);
+      const receiver2AccountId = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiver2PrivateKey,
+        })
+      ).accountId;
+
+      // Create second airdrop
+      await JSONRPCRequest(this, "airdropToken", {
+        tokenTransfers: [
+          {
+            token: {
+              accountId: senderAccountId,
+              tokenId,
+              amount: amountNegatedStr,
+            },
+          },
+          {
+            token: {
+              accountId: receiver2AccountId,
+              tokenId,
+              amount: amountStr,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      const result = await JSONRPCRequest(this, "cancelAirdrop", {
+        pendingAirdrops: [
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId,
+          },
+          {
+            senderAccountId,
+            receiverAccountId: receiver2AccountId,
+            tokenId,
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      expect(result.status).to.equal("SUCCESS");
+    });
+
+    it("(#18) Cancels multiple valid airdrops (mixed FT and NFT)", async function () {
+      // Create NFT token
+      const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const nftTokenId = await createNftToken(this, {
+        supplyKey,
+      });
+
+      const serialNumbers = (
+        await JSONRPCRequest(this, "mintToken", {
+          tokenId: nftTokenId,
+          metadata: ["1234", "5678"],
+          commonTransactionParams: {
+            signers: [supplyKey],
+          },
+        })
+      ).serialNumbers;
+
+      // Transfer NFT to sender
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            nft: {
+              senderAccountId: process.env.OPERATOR_ACCOUNT_ID,
+              receiverAccountId: senderAccountId,
+              tokenId: nftTokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+        ],
+      });
+
+      // Create NFT airdrop
+      await JSONRPCRequest(this, "airdropToken", {
+        tokenTransfers: [
+          {
+            nft: {
+              senderAccountId,
+              receiverAccountId,
+              tokenId: nftTokenId,
+              serialNumber: serialNumbers[0],
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      const result = await JSONRPCRequest(this, "cancelAirdrop", {
+        pendingAirdrops: [
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId,
+          },
+          {
+            senderAccountId,
+            receiverAccountId,
+            tokenId: nftTokenId,
+            serialNumbers: [serialNumbers[0]],
+          },
+        ],
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      expect(result.status).to.equal("SUCCESS");
+    });
+
+    it("(#19) Cancels multiple airdrops with one invalid airdrop", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          pendingAirdrops: [
+            {
+              senderAccountId,
+              receiverAccountId,
+              tokenId,
+            },
+            {
+              senderAccountId: "123.456.789",
+              receiverAccountId,
+              tokenId,
+            },
+          ],
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_PENDING_AIRDROP_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#20) Cancels multiple airdrops with empty array", async function () {
+      try {
+        await JSONRPCRequest(this, "cancelAirdrop", {
+          pendingAirdrops: [],
+          commonTransactionParams: {
+            signers: [senderPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "EMPTY_PENDING_AIRDROP_ID_LIST");
         return;
       }
       assert.fail("Should throw an error");
