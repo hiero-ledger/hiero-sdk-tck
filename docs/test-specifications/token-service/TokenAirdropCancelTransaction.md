@@ -37,12 +37,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                             | Required/Optional | Description/Notes                                            |
 |-------------------------|--------------------------------------------------|-------------------|--------------------------------------------------------------|
-| pendingAirdrops        | array                                            | required          | Array of pending airdrops to cancel                          |
-| pendingAirdrops[].senderAccountId        | string                                           | required          | The ID of the account that sent the airdrop                  |
-| pendingAirdrops[].receiverAccountId      | string                                           | required          | The ID of the account that received the airdrop              |
-| pendingAirdrops[].tokenId               | string                                           | required          | The ID of the token that was airdropped                      |
-| pendingAirdrops[].serialNumbers         | list<string>                                     | optional          | The serial numbers of the NFTs to cancel airdrops            |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                              |
+| pendingAirdrops        | array of [Pending Airdrop Details](../common/PendingAirdropDetails.md) | required          | Array of pending airdrops to cancel                          |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                              |
 
 ### Output Parameters
 
