@@ -5,6 +5,13 @@ import {
   AccountInfo,
   AccountInfoQuery,
   Client,
+<<<<<<< Updated upstream
+=======
+  FileContentsQuery,
+  FileId,
+  FileInfo,
+  FileInfoQuery,
+>>>>>>> Stashed changes
   NftId,
   TokenInfo,
   TokenInfoQuery,
@@ -63,6 +70,21 @@ class ConsensusInfoClient {
     return query.execute(this.sdkClient);
   }
 
+<<<<<<< Updated upstream
+=======
+  async getFileInfo(fileId: string): Promise<FileInfo> {
+    const query = new FileInfoQuery();
+    query.setFileId(FileId.fromString(fileId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getFileContents(fileId: string): Promise<Uint8Array> {
+    const query = new FileContentsQuery();
+    query.setFileId(FileId.fromString(fileId));
+    return query.execute(this.sdkClient);
+  }
+
+>>>>>>> Stashed changes
   async executeAccountMethod(
     accountId: string,
     method: AccountInfoQuery | AccountBalanceQuery,
