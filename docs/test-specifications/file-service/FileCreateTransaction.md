@@ -1,7 +1,7 @@
 ---
 title: File Create Transaction
 parent: File Service
-nav_order: 1
+nav_order: 18
 ---
 # FileCreateTransaction - Test specification
 
@@ -36,7 +36,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | keys                      | string[]                                                | optional          | DER-encoded hex string representation for private or public keys. KeyLists are the hex of the serialized protobuf bytes.                    |
 | contents                  | string                                                  | optional          | The contents of the file                                                                                                                    |
 | expirationTime           | string                                                  | optional          | The time at which this file should expire (in seconds since the epoch)                                                                      |
-| fileMemo                 | string                                                  | optional          | Short description of the file (UTF-8 encoding max 100 bytes)                                                                                |
+| memo                 | string                                                  | optional          | Short description of the file (UTF-8 encoding max 100 bytes)                                                                                |
 | commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                             |
 
 ### Output Parameters
@@ -59,7 +59,9 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 3       | Creates a file with multiple valid keys                                                       | keys=[<VALID_ED25519_PUBLIC_KEY>, <VALID_ECDSA_SECP256K1_PUBLIC_KEY>]                                                               | The file creation succeeds and the file has both keys.                                                                          | N                 |
 | 4       | Creates a file with no keys                                                                   | keys=[]                                                                                                                              | The file creation succeeds and the file is immutable except for expiration time.                                                | N                 |
 | 5       | Creates a file with an invalid key                                                            | keys=[<INVALID_KEY>]                                                                                                                 | The file creation fails with an SDK internal error.                                                                             | N                 |
-| 6       | Creates a file with a threshold key                                                           | keys=[<THRESHOLD_KEY>]                                                                                                               | The file creation fails with "Cannot set threshold key as file key".                                                            | N                 |
+| 6       | Creates a file with a threshold key                                                           | keys=[<THRESHOLD_KEY>]                                                                                                               | The file creation succeeds.                                                            | N                 |
+| 7       | Creates a file with a valid ECDSAsecp256k1 private key                                        | keys=[<VALID_ECDSA_SECP256K1_PUBLIC_KEY>]                                                                                            | The file creation succeeds and the file has the ECDSAsecp256k1 key.                                                            | N                 |
+| 8       | Creates a file with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys     | keys=[<KEYLIST_WITH_MIXED_KEYS>]                                                                                                     | The file creation succeeds and the file has the KeyList with all specified keys.                                                | N                 |
 
 ### **Contents:**
 
@@ -69,18 +71,8 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 |---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
 | 1       | Creates a file with valid contents                                                            | contents="Test file contents"                                                                                                        | The file creation succeeds and the file contains the specified contents.                                                         | N                 |
 | 2       | Creates a file with empty contents                                                            | contents=""                                                                                                                         | The file creation succeeds and creates an empty file.                                                                           | N                 |
-| 3       | Creates a file with contents at maximum size (6KiB)                                           | contents=<6KiB_STRING>                                                                                                              | The file creation succeeds.                                                                                                     | N                 |
-| 4       | Creates a file with contents exceeding maximum size                                           | contents=<7KiB_STRING>                                                                                                              | The file creation fails with Status.TransactionOversize.                                                                        | N                 |
-
-### **Expiration Time:**
-
-- The time at which the file should expire.
-
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates a file with valid expiration time                                                     | expirationTime=<CURRENT_TIME + 7200>                                                                                                | The file creation succeeds and the file has the specified expiration time.                                                       | N                 |
-| 2       | Creates a file with expiration time in the past                                               | expirationTime=<CURRENT_TIME - 7200>                                                                                                | The file creation fails with Status.InvalidExpirationTime.                                                                       | N                 |
-| 3       | Creates a file with too large expiration time                                                 | expirationTime=<CURRENT_TIME + 9999999999>                                                                                         | The file creation fails with Status.AutorenewDurationNotInRange.                                                                | N                 |
+| 3       | Creates a file with contents at maximum size less than(6KiB)                                           | contents=<6KiB_STRING>                                                                                                              | The file creation succeeds.                                                                                                     | N                 |
+| 4       | Creates a file with contents exceeding maximum size                                           | contents=<7KiB_STRING>                                                                                                              | The file creation fails with `TRANSACTION_OVERSIZE`.                                                                        | N                 |
 
 ### **File Memo:**
 
@@ -88,14 +80,55 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 | Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
 |---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Creates a file with valid memo                                                                | fileMemo="Test memo"                                                                                                                | The file creation succeeds and the file has the specified memo.                                                                  | N                 |
+| 1       | Creates a file with valid memo                                                                | fileMemo="test memo"                                                                                                                | The file creation succeeds and the file has the specified memo.                                                                  | N                 |
 | 2       | Creates a file with empty memo                                                                | fileMemo=""                                                                                                                         | The file creation succeeds and the file has no memo.                                                                            | N                 |
 | 3       | Creates a file with memo at maximum length (100 bytes)                                        | fileMemo=<100_BYTE_STRING>                                                                                                         | The file creation succeeds and the file has the specified memo.                                                                 | N                 |
-| 4       | Creates a file with memo exceeding maximum length                                             | fileMemo=<101_BYTE_STRING>                                                                                                         | The file creation fails with Status.MemoTooLong.                                                                                | N                 |
-| 5       | Creates a file with invalid memo (contains null byte)                                         | fileMemo="Test\0memo"                                                                                                              | The file creation fails with Status.InvalidZeroByteInString.                                                                    | N                 |
+| 4       | Creates a file with memo exceeding maximum length                                             | fileMemo=<101_BYTE_STRING>                                                                                                         | The file creation fails with `MEMO_TOO_LONG`                                                                                | N                 |
+| 5       | Creates a file with invalid memo (contains null byte)                                         | fileMemo="Test\0memo"                                                                                                              | The file creation fails with `INVALID_ZERO_BYTE_IN_STRING`                                                                    | N                 |
 
-## Notes
-- The maximum file size for a single transaction is approximately 6KiB
-- Files with empty key lists are immutable except for expiration time
-- All keys must sign for file updates/appends
-- Only one key signature is required for file deletion
+### **Expiration Time:**
+
+- The time at which the file should expire.
+
+| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
+|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| 1       | Creates a file with valid expiration time                                                     | expirationTime=<CURRENT_TIME + 7200>                                                                                                | The file creation succeeds and the file has the specified expiration time.                                                       | Y                 |
+| 2       | Creates a file with expiration time in the past                                               | expirationTime=<CURRENT_TIME - 7200>                                                                                                | The file creation fails with `AUTORENEW_DURATION_NOT_IN_RANGE`                                                                       | Y                 |
+| 3       | Creates a file with too large expiration time                                                 | expirationTime=<CURRENT_TIME + 9999999999>                                                                                         | The file creation fails with `AUTORENEW_DURATION_NOT_IN_RANGE`                                                                | Y                 |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "createFile",
+  "params": {
+    "keys": [
+      "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
+    ],
+    "contents": "Test file contents",
+    "expirationTime": "2024-06-16T14:06:25Z",
+    "fileMemo": "Test memo",
+    "commonTransactionParams": {
+      "signers": [
+        "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
+      ]
+    }
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "fileId": "0.0.1234",
+    "status": "SUCCESS"
+  }
+}
+```
+
