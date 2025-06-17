@@ -1,13 +1,13 @@
 ---
-title: Pending Airdrop Details
+title: Pending Airdrop
 parent: Helpers
 nav_order: 7
 ---
-# Pending Airdrop Details
+# Pending Airdrop
 
 This document specifies the structure of a pending airdrop object that is used in token airdrop related operations.
 
-## Pending Airdrop Details Definition
+## Pending Airdrop Definition
 
 | Parameter Name      | Type         | Required/Optional | Description/Notes                                    |
 |---------------------|--------------|-------------------|------------------------------------------------------|

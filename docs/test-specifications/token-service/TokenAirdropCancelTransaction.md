@@ -37,7 +37,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                             | Required/Optional | Description/Notes                                            |
 |-------------------------|--------------------------------------------------|-------------------|--------------------------------------------------------------|
-| pendingAirdrops        | array of [Pending Airdrop Details](../common/PendingAirdropDetails.md) | required          | Array of pending airdrops to cancel                          |
+| pendingAirdrops        | array of [Pending Airdrop](../common/PendingAirdrop.md) | required          | Array of pending airdrops to cancel                          |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                              |
 
 ### Output Parameters
