@@ -20,7 +20,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileCreateTransaction
  */
-describe.only("FileCreateTransaction", function () {
+describe("FileCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
