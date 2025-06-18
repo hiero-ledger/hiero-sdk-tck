@@ -18,7 +18,11 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileUpdateTransaction
  */
+<<<<<<< Updated upstream
 describe.only("FileUpdateTransaction", function () {
+=======
+describe("FileUpdateTransaction", function () {
+>>>>>>> Stashed changes
   this.timeout(30000);
 
   let fileId: string;
