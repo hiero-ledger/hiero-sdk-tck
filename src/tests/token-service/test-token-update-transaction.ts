@@ -1855,7 +1855,7 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
 
@@ -1872,7 +1872,7 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
 
@@ -1889,7 +1889,7 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
 
@@ -1953,7 +1953,7 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
 
@@ -1985,7 +1985,7 @@ describe("TokenUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
 

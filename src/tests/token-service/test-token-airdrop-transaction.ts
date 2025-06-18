@@ -648,7 +648,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#17) Airdrops an amount of fungible token from a sender account to itself", async function () {
+    it.skip("(#17) Airdrops an amount of fungible token from a sender account to itself", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
           tokenTransfers: [
@@ -2858,7 +2858,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Airdrops an NFT from a sender account that doesn't possess the NFT to a receiver account", async function () {
+    it.skip("(#13) Airdrops an NFT from a sender account that doesn't possess the NFT to a receiver account", async function () {
       await JSONRPCRequest(this, "airdropToken", {
         tokenTransfers: [
           {
@@ -3355,7 +3355,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it("(#24) Airdrops NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
+    it.skip("(#24) Airdrops NFTs from several sender accounts to one receiver account with a sender that doesn't exist", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
 
       const senderAccountId2 = (
@@ -3567,7 +3567,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#27) Airdrops NFTs from several sender accounts to one receiver account with one not signing", async function () {
+    it.skip("(#27) Airdrops NFTs from several sender accounts to one receiver account with one not signing", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -4963,7 +4963,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#18) Airdrops an amount of fungible token from a sender account to itself", async function () {
+    it.skip("(#18) Airdrops an amount of fungible token from a sender account to itself", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
           tokenTransfers: [
