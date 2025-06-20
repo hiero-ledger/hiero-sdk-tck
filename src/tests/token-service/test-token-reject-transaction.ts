@@ -400,6 +400,15 @@ describe("TokenRejectTransaction", function () {
 
       nftSerialNumber = mintResponse.serialNumbers[0];
 
+      // Associate the owner account with the NFT token
+      await JSONRPCRequest(this, "associateToken", {
+        accountId: ownerId,
+        tokenIds: [nftTokenId],
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
+
       // Transfer NFT to owner account
       await JSONRPCRequest(this, "transferCrypto", {
         transfers: [
@@ -421,7 +430,7 @@ describe("TokenRejectTransaction", function () {
     it("(#1) Rejects an NFT for an account", async function () {
       const result = await JSONRPCRequest(this, "rejectToken", {
         ownerId,
-        nftIds: [nftTokenId],
+        tokenIds: [nftTokenId],
         serialNumbers: [nftSerialNumber],
         commonTransactionParams: {
           signers: [ownerPrivateKey],
@@ -439,7 +448,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId: "123.456.789",
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -456,7 +465,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId: "",
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -491,7 +500,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId: tempAccountId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [tempPrivateKey],
@@ -504,11 +513,11 @@ describe("TokenRejectTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Rejects an NFT that doesn't exist for an account", async function () {
+    it("(#5) Rejects an NFT that was never created for an account", async function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: ["123.456.789"],
+          tokenIds: ["123.456.789"],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -525,7 +534,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [""],
+          tokenIds: [""],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -550,7 +559,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -567,7 +576,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: ["999999"],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -584,7 +593,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
         });
       } catch (err: any) {
@@ -607,7 +616,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -632,7 +641,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
@@ -685,7 +694,7 @@ describe("TokenRejectTransaction", function () {
       // Reject all NFTs
       const result = await JSONRPCRequest(this, "rejectToken", {
         ownerId,
-        nftIds: [nftTokenId],
+        tokenIds: [nftTokenId],
         serialNumbers: [nftSerialNumber, serialNumbers[0], serialNumbers[1]],
         commonTransactionParams: {
           signers: [ownerPrivateKey],
@@ -709,7 +718,7 @@ describe("TokenRejectTransaction", function () {
     it("(#13) Rejects an NFT for an unassociated account with automatic associations", async function () {
       const result = await JSONRPCRequest(this, "rejectToken", {
         ownerId,
-        nftIds: [nftTokenId],
+        tokenIds: [nftTokenId],
         serialNumbers: [nftSerialNumber],
         commonTransactionParams: {
           signers: [ownerPrivateKey],
@@ -727,7 +736,7 @@ describe("TokenRejectTransaction", function () {
       // First rejection
       await JSONRPCRequest(this, "rejectToken", {
         ownerId,
-        nftIds: [nftTokenId],
+        tokenIds: [nftTokenId],
         serialNumbers: [nftSerialNumber],
         commonTransactionParams: {
           signers: [ownerPrivateKey],
@@ -738,7 +747,7 @@ describe("TokenRejectTransaction", function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
-          nftIds: [nftTokenId],
+          tokenIds: [nftTokenId],
           serialNumbers: [nftSerialNumber],
           commonTransactionParams: {
             signers: [ownerPrivateKey],
