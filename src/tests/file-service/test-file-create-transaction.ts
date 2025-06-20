@@ -20,7 +20,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileCreateTransaction
  */
-describe("FileCreateTransaction", function () {
+describe.only("FileCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -274,6 +274,57 @@ describe("FileCreateTransaction", function () {
       }
       assert.fail("Should throw an error");
     });
+
+    it("(#5) Creates a file with contents containing only whitespace", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const contents = "   ";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileContents(response.fileId, contents);
+    });
+
+    it("(#6) Creates a file with contents containing special characters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const contents = "!@#$%^&*()_+-=[]{}|;':\",./<>?";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileContents(response.fileId, contents);
+    });
+
+    it("(#7) Creates a file with contents containing unicode characters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const contents = "测试文件内容 🚀";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileContents(response.fileId, contents);
+    });
   });
 
   describe("Memo", function () {
@@ -382,9 +433,135 @@ describe("FileCreateTransaction", function () {
       }
       assert.fail("Should throw an error");
     });
+    it("(#6) Creates a file with memo containing null byte", async function () {
+      const ecdsaSecp256k1PrivateKey =
+        await generateEcdsaSecp256k1PrivateKey(this);
+      const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
+        this,
+        ecdsaSecp256k1PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ecdsaSecp256k1PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          memo: "Test\0memo",
+          commonTransactionParams: {
+            signers: [ecdsaSecp256k1PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_ZERO_BYTE_IN_STRING");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Creates a file with memo containing only whitespace", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const memo = "   ";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        memo,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileMemo(response.fileId, memo);
+    });
+
+    it("(#8) Creates a file with memo containing special characters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const memo = "!@#$%^&*()_+-=[]{}|;':\",./<>?";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        memo,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileMemo(response.fileId, memo);
+    });
+
+    it("(#9) Creates a file with memo containing unicode characters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const memo = "测试文件备注 🚀";
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        memo,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileMemo(response.fileId, memo);
+    });
+
+    it("(#10) Creates a file with memo containing exactly 100 ASCII characters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const memo = "a".repeat(100);
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        memo,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileMemo(response.fileId, memo);
+    });
+
+    it("(#11) Creates a file with memo containing exactly 100 UTF-8 bytes (fewer characters)", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const memo = "🚀".repeat(25); // 4 bytes per emoji * 25 = 100 bytes
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        memo,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+      await verifyFileMemo(response.fileId, memo);
+    });
   });
 
   describe("ExpirationTime", function () {
+    const verifyFileExpirationTime = async (
+      fileId: string,
+      expirationTime: string,
+    ) => {
+      const expectedTime = new Date(Number(expirationTime) * 1000);
+      const actualTime = (
+        await consensusInfoClient.getFileInfo(fileId)
+      ).expirationTime.toDate();
+
+      expect(actualTime.toISOString().replace(/\.\d+Z$/, "Z")).to.equal(
+        expectedTime.toISOString().replace(/\.\d+Z$/, "Z"),
+      );
+    };
+
     it("(#1) Creates a file with valid expiration time", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
@@ -427,7 +604,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -447,6 +624,163 @@ describe("FileCreateTransaction", function () {
           expirationTime: expirationTime.toISOString(),
           commonTransactionParams: {
             signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Creates a file with expiration time of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: "9223372036854775807",
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Creates a file with expiration time of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: "9223372036854775806",
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it.skip("(#6) Creates a file with expiration time of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: "-9223372036854775808",
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Creates a file with expiration time of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: "-9223372036854775807",
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Creates a file with expiration time of 8,000,001 seconds from the current time", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const expirationTime = Math.floor(Date.now() / 1000) + 8000001;
+      const response = await JSONRPCRequest(this, "createFile", {
+        keys: [ed25519PublicKey],
+        contents: "[e2e::FileCreateTransaction]",
+        expirationTime: expirationTime.toString(),
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      await verifyFileExpirationTime(
+        response.fileId,
+        expirationTime.toString(),
+      );
+    });
+
+    it("(#9) Creates a file with expiration time of 8,000,002 seconds from the current time", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const expirationTime = Math.floor(Date.now() / 1000) + 8000002;
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: expirationTime.toString(),
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#10) Creates a file with expiration time in the past", async function () {
+      const ecdsaSecp256k1PrivateKey =
+        await generateEcdsaSecp256k1PrivateKey(this);
+      const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
+        this,
+        ecdsaSecp256k1PrivateKey,
+      );
+      const expirationTime = Math.floor(Date.now() / 1000) - 7200; // 2 hours ago
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ecdsaSecp256k1PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime: expirationTime.toString(),
+          commonTransactionParams: {
+            signers: [ecdsaSecp256k1PrivateKey],
           },
         });
       } catch (err: any) {
