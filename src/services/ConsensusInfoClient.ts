@@ -5,9 +5,6 @@ import {
   AccountInfo,
   AccountInfoQuery,
   Client,
-  FileId,
-  FileInfo,
-  FileInfoQuery,
   NftId,
   TokenInfo,
   TokenInfoQuery,
@@ -63,12 +60,6 @@ class ConsensusInfoClient {
   ): Promise<TokenNftInfo[]> {
     const query = new TokenNftInfoQuery();
     query.setNftId(NftId.fromString(tokenId + "/" + serialNumber));
-    return query.execute(this.sdkClient);
-  }
-
-  async getFileInfo(fileId: string): Promise<FileInfo> {
-    const query = new FileInfoQuery();
-    query.setFileId(FileId.fromString(fileId));
     return query.execute(this.sdkClient);
   }
 
