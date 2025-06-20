@@ -112,7 +112,7 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#3) Updates a token's fee schedule with a token ID that doesn't exist", async function () {
+    it("(#3) Updates a token's fee schedule with a token ID that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "updateTokenFeeSchedule", {
           tokenId: "123.456.789",

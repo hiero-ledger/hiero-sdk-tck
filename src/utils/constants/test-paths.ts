@@ -10,6 +10,12 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   TransferCrypto: "src/tests/crypto-service/test-transfer-transaction.ts",
   // Token Service Tests
   TokenAssociate: "src/tests/token-service/test-token-associate-transaction.ts",
+  TokenAirdropCreate:
+    "src/tests/token-service/test-token-airdrop-transaction.ts",
+  TokenAirdropClaim:
+    "src/tests/token-service/test-token-airdrop-claim-transaction.ts",
+  TokenAirdropCancel:
+    "src/tests/token-service/test-token-airdrop-cancel-transaction.ts",
   TokenBurn: "src/tests/token-service/test-token-burn-transaction.ts",
   TokenCreate: "src/tests/token-service/test-token-create-transaction.ts",
   TokenDelete: "src/tests/token-service/test-token-delete-transaction.ts",
@@ -27,5 +33,6 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   TokenUnpause: "src/tests/token-service/test-token-unpause-transaction.ts",
   TokenUpdate: "src/tests/token-service/test-token-update-transaction.ts",
   TokenWipe: "src/tests/token-service/test-token-wipe-transaction.ts",
+
   ALL: "src/tests/**/*.ts",
 };

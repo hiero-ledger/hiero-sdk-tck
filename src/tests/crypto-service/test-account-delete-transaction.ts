@@ -82,7 +82,7 @@ describe("AccountDeleteTransaction", function () {
       try {
         // Attempt to delete an admin account. The network should respond with an ENTITY_NOT_ALLOWED_TO_DELETE status.
         await JSONRPCRequest(this, "deleteAccount", {
-          deleteAccountId: "0.0.2",
+          deleteAccountId: "0.0.4",
           transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
           commonTransactionParams: {
             signers: [accountPrivateKey],

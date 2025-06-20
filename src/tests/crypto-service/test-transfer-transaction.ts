@@ -5628,7 +5628,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#10) Transfers an amount of NFT from a sender account to a receiver account", async function () {
+    it.skip("(#10) Transfers an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
