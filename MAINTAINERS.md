@@ -6,18 +6,18 @@ The general handling of Maintainer rights and all groups in this GitHub org is d
 
 Maintainers are assigned the following scopes in this repository:
 
-| Scope      | Definition               | GitHub Role | GitHub Team                        |
-| ---------- | ------------------------ | ----------- | ---------------------------------- |
-| Maintainer | The GitHub Maintain role | Maintain    | `hiero-sdk-tck-maintainers` |
+| Scope               | Definition                     | GitHub Role | GitHub Team                 |
+| ------------------- | ------------------------------ | ----------- | --------------------------- |
+| project-maintainers | The Maintainers of the project | Maintain    | `hiero-sdk-tck-maintainers` |
+| tsc                 | The Hiero TSC                  | Maintain    | `tsc`                       |
+| github-maintainers  | The Maintainers of the project | Maintain    | `github-maintainers`        |
 
 ## Active Maintainers
 
-<!-- Please keep this sorted alphabetically by github -->
-
-| Name | GitHub ID  | Scope | LFID | Discord ID | Email | Company Affiliation |
-|----- | ---------- | ----- | ---- | ---------- | ----- | ------------------- |
-|      | rwalworth  |       |      | robborg    |       | Hashgraph           |
-|      | SimiHunjan |       |      |            |       | Hashgraph           |
+| Name | GitHub ID  | Scope      | LFID | Discord ID | Email | Company Affiliation |
+|----- | ---------- | ---------- | ---- | ---------- | ----- | ------------------- |
+|      | rwalworth  | Maintainer |      | robborg    |       | Hashgraph           |
+|      | SimiHunjan | Maintainer |      |            |       | Hashgraph           |
 
 
 ## Emeritus Maintainers
