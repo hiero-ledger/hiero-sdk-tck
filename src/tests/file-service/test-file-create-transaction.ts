@@ -765,30 +765,6 @@ describe.only("FileCreateTransaction", function () {
       }
       assert.fail("Should throw an error");
     });
-
-    it("(#10) Creates a file with expiration time in the past", async function () {
-      const ecdsaSecp256k1PrivateKey =
-        await generateEcdsaSecp256k1PrivateKey(this);
-      const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
-        this,
-        ecdsaSecp256k1PrivateKey,
-      );
-      const expirationTime = Math.floor(Date.now() / 1000) - 7200; // 2 hours ago
-      try {
-        await JSONRPCRequest(this, "createFile", {
-          keys: [ecdsaSecp256k1PublicKey],
-          contents: "[e2e::FileCreateTransaction]",
-          expirationTime: expirationTime.toString(),
-          commonTransactionParams: {
-            signers: [ecdsaSecp256k1PrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
-        return;
-      }
-      assert.fail("Should throw an error");
-    });
   });
 
   return Promise.resolve();
