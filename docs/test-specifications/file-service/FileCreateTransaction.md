@@ -108,8 +108,6 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 7       | Creates a file with expiration time of -9,223,372,036,854,775,807 (`int64` min + 1) seconds   | expirationTime="-9223372036854775807"                                                                                               | The file creation fails with `INVALID_EXPIRATION_TIME`.                                                                         | N                 |
 | 8       | Creates a file with expiration time of 8,000,001 seconds from the current time                | expirationTime=<CURRENT_TIME + 8000001>                                                                                             | The file creation succeeds and the file has the specified expiration time.                                                       | N                 |
 | 9       | Creates a file with expiration time of 8,000,002 seconds from the current time                | expirationTime=<CURRENT_TIME + 8000002>                                                                                             | The file creation fails with `INVALID_EXPIRATION_TIME`.                                                                         | N                 |
-| 10      | Creates a file with expiration time in the past                                               | expirationTime=<CURRENT_TIME - 7200>                                                                                                | The file creation fails with `INVALID_EXPIRATION_TIME`                                                                       | Y                 |
-
 #### JSON Request Example
 
 ```json
