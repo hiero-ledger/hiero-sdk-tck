@@ -14,10 +14,10 @@ Maintainers are assigned the following scopes in this repository:
 
 ## Active Maintainers
 
-| Name | GitHub ID  | Scope      | LFID | Discord ID | Email | Company Affiliation |
-|----- | ---------- | ---------- | ---- | ---------- | ----- | ------------------- |
-|      | rwalworth  | Maintainer |      | robborg    |       | Hashgraph           |
-|      | SimiHunjan | Maintainer |      |            |       | Hashgraph           |
+| Name         | GitHub ID  | Scope      | LFID | Discord ID | Email | Company Affiliation |
+|------------- | ---------- | ---------- | ---- | ---------- | ----- | ------------------- |
+| Rob Walworth | rwalworth  | Maintainer |      | robborg    |       | Hashgraph           |
+| Simi Hunjan  | SimiHunjan | Maintainer |      |            |       | Hashgraph           |
 
 
 ## Emeritus Maintainers
