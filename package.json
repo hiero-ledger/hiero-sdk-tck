@@ -7,7 +7,7 @@
     "dotenv": "^16.4.5",
     "json-bigint": "^1.0.0",
     "json-rpc-2.0": "^1.7.0",
-    "mocha": "^11.0.2"
+    "mocha": "^11.5.0"
   },
   "scripts": {
     "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit",
@@ -20,9 +20,9 @@
     "@types/chai": "^5.2.2",
     "@types/json-bigint": "^1.0.4",
     "@types/mocha": "^10.0.10",
-    "@typescript-eslint/parser": "^8.32.0",
-    "@typescript-eslint/eslint-plugin": "^8.32.0",
-    "@types/node": "^22.15.17",
+    "@types/node": "^22.15.26",
+    "@typescript-eslint/parser": "^8.33.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-define-config": "^2.1.0",
