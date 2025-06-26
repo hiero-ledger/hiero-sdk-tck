@@ -20,7 +20,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileCreateTransaction
  */
-describe.only("FileCreateTransaction", function () {
+describe("FileCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -547,7 +547,8 @@ describe.only("FileCreateTransaction", function () {
     });
   });
 
-  describe("ExpirationTime", function () {
+  // TODO: Fix this tests when consensus is updated to use the appropriate error codes
+  describe.skip("ExpirationTime", function () {
     const verifyFileExpirationTime = async (
       fileId: string,
       expirationTime: string,
