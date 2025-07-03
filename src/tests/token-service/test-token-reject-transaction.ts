@@ -162,7 +162,7 @@ describe("TokenRejectTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Rejects a token that doesn't exist for an account", async function () {
+    it("(#5) Rejects a token that was never created for an account", async function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
@@ -218,7 +218,7 @@ describe("TokenRejectTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Rejects a non-existing fungible token for an account", async function () {
+    it("(#8) Rejects a fungible token for an account that doesn't own it", async function () {
       try {
         await JSONRPCRequest(this, "rejectToken", {
           ownerId,
