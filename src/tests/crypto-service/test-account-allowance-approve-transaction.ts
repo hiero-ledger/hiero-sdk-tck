@@ -6,6 +6,8 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
 import {
+  createHbarAllowanceParamsFactory,
+  HbarAllowanceOverrides,
   verifyApprovedForAllAllowance,
   verifyHbarAllowance,
   verifyNftAllowance,
@@ -50,23 +52,25 @@ describe("AccountAllowanceApproveTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe("ApproveHbarAllowance", function () {
+  describe.only("ApproveHbarAllowance", function () {
+    // Create a pre-configured function that only needs overrides
+    let createHbarAllowanceParams: (overrides?: HbarAllowanceOverrides) => any;
+
+    beforeEach(async function () {
+      createHbarAllowanceParams = createHbarAllowanceParamsFactory(
+        ownerAccountId,
+        spenderAccountId,
+        ownerPrivateKey,
+      );
+    });
+
     it("(#1) Approves an hbar allowance to a spender account from an owner account", async function () {
       const amount = "10";
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            hbar: {
-              amount,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createHbarAllowanceParams({ amount }),
+      );
 
       await retryOnError(async () =>
         verifyHbarAllowance(ownerAccountId, spenderAccountId, amount),
@@ -75,17 +79,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#2) Approves an hbar allowance to a spender account from an owner account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId: "123.456.789",
-              spenderAccountId,
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({
+            ownerAccountId: "123.456.789",
+            amount: "10",
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_OWNER_ID");
         return;
@@ -96,17 +97,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#3) Approves an hbar allowance to a spender account from an empty owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId: "",
-              spenderAccountId,
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({
+            ownerAccountId: "",
+            amount: "10",
+          }),
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -123,20 +121,11 @@ describe("AccountAllowanceApproveTransaction", function () {
       await deleteAccount(this, ownerAccountId, ownerPrivateKey);
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({ amount: "10" }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_OWNER_ID");
         return;
@@ -147,20 +136,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#5) Approves an hbar allowance to a spender account that doesn't exist from an owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: "123.456.789",
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({
+            spenderAccountId: "123.456.789",
+            amount: "10",
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_SPENDER_ID");
         return;
@@ -171,20 +154,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#6) Approves an hbar allowance to an empty spender account from an owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: "",
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({
+            spenderAccountId: "",
+            amount: "10",
+          }),
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -201,20 +178,11 @@ describe("AccountAllowanceApproveTransaction", function () {
       await deleteAccount(this, spenderAccountId, spenderPrivateKey);
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({ amount: "10" }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_SPENDER_ID");
         return;
@@ -225,20 +193,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#8) Approves a 0 hbar allowance to a spender account from a owner account", async function () {
       const amount = "0";
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            hbar: {
-              amount,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createHbarAllowanceParams({ amount }),
+      );
 
       // No real good way to confirm this, since an allowance of zero doesn't show up in the allowance information from mirror node, but also unsure about how long it would take to go through consensus and be confirmed.
       await retryOnError(async () => {
@@ -250,20 +209,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#9) Approves a -1 hbar allowance to a spender account from a owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              hbar: {
-                amount: "-1",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({ amount: "-1" }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "NEGATIVE_ALLOWANCE_AMOUNT");
         return;
@@ -274,20 +224,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#10) Approves a 9,223,372,036,854,775,806 (int64 max - 1) hbar allowance to a spender account from a owner account", async function () {
       const amount = "9223372036854775806";
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            hbar: {
-              amount,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createHbarAllowanceParams({ amount }),
+      );
 
       await retryOnError(async () =>
         verifyHbarAllowance(ownerAccountId, spenderAccountId, amount),
@@ -296,20 +237,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#11) Approves a 9,223,372,036,854,775,807 (int64 max) hbar allowance to a spender account from a owner account", async function () {
       const amount = "9223372036854775807";
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            hbar: {
-              amount,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createHbarAllowanceParams({ amount }),
+      );
 
       await retryOnError(async () =>
         verifyHbarAllowance(ownerAccountId, spenderAccountId, amount),
@@ -318,20 +250,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#12) Approves a -9,223,372,036,854,775,808 (int64 min) hbar allowance to a spender account from a owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              hbar: {
-                amount: "-9223372036854775808",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({ amount: "-9223372036854775808" }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "NEGATIVE_ALLOWANCE_AMOUNT");
         return;
@@ -342,20 +265,11 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#13) Approves a -9,223,372,036,854,775,807 (int64 min + 1) hbar allowance to a spender account from a owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              hbar: {
-                amount: "-9223372036854775807",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({ amount: "-9223372036854775807" }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "NEGATIVE_ALLOWANCE_AMOUNT");
         return;
@@ -366,20 +280,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#14) Approves an hbar allowance to an account from the same account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: ownerAccountId,
-              hbar: {
-                amount: "10",
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createHbarAllowanceParams({
+            spenderAccountId: ownerAccountId,
+            amount: "10",
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "SPENDER_ACCOUNT_SAME_AS_OWNER");
         return;

@@ -4,6 +4,14 @@ import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { Allowance, Nft, NftAllowance } from "@models/mirror-node-models";
 
+// Types for HBAR allowance parameters
+export type HbarAllowanceOverrides = {
+  amount?: string;
+  ownerAccountId?: string;
+  spenderAccountId?: string;
+  commonTransactionParams?: any;
+};
+
 export const verifyHbarAllowance = async (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -100,4 +108,42 @@ export const verifyNoNftAllowance = async (
   );
 
   expect(foundAllowance).to.be.false;
+};
+
+// Helper function to create HBAR allowance params with specific overrides
+export const createHbarAllowanceParams = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  overrides: HbarAllowanceOverrides = {},
+) => {
+  return {
+    allowances: [
+      {
+        ownerAccountId: overrides.ownerAccountId ?? ownerAccountId,
+        spenderAccountId: overrides.spenderAccountId ?? spenderAccountId,
+        hbar: {
+          amount: overrides.amount ?? "0",
+        },
+      },
+    ],
+    commonTransactionParams: overrides.commonTransactionParams ?? {
+      signers: [ownerPrivateKey],
+    },
+  };
+};
+
+// Curried function - returns a function that only needs overrides
+export const createHbarAllowanceParamsFactory = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+) => {
+  return (overrides: HbarAllowanceOverrides = {}) =>
+    createHbarAllowanceParams(
+      ownerAccountId,
+      spenderAccountId,
+      ownerPrivateKey,
+      overrides,
+    );
 };
