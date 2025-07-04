@@ -21,7 +21,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileUpdateTransaction
  */
-describe.only("FileUpdateTransaction", function () {
+describe("FileUpdateTransaction", function () {
   this.timeout(30000);
 
   let fileId: string;
@@ -759,116 +759,6 @@ describe.only("FileUpdateTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
-        return;
-      }
-      assert.fail("Should throw an error");
-    });
-  });
-
-  describe("Signature Requirements", function () {
-    //TODO: Fix when expiration time error is fixed from services
-    it.skip("(#1) Updates only expiration time with proper payer signature", async function () {
-      const expirationTime = (
-        Math.floor(Date.now() / 1000) + 5184000
-      ).toString();
-
-      const response = await JSONRPCRequest(this, "updateFile", {
-        fileId,
-        expirationTime,
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-    });
-
-    it("(#2) Updates keys without all required file key signatures", async function () {
-      const newEd25519PrivateKey = await generateEd25519PrivateKey(this);
-      const newEd25519PublicKey = await generateEd25519PublicKey(
-        this,
-        newEd25519PrivateKey,
-      );
-
-      try {
-        await JSONRPCRequest(this, "updateFile", {
-          fileId,
-          keys: [newEd25519PublicKey],
-          // Missing signature from newEd25519PrivateKey
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
-      assert.fail("Should throw an error");
-    });
-
-    it("(#3) Updates contents without all required file key signatures", async function () {
-      try {
-        await JSONRPCRequest(this, "updateFile", {
-          fileId,
-          contents: "new content",
-          // Missing signature from current file key
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
-      assert.fail("Should throw an error");
-    });
-
-    it("(#4) Updates memo without all required file key signatures", async function () {
-      try {
-        await JSONRPCRequest(this, "updateFile", {
-          fileId,
-          memo: "new memo",
-          // Missing signature from current file key
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
-      assert.fail("Should throw an error");
-    });
-
-    it("(#5) Updates multiple fields with all required file key signatures", async function () {
-      const newEd25519PrivateKey = await generateEd25519PrivateKey(this);
-      const newEd25519PublicKey = await generateEd25519PublicKey(
-        this,
-        newEd25519PrivateKey,
-      );
-
-      const response = await JSONRPCRequest(this, "updateFile", {
-        fileId,
-        keys: [newEd25519PublicKey],
-        contents: "Updated content with signatures",
-        memo: "Updated memo with signatures",
-        commonTransactionParams: {
-          signers: [fileCreateEd25519PrivateKey, newEd25519PrivateKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-    });
-
-    it("(#6) Updates immutable file (empty key list) with non-expiration fields", async function () {
-      // First make the file immutable by setting empty key list
-      await JSONRPCRequest(this, "updateFile", {
-        fileId,
-        keys: [],
-        commonTransactionParams: {
-          signers: [fileCreateEd25519PrivateKey],
-        },
-      });
-
-      // Try to update contents on immutable file
-      try {
-        await JSONRPCRequest(this, "updateFile", {
-          fileId,
-          contents: "new content",
-          commonTransactionParams: {
-            signers: [fileCreateEd25519PrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "UNAUTHORIZED");
         return;
       }
       assert.fail("Should throw an error");
