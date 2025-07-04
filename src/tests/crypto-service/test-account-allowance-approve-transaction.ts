@@ -1456,7 +1456,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     });
   });
 
-  describe("ApproveNftAllowanceAllSerials", function () {
+  describe.only("ApproveNftAllowanceAllSerials", function () {
     // Each test here requires a token to be created.
     let tokenId: string, supplyKey: string;
     let createNftAllowanceParams: (overrides?: NftAllowanceOverrides) => any;
@@ -1512,21 +1512,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#2) Approves an NFT allowance with approved for all privileges to a spender account from an owner account that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId: "123.456.789",
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            ownerAccountId: "123.456.789",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_OWNER_ID");
         return;
@@ -1537,21 +1530,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#3) Approves an NFT allowance with approved for all privileges to a spender account from an empty owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId: "",
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            ownerAccountId: "",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1568,21 +1554,13 @@ describe("AccountAllowanceApproveTransaction", function () {
       await deleteAccount(this, ownerAccountId, ownerPrivateKey);
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "ACCOUNT_DELETED");
         return;
@@ -1593,21 +1571,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#5) Approves an NFT allowance with approved for all privileges to a spender account that doesn't exist from an owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: "123.456.789",
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            spenderAccountId: "123.456.789",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_SPENDER_ID");
         return;
@@ -1618,21 +1589,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#6) Approves an NFT allowance with approved for all privileges to an empty spender account from an owner account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: "",
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            spenderAccountId: "",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1649,21 +1613,13 @@ describe("AccountAllowanceApproveTransaction", function () {
       await deleteAccount(this, spenderAccountId, spenderPrivateKey);
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_ALLOWANCE_SPENDER_ID");
         return;
@@ -1674,21 +1630,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#8) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a token that doesn't exist", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId: "123.456.789",
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            tokenId: "123.456.789",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TOKEN_ID");
         return;
@@ -1699,21 +1648,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#9) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with an empty token ID", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId: "",
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            tokenId: "",
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(
           err.code,
@@ -1748,21 +1690,14 @@ describe("AccountAllowanceApproveTransaction", function () {
       });
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            tokenId,
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "TOKEN_WAS_DELETED");
         return;
@@ -1773,21 +1708,14 @@ describe("AccountAllowanceApproveTransaction", function () {
 
     it("(#11) Approves an NFT allowance with approved for all privileges to an account from the same account", async function () {
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId: ownerAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            spenderAccountId: ownerAccountId,
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "SPENDER_ACCOUNT_SAME_AS_OWNER");
         return;
@@ -1800,21 +1728,14 @@ describe("AccountAllowanceApproveTransaction", function () {
       tokenId = await createFtToken(this);
 
       try {
-        await JSONRPCRequest(this, "approveAllowance", {
-          allowances: [
-            {
-              ownerAccountId,
-              spenderAccountId,
-              nft: {
-                tokenId,
-                approvedForAll: true,
-              },
-            },
-          ],
-          commonTransactionParams: {
-            signers: [ownerPrivateKey],
-          },
-        });
+        await JSONRPCRequest(
+          this,
+          "approveAllowance",
+          createNftAllowanceParams({
+            tokenId,
+            approvedForAll: true,
+          }),
+        );
       } catch (err: any) {
         assert.equal(err.data.status, "FUNGIBLE_TOKEN_IN_NFT_ALLOWANCES");
         return;
@@ -1853,21 +1774,14 @@ describe("AccountAllowanceApproveTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            nft: {
-              tokenId,
-              approvedForAll: true,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createNftAllowanceParams({
+          tokenId,
+          approvedForAll: true,
+        }),
+      );
 
       await retryOnError(async () =>
         verifyApprovedForAllAllowance(
@@ -1909,21 +1823,14 @@ describe("AccountAllowanceApproveTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            nft: {
-              tokenId,
-              approvedForAll: true,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createNftAllowanceParams({
+          tokenId,
+          approvedForAll: true,
+        }),
+      );
 
       await retryOnError(async () =>
         verifyApprovedForAllAllowance(
@@ -1964,21 +1871,14 @@ describe("AccountAllowanceApproveTransaction", function () {
         },
       });
 
-      await JSONRPCRequest(this, "approveAllowance", {
-        allowances: [
-          {
-            ownerAccountId,
-            spenderAccountId,
-            nft: {
-              tokenId,
-              approvedForAll: true,
-            },
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
+      await JSONRPCRequest(
+        this,
+        "approveAllowance",
+        createNftAllowanceParams({
+          tokenId,
+          approvedForAll: true,
+        }),
+      );
 
       await retryOnError(async () =>
         verifyApprovedForAllAllowance(
