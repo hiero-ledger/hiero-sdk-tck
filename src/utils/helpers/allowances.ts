@@ -3,6 +3,12 @@ import { expect } from "chai";
 import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { Allowance, Nft, NftAllowance } from "@models/mirror-node-models";
+import {
+  HbarAllowanceOverrides,
+  TokenAllowanceOverrides,
+  NftAllowanceOverrides,
+  NftConfig,
+} from "@models/Allowance";
 
 export const verifyHbarAllowance = async (
   ownerAccountId: string,
@@ -100,4 +106,142 @@ export const verifyNoNftAllowance = async (
   );
 
   expect(foundAllowance).to.be.false;
+};
+
+// Helper function to create HBAR allowance params with specific overrides
+export const createHbarAllowanceParams = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  overrides: HbarAllowanceOverrides = {},
+) => {
+  return {
+    allowances: [
+      {
+        ownerAccountId: overrides.ownerAccountId ?? ownerAccountId,
+        spenderAccountId: overrides.spenderAccountId ?? spenderAccountId,
+        hbar: {
+          amount: overrides.amount ?? "0",
+        },
+      },
+    ],
+    commonTransactionParams: overrides.commonTransactionParams ?? {
+      signers: [ownerPrivateKey],
+    },
+  };
+};
+
+// Curried function - returns a function that only needs overrides
+export const createHbarAllowanceParamsFactory = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+) => {
+  return (overrides: HbarAllowanceOverrides = {}) =>
+    createHbarAllowanceParams(
+      ownerAccountId,
+      spenderAccountId,
+      ownerPrivateKey,
+      overrides,
+    );
+};
+
+const createTokenAllowanceParams = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  tokenId: string,
+  overrides: TokenAllowanceOverrides = {},
+) => {
+  return {
+    allowances: [
+      {
+        ownerAccountId: overrides.ownerAccountId ?? ownerAccountId,
+        spenderAccountId: overrides.spenderAccountId ?? spenderAccountId,
+        token: {
+          tokenId: overrides.tokenId ?? tokenId,
+          amount: overrides.amount ?? "10",
+        },
+      },
+    ],
+    commonTransactionParams: overrides.commonTransactionParams ?? {
+      signers: [ownerPrivateKey],
+    },
+  };
+};
+
+// Add comment here
+export const createTokenAllowanceParamsFactory = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  tokenId: string,
+) => {
+  return (overrides: TokenAllowanceOverrides = {}) =>
+    createTokenAllowanceParams(
+      ownerAccountId,
+      spenderAccountId,
+      ownerPrivateKey,
+      tokenId,
+      overrides,
+    );
+};
+
+// Helper function to create NFT allowance params with specific overrides
+export const createNftAllowanceParams = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  tokenId: string,
+  overrides: NftAllowanceOverrides = {},
+) => {
+  const nftConfig: NftConfig = {
+    tokenId: overrides.tokenId ?? tokenId,
+  };
+
+  // Add serialNumbers if provided
+  //test with empty array
+  if (overrides.serialNumbers) {
+    nftConfig.serialNumbers = overrides.serialNumbers;
+  }
+
+  // Add approvedForAll if provided
+  if (overrides.approvedForAll !== undefined) {
+    nftConfig.approvedForAll = overrides.approvedForAll;
+  }
+
+  // Add delegateSpenderAccountId if provided
+  if (overrides.delegateSpenderAccountId !== undefined) {
+    nftConfig.delegateSpenderAccountId = overrides.delegateSpenderAccountId;
+  }
+
+  return {
+    allowances: [
+      {
+        ownerAccountId: overrides.ownerAccountId ?? ownerAccountId,
+        spenderAccountId: overrides.spenderAccountId ?? spenderAccountId,
+        nft: nftConfig,
+      },
+    ],
+    commonTransactionParams: overrides.commonTransactionParams ?? {
+      signers: [ownerPrivateKey],
+    },
+  };
+};
+
+// Curried function - returns a function that only needs overrides
+export const createNftAllowanceParamsFactory = (
+  ownerAccountId: string,
+  spenderAccountId: string,
+  ownerPrivateKey: string,
+  tokenId: string,
+) => {
+  return (overrides: NftAllowanceOverrides = {}) =>
+    createNftAllowanceParams(
+      ownerAccountId,
+      spenderAccountId,
+      ownerPrivateKey,
+      tokenId,
+      overrides,
+    );
 };
