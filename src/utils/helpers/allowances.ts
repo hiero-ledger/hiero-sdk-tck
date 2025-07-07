@@ -293,6 +293,7 @@ export const createNftAllowanceParams = (
  * Pre-configures the owner, spender, private key, and token ID, returning a function
  * that only needs optional overrides to customize the NFT allowance.
  *
+ *
  * @param ownerAccountId - The account ID that owns the NFTs
  * @param spenderAccountId - The account ID that will be granted the allowance
  * @param ownerPrivateKey - The private key of the owner account for signing
