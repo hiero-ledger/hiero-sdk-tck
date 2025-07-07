@@ -10,6 +10,10 @@ import {
   TokenInfoQuery,
   TokenNftInfo,
   TokenNftInfoQuery,
+  FileContentsQuery,
+  FileId,
+  FileInfo,
+  FileInfoQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
@@ -74,6 +78,18 @@ class ConsensusInfoClient {
   async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {
     method.setTokenId(tokenId);
     return method.execute(this.sdkClient);
+  }
+
+  async getFileInfo(fileId: string): Promise<FileInfo> {
+    const query = new FileInfoQuery();
+    query.setFileId(FileId.fromString(fileId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getFileContents(fileId: string): Promise<Uint8Array> {
+    const query = new FileContentsQuery();
+    query.setFileId(FileId.fromString(fileId));
+    return query.execute(this.sdkClient);
   }
 }
 
