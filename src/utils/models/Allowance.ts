@@ -2,7 +2,7 @@ export type HbarAllowanceOverrides = {
   amount?: string;
   ownerAccountId?: string;
   spenderAccountId?: string;
-  commonTransactionParams?: any;
+  commonTransactionParams?: Record<string, any>;
 };
 
 export type TokenAllowanceOverrides = {
@@ -10,7 +10,7 @@ export type TokenAllowanceOverrides = {
   tokenId?: string;
   ownerAccountId?: string;
   spenderAccountId?: string;
-  commonTransactionParams?: any;
+  commonTransactionParams?: Record<string, any>;
 };
 
 export type NftAllowanceOverrides = {
@@ -20,7 +20,7 @@ export type NftAllowanceOverrides = {
   delegateSpenderAccountId?: string;
   ownerAccountId?: string;
   spenderAccountId?: string;
-  commonTransactionParams?: any;
+  commonTransactionParams?: Record<string, any>;
 };
 
 export type NftConfig = {
@@ -29,3 +29,15 @@ export type NftConfig = {
   approvedForAll?: boolean;
   delegateSpenderAccountId?: string;
 };
+
+export type HbarAllowanceParamsFactory = (
+  overrides?: HbarAllowanceOverrides,
+) => any;
+
+export type TokenAllowanceParamsFactory = (
+  overrides?: TokenAllowanceOverrides,
+) => any;
+
+export type NftAllowanceParamsFactory = (
+  overrides?: NftAllowanceOverrides,
+) => any;

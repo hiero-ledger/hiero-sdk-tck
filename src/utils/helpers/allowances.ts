@@ -108,7 +108,16 @@ export const verifyNoNftAllowance = async (
   expect(foundAllowance).to.be.false;
 };
 
-// Helper function to create HBAR allowance params with specific overrides
+/**
+ * Helper function to create HBAR allowance parameters with specific overrides.
+ * This function is used internally by the factory but can also be used directly.
+ *
+ * @param ownerAccountId - The account ID that owns the HBAR
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @param overrides - Optional parameters to override defaults
+ * @returns Complete allowance parameters object ready for API calls
+ */
 export const createHbarAllowanceParams = (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -131,7 +140,22 @@ export const createHbarAllowanceParams = (
   };
 };
 
-// Curried function - returns a function that only needs overrides
+// Factory functions - these return pre-configured functions that only need overrides
+
+/**
+ * Factory function for creating HBAR allowance parameters.
+ * Pre-configures the owner, spender, and private key, returning a function
+ * that only needs optional overrides to customize the allowance.
+ *
+ * @param ownerAccountId - The account ID that owns the HBAR
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @returns A function that accepts optional overrides and returns allowance parameters
+ *
+ * @example
+ * const createParams = createHbarAllowanceParamsFactory(owner, spender, key);
+ * const allowance = createParams({ amount: "100" });
+ */
 export const createHbarAllowanceParamsFactory = (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -146,6 +170,17 @@ export const createHbarAllowanceParamsFactory = (
     );
 };
 
+/**
+ * Helper function to create token allowance parameters with specific overrides.
+ * This function is used internally by the factory but can also be used directly.
+ *
+ * @param ownerAccountId - The account ID that owns the tokens
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @param tokenId - The ID of the token to create allowance for
+ * @param overrides - Optional parameters to override defaults
+ * @returns Complete allowance parameters object ready for API calls
+ */
 const createTokenAllowanceParams = (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -170,7 +205,21 @@ const createTokenAllowanceParams = (
   };
 };
 
-// Add comment here
+/**
+ * Factory function for creating token allowance parameters.
+ * Pre-configures the owner, spender, private key, and token ID, returning a function
+ * that only needs optional overrides to customize the allowance.
+ *
+ * @param ownerAccountId - The account ID that owns the tokens
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @param tokenId - The ID of the token to create allowance for
+ * @returns A function that accepts optional overrides and returns allowance parameters
+ *
+ * @example
+ * const createParams = createTokenAllowanceParamsFactory(owner, spender, key, tokenId);
+ * const allowance = createParams({ amount: "50" });
+ */
 export const createTokenAllowanceParamsFactory = (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -187,7 +236,18 @@ export const createTokenAllowanceParamsFactory = (
     );
 };
 
-// Helper function to create NFT allowance params with specific overrides
+/**
+ * Helper function to create NFT allowance parameters with specific overrides.
+ * This function is used internally by the factory but can also be used directly.
+ * Supports various NFT allowance types: specific serial numbers, approved for all, and delegate spender.
+ *
+ * @param ownerAccountId - The account ID that owns the NFTs
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @param tokenId - The ID of the NFT token to create allowance for
+ * @param overrides - Optional parameters to override defaults (serialNumbers, approvedForAll, delegateSpenderAccountId, etc.)
+ * @returns Complete allowance parameters object ready for API calls
+ */
 export const createNftAllowanceParams = (
   ownerAccountId: string,
   spenderAccountId: string,
@@ -200,7 +260,6 @@ export const createNftAllowanceParams = (
   };
 
   // Add serialNumbers if provided
-  //test with empty array
   if (overrides.serialNumbers) {
     nftConfig.serialNumbers = overrides.serialNumbers;
   }
@@ -229,7 +288,22 @@ export const createNftAllowanceParams = (
   };
 };
 
-// Curried function - returns a function that only needs overrides
+/**
+ * Factory function for creating NFT allowance parameters.
+ * Pre-configures the owner, spender, private key, and token ID, returning a function
+ * that only needs optional overrides to customize the NFT allowance.
+ *
+ * @param ownerAccountId - The account ID that owns the NFTs
+ * @param spenderAccountId - The account ID that will be granted the allowance
+ * @param ownerPrivateKey - The private key of the owner account for signing
+ * @param tokenId - The ID of the NFT token to create allowance for
+ * @returns A function that accepts optional overrides and returns allowance parameters
+ *
+ * @example
+ * const createParams = createNftAllowanceParamsFactory(owner, spender, key, tokenId);
+ * const allowance = createParams({ serialNumbers: ["1", "2", "3"] });
+ * const approveAll = createParams({ approvedForAll: true });
+ */
 export const createNftAllowanceParamsFactory = (
   ownerAccountId: string,
   spenderAccountId: string,

@@ -15,9 +15,9 @@ import {
   verifyTokenAllowance,
 } from "@helpers/allowances";
 import {
-  HbarAllowanceOverrides,
-  TokenAllowanceOverrides,
-  NftAllowanceOverrides,
+  HbarAllowanceParamsFactory,
+  TokenAllowanceParamsFactory,
+  NftAllowanceParamsFactory,
 } from "@models/Allowance";
 import { createAccount, deleteAccount } from "@helpers/account";
 import {
@@ -60,7 +60,7 @@ describe("AccountAllowanceApproveTransaction", function () {
 
   describe("ApproveHbarAllowance", function () {
     // Create a pre-configured function that only needs overrides
-    let createHbarAllowanceParams: (overrides?: HbarAllowanceOverrides) => any;
+    let createHbarAllowanceParams: HbarAllowanceParamsFactory;
 
     beforeEach(async function () {
       createHbarAllowanceParams = createHbarAllowanceParamsFactory(
@@ -306,9 +306,7 @@ describe("AccountAllowanceApproveTransaction", function () {
   describe("ApproveTokenAllowance", function () {
     // Each test here requires a token to be created.
     let tokenId: string;
-    let createTokenAllowanceParams: (
-      overrides?: TokenAllowanceOverrides,
-    ) => any;
+    let createTokenAllowanceParams: TokenAllowanceParamsFactory;
 
     beforeEach(async function () {
       tokenId = await createFtToken(this);
@@ -820,7 +818,7 @@ describe("AccountAllowanceApproveTransaction", function () {
   describe("ApproveNftTokenAllowance", function () {
     // Each test here requires a token to be created.
     let tokenId: string, supplyKey: string;
-    let createNftAllowanceParams: (overrides?: NftAllowanceOverrides) => any;
+    let createNftAllowanceParams: NftAllowanceParamsFactory;
     const metadata = ["1234", "5678", "90ab"];
 
     beforeEach(async function () {
@@ -1459,7 +1457,7 @@ describe("AccountAllowanceApproveTransaction", function () {
   describe("ApproveNftAllowanceAllSerials", function () {
     // Each test here requires a token to be created.
     let tokenId: string, supplyKey: string;
-    let createNftAllowanceParams: (overrides?: NftAllowanceOverrides) => any;
+    let createNftAllowanceParams: NftAllowanceParamsFactory;
     const metadata = ["1234", "5678", "90ab"];
 
     beforeEach(async function () {
@@ -1894,7 +1892,7 @@ describe("AccountAllowanceApproveTransaction", function () {
   describe("DeleteNftAllowanceAllSerials", function () {
     // Each test here requires a token to be created.
     let tokenId: string, supplyKey: string;
-    let createNftAllowanceParams: (overrides?: NftAllowanceOverrides) => any;
+    let createNftAllowanceParams: NftAllowanceParamsFactory;
 
     const metadata = ["1234", "5678", "90ab"];
 
