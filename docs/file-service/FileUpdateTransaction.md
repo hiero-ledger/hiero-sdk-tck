@@ -33,7 +33,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 | Parameter Name            | Type                                                    | Required/Optional | Description/Notes                                                                                                                           |
 |---------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| fileId                    | string                                                  | required          | The ID of the file to update                                                                                                                |
+| fileId                    | string                                                  | optional          | The ID of the file to update                                                                                                                |
 | keys                      | string[]                                                | optional          | DER-encoded hex string representation for private or public keys. KeyLists are the hex of the serialized protobuf bytes. Threshold keys are not allowed. |
 | contents                  | string                                                  | optional          | The new contents of the file. If set to empty string, the content of the file shall be unchanged.                                          |
 | expirationTime           | string                                                  | optional          | The new time at which this file should expire (in seconds since the epoch). Must be strictly later than the existing expiration time.      |
@@ -57,6 +57,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 1       | Updates a file with valid file ID                                                            | fileId="<CREATED_FILE_ID>"                                                                                                                   | The file update succeeds.                                                                                                        | N                 |
 | 2       | Updates a file with non-existent file ID                                                     | fileId="0.0.999999"                                                                                                                 | The file update fails with `INVALID_FILE_ID`.                                                                                    | N                 |
 | 3       | Updates a file with invalid file ID format                                                   | fileId="invalid"                                                                                                                    | The file update fails with n SDK internal error.                                                                                    | N                 |
+| 4       | Updates a file with no file ID                            |     | The file update fails with `INVALID_FILE_ID`.| N                 |
 
 ### **Keys:**
 
