@@ -21,7 +21,7 @@ import { retryOnError } from "@helpers/retry-on-error";
 /**
  * Tests for FileCreateTransaction
  */
-describe.only("FileCreateTransaction", function () {
+describe("FileCreateTransaction", function () {
   this.timeout(30000);
 
   let ed25519PrivateKey: string;
