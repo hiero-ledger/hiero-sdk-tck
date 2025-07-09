@@ -1,23 +1,23 @@
 ---
-title: Token Delete Transaction
-parent: Token Service
+title: File Delete Transaction
+parent: File Service
 nav_order: 5
 ---
-# TokenDeleteTransaction - Test specification
+# FileDeleteTransaction - Test specification
 
 ## Description:
-This test specification for TokenDeleteTransaction is to be one of many for testing the functionality of the Hedera SDKs. The SDK under test will use the language specific JSON-RPC server return responses back to the test driver.
+This test specification for FileDeleteTransaction is to be one of many for testing the functionality of the Hedera SDKs. The SDK under test will use the language specific JSON-RPC server return responses back to the test driver.
 
 ## Design:
-Each test within the test specification is linked to one of the properties within TokenDeleteTransaction. Each property is tested with a mix of boundaries. The inputs for each test are a range of valid, minimum, maximum, negative and invalid values for the method. The expected response of a passed test can be a correct error response code or seen as the result of node queries. A successful transaction (the transaction reached consensus and was applied to state) can be determined by getting a `TransactionReceipt` or `TransactionRecord`, or can be determined by using queries such as `TokenInfoQuery` or `AccountBalanceQuery` and investigating for the required changes (creations, updates, etc.). The mirror node can also be used to determine if a transaction was successful via its rest API. Error codes are obtained from the response code proto files.
+Each test within the test specification is linked to one of the properties within FileDeleteTransaction. Each property is tested with a mix of boundaries. The inputs for each test are a range of valid, minimum, maximum, negative and invalid values for the method. The expected response of a passed test can be a correct error response code or seen as the result of node queries. A successful transaction (the transaction reached consensus and was applied to state) can be determined by getting a `TransactionReceipt` or `TransactionRecord`, or can be determined by using queries such as `FileInfoQuery` or `FileContentsQuery` and investigating for the required changes (deletions, etc.). The mirror node can also be used to determine if a transaction was successful via its rest API. Error codes are obtained from the response code proto files.
 
 **Transaction properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/delete-a-token
+https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service/delete-a-file
 
-**TokenDelete protobufs:**
+**FileDelete protobufs:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/token_delete.proto
+https://github.com/hashgraph/hedera-protobufs/blob/main/services/file_delete.proto
 
 **Response codes:**
 
@@ -31,36 +31,38 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Method Name
 
-`deleteToken`
+`deleteFile`
 
 ### Input Parameters
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes              |
 |-------------------------|---------------------------------------------------------|-------------------|--------------------------------|
-| tokenId                 | string                                                  | optional          | The ID of the token to delete. |
+| fileID                 | string                                                  | optional          | The ID of the file to delete. |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                |
 
 ### Output Parameters
 
 | Parameter Name | Type   | Description/Notes                                                                   |
 |----------------|--------|-------------------------------------------------------------------------------------|
-| status         | string | The status of the submitted `TokenDeleteTransaction` (from a `TransactionReceipt`). |
+| status         | string | The status of the submitted `FileDeleteTransaction` (from a `TransactionReceipt`). |
 
 ## Property Tests
 
-### **Token ID:**
+### **File ID:**
 
-- The ID of the token to delete.
+- The ID of the file to delete.
 
 | Test no | Name                                                       | Input                                                                                               | Expected response                                                                   | Implemented (Y/N) |
 |---------|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|-------------------|
-| 1       | Deletes an immutable token                                 | tokenId=<VALID_IMMUTABLE_TOKEN_ID>                                                                  | The token deletion fails with an TOKEN_IS_IMMUTABLE response code from the network. | Y                 |
-| 2       | Deletes a mutable token                                    | tokenId=<VALID_MUTABLE_TOKEN_ID>, commonTransactionParams.signers=[<VALID_MUTABLE_TOKEN_ADMIN_KEY>] | The token deletion succeeds.                                                        | Y                 |
-| 3       | Deletes a token that doesn't exist                         | tokenId="123.456.789"                                                                               | The token deletion fails with an INVALID_TOKEN_ID response code from the network.   | Y                 |
-| 4       | Deletes a token with no token ID                           | tokenId=""                                                                                          | The token deletion fails with an SDK internal error.                                | Y                 |
-| 5       | Deletes a token that was already deleted                   | tokenId=<DELETED_TOKEN_ID>, commonTransactionParams.signers=[<DELETED_TOKEN_ADMIN_KEY>]             | The token deletion fails with an TOKEN_WAS_DELETED response code from the network.  | Y                 |
-| 6       | Deletes a token without signing with the token's admin key | tokenId=<VALID_MUTABLE_TOKEN_ID>                                                                    | The token deletion fails with an INVALID_SIGNATURE response code from the network.  | Y                 |
-| 7       | Deletes a token but signs with an incorrect private key    | tokenId=<VALID_MUTABLE_TOKEN_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>]   | The token deletion fails with an INVALID_SIGNATURE response code from the network.  | Y                 |
+| 1       | Deletes a valid file with proper authorization             | fileId=<VALID_FILE_ID>, commonTransactionParams.signers=[<VALID_FILE_KEY>]                        | The file deletion succeeds.                                                        | N                 |
+| 2       | Deletes a file that doesn't exist                          | fileId="123.456.789"                                                                               | The file deletion fails with an INVALID_FILE_ID response code from the network.    | N                 |
+| 3       | Deletes a file with no file ID                             | fileId=""                                                                                          | The file deletion fails with an SDK internal error.                                | N                 |
+| 4       | Deletes a file with no file ID                  |                                                                                                    | The file deletion fails with INVALID_FILE_ID response code from the network.                                | N                 |
+| 5       | Deletes a file that was already deleted                    | fileId=<DELETED_FILE_ID>, commonTransactionParams.signers=[<DELETED_FILE_KEY>]                    | The file deletion fails with an FILE_DELETED response code from the network.       | N                 |
+| 6       | Deletes a file without signing with the file's admin key   | fileId=<VALID_FILE_ID>                                                                            | The file deletion fails with an INVALID_SIGNATURE response code from the network.  | N                 |
+| 7       | Deletes a file but signs with an incorrect private key     | fileId=<VALID_FILE_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>]           | The file deletion fails with an INVALID_SIGNATURE response code from the network.  | N                 |
+| 8       | Deletes a system file without proper authorization         | fileId="0.0.101"                                                                                  | The file deletion fails with an AUTHORIZATION_FAILED response code from the network.| N                 |
+| 9       | Deletes a file with invalid file ID format                 | fileId="invalid.file.id"                                                                          | The file deletion fails with fails with and SDK internal error.    | N                 |
 
 #### JSON Request Example
 
@@ -68,9 +70,9 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 {
   "jsonrpc": "2.0",
   "id": 64362,
-  "method": "deleteToken",
+  "method": "deleteFile",
   "params": {
-    "tokenId": "0.0.15432",
+    "fileId": "0.0.15432",
     "commonTransactionParams": {
       "signers": [
         "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
