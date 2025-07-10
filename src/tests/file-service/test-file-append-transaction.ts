@@ -163,7 +163,7 @@ describe("FileAppendTransaction", function () {
     });
 
     //TODO: Getting 2 UNKNOWN: (check in the other SDKs)
-    it.skip("(#4) Appends contents exceeding maximum size", async function () {
+    it.skip("(#3) Appends contents exceeding maximum size", async function () {
       // Create a string of 7KiB (7168 bytes)
       const appendContent = "a".repeat(7168);
 
@@ -182,7 +182,7 @@ describe("FileAppendTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Appends contents containing only whitespace", async function () {
+    it("(#4) Appends contents containing only whitespace", async function () {
       const appendContent = "   ";
       const response = await JSONRPCRequest(this, "appendFile", {
         fileId,
@@ -196,7 +196,7 @@ describe("FileAppendTransaction", function () {
       await verifyFileContents(fileId, "Initial file contents" + appendContent);
     });
 
-    it("(#6) Appends contents containing special characters", async function () {
+    it("(#5) Appends contents containing special characters", async function () {
       const appendContent = "!@#$%^&*()_+-=[]{}|;':\",./<>?";
       const response = await JSONRPCRequest(this, "appendFile", {
         fileId,
@@ -210,7 +210,7 @@ describe("FileAppendTransaction", function () {
       await verifyFileContents(fileId, "Initial file contents" + appendContent);
     });
 
-    it("(#7) Appends contents containing unicode characters", async function () {
+    it("(#6) Appends contents containing unicode characters", async function () {
       const appendContent = "测试文件内容 🚀";
       const response = await JSONRPCRequest(this, "appendFile", {
         fileId,
@@ -357,8 +357,7 @@ describe("FileAppendTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    // TODO: See why its failing
-    it.skip("(#4) Appends with chunk size set to 0", async function () {
+    it("(#4) Appends with chunk size set to 0", async function () {
       try {
         await JSONRPCRequest(this, "appendFile", {
           fileId,
@@ -375,8 +374,7 @@ describe("FileAppendTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: See why its failing
-    it.skip("(#5) Appends with chunk size set to negative value", async function () {
+    it("(#5) Appends with chunk size set to negative value", async function () {
       try {
         await JSONRPCRequest(this, "appendFile", {
           fileId,
