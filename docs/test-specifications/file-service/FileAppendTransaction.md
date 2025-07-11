@@ -37,7 +37,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | contents                  | string                                                  | required          | The contents to append to the file                                                                                                          |
 | maxChunks                 | number                                                  | optional          | Maximum number of chunks allowed for this transaction (default: 20)                                                                         |
 | chunkSize                 | number                                                  | optional          | Size of each chunk in bytes (default: 4096)                                                                                                |
-| chunkInterval             | number                                                  | optional          | Interval between chunks in nanoseconds (default: 10)                                                                                       |
+
 | commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                             |
 
 ### Output Parameters
@@ -99,18 +99,6 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 5       | Appends with chunk size set to negative value                                                 | chunkSize=-1                                                                                                                        | The file append fails with an SDK internal error.                                                                               | Y                 |
 | 6       | Appends with chunk size larger than content                                                   | chunkSize=10000, contents="small content"                                                                                          | The file append succeeds with single chunk.                                                                                     | Y                 |
 
-### **ChunkInterval:**
-
-- Interval between chunks in nanoseconds.
-
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Appends with default chunk interval (10)                                                     | chunkInterval=10                                                                                                                    | The file append succeeds.                                                                                                        | N                 |
-| 2       | Appends with custom chunk interval                                                            | chunkInterval=100                                                                                                                   | The file append succeeds.                                                                                                        | N                 |
-| 3       | Appends with chunk interval set to 0                                                          | chunkInterval=0                                                                                                                     | The file append succeeds.                                                                                                        | N                 |
-| 4       | Appends with chunk interval set to negative value                                             | chunkInterval=-1                                                                                                                    | The file append succeeds (negative values are allowed).                                                                         | N                 |
-| 5       | Appends with very large chunk interval                                                        | chunkInterval=999999999                                                                                                             | The file append succeeds.                                                                                                        | N                 |
-
 #### JSON Request Example
 
 ```json
@@ -123,7 +111,6 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
     "contents": "Appended file contents",
     "maxChunks": 20,
     "chunkSize": 4096,
-    "chunkInterval": 10,
     "commonTransactionParams": {
       "signers": [
         "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
