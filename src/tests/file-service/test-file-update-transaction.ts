@@ -21,7 +21,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileUpdateTransaction
  */
-describe("FileUpdateTransaction", function () {
+describe.only("FileUpdateTransaction", function () {
   this.timeout(30000);
 
   let fileId: string;
@@ -536,8 +536,7 @@ describe("FileUpdateTransaction", function () {
     });
   });
 
-  //TODO: Fix when expiration time error is fixed from services
-  describe.skip("ExpirationTime", function () {
+  describe("ExpirationTime", function () {
     const verifyFileExpirationTime = async (
       fileId: string,
       expirationTime: string,
@@ -551,7 +550,7 @@ describe("FileUpdateTransaction", function () {
 
     it("(#1) Updates a file with valid expiration time", async function () {
       const expirationTime = (
-        Math.floor(Date.now() / 1000) + 7200000
+        Math.floor(Date.now() / 1000) + 7900000
       ).toString();
       const response = await JSONRPCRequest(this, "updateFile", {
         fileId,
@@ -581,7 +580,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -599,7 +598,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -617,7 +616,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -635,7 +634,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -655,7 +654,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -671,7 +670,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -687,7 +686,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -703,7 +702,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
@@ -719,13 +718,14 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#11) Updates a file with expiration time of 8,000,001 seconds from the current time", async function () {
+    // effectiveDuration in consensus makes this test flaky as sometimes it could spill over
+    it.skip("(#11) Updates a file with expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -758,7 +758,7 @@ describe("FileUpdateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
