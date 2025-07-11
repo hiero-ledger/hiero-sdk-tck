@@ -14,7 +14,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileAppendTransaction
  */
-describe.only("FileAppendTransaction", function () {
+describe("FileAppendTransaction", function () {
   this.timeout(30000);
 
   let fileId: string;
