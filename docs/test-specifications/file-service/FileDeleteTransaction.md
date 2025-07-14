@@ -61,7 +61,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 5       | Deletes a file that was already deleted                    | fileId=<DELETED_FILE_ID>, commonTransactionParams.signers=[<DELETED_FILE_KEY>]                    | The file deletion fails with an FILE_DELETED response code from the network.       | N                 |
 | 6       | Deletes a file without signing with the file's admin key   | fileId=<VALID_FILE_ID>                                                                            | The file deletion fails with an INVALID_SIGNATURE response code from the network.  | N                 |
 | 7       | Deletes a file but signs with an incorrect private key     | fileId=<VALID_FILE_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>]           | The file deletion fails with an INVALID_SIGNATURE response code from the network.  | N                 |
-| 8       | Deletes a system file without proper authorization         | fileId="0.0.101"                                                                                  | The file deletion fails with an AUTHORIZATION_FAILED response code from the network.| N                 |
+| 8       | Deletes a system file without proper authorization         | fileId="0.0.101"                                                                                  | The file deletion fails with an ENTITY_NOT_ALLOWED_TO_DELETE response code from the network.| N                 |
 | 9       | Deletes a file with invalid file ID format                 | fileId="invalid.file.id"                                                                          | The file deletion fails with fails with and SDK internal error.    | N                 |
 
 #### JSON Request Example
