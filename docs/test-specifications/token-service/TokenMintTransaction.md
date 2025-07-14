@@ -1,7 +1,7 @@
 ---
 title: Token Mint Transaction
 parent: Token Service
-nav_order: 10
+nav_order: 12
 ---
 # TokenMintTransaction - Test specification
 

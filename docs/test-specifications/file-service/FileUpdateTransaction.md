@@ -1,7 +1,7 @@
 ---
 title: File Update Transaction
 parent: File Service
-nav_order: 2
+nav_order: 3
 ---
 # FileUpdateTransaction - Test specification
 
