@@ -21,7 +21,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for FileUpdateTransaction
  */
-describe.only("FileUpdateTransaction", function () {
+describe("FileUpdateTransaction", function () {
   this.timeout(30000);
 
   let fileId: string;
