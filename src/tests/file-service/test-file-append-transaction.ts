@@ -119,6 +119,21 @@ describe("FileAppendTransaction", function () {
       }
       assert.fail("Should throw an error");
     });
+
+    it("(#5) Appends to a file without file ID", async function () {
+      try {
+        await JSONRPCRequest(this, "appendFile", {
+          contents: "Appended content",
+          commonTransactionParams: {
+            signers: [fileCreateEd25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_FILE_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Contents", function () {
