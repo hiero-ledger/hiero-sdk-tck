@@ -95,8 +95,7 @@ describe("FileAppendTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: Uncomment when delete file is implemented
-    it.skip("(#4) Appends to a deleted file", async function () {
+    it("(#4) Appends to a deleted file", async function () {
       // First delete the file
       await JSONRPCRequest(this, "deleteFile", {
         fileId,
@@ -282,7 +281,7 @@ describe("FileAppendTransaction", function () {
 
     it("(#4) Appends with max chunks set to 0", async function () {
       try {
-        const response = await JSONRPCRequest(this, "appendFile", {
+        await JSONRPCRequest(this, "appendFile", {
           fileId,
           contents: "Small content",
           maxChunks: 0,
