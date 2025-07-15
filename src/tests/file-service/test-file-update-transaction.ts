@@ -105,6 +105,22 @@ describe("FileUpdateTransaction", function () {
       }
       assert.fail("Should throw an error");
     });
+
+    it("(#4) Updates a file with no file ID", async function () {
+      try {
+        await JSONRPCRequest(this, "updateFile", {
+          keys: [fileCreateEd25519PublicKey],
+          contents: "Updated contents",
+          commonTransactionParams: {
+            signers: [fileCreateEd25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_FILE_ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Keys", function () {
@@ -341,7 +357,7 @@ describe("FileUpdateTransaction", function () {
       await verifyFileContents(fileId, contents);
     });
 
-    //TODO: Getting 2 UNKNOWN: (check in the other SDKs)
+    // effectively cannot receive this status code via file update
     it.skip("(#4) Updates a file with contents exceeding maximum size", async function () {
       const ecdsaSecp256k1PrivateKey =
         await generateEcdsaSecp256k1PrivateKey(this);

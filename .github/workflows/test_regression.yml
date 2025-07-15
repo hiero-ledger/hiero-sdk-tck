@@ -17,28 +17,32 @@ jobs:
     strategy:
       matrix:
         suite:
-          - AccountCreate
-          - AccountUpdate
-          - AccountDelete
-          - AccountAllowanceDelete
           - AccountAllowanceApprove
-          - TokenAirdropCreate
+          - AccountAllowanceDelete
+          - AccountCreate
+          - AccountDelete
+          - AccountUpdate
+          - FileAppend
+          - FileCreate
+          - FileUpdate
           - TokenAirdropCancel
           - TokenAirdropClaim
-          - TokenCreate
-          - TokenUpdate
-          - TokenDelete
-          - TokenBurn
-          - TokenMint
+          - TokenAirdrop
           - TokenAssociate
+          - TokenBurn
+          - TokenCreate
+          - TokenDelete
           - TokenDissociate
           - TokenFeeScheduleUpdate
-          - TokenGrantKyc
-          - TokenRevokeKyc
-          - TokenPause
-          - TokenUnpause
           - TokenFreeze
+          - TokenGrantKyc
+          - TokenMint
+          - TokenPause
+          - TokenReject
+          - TokenRevokeKyc
           - TokenUnfreeze
+          - TokenUnpause
+          - TokenUpdate
           - TokenWipe
           - TransferCrypto
       fail-fast: false

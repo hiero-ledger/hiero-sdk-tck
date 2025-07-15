@@ -1,7 +1,7 @@
 ---
 title: Token Airdrop Cancel Transaction
 parent: Token Service
-nav_order: 17
+nav_order: 1
 ---
 # TokenAirdropCancelTransaction - Test specification
 

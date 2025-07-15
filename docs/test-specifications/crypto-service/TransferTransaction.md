@@ -1,7 +1,7 @@
 ---
 title: Transfer Transaction
 parent: Crypto Service
-nav_order: 7
+nav_order: 6
 ---
 # TransferTransaction - Test specification
 
