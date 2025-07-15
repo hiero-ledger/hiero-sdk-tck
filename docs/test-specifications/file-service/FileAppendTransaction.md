@@ -1,7 +1,7 @@
 ---
 title: File Append Transaction
 parent: File Service
-nav_order: 3
+nav_order: 1
 ---
 # FileAppendTransaction - Test specification
 

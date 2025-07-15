@@ -1,7 +1,7 @@
 ---
 title: Token Airdrop Claim Transaction
 parent: Token Service
-nav_order: 17
+nav_order: 2
 ---
 # TokenAirdropClaimTransaction - Test specification
 

@@ -1,7 +1,7 @@
 ---
 title: Token Burn Transaction
 parent: Token Service
-nav_order: 3
+nav_order: 5
 ---
 # TokenBurnTransaction - Test specification
 

@@ -1,7 +1,7 @@
 ---
 title: Token Freeze Transaction
 parent: Token Service
-nav_order: 8
+nav_order: 10
 ---
 # TokenFreezeTransaction - Test specification
 

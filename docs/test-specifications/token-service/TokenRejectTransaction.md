@@ -1,7 +1,7 @@
 ---
 title: Token Reject Transaction
 parent: Token Service
-nav_order: 18
+nav_order: 14
 ---
 # TokenRejectTransaction - Test specification
 

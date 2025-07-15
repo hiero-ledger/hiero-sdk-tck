@@ -1,7 +1,7 @@
 ---
 title: Token Dissociate Transaction
 parent: Token Service
-nav_order: 6
+nav_order: 8
 ---
 # TokenDissociateTransaction - Test specification
 

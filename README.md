@@ -169,26 +169,35 @@ docker run --network host \
 ```
 
 ### Available Tests
-Some of the available test options include:
-- AccountCreate
-- AccountUpdate
-- AccountDelete
-- AccountAllowanceDelete
+The available test options include:
 - AccountAllowanceApprove
-- TokenCreate
-- TokenUpdate
-- TokenDelete
-- TokenBurn
-- TokenMint
+- AccountAllowanceDelete
+- AccountCreate
+- AccountDelete
+- AccountUpdate
+- FileAppend
+- FileCreate
+- FileUpdate
+- TokenAirdropCancel
+- TokenAirdropClaim
+- TokenAirdrop
 - TokenAssociate
+- TokenBurn
+- TokenCreate
+- TokenDelete
 - TokenDissociate
 - TokenFeeScheduleUpdate
-- TokenGrantKyc
-- TokenRevokeKyc
-- TokenPause
-- TokenUnpause
 - TokenFreeze
+- TokenGrantKyc
+- TokenMint
+- TokenPause
+- TokenReject
+- TokenRevokeKyc
 - TokenUnfreeze
+- TokenUnpause
+- TokenUpdate
+- TokenWipe
+- TransferCrypto
 - ALL (runs all tests)
 
 Running an invalid test name will display the complete list of available tests.
