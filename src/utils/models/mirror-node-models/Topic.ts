@@ -19,6 +19,10 @@ export type Topic = {
    */
   deleted: boolean | null;
   /**
+   * Key that controls updates and deletions of topic fees.
+   */
+  fee_schedule_key?: Key;
+  /**
    * The memo associated with the topic.
    */
   memo: string;
