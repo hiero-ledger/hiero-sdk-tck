@@ -663,9 +663,9 @@ describe("FileCreateTransaction", function () {
       );
     });
 
-    it("(#10) Creates a file with expiration time of 8,000,002 seconds from the current time", async function () {
+    it("(#10) Creates a file with expiration time of 9,000,000 seconds from the current time", async function () {
       const expirationTime = (
-        Math.floor(Date.now() / 1000) + 8000002
+        Math.floor(Date.now() / 1000) + 9000000
       ).toString();
 
       try {
