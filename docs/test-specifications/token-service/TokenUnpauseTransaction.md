@@ -1,7 +1,7 @@
 ---
 title: Token Unpause Transaction
 parent: Token Service
-nav_order: 14
+nav_order: 17
 ---
 # TokenUnpauseTransaction - Test specification
 

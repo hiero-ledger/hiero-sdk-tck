@@ -110,3 +110,7 @@ dist
 mochawesome-report/
 /docs/_site/
 /docs/Gemfile.lock
+
+# Cursor files
+.cursorignore
+.cursorrules

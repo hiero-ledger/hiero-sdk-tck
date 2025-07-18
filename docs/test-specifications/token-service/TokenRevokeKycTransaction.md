@@ -1,7 +1,7 @@
 ---
 title: Token Revoke Kyc Transaction
 parent: Token Service
-nav_order: 12
+nav_order: 15
 ---
 # TokenRevokeKycTransaction - Test specification
 

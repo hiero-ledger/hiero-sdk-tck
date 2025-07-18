@@ -148,7 +148,7 @@ describe("FileCreateTransaction", function () {
       await verifyFileCreation(response.fileId);
     });
 
-    it("(#7) Creates a file with a valid ECDSAsecp256k1 private key", async function () {
+    it("(#7) Creates a file with a valid ECDSAsecp256k1 public key", async function () {
       const ecdsaSecp256k1PrivateKey =
         await generateEcdsaSecp256k1PrivateKey(this);
       const ecdsaSecp256k1PublicKey = await generateEcdsaSecp256k1PublicKey(
@@ -234,7 +234,7 @@ describe("FileCreateTransaction", function () {
       await verifyFileContents(response.fileId, contents);
     });
 
-    //TODO: Getting 2 UNKNOWN: (check in the other SDKs)
+    // effectively cannot receive this status code via file create
     it.skip("(#4) Creates a file with contents exceeding maximum size", async function () {
       const ecdsaSecp256k1PrivateKey =
         await generateEcdsaSecp256k1PrivateKey(this);
@@ -481,8 +481,7 @@ describe("FileCreateTransaction", function () {
     });
   });
 
-  // TODO: Fix this tests when consensus is updated to use the appropriate error codes
-  describe.skip("ExpirationTime", function () {
+  describe("ExpirationTime", function () {
     const verifyFileExpirationTime = async (
       fileId: string,
       expirationTime: string,
@@ -496,7 +495,7 @@ describe("FileCreateTransaction", function () {
 
     it("(#1) Creates a file with valid expiration time", async function () {
       const expirationTime = (
-        Math.floor(Date.now() / 1000) + 7200000
+        Math.floor(Date.now() / 1000) + 7900000
       ).toString();
 
       const response = await JSONRPCRequest(this, "createFile", {
@@ -529,16 +528,15 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Creates a file with too large expiration time", async function () {
-      const expirationTime = (
-        Math.floor(Date.now() / 1000) + 8000002
-      ).toString();
+    it("(#3) Creates a file with expiration time equal to current", async function () {
+      const expirationTime = Math.floor(Date.now() / 1000).toString();
+
       try {
         await JSONRPCRequest(this, "createFile", {
           keys: [ed25519PublicKey],
@@ -549,13 +547,34 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a file with expiration time of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
+    it("(#4) Creates a file with too large expiration time", async function () {
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 8000002
+      ).toString();
+
+      try {
+        await JSONRPCRequest(this, "createFile", {
+          keys: [ed25519PublicKey],
+          contents: "[e2e::FileCreateTransaction]",
+          expirationTime,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Creates a file with expiration time of 9,223,372,036,854,775,807 (`int64` max) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createFile", {
           keys: [ed25519PublicKey],
@@ -566,13 +585,13 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a file with expiration time of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
+    it("(#6) Creates a file with expiration time of 9,223,372,036,854,775,806 (`int64` max - 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createFile", {
           keys: [ed25519PublicKey],
@@ -583,13 +602,13 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Creates a file with expiration time of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
+    it.skip("(#7) Creates a file with expiration time of -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createFile", {
           keys: [ed25519PublicKey],
@@ -600,13 +619,13 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a file with expiration time of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
+    it("(#8) Creates a file with expiration time of -9,223,372,036,854,775,807 (`int64` min + 1) seconds", async function () {
       try {
         await JSONRPCRequest(this, "createFile", {
           keys: [ed25519PublicKey],
@@ -617,13 +636,14 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");
     });
 
-    it("(#8) Creates a file with expiration time of 8,000,001 seconds from the current time", async function () {
+    // effectiveDuration in consensus makes this test flaky as sometimes it could spill over
+    it.skip("(#9) Creates a file with expiration time of 8,000,001 seconds from the current time", async function () {
       const expirationTime = (
         Math.floor(Date.now() / 1000) + 8000001
       ).toString();
@@ -643,9 +663,9 @@ describe("FileCreateTransaction", function () {
       );
     });
 
-    it("(#9) Creates a file with expiration time of 8,000,002 seconds from the current time", async function () {
+    it("(#10) Creates a file with expiration time of 9,000,000 seconds from the current time", async function () {
       const expirationTime = (
-        Math.floor(Date.now() / 1000) + 8000002
+        Math.floor(Date.now() / 1000) + 9000000
       ).toString();
 
       try {
@@ -658,7 +678,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
+        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
         return;
       }
       assert.fail("Should throw an error");

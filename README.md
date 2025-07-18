@@ -1,7 +1,8 @@
 # Hiero SDK TCK
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck/badge)](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck/badge)](https://scorecard.dev/viewer/?uri=github.com/hiero-ledger/hiero-sdk-tck)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
+[![License](https://img.shields.io/badge/license-apache2-blue.svg)](LICENSE)
 
 A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification.
 The TCK aims to verify compliant implementations of a Hiero SDK.
@@ -168,26 +169,35 @@ docker run --network host \
 ```
 
 ### Available Tests
-Some of the available test options include:
-- AccountCreate
-- AccountUpdate
-- AccountDelete
-- AccountAllowanceDelete
+The available test options include:
 - AccountAllowanceApprove
-- TokenCreate
-- TokenUpdate
-- TokenDelete
-- TokenBurn
-- TokenMint
+- AccountAllowanceDelete
+- AccountCreate
+- AccountDelete
+- AccountUpdate
+- FileAppend
+- FileCreate
+- FileUpdate
+- TokenAirdropCancel
+- TokenAirdropClaim
+- TokenAirdrop
 - TokenAssociate
+- TokenBurn
+- TokenCreate
+- TokenDelete
 - TokenDissociate
 - TokenFeeScheduleUpdate
-- TokenGrantKyc
-- TokenRevokeKyc
-- TokenPause
-- TokenUnpause
 - TokenFreeze
+- TokenGrantKyc
+- TokenMint
+- TokenPause
+- TokenReject
+- TokenRevokeKyc
 - TokenUnfreeze
+- TokenUnpause
+- TokenUpdate
+- TokenWipe
+- TransferCrypto
 - ALL (runs all tests)
 
 Running an invalid test name will display the complete list of available tests.
