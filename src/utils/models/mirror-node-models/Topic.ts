@@ -23,6 +23,10 @@ export type Topic = {
    */
   fee_schedule_key?: Key;
   /**
+   * A list of keys that allow the sender to bypass fees when submitting messages.
+   */
+  fee_exempt_key_list?: Key[];
+  /**
    * The memo associated with the topic.
    */
   memo: string;

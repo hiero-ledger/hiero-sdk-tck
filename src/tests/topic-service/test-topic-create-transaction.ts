@@ -14,6 +14,7 @@ import {
   generateEcdsaSecp256k1PublicKey,
   generateKeyList,
 } from "@helpers/key";
+import { getRawKeyFromHex } from "@helpers/asn1-decoder";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
@@ -942,7 +943,7 @@ describe("TopicCreateTransaction", function () {
       );
     });
 
-    it.only("(#3) Creates a topic with valid KeyList as fee schedule key", async function () {
+    it("(#3) Creates a topic with valid KeyList as fee schedule key", async function () {
       // Create a KeyList with multiple keys
       const keyListResponse = await generateKeyList(this, {
         type: "keyList",
@@ -1024,6 +1025,158 @@ describe("TopicCreateTransaction", function () {
         const feeScheduleKey = "invalid_key_format";
         await JSONRPCRequest(this, "createTopic", {
           feeScheduleKey,
+          autoRenewPeriod: "7000000",
+        });
+      } catch (err: any) {
+        // Should fail with an SDK internal error
+        expect(err.data).to.exist;
+        expect(err.data.status).to.not.equal("SUCCESS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe.only("FeeExemptKeys", function () {
+    const verifyTopicCreationWithFeeExemptKeys = async (
+      topicId: string,
+      feeExemptKeys: string[] | null,
+    ) => {
+      // Helper functions for cleaner code
+      const isNullOrEmpty = (keys: any) =>
+        keys === null || (Array.isArray(keys) && keys.length === 0);
+
+      const convertToRawKeys = (inputKeys: string[]) =>
+        inputKeys.map((key) => getRawKeyFromHex(key));
+
+      const verifyConsensusNodeKeys = (
+        consensusKeys: any,
+        expectedKeys: string[] | null,
+      ) => {
+        if (expectedKeys === null) {
+          expect(isNullOrEmpty(consensusKeys)).to.be.true;
+        } else {
+          expect(consensusKeys).to.not.be.null;
+          expect(consensusKeys).to.have.lengthOf(expectedKeys.length);
+
+          const expectedRawKeys = convertToRawKeys(expectedKeys);
+          const actualRawKeys = consensusKeys.map((key: any) =>
+            key.toStringRaw(),
+          );
+          expect(actualRawKeys).to.deep.equal(expectedRawKeys);
+        }
+      };
+
+      const verifyMirrorNodeKeys = (
+        mirrorKeys: any,
+        expectedKeys: string[] | null,
+      ) => {
+        if (expectedKeys === null) {
+          expect(isNullOrEmpty(mirrorKeys)).to.be.true;
+        } else {
+          expect(mirrorKeys).to.not.be.null;
+          expect(mirrorKeys).to.not.be.undefined;
+          expect(mirrorKeys).to.have.lengthOf(expectedKeys.length);
+
+          const expectedRawKeys = convertToRawKeys(expectedKeys);
+          const actualRawKeys =
+            mirrorKeys?.map((keyObj: any) => keyObj.key) ?? [];
+          expect(actualRawKeys).to.deep.equal(expectedRawKeys);
+        }
+      };
+
+      // Verify via consensus node
+      const consensusNodeTopic =
+        await consensusInfoClient.getTopicInfo(topicId);
+      verifyConsensusNodeKeys(consensusNodeTopic.feeExemptKeys, feeExemptKeys);
+
+      // Verify via mirror node
+      await retryOnError(async () => {
+        const mirrorNodeTopic = await mirrorNodeClient.getTopicData(topicId);
+        verifyMirrorNodeKeys(
+          mirrorNodeTopic.fee_exempt_key_list,
+          feeExemptKeys,
+        );
+      });
+    };
+
+    it("(#1) Creates a topic with single fee exempt key", async function () {
+      const privateKey = await generateEd25519PrivateKey(this);
+      const feeExemptKey = await generateEd25519PublicKey(this, privateKey);
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        feeExemptKeys: [feeExemptKey],
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [privateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithFeeExemptKeys(response.topicId, [
+        feeExemptKey,
+      ]);
+    });
+
+    it("(#2) Creates a topic with multiple fee exempt keys", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const ecdsaPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
+      const ecdsaPublicKey = await generateEcdsaSecp256k1PublicKey(
+        this,
+        ecdsaPrivateKey,
+      );
+
+      const feeExemptKeys = [ed25519PublicKey, ecdsaPublicKey];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        feeExemptKeys,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey, ecdsaPrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithFeeExemptKeys(
+        response.topicId,
+        feeExemptKeys,
+      );
+    });
+
+    it("(#3) Creates a topic with empty fee exempt keys list", async function () {
+      const response = await JSONRPCRequest(this, "createTopic", {
+        feeExemptKeys: [],
+        autoRenewPeriod: "7000000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithFeeExemptKeys(response.topicId, []);
+    });
+
+    it("(#4) Creates a topic with no fee exempt keys", async function () {
+      const response = await JSONRPCRequest(this, "createTopic", {
+        autoRenewPeriod: "7000000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithFeeExemptKeys(response.topicId, null);
+    });
+
+    it("(#5) Creates a topic with invalid fee exempt key", async function () {
+      try {
+        const feeExemptKeys = ["invalid_key_format"];
+        await JSONRPCRequest(this, "createTopic", {
+          feeExemptKeys,
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
