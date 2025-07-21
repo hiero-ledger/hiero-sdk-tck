@@ -91,3 +91,86 @@ export const verifyTopicUpdateWithNullKey = async (
   );
   expect(null).to.equal(mirrorNodeKey);
 };
+const isNullOrEmpty = (fees: any) =>
+  fees === null || (Array.isArray(fees) && fees.length === 0);
+
+export const verifyConsensusNodeCustomFees = (
+  consensusFees: any,
+  expectedFees: any[] | null,
+) => {
+  if (expectedFees === null || expectedFees.length === 0) {
+    expect(isNullOrEmpty(consensusFees)).to.be.true;
+  } else {
+    expect(consensusFees).to.not.be.null;
+    expect(consensusFees).to.have.lengthOf(expectedFees.length);
+
+    // Verify each custom fee
+    for (let i = 0; i < expectedFees.length; i++) {
+      const expectedFee = expectedFees[i];
+      const actualFee = consensusFees[i];
+
+      // Access the private properties correctly
+      const actualCollectorId = actualFee.feeCollectorAccountId?.toString();
+      const actualAllCollectorsExempt = actualFee.allCollectorsAreExempt;
+      const actualAmount = actualFee.amount?.toString();
+      const actualDenominatingTokenId =
+        actualFee.denominatingTokenId?.toString();
+
+      expect(actualCollectorId).to.equal(expectedFee.feeCollectorAccountId);
+      // TODO: The SDK/consensus node currently doesn't support feeCollectorsExempt: true for topics
+      // It always returns false regardless of the input. Once this is supported unskip #15 test
+
+      expect(actualAllCollectorsExempt).to.equal(
+        expectedFee.feeCollectorsExempt,
+      );
+
+      if (expectedFee.fixedFee) {
+        expect(actualAmount).to.equal(expectedFee.fixedFee.amount);
+        if (expectedFee.fixedFee.denominatingTokenId) {
+          expect(actualDenominatingTokenId).to.equal(
+            expectedFee.fixedFee.denominatingTokenId,
+          );
+        }
+      }
+    }
+  }
+};
+
+export const verifyMirrorNodeCustomFees = (
+  mirrorFees: any,
+  expectedFees: any[] | null,
+) => {
+  if (expectedFees === null || expectedFees.length === 0) {
+    const actualFeesArray = mirrorFees.fixed_fees || [];
+    expect(actualFeesArray).to.have.lengthOf(0);
+  } else {
+    expect(mirrorFees).to.not.be.null;
+    expect(mirrorFees).to.not.be.undefined;
+
+    // Extract the actual fees array from the structure
+    const actualFeesArray = mirrorFees.fixed_fees || [];
+    expect(actualFeesArray).to.have.lengthOf(expectedFees.length);
+
+    // Verify each custom fee in mirror node format
+    for (let i = 0; i < expectedFees.length; i++) {
+      const expectedFee = expectedFees[i];
+      const actualFee = actualFeesArray[i];
+      expect(actualFee.collector_account_id).to.equal(
+        expectedFee.feeCollectorAccountId,
+      );
+
+      if (expectedFee.fixedFee) {
+        expect(actualFee.amount?.toString()).to.equal(
+          expectedFee.fixedFee.amount,
+        );
+        if (expectedFee.fixedFee.denominatingTokenId) {
+          expect(actualFee.denominating_token_id).to.equal(
+            expectedFee.fixedFee.denominatingTokenId,
+          );
+        } else {
+          expect(actualFee.denominating_token_id).to.be.null;
+        }
+      }
+    }
+  }
+};

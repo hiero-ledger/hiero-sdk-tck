@@ -6,7 +6,12 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
-import { verifyTopicKey, verifyTopicKeyList } from "@helpers/verify-topic-tx";
+import {
+  verifyTopicKey,
+  verifyTopicKeyList,
+  verifyConsensusNodeCustomFees,
+  verifyMirrorNodeCustomFees,
+} from "@helpers/verify-topic-tx";
 import {
   generateEd25519PrivateKey,
   generateEcdsaSecp256k1PrivateKey,
@@ -16,13 +21,10 @@ import {
 } from "@helpers/key";
 import { getRawKeyFromHex } from "@helpers/asn1-decoder";
 
-import { ErrorStatusCodes } from "@enums/error-status-codes";
-
 /**
  * Tests for TopicCreateTransaction
  */
-describe("TopicCreateTransaction", function () {
-  // Tests should not take longer than 30 seconds to fully execute.
+describe.only("TopicCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -70,7 +72,6 @@ describe("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
       });
       expect(response.status).to.equal("SUCCESS");
-      //The topic creation succeeds and the topic has no memo? is this correct?
       expect(response.topicId).to.not.be.null;
       await verifyTopicCreationWithMemo(response.topicId, memo);
     });
@@ -1038,7 +1039,7 @@ describe("TopicCreateTransaction", function () {
     });
   });
 
-  describe.only("FeeExemptKeys", function () {
+  describe("FeeExemptKeys", function () {
     const verifyTopicCreationWithFeeExemptKeys = async (
       topicId: string,
       feeExemptKeys: string[] | null,
@@ -1187,6 +1188,614 @@ describe("TopicCreateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
+    });
+  });
+
+  describe("CustomFees", function () {
+    const verifyTopicCreationWithCustomFees = async (
+      topicId: string,
+      customFees: any[] | null,
+    ) => {
+      const consensusNodeTopic =
+        await consensusInfoClient.getTopicInfo(topicId);
+      verifyConsensusNodeCustomFees(
+        (consensusNodeTopic as any).customFees,
+        customFees,
+      );
+
+      await retryOnError(async () => {
+        const mirrorNodeTopic = await mirrorNodeClient.getTopicData(topicId);
+        verifyMirrorNodeCustomFees(
+          (mirrorNodeTopic as any).custom_fees,
+          customFees,
+        );
+      });
+    };
+
+    it("(#1) Creates a topic with valid HBAR custom fee", async function () {
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "100",
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#2) Creates a topic with valid token custom fee", async function () {
+      // First create a token to use as denominating token
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
+        name: "Test Token",
+        symbol: "TEST",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      });
+      const denominatingTokenId = tokenResponse.tokenId;
+
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "10",
+            denominatingTokenId,
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#3) Creates a topic with custom fee but no fee schedule key", async function () {
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "100",
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        autoRenewPeriod: "7000000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#4) Creates a topic with multiple custom fees", async function () {
+      // Create a token for one of the fees
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
+        name: "Test Token",
+        symbol: "TEST",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+      });
+      const denominatingTokenId = tokenResponse.tokenId;
+
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "100",
+          },
+        },
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "50",
+            denominatingTokenId,
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#5) Creates a topic with no custom fees", async function () {
+      const response = await JSONRPCRequest(this, "createTopic", {
+        autoRenewPeriod: "7000000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, null);
+    });
+
+    it("(#6) Creates a topic with invalid custom fee collector account", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: "invalid",
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data).to.exist;
+        expect(err.data.status).to.not.equal("SUCCESS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Creates a topic with a fixed fee with an amount of 0", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "0",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Creates a topic with a fixed fee with an amount of -1", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "-1",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#9) Creates a topic with a fixed fee with an amount of 9,223,372,036,854,775,807 (int64 max)", async function () {
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "9223372036854775807",
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#10) Creates a topic with a fixed fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "-9223372036854775808",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Creates a topic with a fixed fee with a fee collector account that doesn't exist", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: "123.456.789",
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#12) Creates a topic with a fixed fee with an empty fee collector account", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: "",
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data).to.exist;
+        expect(err.data.status).to.not.equal("SUCCESS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#13) Creates a topic with a fixed fee with a deleted fee collector account", async function () {
+      // Create an account to use as fee collector
+      const feeCollectorPrivateKey = await generateEd25519PrivateKey(this);
+      const feeCollectorResponse = await JSONRPCRequest(this, "createAccount", {
+        key: feeCollectorPrivateKey,
+      });
+      const deletedAccountId = feeCollectorResponse.accountId;
+
+      // Delete the account
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: deletedAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [feeCollectorPrivateKey],
+        },
+      });
+
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: deletedAccountId,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#14) Creates a topic with a fixed fee with an invalid token ID", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+              denominatingTokenId: "123.456.789",
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_TOKEN_ID_IN_CUSTOM_FEES");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it.skip("(#15) Creates a topic with fee collectors exempt set to true", async function () {
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: true,
+          fixedFee: {
+            amount: "100",
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#16) Creates a topic with fee collectors exempt set to false", async function () {
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "100",
+          },
+        },
+      ];
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+    });
+
+    it("(#17) Creates a topic with more than the maximum amount of fees allowed", async function () {
+      try {
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        // Create 11 custom fees (assuming max is 10)
+        const customFees = Array.from({ length: 11 }, (_, i) => ({
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: "100",
+          },
+        }));
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "CUSTOM_FEES_LIST_TOO_LONG");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#18) Creates a topic with an empty custom fees list", async function () {
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        this,
+        feeSchedulePrivateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createTopic", {
+        customFees: [],
+        feeScheduleKey,
+        autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.topicId).to.not.be.null;
+      await verifyTopicCreationWithCustomFees(response.topicId, []);
     });
   });
 });
