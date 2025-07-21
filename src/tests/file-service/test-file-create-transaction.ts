@@ -528,7 +528,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -547,7 +547,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -568,7 +568,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -585,7 +585,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -602,7 +602,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -636,7 +636,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
@@ -678,7 +678,7 @@ describe("FileCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(err.data.status, "INVALID_EXPIRATION_TIME");
         return;
       }
       assert.fail("Should throw an error");
