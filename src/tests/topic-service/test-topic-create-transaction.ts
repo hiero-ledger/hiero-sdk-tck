@@ -11,6 +11,8 @@ import {
   verifyTopicKeyList,
   verifyConsensusNodeCustomFees,
   verifyMirrorNodeCustomFees,
+  verifyConsensusNodeKeys,
+  verifyMirrorNodeKeys,
 } from "@helpers/verify-topic-tx";
 import {
   generateEd25519PrivateKey,
@@ -1044,49 +1046,6 @@ describe.only("TopicCreateTransaction", function () {
       topicId: string,
       feeExemptKeys: string[] | null,
     ) => {
-      // Helper functions for cleaner code
-      const isNullOrEmpty = (keys: any) =>
-        keys === null || (Array.isArray(keys) && keys.length === 0);
-
-      const convertToRawKeys = (inputKeys: string[]) =>
-        inputKeys.map((key) => getRawKeyFromHex(key));
-
-      const verifyConsensusNodeKeys = (
-        consensusKeys: any,
-        expectedKeys: string[] | null,
-      ) => {
-        if (expectedKeys === null) {
-          expect(isNullOrEmpty(consensusKeys)).to.be.true;
-        } else {
-          expect(consensusKeys).to.not.be.null;
-          expect(consensusKeys).to.have.lengthOf(expectedKeys.length);
-
-          const expectedRawKeys = convertToRawKeys(expectedKeys);
-          const actualRawKeys = consensusKeys.map((key: any) =>
-            key.toStringRaw(),
-          );
-          expect(actualRawKeys).to.deep.equal(expectedRawKeys);
-        }
-      };
-
-      const verifyMirrorNodeKeys = (
-        mirrorKeys: any,
-        expectedKeys: string[] | null,
-      ) => {
-        if (expectedKeys === null) {
-          expect(isNullOrEmpty(mirrorKeys)).to.be.true;
-        } else {
-          expect(mirrorKeys).to.not.be.null;
-          expect(mirrorKeys).to.not.be.undefined;
-          expect(mirrorKeys).to.have.lengthOf(expectedKeys.length);
-
-          const expectedRawKeys = convertToRawKeys(expectedKeys);
-          const actualRawKeys =
-            mirrorKeys?.map((keyObj: any) => keyObj.key) ?? [];
-          expect(actualRawKeys).to.deep.equal(expectedRawKeys);
-        }
-      };
-
       // Verify via consensus node
       const consensusNodeTopic =
         await consensusInfoClient.getTopicInfo(topicId);

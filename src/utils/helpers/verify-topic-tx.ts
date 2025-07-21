@@ -94,6 +94,42 @@ export const verifyTopicUpdateWithNullKey = async (
 const isNullOrEmpty = (fees: any) =>
   fees === null || (Array.isArray(fees) && fees.length === 0);
 
+const convertToRawKeys = (inputKeys: string[]) =>
+  inputKeys.map((key) => getRawKeyFromHex(key));
+
+export const verifyConsensusNodeKeys = (
+  consensusKeys: any,
+  expectedKeys: string[] | null,
+) => {
+  if (expectedKeys === null) {
+    expect(isNullOrEmpty(consensusKeys)).to.be.true;
+  } else {
+    expect(consensusKeys).to.not.be.null;
+    expect(consensusKeys).to.have.lengthOf(expectedKeys.length);
+
+    const expectedRawKeys = convertToRawKeys(expectedKeys);
+    const actualRawKeys = consensusKeys.map((key: any) => key.toStringRaw());
+    expect(actualRawKeys).to.deep.equal(expectedRawKeys);
+  }
+};
+
+export const verifyMirrorNodeKeys = (
+  mirrorKeys: any,
+  expectedKeys: string[] | null,
+) => {
+  if (expectedKeys === null) {
+    expect(isNullOrEmpty(mirrorKeys)).to.be.true;
+  } else {
+    expect(mirrorKeys).to.not.be.null;
+    expect(mirrorKeys).to.not.be.undefined;
+    expect(mirrorKeys).to.have.lengthOf(expectedKeys.length);
+
+    const expectedRawKeys = convertToRawKeys(expectedKeys);
+    const actualRawKeys = mirrorKeys?.map((keyObj: any) => keyObj.key) ?? [];
+    expect(actualRawKeys).to.deep.equal(expectedRawKeys);
+  }
+};
+
 export const verifyConsensusNodeCustomFees = (
   consensusFees: any,
   expectedFees: any[] | null,
