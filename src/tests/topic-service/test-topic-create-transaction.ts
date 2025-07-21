@@ -673,8 +673,6 @@ describe.only("TopicCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
 
-      // Not sure about this one
-
       // Verify the default auto renew period is applied
       const consensusNodeTopic = await consensusInfoClient.getTopicInfo(
         response.topicId,
@@ -699,7 +697,7 @@ describe.only("TopicCreateTransaction", function () {
       topicId: string,
       expectedAutoRenewAccount: string | null,
     ) => {
-      // Verify auto renew account via consensus node (TopicInfoQuery)
+      // Verify auto renew account via consensus node
       const consensusNodeTopic =
         await consensusInfoClient.getTopicInfo(topicId);
 
@@ -711,7 +709,7 @@ describe.only("TopicCreateTransaction", function () {
         );
       }
 
-      // Verify auto renew account via mirror node (with retry for eventual consistency)
+      // Verify auto renew account via mirror node
       await retryOnError(async () => {
         const mirrorNodeTopic = await mirrorNodeClient.getTopicData(topicId);
         if (expectedAutoRenewAccount === null) {
