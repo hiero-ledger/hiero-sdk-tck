@@ -9,6 +9,7 @@ import {
   Nfts,
   TokenInfo,
   TokenAirdropsResponse,
+  Topic,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -27,6 +28,11 @@ class MirrorNodeClient {
 
   async getTokenData(tokenId: string): Promise<TokenInfo> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getTopicData(topicId: string): Promise<Topic> {
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/topics/${topicId}`;
     return retryOnError(async () => fetchData(url));
   }
 
