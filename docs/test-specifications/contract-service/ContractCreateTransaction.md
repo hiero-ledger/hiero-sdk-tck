@@ -7,7 +7,7 @@ nav_order: 1
 
 ## Description:
 
-This test specification for `ContractCreateTransaction` is part of comprehensive testing for Hedera SDKs. The SDK under test will leverage the JSON-RPC server responses to drive and validate the test outcomes.
+This test specification for `ContractCreateTransaction` is part of comprehensive testing for Hiero SDKs. The SDK under test will leverage the JSON-RPC server responses to drive and validate the test outcomes.
 
 ## Design:
 
@@ -36,10 +36,10 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | bytecodeFileId          | string                                                  | required          | ID of file containing contract bytecode |
 | adminKey                | string                                                  | optional          | Key controlling contract (updatable/delete) |
 | gas                     | string                                                  | required          | Gas limit for contract creation |
-| initialBalance          | string                                                  | optional          | Tinybar amount to send at creation |
+| initialBalance          | string                                                  | optional          | Tinybar amount to send to the contract account at creation |
 | constructorParameters   | hex string                                              | optional          | ABI‑encoded constructor params  |
-| autoRenewPeriod         | string                                                  | optional          | Seconds until renewal           |
-| autoRenewAccountId      | string                                                  | optional          | Account to fund renewals        |
+| autoRenewPeriod         | string                                                  | optional          | Seconds until the contract is renewed           |
+| autoRenewAccountId      | string                                                  | optional          | Account to fund contractrenewals        |
 | memo                    | string                                                  | optional          | UTF‑8 memo for contract         |
 | stakedAccountId         | string                                                  | optional          | Account to stake to             |
 | stakedNodeId            | string                                                  | optional          | Node to stake to                |
