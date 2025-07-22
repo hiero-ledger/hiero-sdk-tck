@@ -28,7 +28,7 @@ import { invalidKey } from "@constants/key-type";
 /**
  * Tests for TopicCreateTransaction
  */
-describe.only("TopicCreateTransaction", function () {
+describe("TopicCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -1240,7 +1240,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
       expect(response.status).to.equal("SUCCESS");
@@ -1280,7 +1280,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1304,7 +1304,7 @@ describe.only("TopicCreateTransaction", function () {
         customFees,
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1352,7 +1352,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1395,7 +1395,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1434,7 +1434,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1473,7 +1473,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1501,7 +1501,7 @@ describe.only("TopicCreateTransaction", function () {
           feeCollectorsExempt: false,
           fixedFee: {
             amount: "9223372036854775807",
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         },
       ];
@@ -1512,7 +1512,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1545,7 +1545,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1584,7 +1584,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1623,7 +1623,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1652,7 +1652,7 @@ describe.only("TopicCreateTransaction", function () {
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [feeCollectorPrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1679,7 +1679,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1719,7 +1719,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1773,7 +1773,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1811,7 +1811,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
@@ -1843,7 +1843,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
-            maxTransactionFee: "5000000000",
+            maxTransactionFee: 5000000000,
           },
         });
       } catch (err: any) {
@@ -1871,7 +1871,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
-          maxTransactionFee: "5000000000",
+          maxTransactionFee: 5000000000,
         },
       });
 
