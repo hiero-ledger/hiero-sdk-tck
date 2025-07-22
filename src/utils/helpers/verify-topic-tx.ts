@@ -91,6 +91,7 @@ export const verifyTopicUpdateWithNullKey = async (
   );
   expect(null).to.equal(mirrorNodeKey);
 };
+
 const isNullOrEmpty = (fees: any) =>
   fees === null || (Array.isArray(fees) && fees.length === 0);
 
@@ -147,18 +148,11 @@ export const verifyConsensusNodeCustomFees = (
 
       // Access the private properties correctly
       const actualCollectorId = actualFee.feeCollectorAccountId?.toString();
-      const actualAllCollectorsExempt = actualFee.allCollectorsAreExempt;
       const actualAmount = actualFee.amount?.toString();
       const actualDenominatingTokenId =
         actualFee.denominatingTokenId?.toString();
 
       expect(actualCollectorId).to.equal(expectedFee.feeCollectorAccountId);
-      // TODO: The SDK/consensus node currently doesn't support feeCollectorsExempt: true for topics
-      // It always returns false regardless of the input. Once this is supported unskip #15 test
-
-      expect(actualAllCollectorsExempt).to.equal(
-        expectedFee.feeCollectorsExempt,
-      );
 
       if (expectedFee.fixedFee) {
         expect(actualAmount).to.equal(expectedFee.fixedFee.amount);

@@ -21,7 +21,9 @@ import {
   generateEcdsaSecp256k1PublicKey,
   generateKeyList,
 } from "@helpers/key";
-import { getRawKeyFromHex } from "@helpers/asn1-decoder";
+
+import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { invalidKey } from "@constants/key-type";
 
 /**
  * Tests for TopicCreateTransaction
@@ -100,7 +102,7 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "MEMO_TOO_LONG");
+        assert.equal(err.data.status, "MEMO_TOO_LONG", "Memo too long error");
         return;
       }
 
@@ -115,7 +117,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_ZERO_BYTE_IN_STRING");
+        assert.equal(
+          err.data.status,
+          "INVALID_ZERO_BYTE_IN_STRING",
+          "Invalid zero byte in string error",
+        );
         return;
       }
 
@@ -322,14 +328,17 @@ describe.only("TopicCreateTransaction", function () {
 
     it("(#8) Creates a topic with invalid admin key", async function () {
       try {
-        const adminKey = "invalid_key_format";
         await JSONRPCRequest(this, "createTopic", {
-          adminKey,
+          adminKey: invalidKey,
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        // receive -32001 expect -32603
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -501,16 +510,17 @@ describe.only("TopicCreateTransaction", function () {
 
     it("(#8) Creates a topic with invalid submit key", async function () {
       try {
-        const submitKey = "invalid_key_format";
+        const submitKey = invalidKey;
         await JSONRPCRequest(this, "createTopic", {
           submitKey,
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        // Should fail with an SDK internal error
-        // The exact error code may vary, but it should not succeed
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -588,7 +598,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration below minimum error",
+        );
         return;
       }
 
@@ -602,7 +616,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration above maximum error",
+        );
         return;
       }
 
@@ -616,7 +634,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration zero error",
+        );
         return;
       }
 
@@ -630,7 +652,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration negative error",
+        );
         return;
       }
 
@@ -644,7 +670,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration int64 max error",
+        );
         return;
       }
 
@@ -658,7 +688,11 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
+          "Auto renew duration int64 min error",
+        );
         return;
       }
 
@@ -739,7 +773,7 @@ describe.only("TopicCreateTransaction", function () {
       const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
 
       const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewAccount: autoRenewAccountId,
+        autoRenewAccountId: autoRenewAccountId,
         adminKey,
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
@@ -761,7 +795,7 @@ describe.only("TopicCreateTransaction", function () {
         const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
 
         await JSONRPCRequest(this, "createTopic", {
-          autoRenewAccount: "0.0.999999", // Non-existent account
+          autoRenewAccountId: "0.0.999999", // Non-existent account
           adminKey,
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
@@ -769,7 +803,11 @@ describe.only("TopicCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_AUTORENEW_ACCOUNT");
+        assert.equal(
+          err.data.status,
+          "INVALID_AUTORENEW_ACCOUNT",
+          "Invalid auto renew account error",
+        );
         return;
       }
 
@@ -798,7 +836,7 @@ describe.only("TopicCreateTransaction", function () {
         const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
 
         await JSONRPCRequest(this, "createTopic", {
-          autoRenewAccount: deletedAccountId,
+          autoRenewAccountId: deletedAccountId,
           adminKey,
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
@@ -806,7 +844,11 @@ describe.only("TopicCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        assert.equal(
+          err.data.status,
+          "INVALID_SIGNATURE",
+          "Invalid signature error",
+        );
         return;
       }
 
@@ -827,7 +869,7 @@ describe.only("TopicCreateTransaction", function () {
 
       // According to the specification, newer consensus nodes allow this
       const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewAccount: autoRenewAccountId,
+        autoRenewAccountId: autoRenewAccountId,
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [autoRenewAccountPrivateKey],
@@ -862,7 +904,7 @@ describe.only("TopicCreateTransaction", function () {
         const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
 
         await JSONRPCRequest(this, "createTopic", {
-          autoRenewAccount: "invalid", // Invalid format
+          autoRenewAccountId: "invalid", // Invalid format
           adminKey,
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
@@ -870,9 +912,11 @@ describe.only("TopicCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        // Should fail with an SDK internal error due to invalid format
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1023,15 +1067,17 @@ describe.only("TopicCreateTransaction", function () {
 
     it("(#6) Creates a topic with invalid fee schedule key", async function () {
       try {
-        const feeScheduleKey = "invalid_key_format";
+        const feeScheduleKey = invalidKey;
         await JSONRPCRequest(this, "createTopic", {
           feeScheduleKey,
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        // Should fail with an SDK internal error
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1132,15 +1178,17 @@ describe.only("TopicCreateTransaction", function () {
 
     it("(#5) Creates a topic with invalid fee exempt key", async function () {
       try {
-        const feeExemptKeys = ["invalid_key_format"];
+        const feeExemptKeys = [invalidKey];
         await JSONRPCRequest(this, "createTopic", {
           feeExemptKeys,
           autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
-        // Should fail with an SDK internal error
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1192,6 +1240,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
       expect(response.status).to.equal("SUCCESS");
@@ -1231,6 +1280,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
@@ -1253,6 +1303,9 @@ describe.only("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         autoRenewPeriod: "7000000",
+        commonTransactionParams: {
+          maxTransactionFee: "5000000000",
+        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -1299,6 +1352,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
@@ -1341,11 +1395,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1376,10 +1434,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        assert.equal(
+          err.data.status,
+          "CUSTOM_FEE_MUST_BE_POSITIVE",
+          "Custom fee amount zero error",
+        );
         return;
       }
 
@@ -1410,10 +1473,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        assert.equal(
+          err.data.status,
+          "CUSTOM_FEE_MUST_BE_POSITIVE",
+          "Custom fee amount negative error",
+        );
         return;
       }
 
@@ -1433,6 +1501,7 @@ describe.only("TopicCreateTransaction", function () {
           feeCollectorsExempt: false,
           fixedFee: {
             amount: "9223372036854775807",
+            maxTransactionFee: "5000000000",
           },
         },
       ];
@@ -1443,6 +1512,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
@@ -1475,10 +1545,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "CUSTOM_FEE_MUST_BE_POSITIVE");
+        assert.equal(
+          err.data.status,
+          "CUSTOM_FEE_MUST_BE_POSITIVE",
+          "Custom fee amount int64 min error",
+        );
         return;
       }
 
@@ -1509,10 +1584,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_CUSTOM_FEE_COLLECTOR");
+        assert.equal(
+          err.data.status,
+          "INVALID_CUSTOM_FEE_COLLECTOR",
+          "Invalid custom fee collector error",
+        );
         return;
       }
 
@@ -1543,11 +1623,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        expect(err.data).to.exist;
-        expect(err.data.status).to.not.equal("SUCCESS");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1568,6 +1652,7 @@ describe.only("TopicCreateTransaction", function () {
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [feeCollectorPrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
@@ -1594,10 +1679,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "ACCOUNT_DELETED");
+        assert.equal(
+          err.data.status,
+          "ACCOUNT_DELETED",
+          "Account deleted error",
+        );
         return;
       }
 
@@ -1629,45 +1719,73 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_TOKEN_ID_IN_CUSTOM_FEES");
+        assert.equal(
+          err.data.status,
+          "INVALID_TOKEN_ID_IN_CUSTOM_FEES",
+          "Invalid token ID in custom fees error",
+        );
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#15) Creates a topic with fee collectors exempt set to true", async function () {
-      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
-      const feeScheduleKey = await generateEd25519PublicKey(
-        this,
-        feeSchedulePrivateKey,
-      );
-
-      const customFees = [
-        {
-          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          feeCollectorsExempt: true,
-          fixedFee: {
-            amount: "100",
-          },
-        },
-      ];
-
-      const response = await JSONRPCRequest(this, "createTopic", {
-        customFees,
-        feeScheduleKey,
-        autoRenewPeriod: "7000000",
-        commonTransactionParams: {
-          signers: [feeSchedulePrivateKey],
-        },
+    it("(#15) Creates a topic with a fixed fee that is assessed with a deleted token", async function () {
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
+        name: "Test Token",
+        symbol: "TEST",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY,
       });
 
-      expect(response.status).to.equal("SUCCESS");
-      expect(response.topicId).to.not.be.null;
-      await verifyTopicCreationWithCustomFees(response.topicId, customFees);
+      const deletedTokenId = tokenResponse.tokenId;
+
+      try {
+        // Delete the token
+        await JSONRPCRequest(this, "deleteToken", {
+          tokenId: deletedTokenId,
+        });
+
+        const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
+        const feeScheduleKey = await generateEd25519PublicKey(
+          this,
+          feeSchedulePrivateKey,
+        );
+
+        const customFees = [
+          {
+            feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+            feeCollectorsExempt: false,
+            fixedFee: {
+              amount: "100",
+              denominatingTokenId: deletedTokenId,
+            },
+          },
+        ];
+
+        await JSONRPCRequest(this, "createTopic", {
+          customFees,
+          feeScheduleKey,
+          autoRenewPeriod: "7000000",
+          commonTransactionParams: {
+            signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_TOKEN_ID_IN_CUSTOM_FEES",
+          "Invalid token ID in custom fees error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#16) Creates a topic with fee collectors exempt set to false", async function () {
@@ -1693,6 +1811,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
@@ -1724,10 +1843,15 @@ describe.only("TopicCreateTransaction", function () {
           autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
+            maxTransactionFee: "5000000000",
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "CUSTOM_FEES_LIST_TOO_LONG");
+        assert.equal(
+          err.data.status,
+          "CUSTOM_FEES_LIST_TOO_LONG",
+          "Custom fees list too long error",
+        );
         return;
       }
 
@@ -1747,6 +1871,7 @@ describe.only("TopicCreateTransaction", function () {
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
+          maxTransactionFee: "5000000000",
         },
       });
 
