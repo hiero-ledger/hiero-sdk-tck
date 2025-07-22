@@ -1501,7 +1501,6 @@ describe("TopicCreateTransaction", function () {
           feeCollectorsExempt: false,
           fixedFee: {
             amount: "9223372036854775807",
-            maxTransactionFee: 5000000000,
           },
         },
       ];
