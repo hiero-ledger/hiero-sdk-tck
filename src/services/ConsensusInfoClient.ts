@@ -14,6 +14,9 @@ import {
   TokenInfoQuery,
   TokenNftInfo,
   TokenNftInfoQuery,
+  TopicId,
+  TopicInfo,
+  TopicInfoQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
@@ -89,6 +92,15 @@ class ConsensusInfoClient {
 
   async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {
     method.setTokenId(tokenId);
+    return method.execute(this.sdkClient);
+  }
+
+  async getTopicInfo(topicId: string): Promise<TopicInfo> {
+    return this.executeTopicMethod(topicId, new TopicInfoQuery());
+  }
+
+  async executeTopicMethod(topicId: string, method: TopicInfoQuery) {
+    method.setTopicId(TopicId.fromString(topicId));
     return method.execute(this.sdkClient);
   }
 }
