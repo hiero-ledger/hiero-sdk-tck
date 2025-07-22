@@ -201,6 +201,7 @@ describe("AccountAllowanceDeleteTransaction", function () {
       });
     });
 
+    // Possibly CATASTROPHIC failure while running the handle workflow
     it.skip("(#2) Deletes an allowance to a spender account from an owner account that doesn't exist", async function () {
       try {
         await JSONRPCRequest(this, "deleteAllowance", {
@@ -243,7 +244,8 @@ describe("AccountAllowanceDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#4) Deletes an allowance to a spender account from a deleted owner account", async function () {
+    // cannot delete treasury
+    it("(#4) Deletes an allowance to a spender account from a deleted owner account", async function () {
       await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: ownerAccountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID as string,

@@ -594,6 +594,7 @@ describe("AccountUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // should communicate with services, since it ignores the expiration time if its int64 min
     it.skip("(#5) Updates the expiration time of an account to -9,223,372,036,854,775,808 (`int64` min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateAccount", {

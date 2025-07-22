@@ -790,11 +790,14 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#16) Approves a token allowance to a spender account from an owner account with a deleted token", async function () {
+    it("(#16) Approves a token allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
 
       tokenId = await createFtToken(this, {
         adminKey,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
       });
 
       await JSONRPCRequest(this, "associateToken", {
@@ -844,6 +847,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // ONLY reject self-approval for NFT's; else allow to match OZ ERC-20
     it.skip("(#17) Approves a token allowance to an account from the same account", async function () {
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -1186,6 +1190,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // cannot delete treasury
     it.skip("(#4) Approves an NFT allowance to a spender account from a deleted owner account", async function () {
       await deleteAccount(this, ownerAccountId, ownerPrivateKey);
 
@@ -1348,7 +1353,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Approves an NFT allowance to a spender account from an owner account with a deleted token", async function () {
+    it("(#10) Approves an NFT allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
@@ -1356,7 +1361,7 @@ describe("AccountAllowanceApproveTransaction", function () {
         adminKey,
         supplyKey,
         commonTransactionParams: {
-          signers: [ownerPrivateKey],
+          signers: [ownerPrivateKey, adminKey, supplyKey],
         },
       });
 
@@ -1496,7 +1501,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#14) Approves an NFT allowance to a delegate spender account from a deleted spender account with approved for all privileges from an owner account", async function () {
+    it("(#14) Approves an NFT allowance to a delegate spender account from a deleted spender account with approved for all privileges from an owner account", async function () {
       const key = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, key);
 
@@ -1975,6 +1980,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // cannot delete treasury
     it.skip("(#4) Approves an NFT allowance with approved for all privileges to a spender account from a deleted owner account", async function () {
       await deleteAccount(this, ownerAccountId, ownerPrivateKey);
 
@@ -2137,7 +2143,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a deleted token", async function () {
+    it("(#10) Approves an NFT allowance with approved for all privileges to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
@@ -2145,7 +2151,7 @@ describe("AccountAllowanceApproveTransaction", function () {
         adminKey,
         supplyKey,
         commonTransactionParams: {
-          signers: [ownerPrivateKey],
+          signers: [ownerPrivateKey, adminKey, supplyKey],
         },
       });
 
@@ -2522,6 +2528,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // cannot delete treasury
     it.skip("(#4) Deletes an NFT allowance to a spender account from a deleted owner account", async function () {
       await deleteAccount(this, ownerAccountId, ownerPrivateKey);
 
@@ -2549,6 +2556,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // should communicate with services -> ApproveAllowanceValidator.validateNFTSpender
     it.skip("(#5) Deletes an NFT allowance to a spender account that doesn't exist from an owner account", async function () {
       try {
         await JSONRPCRequest(this, "approveAllowance", {
@@ -2603,6 +2611,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // should communicate with services -> ApproveAllowanceValidator.validateNFTSpender
     it.skip("(#7) Deletes an NFT allowance to a deleted spender account from a owner account", async function () {
       await deleteAccount(this, spenderAccountId, spenderPrivateKey);
 
@@ -2684,7 +2693,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
+    it("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 

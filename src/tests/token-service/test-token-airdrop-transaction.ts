@@ -1093,6 +1093,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -5408,6 +5409,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#26) Airdrops an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -7875,6 +7877,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#25) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -10116,6 +10119,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#23) Airdrops an approved NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -12571,6 +12575,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#26) Airdrops an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 

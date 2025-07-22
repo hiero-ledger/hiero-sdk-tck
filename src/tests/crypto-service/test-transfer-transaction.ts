@@ -2297,7 +2297,7 @@ describe("TransferTransaction", function () {
       );
     });
 
-    it.skip("(#25) Transfers an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
+    it("(#25) Transfers an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
       const feeCollectorAccountId = await createAccount(
         this,
@@ -2375,7 +2375,7 @@ describe("TransferTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_FEE_COLLECTOR");
+        assert.equal(err.data.status, "TOKEN_NOT_ASSOCIATED_TO_ACCOUNT");
         return;
       }
 
@@ -4252,6 +4252,7 @@ describe("TransferTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#23) Transfers an NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -5628,7 +5629,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Transfers an amount of NFT from a sender account to a receiver account", async function () {
+    it("(#10) Transfers an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
@@ -5676,7 +5677,7 @@ describe("TransferTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "UNEXPECTED_TOKEN_DECIMALS");
+        assert.equal(err.data.status, "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON");
         return;
       }
 
@@ -6365,6 +6366,7 @@ describe("TransferTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#26) Transfers an amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -7062,7 +7064,7 @@ describe("TransferTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#34) Transfers an amount of fungible token from several sender accounts to one receiver account with one incorrect decimals amount", async function () {
+    it.only("(#34) Transfers an amount of fungible token from several sender accounts to one receiver account with one incorrect decimals amount", async function () {
       const senderPrivateKey2 = await generateEcdsaSecp256k1PrivateKey(this);
       const senderPrivateKey3 = await generateEd25519PrivateKey(this);
 
@@ -7117,7 +7119,7 @@ describe("TransferTransaction", function () {
                 accountId: senderAccountId,
                 tokenId,
                 amount: amountNegatedStr,
-                decimals,
+                decimals: decimals + 1234,
               },
             },
             {
@@ -10094,6 +10096,7 @@ describe("TransferTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#25) Transfers an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -12332,6 +12335,7 @@ describe("TransferTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#23) Transfers an approved NFT with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
@@ -14778,6 +14782,7 @@ describe("TransferTransaction", function () {
       );
     });
 
+    // should communicate with services team
     it.skip("(#26) Transfers an approved amount of fungible token with a fee from a sender account to a receiver account with the fee collector not associated", async function () {
       const feeCollectorAccountKey = await generateEd25519PrivateKey(this);
 
