@@ -1975,11 +1975,11 @@ describe("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#12) Updates a mutable token with an auto renew period set to 8,000,002 seconds", async function () {
+    it("(#12) Updates a mutable token with an auto renew period set to 9,000,000 seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateToken", {
           tokenId: mutableTokenId,
-          autoRenewPeriod: "8000002",
+          autoRenewPeriod: "9000000",
           commonTransactionParams: {
             signers: [mutableTokenKey],
           },
@@ -2147,7 +2147,7 @@ describe("TokenUpdateTransaction", function () {
       });
     });
 
-    it("(#10) Updates a mutable token to an expiration time 8,000,002 seconds from the current time", async function () {
+    it("(#10) Updates a mutable token to an expiration time 9,000,000 seconds from the current time", async function () {
       const expirationTime = (
         Math.ceil(Date.now() / 1000) + 8000002
       ).toString();

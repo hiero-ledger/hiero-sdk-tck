@@ -1850,7 +1850,7 @@ describe("TokenCreateTransaction", function () {
       });
     });
 
-    it("(#9) Creates a token with an expiration time of 8,000,002 seconds from the current time", async function () {
+    it("(#9) Creates a token with an expiration time of 9,000,000 seconds from the current time", async function () {
       try {
         const expirationTime = (
           Math.floor(Date.now() / 1000) + 8000002
@@ -2195,14 +2195,14 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it("(#11) Creates a token with an auto renew period set to the maximum period plus one second (8,000,002 seconds)", async function () {
+    it("(#11) Creates a token with an auto renew period set to the maximum period plus 1mil seconds (9,000,000 seconds)", async function () {
       try {
         await JSONRPCRequest(this, "createToken", {
           name: "testname",
           symbol: "testsymbol",
           treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
           autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          autoRenewPeriod: "8000002",
+          autoRenewPeriod: "9000000",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_RENEWAL_PERIOD");

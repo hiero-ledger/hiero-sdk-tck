@@ -488,12 +488,12 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the auto-renew period of an account to the maximum period plus one second (8,000,002 seconds)", async function () {
+    it("(#6) Updates the auto-renew period of an account to the maximum period plus 1mil seconds (9,000,000 seconds)", async function () {
       try {
-        // Attempt to update auto-renew period of the account to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
+        // Attempt to update auto-renew period of the account to 9,000,000 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
-          autoRenewPeriod: "8000002",
+          autoRenewPeriod: "9000000",
           commonTransactionParams: {
             signers: [accountPrivateKey],
           },
@@ -648,14 +648,14 @@ describe("AccountUpdateTransaction", function () {
       );
     });
 
-    it("(#8) Updates the expiration time of an account to 8,000,002 seconds from the current time", async function () {
+    it("(#8) Updates the expiration time of an account to 9,000,000 seconds from the current time", async function () {
       try {
         // Use Math.ceil to prevent flakiness.
         const expirationTime = (
           Math.ceil(Date.now() / 1000) + 8000002
         ).toString();
 
-        // Attempt to update the expiration time of the account to 8,000,002 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
+        // Attempt to update the expiration time of the account to 9,000,000 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
         await JSONRPCRequest(this, "updateAccount", {
           accountId: accountId,
           expirationTime: expirationTime,
