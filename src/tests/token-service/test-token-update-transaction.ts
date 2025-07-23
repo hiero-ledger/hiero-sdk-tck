@@ -2149,7 +2149,7 @@ describe("TokenUpdateTransaction", function () {
 
     it("(#10) Updates a mutable token to an expiration time 9,000,000 seconds from the current time", async function () {
       const expirationTime = (
-        Math.ceil(Date.now() / 1000) + 8000002
+        Math.ceil(Date.now() / 1000) + 9000000
       ).toString();
 
       try {

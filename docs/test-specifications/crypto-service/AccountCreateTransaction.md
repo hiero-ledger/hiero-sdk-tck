@@ -190,7 +190,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 3       | Creates an account with an auto renew period set to the minimum period of 30 days (2,592,000 seconds)                  | key=<VALID_KEY>, autoRenewPeriod="2592000" | The account creation succeeds and the account's auto renew period should equal 2,592,000 seconds.  | Y                 |
 | 4       | Creates an account with an auto renew period set to the minimum period of 30 days minus one second (2,591,999 seconds) | key=<VALID_KEY>, autoRenewPeriod="2591999" | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 | 5       | Creates an account with an auto renew period set to the maximum period of 8,000,001 seconds                            | key=<VALID_KEY>, autoRenewPeriod=8000001 | The account creation succeeds and the account's auto renew period should equal 8,000,001 seconds.  | Y                 |
-| 6       | Creates an account with an auto renew period set to the maximum period plus 1mil secondss (9,000,000 seconds)            | key=<VALID_KEY>, autoRenewPeriod="8000002" | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
+| 6       | Creates an account with an auto renew period set to the maximum period plus 1mil secondss (9,000,000 seconds)            | key=<VALID_KEY>, autoRenewPeriod="9000000" | The account creation fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 
 #### JSON Request Example
 

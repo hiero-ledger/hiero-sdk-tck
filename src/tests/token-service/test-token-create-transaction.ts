@@ -1853,7 +1853,7 @@ describe("TokenCreateTransaction", function () {
     it("(#9) Creates a token with an expiration time of 9,000,000 seconds from the current time", async function () {
       try {
         const expirationTime = (
-          Math.floor(Date.now() / 1000) + 8000002
+          Math.floor(Date.now() / 1000) + 9000000
         ).toString();
 
         // Create the token with the calculated expiration time in ISO format

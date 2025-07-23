@@ -652,7 +652,7 @@ describe("AccountUpdateTransaction", function () {
       try {
         // Use Math.ceil to prevent flakiness.
         const expirationTime = (
-          Math.ceil(Date.now() / 1000) + 8000002
+          Math.ceil(Date.now() / 1000) + 9000000
         ).toString();
 
         // Attempt to update the expiration time of the account to 9,000,000 seconds from the current time. The network should respond with an INVALID_EXPIRATION_TIME status.
