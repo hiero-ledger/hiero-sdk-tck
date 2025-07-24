@@ -50,6 +50,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | stakedAccountId         | string                                                  | optional          | Account to stake the contract account to             |
 | stakedNodeId            | string                                                  | optional          | Node to stake to the contract account to                |
 | declineStakingReward    | bool                                                    | optional          | Decline  reward on staking the contract account      |
+| maxAutomaticTokenAssociation    | string                                                    | optional          | The number of automatic token associations for the contract account     |
 | commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          | Standard fields: payer, signers, maxFee, etc. |
 
 ### Output Parameters
