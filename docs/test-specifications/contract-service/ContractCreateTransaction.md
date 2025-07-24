@@ -16,12 +16,15 @@ Each test within the test specification is linked to one of the properties withi
 A successful contract creation transaction (i.e., the transaction reached consensus and the contract was deployed) can be confirmed by retrieving a TransactionReceipt or TransactionRecord, or by issuing a ContractInfoQuery to verify the existence of the new contract. The Mirror Node REST API can also be used to verify transaction status and associated entity creation. Error codes are derived from the Hedera ResponseCode.proto definitions and reflect both network-level and contract-level execution outcomes.
 
 **Transaction Properties:**
+
 https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
 
 **Response Codes:**
+
 https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
 
 **ContractCreate protobuf:**
+
 [https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract\_create.proto](https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract_create.proto)
 
 **Mirror Node APIs:**
