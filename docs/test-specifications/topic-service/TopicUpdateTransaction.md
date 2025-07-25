@@ -115,6 +115,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 6       | Updates a topic with valid ThresholdKey as submit key               | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", submitKey=<VALID_THRESHOLD_KEY> (signed with admin key)               | The topic update succeeds and the topic has the new ThresholdKey as its submit key.               | N                 |
 | 7       | Updates a topic to remove submit key                                | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", submitKey="" (signed with admin key)                                  | The topic update succeeds and the topic has no submit key (open for all message submissions).     | N                 |
 | 8       | Updates a topic with invalid submit key                             | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", submitKey=<INVALID_KEY> (signed with admin key)                       | The topic update fails with an SDK internal error.                                                | N                 |
+| 9       | Updates a topic without submit key to add submit key                | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY_NO_SUBMIT_KEY>", submitKey=<VALID_KEY> (signed with admin key)           | The topic update succeeds and the topic now has the new submit key restricting message access.    | N                 |
 
 ### **AutoRenewPeriod:**
 
