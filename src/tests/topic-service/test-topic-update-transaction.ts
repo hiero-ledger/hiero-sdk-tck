@@ -553,6 +553,37 @@ describe.only("TopicUpdateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
+    it("(#10) Updates a topic without admin key to add admin key", async function () {
+      // Create a topic without admin key
+      const createResponse = await JSONRPCRequest(this, "createTopic", {
+        memo: "Topic without admin key",
+        // No adminKey provided - topic will be immutable
+      });
+      const topicIdWithoutAdminKey = createResponse.topicId;
+
+      // Generate an admin key to try to add
+      const newAdminPrivateKey = await generateEd25519PrivateKey(this);
+      const newAdminKey = await generateEd25519PublicKey(
+        this,
+        newAdminPrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "updateTopic", {
+          topicId: topicIdWithoutAdminKey,
+          adminKey: newAdminKey,
+          commonTransactionParams: {
+            signers: [newAdminPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "UNAUTHORIZED", "Unauthorized error");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("SubmitKey", function () {
@@ -781,6 +812,42 @@ describe.only("TopicUpdateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
+    });
+
+    it("(#9) Updates a topic without submit key to add submit key", async function () {
+      // Create a topic with only admin key (no submit key)
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
+
+      const createResponse = await JSONRPCRequest(this, "createTopic", {
+        adminKey,
+        // No submitKey provided
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+      const topicIdWithoutSubmitKey = createResponse.topicId;
+
+      // Generate a submit key to add
+      const submitPrivateKey = await generateEd25519PrivateKey(this);
+      const submitKey = await generateEd25519PublicKey(this, submitPrivateKey);
+
+      // Update the topic to add the submit key
+      const response = await JSONRPCRequest(this, "updateTopic", {
+        topicId: topicIdWithoutSubmitKey,
+        submitKey,
+        commonTransactionParams: {
+          signers: [adminPrivateKey], // Only admin key signature needed
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await retryOnError(async () => {
+        await verifyTopicUpdateWithSubmitKey(
+          topicIdWithoutSubmitKey,
+          submitKey,
+        );
+      });
     });
   });
 
