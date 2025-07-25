@@ -17,20 +17,25 @@ A successful contract creation transaction (i.e., the transaction reached consen
 
 **Transaction Properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
+- https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
 
 **Response Codes:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
+- https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
 
 **ContractCreate protobuf:**
 
-[https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract\_create.proto](https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract_create.proto)
+- [https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract\_create.proto](https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract_create.proto)
 
 **Mirror Node APIs:**
 
 - Contract info: [https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContract](https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContract)
 - Create results: [https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContractResultsByContractId](https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContractResultsByContractId)
+
+**Smart Contracts:**
+- contracts: https://github.com/hashgraph/hedera-smart-contracts/tree/main/contracts
+- system contracts: https://github.com/hashgraph/hedera-smart-contracts/tree/main/contracts/system-contracts
+ 
 
 ## JSON-RPC API Endpoint Documentation
 
@@ -82,11 +87,11 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 6       | Create and deploy a valid contract, then call one of its functions                                             | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
 | 7       | Create and deploy a valid  ERC-20 contract, then call one of its functions                                     | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
 | 8       | Create and deploy a valid  ERC-721 contract, then call one of its functions                                    | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
-| 9       | Create and deploy a valid contract that interact with the Hiero account service system contract                | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 10      | Create and deploy a valid contract that interact with the Hiero exchange rate system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 11      | Create and deploy a valid contract that interact with the Hiero schedule service system contract               | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 12      | Create and deploy a valid contract that interact with the Hiero token service system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 13      | Create and deploy a valid contract that interact with the Hiero psuedo random number generator system contract | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 9       | Create and deploy a valid contract that uses the Hiero account service system contract                | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 10      | Create and deploy a valid contract that uses the the Hiero exchange rate system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 11      | Create and deploy a valid contract that uses the Hiero schedule service system contract               | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 12      | Create and deploy a valid contract that uses the Hiero token service system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 13      | Create and deploy a valid contract that uses the Hiero psuedo random number generator system contract | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
 | 14      | Create and deploy a valid contract and set the payer account that does not have sufficient funds               | bytecodeFileId="VALID_FILE_ID"    | Fails with 'INSUFFICIENT_PAYER_BALANCE`                                         | N                 |
 | 15      | Create and deploy a valid contract and set the file ID to be a system file under 0.0.1000                      | bytecodeFileId="VALID_FILE_ID"    | Fails                                              | N                 |
 | 16      | Create and deploy a valid contract and set the file ID to be a deleted file ID                                 | bytecodeFileId="VALID_FILE_ID"     | Fails                                              | N                 |
