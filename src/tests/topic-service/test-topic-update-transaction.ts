@@ -1197,14 +1197,14 @@ describe.only("TopicUpdateTransaction", function () {
           topicId: topicId,
           autoRenewAccountId: deletedAccountId,
           commonTransactionParams: {
-            signers: [topicAdminKey],
+            signers: [topicAdminKey, accountPrivateKey],
           },
         });
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "INVALID_SIGNATURE",
-          "Invalid signature error",
+          "INVALID_AUTORENEW_ACCOUNT",
+          "Invalid auto renew account error",
         );
         return;
       }
