@@ -242,7 +242,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 
 ---
 
-### **Max Automatic Associations*
+### **Max Automatic Associations**
 - The maximum number of tokens that can be auto-associated with this smart contract.
 
 | Test no | Name                                                                                                              | Input                                                | Expected Response                                                 | Implemented (Y/N) |
