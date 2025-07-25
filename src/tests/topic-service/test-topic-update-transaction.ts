@@ -439,7 +439,9 @@ describe.only("TopicUpdateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
-      await verifyTopicKeyList(topicId, newAdminKey, "adminKey");
+      await retryOnError(async () =>
+        verifyTopicKeyList(topicId, newAdminKey, "adminKey"),
+      );
     });
 
     it("(#6) Updates a topic with valid ThresholdKey as admin key", async function () {
@@ -471,7 +473,9 @@ describe.only("TopicUpdateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
-      await verifyTopicKeyList(topicId, newAdminKey, "adminKey");
+      await retryOnError(async () =>
+        verifyTopicKeyList(topicId, newAdminKey, "adminKey"),
+      );
     });
 
     //will be enabled in HIP-1139
@@ -590,7 +594,9 @@ describe.only("TopicUpdateTransaction", function () {
           expect(mirrorNodeTopic.submit_key).to.be.null;
         });
       } else {
-        await verifyTopicKey(topicId, submitKey, "submitKey");
+        await retryOnError(async () => {
+          await verifyTopicKey(topicId, submitKey, "submitKey");
+        });
       }
     };
 
@@ -1687,7 +1693,9 @@ describe.only("TopicUpdateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
-      await verifyTopicKeyList(topicId, feeScheduleKey, "feeScheduleKey");
+      await retryOnError(async () =>
+        verifyTopicKeyList(topicId, feeScheduleKey, "feeScheduleKey"),
+      );
     });
 
     it("(#7) Updates a topic with valid ThresholdKey as fee schedule key", async function () {
@@ -1715,7 +1723,9 @@ describe.only("TopicUpdateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
-      await verifyTopicKeyList(topicId, feeScheduleKey, "feeScheduleKey");
+      await retryOnError(async () =>
+        verifyTopicKeyList(topicId, feeScheduleKey, "feeScheduleKey"),
+      );
     });
 
     it("(#8) Updates a topic with invalid fee schedule key", async function () {
