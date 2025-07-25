@@ -28,7 +28,7 @@ import { invalidKey } from "@constants/key-type";
 /**
  * Tests for TopicUpdateTransaction
  */
-describe.only("TopicUpdateTransaction", function () {
+describe("TopicUpdateTransaction", function () {
   this.timeout(30000);
 
   // Initial topic parameters
