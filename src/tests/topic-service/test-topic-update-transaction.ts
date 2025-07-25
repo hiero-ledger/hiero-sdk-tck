@@ -34,6 +34,9 @@ describe.only("TopicUpdateTransaction", function () {
   // Initial topic parameters
   const initialTopicMemo = "Test topic memo";
 
+  let topicId: string;
+  let topicAdminKey: string;
+
   beforeEach(async function () {
     await setOperator(
       this,
@@ -47,9 +50,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("TopicId", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -142,9 +142,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("Memo", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -299,9 +296,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("AdminKey", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -562,9 +556,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("SubmitKey", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -794,9 +785,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("AutoRenewPeriod", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -1019,9 +1007,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("AutoRenewAccount", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -1196,9 +1181,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("ExpirationTime", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -1284,28 +1266,16 @@ describe.only("TopicUpdateTransaction", function () {
     });
 
     it("(#4) Updates a topic with expiration time earlier than existing", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         // Set expiration time to 1 hour ago (earlier than current time)
         const currentTime = Math.floor(Date.now() / 1000);
         const pastExpirationTime = (currentTime - 3600).toString(); // 1 hour ago
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime: pastExpirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1321,28 +1291,16 @@ describe.only("TopicUpdateTransaction", function () {
     });
 
     it("(#5) Updates a topic with expiration time equal to existing", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         // Set expiration time equal to current time
         const currentTime = Math.floor(Date.now() / 1000);
         const currentExpirationTime = currentTime.toString();
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime: currentExpirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1358,28 +1316,16 @@ describe.only("TopicUpdateTransaction", function () {
     });
 
     it("(#6) Updates a topic with too large expiration time", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         // Set expiration time to current time + 8000002 seconds (over maximum)
         const currentTime = Math.floor(Date.now() / 1000);
         const expirationTime = (currentTime + 80000002).toString();
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1418,26 +1364,14 @@ describe.only("TopicUpdateTransaction", function () {
     });
 
     it("(#8) Updates a topic with expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         const expirationTime = "9223372036854775806"; // int64 max - 1
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1454,26 +1388,14 @@ describe.only("TopicUpdateTransaction", function () {
 
     // should communicate with services, since it ignores the expiration time if its int64 min
     it.skip("(#9) Updates a topic with expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         const expirationTime = "-9223372036854775808"; // int64 min
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1489,26 +1411,14 @@ describe.only("TopicUpdateTransaction", function () {
     });
 
     it("(#10) Updates a topic with expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
-      // Create a topic with admin key
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);
-
-      const createResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey,
-
-        commonTransactionParams: {
-          signers: [adminPrivateKey],
-        },
-      });
-
       try {
         const expirationTime = "-9223372036854775807"; // int64 min + 1
 
         await JSONRPCRequest(this, "updateTopic", {
-          topicId: createResponse.topicId,
+          topicId: topicId,
           expirationTime,
           commonTransactionParams: {
-            signers: [adminPrivateKey],
+            signers: [topicAdminKey],
           },
         });
       } catch (err: any) {
@@ -1525,9 +1435,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("FeeScheduleKey", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
 
@@ -1752,9 +1659,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("FeeExemptKeys", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
       const createResponse = await JSONRPCRequest(this, "createTopic", {
@@ -2029,9 +1933,6 @@ describe.only("TopicUpdateTransaction", function () {
   });
 
   describe("CustomFees", function () {
-    let topicId: string;
-    let topicAdminKey: string;
-
     beforeEach(async function () {
       topicAdminKey = await generateEd25519PrivateKey(this);
       const createResponse = await JSONRPCRequest(this, "createTopic", {
