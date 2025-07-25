@@ -99,6 +99,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 7       | Updates a topic to remove admin key                                | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", adminKey="" (signed with current admin key)                                  | The topic update succeeds and the topic has no admin key (immutable except for expiration extension). | N                 |
 | 8       | Updates a topic with invalid admin key                             | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", adminKey=<INVALID_KEY> (signed with current admin key)                       | The topic update fails with an SDK internal error.                                                    | N                 |
 | 9       | Updates a topic without required admin key signature               | topicId="<CREATED_TOPIC_ID_WITH_ADMIN_KEY>", adminKey=<VALID_KEY> (without proper signatures)                             | The topic update fails with `INVALID_SIGNATURE`.                                                      | N                 |
+| 10      | Updates a topic without admin key to add admin key                 | topicId="<CREATED_TOPIC_ID_WITHOUT_ADMIN_KEY>", adminKey=<VALID_KEY>                                                      | The topic update fails with `UNAUTHORIZED`.                                                           | N                 |
 
 ### **SubmitKey:**
 
