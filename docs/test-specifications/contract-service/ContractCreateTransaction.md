@@ -69,44 +69,51 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ## Property Tests
 
 ### **Bytecode File ID**
+- The file ID that contains the bytecode for the smart contract. The bytecode must be deployed to a file via FileCreateTransaction and the resulting file ID would be used as a valid file ID.
 
 | Test no | Name                                                                                                           | Input                             | Expected Response                                      | Implemented (Y/N) |
 |---------|----------------------------------------------------------------------------------------------------------------|-----------------------------------|--------------------------------------------------------|-------------------|
-| 1       | Create a contract with valid file containing bytecode                                                          | bytecodeFileId=\<VALID\_FILE\_ID> | Transaction succeeds, contract exists via `ContractInfoQuery`. | N                 |
+| 1       | Create a contract with valid file containing bytecode                                                          | bytecodeFileId=<VALID_FILE_ID> | Transaction succeeds, contract exists via `ContractInfoQuery`. | N                 |
 | 2       | Create a contract with missing `bytecodeFileId`                                                                | —                                 | Fails with `INVALID_FILE_ID` from network.             | N                 |
 | 3       | Create a contract with invalid/nonexistent `bytecodeFileId`                                                    | bytecodeFileId="0.0.9999999"      | Fails with `INVALID_FILE_ID`.                          | N                 |
-| 3       | Create a contract with a valid file ID but no content                                                          | bytecodeFileId="VALID/FILE/ID"    | Fails with `CONTRACT_FILE_EMPTY `.                     | N                 |
-| 4       | Create a contract with a valid file ID but with no bytecode                                                    | bytecodeFileId="VALID/FILE/ID"    | Fails with `CONTRACT_BYTECODE_EMPTY`.                  | N                 |
-| 5       | Create a contract with bytecode file too large                                                                 | bytecodeFileId=\<OVERSIZED\_FILE> | Fails with `CONTRACT__SIZE_LIMIT_EXCEEDED`.            | N                 |
-| 6       | Create and deploy a valid contract, then call one of its functions                                             | bytecodeFileId=\<VALID\_FILE>     | Succeeds with expected result                          | N                 |
-| 7       | Create and deploy a valid  ERC-20 contract, then call one of its functions                                     | bytecodeFileId=\<VALID\_FILE>     | Succeeds with expected result                          | N                 |
-| 8       | Create and deploy a valid  ERC-721 contract, then call one of its functions                                    | bytecodeFileId=\<VALID\_FILE>     | Succeeds with expected result                          | N                 |
-| 9       | Create and deploy a valid contract that interact with the Hiero account service system contract                | bytecodeFileId=\<VALID\_FILE>     | Succeeds with correct interaction with system contract | N                 |
-| 10      | Create and deploy a valid contract that interact with the Hiero exchange rate system contract                  | bytecodeFileId=\<VALID\_FILE>     | Succeeds with correct interaction with system contract | N                 |
-| 11      | Create and deploy a valid contract that interact with the Hiero schedule service system contract               | bytecodeFileId=\<VALID\_FILE>     | Succeeds with correct interaction with system contract | N                 |
-| 12      | Create and deploy a valid contract that interact with the Hiero token service system contract                  | bytecodeFileId=\<VALID\_FILE>     | Succeeds with correct interaction with system contract | N                 |
-| 13      | Create and deploy a valid contract that interact with the Hiero psuedo random number generator system contract | bytecodeFileId=\<VALID\_FILE>     | Succeeds with correct interaction with system contract | N                 |
-| 14      | Create and deploy a valid contract and set the payer account that does not have sufficient funds               | bytecodeFileId=\<VALID\_FILE>     | Fails with 'INSUFFICIENT_PAYER_BALANCE`                                         | N                 |
-| 15      | Create and deploy a valid contract and set the file ID to be a system file under 0.0.1000                      | bytecodeFileId=\<VALID\_FILE>     | Fails                                              | N                 |
-| 16      | Create and deploy a valid contract and set the file ID to be a deleted file ID                                 | bytecodeFileId=\<VALID\_FILE>     | Fails                                              | N                 |
+| 3       | Create a contract with a valid file ID but no content                                                          | bytecodeFileId="VALID_FILE_ID"    | Fails with `CONTRACT_FILE_EMPTY `.                     | N                 |
+| 4       | Create a contract with a valid file ID but with no bytecode                                                    | bytecodeFileId="VALID_FILE_ID"    | Fails with `CONTRACT_BYTECODE_EMPTY`.                  | N                 |
+| 5       | Create a contract with bytecode file too large                                                                 | bytecodeFileId="OVERSIZE_FILE" | Fails with `CONTRACT__SIZE_LIMIT_EXCEEDED`.            | N                 |
+| 6       | Create and deploy a valid contract, then call one of its functions                                             | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
+| 7       | Create and deploy a valid  ERC-20 contract, then call one of its functions                                     | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
+| 8       | Create and deploy a valid  ERC-721 contract, then call one of its functions                                    | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
+| 9       | Create and deploy a valid contract that interact with the Hiero account service system contract                | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 10      | Create and deploy a valid contract that interact with the Hiero exchange rate system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 11      | Create and deploy a valid contract that interact with the Hiero schedule service system contract               | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 12      | Create and deploy a valid contract that interact with the Hiero token service system contract                  | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 13      | Create and deploy a valid contract that interact with the Hiero psuedo random number generator system contract | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 14      | Create and deploy a valid contract and set the payer account that does not have sufficient funds               | bytecodeFileId="VALID_FILE_ID"    | Fails with 'INSUFFICIENT_PAYER_BALANCE`                                         | N                 |
+| 15      | Create and deploy a valid contract and set the file ID to be a system file under 0.0.1000                      | bytecodeFileId="VALID_FILE_ID"    | Fails                                              | N                 |
+| 16      | Create and deploy a valid contract and set the file ID to be a deleted file ID                                 | bytecodeFileId="VALID_FILE_ID"     | Fails                                              | N                 |
 
-
-
-
-#### JSON Example
-
-```json
-{ "method":"createContract", "params": { "bytecodeFileId":"0.0.123" } }
-```
+### **Initcode**
+- Initcode represents the raw bytes of the smart contract creation logic that are directly included in the transaction. 
+  
+| Test no | Name                                                                                  | Input                                                                              | Expected Response                                                                                                     | Implemented (Y/N) |
+|---------|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|-------------------|
+| 1       | Create a contract with valid initcode under the transaction size limit                | `initcode=<VALID_INITCODE_HEX>`, no `bytecodeFileId`                               | Transaction succeeds; contract is created and bytecode recorded in state.                                             | N                 |
+| 2       | Create a contract with initcode exactly at the transaction size limit boundary        | `initcode=<MAX_ALLOWED_HEX_BYTES>` such that total tx size == network limit        | Transaction succeeds.                                                                                                 | N                 |
+| 3       | Create a contract with initcode that makes transaction exceed network size limit      | `initcode=<HEX_BYTES_EXCEEDING_LIMIT>`                                             | Transaction fails with `TRANSACTION_OVERSIZE` (or equivalent `TRANSACTION_SIZE_LIMIT_EXCEEDED`).                      | N                 |
+| 4       | Create a contract with missing initcode AND missing bytecodeFileId                    | No `initcode`, no `bytecodeFileId`                                                 | Transaction fails with `CONTRACT_BYTECODE_EMPTY` (or `INVALID_TRANSACTION_BODY`).                                     | N                 |
+| 5       | Create a contract with both initcode and bytecodeFileId supplied                      | `initcode=<VALID_INITCODE_HEX>`, `bytecodeFileId=0.0.1234`                         | Transaction fails with `INVALID_TRANSACTION_BODY` (or SDK rejects before submission).                                 | N                 |
+| 6       | Create a contract with an invalid initcode hex string                                 | `initcode="0xZZ"`                                                                  | SDK/client validation error, transaction not submitted OR network fails with `INVALID_CONTRACT_INITCODE`.             | N                 |
+| 7       | Create a contract with a valid initcode with constructorParameters                    | `initcode=<VALID_INITCODE_HEX>`, `constructorParameters=<VALID_ABI_ENCODED_HEX>`   | Transaction succeeds; constructor runs with provided params (verify via `ContractFunctionResult` on mirror node).     | N                 |
+| 8       | Create a contract with a valid initcode but insufficient gas                          | `initcode=<VALID_INITCODE_HEX>`, `gas="0"`                                         | Transaction fails with `INSUFFICIENT_GAS`.                                                                            | N                 |
 
 ---
 
 ### **Admin Key**
+- Admin Key is an optional key that grants administrative control over the smart contract.
 
 | Test no | Name                                                          | Input                                                         | Expected Response                                             | Implemented |
 |---------|---------------------------------------------------------------|---------------------------------------------------------------|---------------------------------------------------------------| ----------- |
-| 1       | Create a contract with a valid ED25519                        | adminKey=\<VALID\_KEY>                                        | Transaction succeeds, adminKey reflected in `getContract`.    | N           |
-| 2       | Create a contract with a valid ECDSA key                      | adminKey=\<VALID\_KEY>                                        | Transaction succeeds, adminKey reflected in `getContract`.    | N           |
+| 1       | Create a contract with a valid ED25519                        | adminKey=<VALID_KEY>                                        | Transaction succeeds, adminKey reflected in `getContract`.    | N           |
+| 2       | Create a contract with a valid ECDSA key                      | adminKey=<VALID_KEY>                                        | Transaction succeeds, adminKey reflected in `getContract`.    | N           |
 | 3       | Create a contract wtith an Invalid key format                 | adminKey="invalid-key"                                        | Fails with SDK error or `INVALID_ADMIN_KEY`.                  | N           |
 | 4       | Create a contract with no adminKey                            | —                                                             | Transaction succeeds, no admin key set. Contract is immutable | N           |
 | 5       | Create a contract with an admin key too large                 | adminKey=\<OVERSIZED\_KEY>                                    | Fails with `INVALID_ADMIN_KEY` or similar.                    | N           |
@@ -119,6 +126,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Gas**
+- Gas is the amount of computational effort (measured in gas units) allocated for contract creation and constructor execution within the EVM.
 | Test no | Name                                                          | Input                                  | Expected Response                        | Implemented |
 |--------|----------------------------------------------------------------|----------------------------------------|------------------------------------------|-------------|
 | 1      | Create contract with admin key and reasonable gas             | adminKey=valid, gas="1000000"          | Transaction succeeds, contract deployed. | N           |
@@ -133,6 +141,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Initial Balance**
+- The initial balance of the contract in HBAR.
 
 | Test no | Name                                                               | Input                              | Expected Response                                             | Implemented |
 |---------|--------------------------------------------------------------------| ---------------------------------- |---------------------------------------------------------------| ----------- |
@@ -149,6 +158,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Constructor Parameters**
+- Constructor Parameters are the ABI-encoded arguments passed to the contract's constructor during deployment.
 | Test no | Name                                                                     | Input                                          | Expected Response                                                   | Implemented |
 |--------|--------------------------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------|-------------|
 | 1      | Create contract with admin key and no constructor params                 | adminKey=valid, constructorParameters=empty    | Succeeds, contract deployed.                                        | N           |
@@ -163,6 +173,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Auto-Renew Period**
+- The period at which the auto renew account should be charged for the contract's rent.
 
 | Test no | Name                                                                               | Input                      | Expected Response                                 | Implemented |
 |---------|------------------------------------------------------------------------------------| -------------------------- | ------------------------------------------------- | ----------- |
@@ -178,7 +189,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Memo**
-
+- A short text description that lives with the contract entity on is visable on a network explorer.
 | Test no | Name                                                                       | Input                  | Expected Response                         | Implemented |
 |---------|----------------------------------------------------------------------------| ---------------------- | ----------------------------------------- | ----------- |
 | 1       | Create a contract with an admin key and valid short memo                   | memo="contract test"   | Succeeds, memo stored.                    | N           |
@@ -195,26 +206,27 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Staked Account/Node ID**
+- The account ID or node ID you would stake the contract account to earn staking rewards.
 
 | Test no | Name                                                                                                                  | Input                                      | Expected Response                            | Implemented |
 |---------|-----------------------------------------------------------------------------------------------------------------------|--------------------------------------------|----------------------------------------------| ----------- |
-| 1       | Create a contract that does not have an admin key and is staked to valid account ID                                   | stakedAccountId="\<ACCOUNT\_ID>"           | Succeeds, contract staking reflected.        | N           |
-| 2       | Create a contract that does not have an admin key and staked to valid node ID                                         | stakedNodeId="\<VALID\_NODE\_ID>"          | Succeeds, staking reflected.                 | N           |
+| 1       | Create a contract that does not have an admin key and is staked to valid account ID                                   | stakedAccountId="<ACCOUNT_ID>"           | Succeeds, contract staking reflected.        | N           |
+| 2       | Create a contract that does not have an admin key and staked to valid node ID                                         | stakedNodeId="<VALID_NODE_ID>"          | Succeeds, staking reflected.                 | N           |
 | 3       | Create a contract that does not have an admin key and that has an invalid stakedAccountId                             | stakedAccountId="0.0.99999"                | Fails with `INVALID_STAKING_ID`.             | N           |
 | 4       | Create a contract that does not have an admin key and has an invalid stakedNodeId                                     | stakedNodeId="9999999"                     | Fails with `INVALID_STAKING_ID`.             | N           |
 | 5       | Create a contract that does not have an admin key and that tries to set both stakedAccountId and stakedNodeId present | both fields set                            | Fails with error code to set 1 or the other. | N           |
-| 6       | Create a contract that does have an admin key and is staked to valid account ID                                       | stakedAccountId="\<ACCOUNT\_ID>"           | Succeeds, contract staking reflected.        | N           |
-| 7       | Create a contract that does have an admin key and staked to valid node ID                                             | stakedNodeId="\<VALID\_NODE\_ID>"          | Succeeds, staking reflected.                 | N           |
+| 6       | Create a contract that does have an admin key and is staked to valid account ID                                       | stakedAccountId="<ACCOUNT_ID>"           | Succeeds, contract staking reflected.        | N           |
+| 7       | Create a contract that does have an admin key and staked to valid node ID                                             | stakedNodeId="<VALID_NODE_ID>"          | Succeeds, staking reflected.                 | N           |
 | 8       | Create a contract that does have an admin key and that has an invalid stakedAccountId                                 | stakedAccountId="0.0.99999"                | Fails with `INVALID_STAKING_ID`.             | N           |
 | 9       | Create a contract that does have an admin key and has an invalid stakedNodeId                                         | stakedNodeId="9999999"                     | Fails with `INVALID_STAKING_ID`.             | N           |
 | 10      | Create a contract that does have an admin key and that tries to set both stakedAccountId and stakedNodeId present     | both fields set                            | Fails with error code to set 1 or the other. | N           |
-| 11      | Create a contract that does have an admin key and that tries to stake to a deleted account ID                         | stakedAccountId = "\<VALID\_ACCOUNT_\_ID>" | Fails                                        | N           |
+| 11      | Create a contract that does have an admin key and that tries to stake to a deleted account ID                         | stakedAccountId = "<VALID_ACCOUNT_ID>" | Fails                                        | N           |
 
 
 ---
 
 ### **Decline Staking Reward**
-
+- A flag indicating that this smart contract declines to receive any reward for staking its HBAR balance to help secure the network.
 | Test no | Name                                                                 | Input                      | Expected Response                               | Implemented |
 |---------|----------------------------------------------------------------------| -------------------------- | ----------------------------------------------- | ----------- |
 | 1       | Create a contract with an admin key that decline staking rewards     | declineStakingReward=true  | Succeeds; contract staking reward declined.     | N           |
@@ -226,6 +238,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 ---
 
 ### **Max Automatic Associations*
+- The maximum number of tokens that can be auto-associated with this smart contract.
 
 | Test no | Name                                                                                                              | Input                                                | Expected Response                                                 | Implemented (Y/N) |
 |---------|-------------------------------------------------------------------------------------------------------------------|------------------------------------------------------|-------------------------------------------------------------------|-------------------|
