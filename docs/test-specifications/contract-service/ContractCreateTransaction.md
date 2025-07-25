@@ -119,14 +119,11 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 5       | Create a contract with an admin key too large                 | adminKey=\<OVERSIZED\_KEY>                                    | Fails with `INVALID_ADMIN_KEY` or similar.                    | N           |
 | 6       | Create a contract with an ED25519 complex admin key structure | ED25519 adminKey= 13/26 each with 3 keys in its sub threshold | Transaction suceeds with SUCCESS                              | N           |
 | 7       | Create a contract with an ECDSA complex admin key structure   | ECDSA adminKey= 13/26 each with 3 keys in its sub threshold   | Transaction suceeds with SUCCESS                              | N           |
-
-
-
-
 ---
 
 ### **Gas**
 - Gas is the amount of computational effort (measured in gas units) allocated for contract creation and constructor execution within the EVM.
+  
 | Test no | Name                                                          | Input                                  | Expected Response                        | Implemented |
 |--------|----------------------------------------------------------------|----------------------------------------|------------------------------------------|-------------|
 | 1      | Create contract with admin key and reasonable gas             | adminKey=valid, gas="1000000"          | Transaction succeeds, contract deployed. | N           |
@@ -159,6 +156,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### **Constructor Parameters**
 - Constructor Parameters are the ABI-encoded arguments passed to the contract's constructor during deployment.
+  
 | Test no | Name                                                                     | Input                                          | Expected Response                                                   | Implemented |
 |--------|--------------------------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------|-------------|
 | 1      | Create contract with admin key and no constructor params                 | adminKey=valid, constructorParameters=empty    | Succeeds, contract deployed.                                        | N           |
@@ -190,6 +188,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### **Memo**
 - A short text description that lives with the contract entity on is visable on a network explorer.
+  
 | Test no | Name                                                                       | Input                  | Expected Response                         | Implemented |
 |---------|----------------------------------------------------------------------------| ---------------------- | ----------------------------------------- | ----------- |
 | 1       | Create a contract with an admin key and valid short memo                   | memo="contract test"   | Succeeds, memo stored.                    | N           |
@@ -227,6 +226,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### **Decline Staking Reward**
 - A flag indicating that this smart contract declines to receive any reward for staking its HBAR balance to help secure the network.
+  
 | Test no | Name                                                                 | Input                      | Expected Response                               | Implemented |
 |---------|----------------------------------------------------------------------| -------------------------- | ----------------------------------------------- | ----------- |
 | 1       | Create a contract with an admin key that decline staking rewards     | declineStakingReward=true  | Succeeds; contract staking reward declined.     | N           |
