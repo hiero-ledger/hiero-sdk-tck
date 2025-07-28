@@ -10,6 +10,8 @@ import {
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
+import { Topic } from "@models/mirror-node-models";
+
 export const verifyTopicKey = async (
   topicId: string,
   key: string,
@@ -30,9 +32,8 @@ export const verifyTopicKey = async (
   const topicData = await mirrorNodeClient.getTopicData(topicId);
   // Fetch the key from the mirror node
   const publicKeyMirrorNode = await getPublicKeyFromMirrorNode(
-    topicData[mirrorNodeKey as keyof typeof topicData],
+    topicData[mirrorNodeKey as keyof Topic],
   );
-
   expect(rawKey).to.equal(publicKeyMirrorNode?.toStringRaw());
 };
 
@@ -55,7 +56,7 @@ export const verifyTopicKeyList = async (
   const mirrorNodeKeyName = transformConsensusToMirrorNodeProp(keyType);
   // Mirror node check
   const topicData = await mirrorNodeClient.getTopicData(topicId);
-  const keyData = topicData[mirrorNodeKeyName as keyof typeof topicData] as {
+  const keyData = topicData[mirrorNodeKeyName as keyof Topic] as {
     key: string;
   };
   const mirrorNodeKey = keyData?.key;
@@ -87,7 +88,7 @@ export const verifyTopicUpdateWithNullKey = async (
   // Fetch the key from the mirror node and check if it is null
   const topicData = await mirrorNodeClient.getTopicData(topicId);
   const mirrorNodeKey = await getPublicKeyFromMirrorNode(
-    topicData[mirrorNodeKeyName as keyof typeof topicData],
+    topicData[mirrorNodeKeyName as keyof Topic],
   );
   expect(null).to.equal(mirrorNodeKey);
 };

@@ -611,7 +611,7 @@ describe("TopicCreateTransaction", function () {
 
     it("(#5) Creates a topic with auto renew period above maximum", async function () {
       try {
-        const autoRenewPeriod = "8000002"; // Above maximum
+        const autoRenewPeriod = "9000000"; // Above maximum
         await JSONRPCRequest(this, "createTopic", {
           autoRenewPeriod,
         });
