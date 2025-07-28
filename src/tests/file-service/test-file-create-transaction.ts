@@ -555,7 +555,7 @@ describe("FileCreateTransaction", function () {
 
     it("(#4) Creates a file with too large expiration time", async function () {
       const expirationTime = (
-        Math.floor(Date.now() / 1000) + 8000002
+        Math.floor(Date.now() / 1000) + 9000000
       ).toString();
 
       try {

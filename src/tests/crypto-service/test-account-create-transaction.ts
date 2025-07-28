@@ -465,15 +465,15 @@ describe("AccountCreateTransaction", function () {
       );
     });
 
-    it("(#6) Creates an account with an auto renew period set to the maximum period plus one seconds (8,000,002 seconds)", async function () {
+    it("(#6) Creates an account with an auto renew period set to the maximum period plus 1mil secondss (9,000,000 seconds)", async function () {
       // Generate a valid key for the account.
       const key = await generateEd25519PrivateKey(this);
 
       try {
-        // Attempt to create an account with an auto-renew period set to 8,000,002 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
+        // Attempt to create an account with an auto-renew period set to 9,000,000 seconds. The network should respond with an AUTORENEW_DURATION_NOT_IN_RANGE status.
         await JSONRPCRequest(this, "createAccount", {
           key,
-          autoRenewPeriod: "8000002",
+          autoRenewPeriod: "9000000",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
