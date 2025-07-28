@@ -269,3 +269,37 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 12      | Create contract without admin key and maxAutomaticTokenAssociations equal to used_auto_associations (e.g. 3)     | adminKey=none, maxAutomaticTokenAssociations = 3     | Transaction succeeds; must manually associate additional tokens   | N                 |
 | 13      | Create contract with admin key and maxAutomaticTokenAssociations < used_auto_associations (e.g. 1 < 3)           | adminKey=valid, maxAutomaticTokenAssociations = 1    | Transaction succeeds; must manually associate additional tokens   | N                 |
 | 14      | Create contract without admin key and maxAutomaticTokenAssociations < used_auto_associations (e.g. 1 < 3)        | adminKey=none, maxAutomaticTokenAssociations = 1     | Transaction succeeds; must manually associate additional tokens   | N                 |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "conractCreate",
+  "params": {
+    "byteCodeFileId": "0.0.1234",
+    "adminKey":  "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8",
+    "gas": "2000000000000000000000",
+    "initialBalance": 100,
+    "commonTransactionParams": {
+      "signers": [
+        "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
+      ]
+    }
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "status": "SUCCESS",
+    "contractId": "0.0.1234",
+  }
+}
+```
