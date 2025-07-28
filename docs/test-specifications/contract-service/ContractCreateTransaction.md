@@ -25,7 +25,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 
 **ContractCreate protobuf:**
 
-- [https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract\_create.proto](https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract_create.proto)
+- https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/services/contract_create.proto
 
 **Mirror Node APIs:**
 
@@ -49,7 +49,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | ----------------------- | ------------------------------------------------------- | ----------------- |---------------------------------|
 | bytecodeFileId          | string                                                  | optional          | ID of file containing contract bytecode |
 | adminKey                | string                                                  | optional          | Key controlling contract (updatable/delete) |
-| gas                     | string                                                  | optional          | Gas limit for contract creation |
+| gas                     | int64                                                   | optional          | Gas limit for contract creation |
 | initialBalance          | string                                                  | optional          | Tinybar amount to send to the contract account at creation |
 | constructorParameters   | hex string                                              | optional          | ABI‑encoded constructor params  |
 | autoRenewPeriod         | string                                                  | optional          | Seconds until the contract is renewed           |
@@ -59,7 +59,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | stakedNodeId            | string                                                  | optional          | Node to stake to the contract account to                |
 | declineStakingReward    | bool                                                    | optional          | Decline  reward on staking the contract account      |
 | maxAutomaticTokenAssociation    | int32                                                    | optional          | The number of automatic token associations for the contract account     |
-| initBytecode    | string                                                    | optional          | The source for the smart contract EVM bytecode     |
+| initBytecode            | string                                                    | optional          | The source for the smart contract EVM bytecode     |
 | commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          | Standard fields: payer, signers, maxFee, etc. |
 
 ### Output Parameters
@@ -86,12 +86,12 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 6       | Create a contract with a valid file ID but with no bytecode                                                    | bytecodeFileId="VALID_FILE_ID"    | Fails with `CONTRACT_BYTECODE_EMPTY`.                  | N                 |
 | 7       | Create a contract with bytecode file too large                                                                 | bytecodeFileId="OVERSIZE_FILE"    | Fails with `CONTRACT__SIZE_LIMIT_EXCEEDED`.            | N                 |
 | 8       | Create and deploy a valid  ERC-20 contract                                                                     | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
-| 9       | Create and deploy a valid  ERC-721 contract                                                                   | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
-| 10       | Create and deploy a valid contract that uses the Hiero account service system contract                        | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 11      | Create and deploy a valid contract that uses the the Hiero exchange rate system contract                       | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 12      | Create and deploy a valid contract that uses the Hiero schedule service system contract                        | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 13      | Create and deploy a valid contract that uses the Hiero token service system contract                           | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
-| 14      | Create and deploy a valid contract that uses the Hiero psuedo random number generator system contract          | bytecodeFileId="VALID_FILE_ID"    | Succeeds with correct interaction with system contract | N                 |
+| 9       | Create and deploy a valid  ERC-721 contract                                                                    | bytecodeFileId="VALID_FILE_ID"    | Succeeds with expected result                          | N                 |
+| 10      | Create and deploy a valid contract that uses the Hiero account service system contract                         | bytecodeFileId="VALID_FILE_ID"    | Succeeds, returns contract ID                          | N                 |
+| 11      | Create and deploy a valid contract that uses the the Hiero exchange rate system contract                       | bytecodeFileId="VALID_FILE_ID"    | Succeeds, returns contract ID                          | N                 |
+| 12      | Create and deploy a valid contract that uses the Hiero schedule service system contract                        | bytecodeFileId="VALID_FILE_ID"    | Succeeds, returns contract ID                          | N                 |
+| 13      | Create and deploy a valid contract that uses the Hiero token service system contract                           | bytecodeFileId="VALID_FILE_ID"    | Succeeds, returns contract ID                          | N                 |
+| 14      | Create and deploy a valid contract that uses the Hiero psuedo random number generator system contract          | bytecodeFileId="VALID_FILE_ID"    | Succeeds, returns contract ID                          | N                 |
 | 15      | Create and deploy a valid contract and set the payer account that does not have sufficient funds               | bytecodeFileId="VALID_FILE_ID"    | Fails with 'INSUFFICIENT_PAYER_BALANCE`                | N                 |
 | 16      | Create and deploy a valid contract and set the file ID to be a system file under 0.0.1000                      | bytecodeFileId="VALID_FILE_ID"    | Fails                                                  | N                 |
 | 17      | Create and deploy a valid contract and set the file ID to be a deleted file ID                                 | bytecodeFileId="VALID_FILE_ID"    | Fails                                                  | N                 |
@@ -268,6 +268,13 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 12      | Create contract without admin key and maxAutomaticTokenAssociations equal to used_auto_associations (e.g. 3)     | adminKey=none, maxAutomaticTokenAssociations = 3     | Transaction succeeds; must manually associate additional tokens   | N                 |
 | 13      | Create contract with admin key and maxAutomaticTokenAssociations < used_auto_associations (e.g. 1 < 3)           | adminKey=valid, maxAutomaticTokenAssociations = 1    | Transaction succeeds; must manually associate additional tokens   | N                 |
 | 14      | Create contract without admin key and maxAutomaticTokenAssociations < used_auto_associations (e.g. 1 < 3)        | adminKey=none, maxAutomaticTokenAssociations = 1     | Transaction succeeds; must manually associate additional tokens   | N                 |
+| 15      | Create contract without admin key and maxAutomaticTokenAssociations 2,147,483,647                                | adminKey=none, maxAutomaticTokenAssociations = 2,147,483,647     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+| 16      | Create contract with admin key and maxAutomaticTokenAssociations 2,147,483,647                                   | adminKey=valid, maxAutomaticTokenAssociations = 2,147,483,647     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+| 17      | Create contract without admin key and maxAutomaticTokenAssociations -2,147,483,647                               | adminKey=none, maxAutomaticTokenAssociations = -2,147,483,647     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+| 18      | Create contract with admin key and maxAutomaticTokenAssociations -2,147,483,647                                  | adminKey=valid, maxAutomaticTokenAssociations = -2,147,483,647     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+| 17      | Create contract without admin key and maxAutomaticTokenAssociations 1001                                         | adminKey=none, maxAutomaticTokenAssociations = 1001     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+| 18      | Create contract with admin key and maxAutomaticTokenAssociations 1001                                            | adminKey=valid, maxAutomaticTokenAssociations = 1001     | Transaction fails with INVALID_AUTOMATIC_ASSOCIATION_LIMIT  | N                 |
+
 
 #### JSON Request Example
 
