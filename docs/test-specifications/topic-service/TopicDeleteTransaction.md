@@ -63,6 +63,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 4       | Deletes a topic that was already deleted                   | topicId=<DELETED_TOPIC_ID>, commonTransactionParams.signers=[<DELETED_TOPIC_ADMIN_KEY>]             | The topic deletion fails with an INVALID_TOPIC_ID response code from the network.  | N                 |
 | 5       | Deletes a topic without signing with the topic's admin key | topicId=<VALID_MUTABLE_TOPIC_ID>                                                                    | The topic deletion fails with an INVALID_SIGNATURE response code from the network. | N                 |
 | 6       | Deletes a topic but signs with an incorrect private key    | topicId=<VALID_MUTABLE_TOPIC_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>]   | The topic deletion fails with an INVALID_SIGNATURE response code from the network. | N                 |
+| 7       | Deletes an immutable topic (created without admin key)     | topicId=<VALID_IMMUTABLE_TOPIC_ID>                                                                  | The topic deletion fails with an UNAUTHORIZED response code from the network.      | N                 |
 
 #### JSON Request Example
 
