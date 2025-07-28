@@ -66,7 +66,7 @@ const verifyTopicIsDeleted = async (topicId: string) => {
 /**
  * Tests for TopicDeleteTransaction
  */
-describe.only("TopicDeleteTransaction", function () {
+describe("TopicDeleteTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
