@@ -46,11 +46,9 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Output Parameters
 
-| Parameter Name      | Type   | Description/Notes                                                                          |
-|---------------------|--------|--------------------------------------------------------------------------------------------|
-| status              | string | The status of the submitted `TopicMessageSubmitTransaction` (from a `TransactionReceipt`). |
-| topicSequenceNumber | string | The sequence number of the submitted message within the topic.                             |
-| topicRunningHash    | string | The running hash of the topic after this message submission.                               |
+| Parameter Name | Type   | Description/Notes                                                                          |
+|----------------|--------|--------------------------------------------------------------------------------------------|
+| status         | string | The status of the submitted `TopicMessageSubmitTransaction` (from a `TransactionReceipt`). |
 
 ### Additional Notes
 
@@ -62,30 +60,31 @@ The tests contained in this specification will assume that valid topics were alr
 
 - The ID of the topic to submit the message to.
 
-| Test no | Name                                           | Input                                                                                                        | Expected response                                        | Implemented (Y/N) |
-|---------|------------------------------------------------|--------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------|
-| 1       | Submits a message to a valid public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test message"                                                  | The message submission succeeds.                         | N                 |
-| 2       | Submits a message to a non-existent topic      | topicId="0.0.999999", message="Test message"                                                                 | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
-| 3       | Submits a message with invalid topic ID format | topicId="invalid", message="Test message"                                                                    | The message submission fails with an SDK internal error. | N                 |
-| 4       | Submits a message without topic ID             | message="Test message"                                                                                       | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
-| 5       | Submits a message to a deleted topic           | topicId="<DELETED_TOPIC_ID>", message="Test message"                                                         | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
-| 6       | Submits a message to a valid private topic     | topicId="<CREATED_PRIVATE_TOPIC_ID>", message="Test message", commonTransactionParams.signers=[<SUBMIT_KEY>] | The message submission succeeds.                         | N                 |
+| Test no | Name                                                                    | Input                                                                                                        | Expected response                                        | Implemented (Y/N) |
+|---------|-------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------|
+| 1       | Submits a message to a valid public topic                               | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test message"                                                  | The message submission succeeds.                         | N                 |
+| 2       | Submits a message to a non-existent topic                               | topicId="0.0.999999", message="Test message"                                                                 | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
+| 3       | Submits a message with invalid topic ID format                          | topicId="invalid", message="Test message"                                                                    | The message submission fails with an SDK internal error. | N                 |
+| 4       | Submits a message without topic ID                                      | message="Test message"                                                                                       | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
+| 5       | Submits a message to a deleted topic                                    | topicId="<DELETED_TOPIC_ID>", message="Test message"                                                         | The message submission fails with `INVALID_TOPIC_ID`.    | N                 |
+| 6       | Submits a message to a valid private topic                              | topicId="<CREATED_PRIVATE_TOPIC_ID>", message="Test message", commonTransactionParams.signers=[<SUBMIT_KEY>] | The message submission succeeds.                         | N                 |
+| 7       | Submits a message to a valid private topic without submit key signature | topicId="<CREATED_PRIVATE_TOPIC_ID>", message="Test message"                                                 | The message submission fails with `INVALID_SIGNATURE`.   | N                 |
 
 ### **Message:**
 
 - The message content to submit to the topic.
 
-| Test no | Name                                           | Input                                                        | Expected response                                                               | Implemented (Y/N) |
-|---------|------------------------------------------------|--------------------------------------------------------------|---------------------------------------------------------------------------------|-------------------|
-| 1       | Submits a valid text message to a public topic | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Hello, world!" | The message submission succeeds and the message is published to the topic.      | N                 |
-| 2       | Submits an empty message to a public topic     | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=""              | The message submission succeeds and an empty message is published to the topic. | N                 |
-| 3       | Submits a message with special characters to a public topic                                 | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="!@#$%^&*()_+-=[]{}|;':\",./<>?" | The message submission succeeds and the message with special characters is published.       | N                 |
-| 4       | Submits a message with unicode characters to a public topic                                 | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="测试消息 🚀"                  | The message submission succeeds and the unicode message is published to the topic.          | N                 |
-| 5       | Submits a message at maximum single chunk size to a public topic                           | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<MAX_CHUNK_SIZE_MESSAGE>       | The message submission succeeds and the message is published as a single chunk.             | N                 |
-| 6       | Submits a message that requires chunking to a public topic                                 | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<LARGE_MESSAGE>               | The message submission succeeds and the message is published as multiple chunks.            | N                 |
-| 7       | Submits a message without message content to a public topic                                 | topicId="<CREATED_PUBLIC_TOPIC_ID>"                                        | The message submission fails with an SDK internal error.                                    | N                 |
-| 8       | Submits a message with null bytes to a public topic                                        | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test\0message"               | The message submission succeeds and the message with null bytes is published.               | N                 |
-| 9       | Submits a message with only whitespace to a public topic                                   | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="   "                         | The message submission succeeds and the whitespace message is published.                    | N                 |
+| Test no | Name                                                             | Input                                                                        | Expected response                                                                     | Implemented (Y/N) |
+|---------|------------------------------------------------------------------|------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|-------------------|
+| 1       | Submits a valid text message to a public topic                   | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Hello, world!"                 | The message submission succeeds and the message is published to the topic.            | N                 |
+| 2       | Submits an empty message to a public topic                       | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=""                              | The message submission succeeds and an empty message is published to the topic.       | N                 |
+| 3       | Submits a message with special characters to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="!@#$%^&*()_+-=[]{};':\",./<>?" | The message submission succeeds and the message with special characters is published. | N                 |
+| 4       | Submits a message with unicode characters to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="测试消息 🚀"                   | The message submission succeeds and the unicode message is published to the topic.    | N                 |
+| 5       | Submits a message at maximum single chunk size to a public topic | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<MAX_CHUNK_SIZE_MESSAGE>        | The message submission succeeds and the message is published as a single chunk.       | N                 |
+| 6       | Submits a message that requires chunking to a public topic       | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<LARGE_MESSAGE>                 | The message submission succeeds and the message is published as multiple chunks.      | N                 |
+| 7       | Submits a message without message content to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>"                                          | The message submission fails with an SDK internal error.                              | N                 |
+| 8       | Submits a message with null bytes to a public topic              | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test\0message"                 | The message submission succeeds and the message with null bytes is published.         | N                 |
+| 9       | Submits a message with only whitespace to a public topic         | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="   "                           | The message submission succeeds and the whitespace message is published.              | N                 |
 
 ### **MaxChunks:**
 
