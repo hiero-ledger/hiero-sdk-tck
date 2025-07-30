@@ -146,8 +146,16 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 6      | Create contract without admin key and excessive gas over limit| adminKey=empty, gas="9223372036854775807" | Fails with `MAX_GAS_LIMIT_EXCEEDED`.     | N           |
 | 7      | Create contract with admin key and negative gas               | adminKey=valid, gas="-1"               | Fails with `CONTRACT_NEGATIVE_GAS`.      | N           |
 | 8      | Create contract without admin key and negative gas            | adminKey=empty, gas="-1"               | Fails with `CONTRACT_NEGATIVE_GAS`.      | N           |
+| 9      | Create contract without admin key and gas 9,223,372,036,854,775,806 (int64 max - 1)  |adminKey=empty, gas="9223372036854775806"| The transaction succeeds, contract deployed | Y  |
+| 10     | Create contract with admin key and gas 9,223,372,036,854,775,806 (int64 max - 1)  |adminKey=valid, gas="9223372036854775806"| The transaction succeeds, contract deployed | Y   |
+| 11     | Create contract with admin key and gas 9,223,372,036,854,775,807 (int64 max)  |adminKey=valid, gas="9223372036854775807"| The transaction succeeds, contract deployed | Y   |
+| 12     | Create contract without admin key and gas 9,223,372,036,854,775,807 (int64 max)  |adminKey=empty, gas="9223372036854775807"| The transaction succeeds, contract deployed | Y   |
+| 13     | Create contract with admin key and gas -9,223,372,036,854,775,808 (int64 min)  |adminKey=valid, gas="-9,223,372,036,854,775,808"| The transaction fails | Y   |
+| 14     | Create contract without admin key and gas -9,223,372,036,854,775,808 (int64 min)  |adminKey=empty, gas="-9,223,372,036,854,775,808"| The transaction fails| Y |
+| 15     | Create contract with admin key and gas -9,223,372,036,854,775,807 (int64 min + 1)  |adminKey=valid, gas="-9,223,372,036,854,775,807"| The transaction fails| Y   |
+| 16     | Create contract without admin key and gas -9,223,372,036,854,775,807 (int64 min + 1)  |adminKey=empty, gas="-9,223,372,036,854,775,807"| The transaction fails | Y|
 
----
+
 
 ### **Initial Balance**
 - The initial balance of the contract in HBAR.
