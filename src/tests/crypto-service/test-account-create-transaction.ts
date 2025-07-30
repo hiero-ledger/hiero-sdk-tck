@@ -153,9 +153,9 @@ describe("AccountCreateTransaction", function () {
 
     it("(#8) Creates an account with an invalid key", async function () {
       try {
-        // Attempt to create an account with an invalid key (random 88 bytes, which is equal to the byte length of a valid public key). The SDK should throw an internal error.
+        // Attempt to create an account with an invalid key. The SDK should throw an internal error.
         await JSONRPCRequest(this, "createAccount", {
-          key: crypto.randomBytes(88).toString("hex"),
+          key: "d7effd891734e1810285385cb1ea04b916e7001ad2f29a9cc9e2c1c6c60983550e1453d5a0dc32544fd19a39c6a753fcf0891c5a907500afc9ad559e22c64618fa413ebfbbc1dad458eee42ac3b4075a8a67cfed6819065b",
         });
       } catch (err: any) {
         assert.equal(
@@ -980,7 +980,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an invalid alias. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "createAccount", {
           key,
-          alias: "0x" + crypto.randomBytes(20).toString("hex").toUpperCase(),
+          alias: "0xA74B6C63E4F5B497F48F77BAAF96280E9E58C494",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
