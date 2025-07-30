@@ -169,7 +169,14 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 6       | Create a contract with no admin key and negative balance           | initialBalance="-100"              | Fails with `CONTRACT_NEGATIVE_VALUE`.                         | N           |
 | 7       | Create a contract with an admin key and creater than payer balance | initialBalance=\<PAYER\_BALANCE>+1 | Fails with `INSUFFICIENT_PAYER_BALANCE`.                      | N           |
 | 8       | Create a contract with no admin key and creater than payer balance | initialBalance=\<PAYER\_BALANCE>+1 | Fails with `INSUFFICIENT_PAYER_BALANCE`.                      | N           |
-
+| 9       | Create contract with admin key and initial balance = int64 min       | initialBalance="-9223372036854775808"     | Fails with `CONTRACT_NEGATIVE_VALUE                  | N           |
+| 10      | Create contract without admin key and initial balance = int64 min    | initialBalance="-9223372036854775808"     | Fails with `CONTRACT_NEGATIVE_VALUE                  | N           |
+| 11      | Create contract with admin key and initial balance = int64 min + 1   | initialBalance="-9223372036854775807"     | Fails with `CONTRACT_NEGATIVE_VALUE                  | N           |
+| 12      | Create contract without admin key and initial balance = int64 min + 1| initialBalance="-9223372036854775807"     | Fails with `CONTRACT_NEGATIVE_VALUE                  | N           |
+| 13       | Create contract with admin key and initial balance = int64 max - 1   | initialBalance="9223372036854775806"      | Fails with `INSUFFICIENT_PAYER_BALANCE`.            | N           |
+| 14      | Create contract without admin key and initial balance = int64 max - 1| initialBalance="9223372036854775806"      | Fails with `INSUFFICIENT_PAYER_BALANCE`.             | N           |
+| 15      | Create contract with admin key and initial balance = int64 max       | initialBalance="9223372036854775807"      | Fails with `INSUFFICIENT_PAYER_BALANCE`.             | N           |
+| 16      | Create contract without admin key and initial balance = int64 max    | initialBalance="9223372036854775807"      | Fails with `INSUFFICIENT_PAYER_BALANCE`.             | N           |
 
 ---
 
