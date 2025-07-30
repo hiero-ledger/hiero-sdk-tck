@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
@@ -20,6 +19,7 @@ import {
   twoLevelsNestedKeyListParams,
 } from "@constants/key-list";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { invalidAlias, invalidKey } from "@constants/key-type";
 
 /**
  * Tests for AccountCreateTransaction
@@ -153,9 +153,9 @@ describe("AccountCreateTransaction", function () {
 
     it("(#8) Creates an account with an invalid key", async function () {
       try {
-        // Attempt to create an account with an invalid key (random 88 bytes, which is equal to the byte length of a valid public key). The SDK should throw an internal error.
+        // Attempt to create an account with an invalid key. The SDK should throw an internal error.
         await JSONRPCRequest(this, "createAccount", {
-          key: crypto.randomBytes(88).toString("hex"),
+          key: invalidKey,
         });
       } catch (err: any) {
         assert.equal(
@@ -980,7 +980,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an invalid alias. The network should respond with an INVALID_SIGNATURE status.
         await JSONRPCRequest(this, "createAccount", {
           key,
-          alias: "0x" + crypto.randomBytes(20).toString("hex").toUpperCase(),
+          alias: invalidAlias,
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE");
