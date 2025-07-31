@@ -24,7 +24,7 @@ const createMutableTopic = async (context: any, adminPrivateKey?: string) => {
   const response = await JSONRPCRequest(context, "createTopic", {
     adminKey,
     memo: "Test topic for deletion",
-    autoRenewPeriod: "7000000",
+
     commonTransactionParams: {
       signers: [privateKey],
     },

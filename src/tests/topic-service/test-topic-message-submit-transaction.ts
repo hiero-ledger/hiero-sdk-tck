@@ -266,7 +266,7 @@ describe("TopicMessageSubmitTransaction", function () {
       const adminTopicResponse = await JSONRPCRequest(this, "createTopic", {
         adminKey,
         memo: "Topic to be deleted",
-        autoRenewPeriod: "7000000",
+
         commonTransactionParams: {
           signers: [adminPrivateKey],
         },
