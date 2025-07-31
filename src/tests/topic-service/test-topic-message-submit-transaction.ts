@@ -12,6 +12,8 @@ import {
 } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { createAccount } from "@helpers/account";
+import { createFtToken } from "@helpers/token";
 
 /**
  * Helper function to create a public topic (no submit key)
@@ -79,6 +81,91 @@ const verifyTopicMessage = async (
     const concatenatedMessage = Buffer.concat(messageBuffers).toString("utf-8");
     expect(concatenatedMessage).to.equal(expectedMessage);
   });
+};
+
+const createPayerAccount = async (
+  context: any,
+  initialBalance = "100000000",
+) => {
+  const payerPrivateKey = await generateEd25519PrivateKey(context);
+  const createAccountResponse = await JSONRPCRequest(context, "createAccount", {
+    key: payerPrivateKey,
+    initialBalance,
+  });
+
+  return {
+    payerAccountId: createAccountResponse.accountId,
+    payerPrivateKey,
+  };
+};
+
+const transferToken = async (
+  context: any,
+  senderAccountId: string,
+  receiverAccountId: string,
+  receiverPrivateKey: string,
+  amount: number,
+  tokenId: string,
+) => {
+  const associateTokenResponse = await JSONRPCRequest(
+    context,
+    "associateToken",
+    {
+      accountId: receiverAccountId,
+      tokenIds: [tokenId],
+      commonTransactionParams: {
+        signers: [receiverPrivateKey],
+      },
+    },
+  );
+  assert.equal(associateTokenResponse.status, "SUCCESS");
+
+  const transferTokenResponse = await JSONRPCRequest(
+    context,
+    "transferCrypto",
+    {
+      transfers: [
+        {
+          token: {
+            accountId: senderAccountId,
+            tokenId,
+            amount: String(-amount),
+          },
+        },
+        {
+          token: {
+            accountId: receiverAccountId,
+            tokenId,
+            amount: String(amount),
+          },
+        },
+      ],
+    },
+  );
+  assert.equal(transferTokenResponse.status, "SUCCESS");
+};
+
+const createTopicWithCustomFees = async (context: any, customFees: any[]) => {
+  const feeSchedulePrivateKey = await generateEd25519PrivateKey(context);
+  const feeScheduleKey = await generateEd25519PublicKey(
+    context,
+    feeSchedulePrivateKey,
+  );
+
+  const createTopicResponse = await JSONRPCRequest(context, "createTopic", {
+    customFees,
+    feeScheduleKey,
+    commonTransactionParams: {
+      signers: [feeSchedulePrivateKey],
+      maxTransactionFee: 5000000000,
+    },
+  });
+
+  return {
+    topicId: createTopicResponse.topicId,
+    feeSchedulePrivateKey,
+    feeScheduleKey,
+  };
 };
 
 /**
@@ -575,6 +662,601 @@ describe("TopicMessageSubmitTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+    });
+  });
+  describe("CustomFeeLimits", function () {
+    const customFeeAmountHbar = "50000000";
+    const customFeeAmountToken = "5";
+    const message = "Test message";
+
+    /**
+     * Creates custom fees for Hbar or token
+     */
+    const createCustomFees = (amount: string, denominatingTokenId?: string) => [
+      {
+        feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        feeCollectorsExempt: false,
+        fixedFee: {
+          amount,
+          ...(denominatingTokenId && { denominatingTokenId }),
+        },
+      },
+    ];
+
+    const createCustomFeeLimits = (
+      payerId: string,
+      amount: string,
+      denominatingTokenId?: string,
+    ) => [
+      {
+        payerId,
+        fixedFees: [
+          {
+            amount,
+            ...(denominatingTokenId && { denominatingTokenId }),
+          },
+        ],
+      },
+    ];
+
+    const verifyCustomFeeDidNotCharge = async (
+      accountId: string,
+      expectedAmount: string,
+      tokenId?: string,
+    ) => {
+      const accountBalance = await consensusInfoClient.getBalance(accountId);
+      if (tokenId) {
+        const tokenBalance = accountBalance.tokens?.get(tokenId);
+        expect(tokenBalance?.eq(expectedAmount)).to.be.true;
+      } else {
+        expect(accountBalance.hbars.toTinybars().greaterThan(expectedAmount)).to
+          .be.true;
+      }
+    };
+
+    const verifyCustomFeeCharged = async (
+      accountId: string,
+      expectedAmount: string,
+      tokenId?: string,
+    ) => {
+      const accountBalance = await consensusInfoClient.getBalance(accountId);
+
+      if (tokenId) {
+        const tokenBalance = accountBalance.tokens?.get(tokenId);
+        expect(tokenBalance?.eq(0)).to.be.true;
+      } else {
+        expect(accountBalance.hbars.toTinybars().lessThan(expectedAmount)).to.be
+          .true;
+      }
+    };
+
+    it("(#1) Submits a message to a public topic with Hbar custom fee and sufficient custom fee limit", async function () {
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+      const customFees = createCustomFees(customFeeAmountHbar);
+      const customFeeLimits = createCustomFeeLimits(
+        payerAccountId,
+        customFeeAmountHbar,
+      );
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+          customFeeLimits,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeCharged(payerAccountId, customFeeAmountHbar);
+    });
+
+    it("(#2) Submits a message to a public topic with Hbar custom fee without specifying custom fee limit", async function () {
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+      const customFees = createCustomFees(customFeeAmountHbar);
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeCharged(payerAccountId, customFeeAmountHbar);
+    });
+
+    it("(#3) Submits a message to a public topic with token custom fee and sufficient custom fee limit", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+      const customFeeLimits = createCustomFeeLimits(
+        payerAccountId,
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+          customFeeLimits,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeCharged(
+        payerAccountId,
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+    });
+
+    it("(#4) Submits a message to a public topic with token custom fee without specifying custom fee limit", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeCharged(
+        payerAccountId,
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+    });
+
+    it("(#5) Submits a message to a public topic with Hbar custom fee when account key is fee exempt", async function () {
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+      const customFees = createCustomFees(customFeeAmountHbar);
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(context);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        context,
+        feeSchedulePrivateKey,
+      );
+
+      const createTopicResponse = await JSONRPCRequest(context, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        feeExemptKeys: [payerPrivateKey],
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+          maxTransactionFee: 5000000000,
+        },
+      });
+
+      const { topicId } = createTopicResponse;
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeDidNotCharge(payerAccountId, customFeeAmountHbar);
+    });
+
+    it("(#6) Submits a message to a public topic with token custom fee when account key is fee exempt", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(context);
+      const feeScheduleKey = await generateEd25519PublicKey(
+        context,
+        feeSchedulePrivateKey,
+      );
+
+      const createTopicResponse = await JSONRPCRequest(context, "createTopic", {
+        customFees,
+        feeScheduleKey,
+        feeExemptKeys: [payerPrivateKey],
+        commonTransactionParams: {
+          signers: [feeSchedulePrivateKey],
+          maxTransactionFee: 5000000000,
+        },
+      });
+
+      const { topicId } = createTopicResponse;
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeDidNotCharge(
+        payerAccountId,
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+    });
+
+    it("(#7) Submits a message to a public topic with Hbar custom fee and insufficient custom fee limit", async function () {
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+      const customFees = createCustomFees(customFeeAmountHbar);
+      const customFeeLimits = createCustomFeeLimits(payerAccountId, "1");
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "submitTopicMessage", {
+          topicId,
+          message,
+          customFeeLimits,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "MAX_CUSTOM_FEE_LIMIT_EXCEEDED");
+        return;
+      }
+    });
+
+    it("(#8) Submits a message to a public topic with token custom fee and insufficient custom fee limit", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const customFeeLimits = createCustomFeeLimits(
+        payerAccountId,
+        "1",
+        denominatingTokenId,
+      );
+
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "submitTopicMessage", {
+          topicId,
+          message,
+          customFeeLimits,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "MAX_CUSTOM_FEE_LIMIT_EXCEEDED");
+        return;
+      }
+    });
+
+    it("(#9) Submits a message to a public topic with token custom fee and invalid token ID in custom fee limit", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const customFeeLimits = createCustomFeeLimits(
+        payerAccountId,
+        customFeeAmountToken,
+        "0.0.123456789",
+      );
+
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "submitTopicMessage", {
+          topicId,
+          message,
+          customFeeLimits,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "NO_VALID_MAX_CUSTOM_FEE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#10) Submits a message to a public topic with duplicate denominations in custom fee limits", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = createCustomFees(
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+
+      const customFeeLimits = [
+        {
+          payerId: payerAccountId,
+          fixedFees: [
+            {
+              amount: customFeeAmountToken,
+              denominatingTokenId,
+            },
+            {
+              amount: customFeeAmountToken,
+              denominatingTokenId,
+            },
+          ],
+        },
+      ];
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "submitTopicMessage", {
+          topicId,
+          message,
+          customFeeLimits,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "DUPLICATE_DENOMINATION_IN_MAX_CUSTOM_FEE_LIST",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Submits a message to a public topic with multiple custom fee limits", async function () {
+      const denominatingTokenId = await createFtToken(this);
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+
+      await transferToken(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        payerAccountId,
+        payerPrivateKey,
+        Number(customFeeAmountToken),
+        denominatingTokenId,
+      );
+
+      const customFees = [
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: customFeeAmountHbar,
+          },
+        },
+        {
+          feeCollectorAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          feeCollectorsExempt: false,
+          fixedFee: {
+            amount: customFeeAmountToken,
+            denominatingTokenId,
+          },
+        },
+      ];
+
+      const customFeeLimits = [
+        {
+          payerId: payerAccountId,
+          fixedFees: [
+            {
+              amount: customFeeAmountToken,
+              denominatingTokenId,
+            },
+            {
+              amount: customFeeAmountHbar,
+            },
+          ],
+        },
+      ];
+
+      const { topicId } = await createTopicWithCustomFees(this, customFees);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+          customFeeLimits,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeCharged(
+        payerAccountId,
+        customFeeAmountToken,
+        denominatingTokenId,
+      );
+      await verifyCustomFeeCharged(payerAccountId, customFeeAmountHbar);
+    });
+
+    it("(#12) Submits a message to a public topic with empty custom fee limits", async function () {
+      const { payerAccountId, payerPrivateKey } =
+        await createPayerAccount(this);
+      const customFeeLimits: never[] = [];
+      const { topicId } = await createTopicWithCustomFees(this, []);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      const topicSubmitResponse = await JSONRPCRequest(
+        this,
+        "submitTopicMessage",
+        {
+          topicId,
+          message,
+          customFeeLimits,
+        },
+      );
+
+      expect(topicSubmitResponse.status).to.equal("SUCCESS");
+      await verifyCustomFeeDidNotCharge(payerAccountId, customFeeAmountHbar);
+    });
+
+    it("(#13) Submits a message to a public topic with invalid token ID in custom fee limit", async function () {
+      try {
+        const customFeeLimits = [
+          {
+            payerId: "0.0.123",
+            fixedFees: [
+              {
+                amount: customFeeAmountToken,
+                denominatingTokenId: "invalid",
+              },
+            ],
+          },
+        ];
+        const topicSubmitResponse = await JSONRPCRequest(
+          this,
+          "submitTopicMessage",
+          {
+            topicId: "0.0.123",
+            message,
+            customFeeLimits,
+          },
+        );
+      } catch (err: any) {
+        assert.equal(err.message, "Internal error");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#14) Submits a message to a public topic with negative custom fee limit amount", async function () {
+      try {
+        const customFeeLimits = [
+          {
+            payerId: "0.0.123",
+            fixedFees: [
+              {
+                amount: "-1",
+                denominatingTokenId: "0.0.123",
+              },
+            ],
+          },
+        ];
+        const topicSubmitResponse = await JSONRPCRequest(
+          this,
+          "submitTopicMessage",
+          {
+            topicId: "0.0.123",
+            message,
+            customFeeLimits,
+          },
+        );
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_MAX_CUSTOM_FEES");
+        return;
+      }
+
+      assert.fail("Should throw an error");
     });
   });
 });

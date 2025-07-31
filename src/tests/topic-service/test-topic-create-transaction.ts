@@ -1237,6 +1237,7 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
+        // TODO remove me
         autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
