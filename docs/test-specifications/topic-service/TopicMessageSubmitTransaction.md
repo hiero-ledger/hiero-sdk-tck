@@ -37,8 +37,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                                                                   |
 |-------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------|
-| topicId                 | string                                                  | required          | The ID of the topic to submit the message to.                                                                       |
-| message                 | string                                                  | required          | The message content to submit. UTF-8 encoding. Will be automatically chunked if the message exceeds the chunk size. |
+| topicId                 | string                                                  | optional          | The ID of the topic to submit the message to.                                                                       |
+| message                 | string                                                  | optional          | The message content to submit. UTF-8 encoding. Will be automatically chunked if the message exceeds the chunk size. |
 | maxChunks               | int64                                                   | optional          | The maximum number of chunks the message can be split into. Default: 20. Used when message size exceeds chunk size. |
 | chunkSize               | int64                                                   | optional          | The size of each chunk in bytes. Default: SDK-specific chunk size. Used for splitting large messages.               |
 | customFeeLimits         | list<[json object](../common/customFeeLimit.md)>        | optional          | The maximum custom fees the user is willing to pay for message submission.                                          |
@@ -103,14 +103,14 @@ The tests contained in this specification will assume that valid topics were alr
 
 - Size of each chunk in bytes.
 
-| Test no | Name                                                            | Input                                                                               | Expected response                                        | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------|
-| 1       | Submits to a public topic with default chunk size               | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=<DEFAULT_CHUNK_SIZE> | The message submission succeeds.                         | N                 |
-| 2       | Submits to a public topic with custom chunk size                | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=1024                 | The message submission succeeds.                         | N                 |
-| 3       | Submits to a public topic with chunk size set to 1              | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=1                    | The message submission succeeds.                         | N                 |
-| 4       | Submits to a public topic with chunk size set to 0              | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=0                    | The message submission fails with an SDK internal error. | N                 |
-| 5       | Submits to a public topic with chunk size set to negative value | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=-1                   | The message submission fails with an SDK internal error. | N                 |
-| 6       | Submits to a public topic with chunk size larger than content   | topicId="<CREATED_PUBLIC_TOPIC_ID>", chunkSize=10000, message="small content"       | The message submission succeeds with single chunk.       | N                 |
+| Test no | Name                                                            | Input                                                                         | Expected response                                        | Implemented (Y/N) |
+|---------|-----------------------------------------------------------------|-------------------------------------------------------------------------------|----------------------------------------------------------|-------------------|
+| 1       | Submits to a public topic with default chunk size               | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test"                           | The message submission succeeds.                         | N                 |
+| 2       | Submits to a public topic with custom chunk size                | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=1024           | The message submission succeeds.                         | N                 |
+| 3       | Submits to a public topic with chunk size set to 1              | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=1              | The message submission succeeds.                         | N                 |
+| 4       | Submits to a public topic with chunk size set to 0              | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=0              | The message submission fails with an SDK internal error. | N                 |
+| 5       | Submits to a public topic with chunk size set to negative value | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Test", chunkSize=-1             | The message submission fails with an SDK internal error. | N                 |
+| 6       | Submits to a public topic with chunk size larger than content   | topicId="<CREATED_PUBLIC_TOPIC_ID>", chunkSize=10000, message="small content" | The message submission succeeds with single chunk.       | N                 |
 
 ### **CustomFeeLimits:**
 
