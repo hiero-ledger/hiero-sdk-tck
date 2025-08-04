@@ -1340,7 +1340,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1379,7 +1378,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1418,7 +1416,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1488,7 +1485,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1527,7 +1523,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1566,7 +1561,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1622,7 +1616,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1662,7 +1655,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1716,7 +1708,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1785,7 +1776,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
