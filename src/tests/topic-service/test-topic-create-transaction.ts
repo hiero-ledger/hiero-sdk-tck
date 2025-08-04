@@ -184,7 +184,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -200,7 +199,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -219,7 +217,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey: privateKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -238,7 +235,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey: privateKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -267,7 +263,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -297,7 +292,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -362,7 +356,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -379,7 +372,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -398,7 +390,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey: privateKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -417,7 +408,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey: privateKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -446,7 +436,6 @@ describe("TopicCreateTransaction", function () {
 
       response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -476,7 +465,6 @@ describe("TopicCreateTransaction", function () {
 
       response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -761,7 +749,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         autoRenewAccountId: autoRenewAccountId,
         adminKey,
-
         commonTransactionParams: {
           signers: [adminPrivateKey, autoRenewAccountPrivateKey],
         },
@@ -783,7 +770,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: "0.0.999999", // Non-existent account
           adminKey,
-
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -824,7 +810,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: deletedAccountId,
           adminKey,
-
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -856,7 +841,6 @@ describe("TopicCreateTransaction", function () {
       // According to the specification, newer consensus nodes allow this
       const response = await JSONRPCRequest(this, "createTopic", {
         autoRenewAccountId: autoRenewAccountId,
-
         commonTransactionParams: {
           signers: [autoRenewAccountPrivateKey],
         },
@@ -890,7 +874,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: "invalid", // Invalid format
           adminKey,
-
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -935,7 +918,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -958,7 +940,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -990,7 +971,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -1024,7 +1004,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -1092,7 +1071,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeExemptKeys: [feeExemptKey],
-
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -1122,7 +1100,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeExemptKeys,
-
         commonTransactionParams: {
           signers: [ed25519PrivateKey, ecdsaPrivateKey],
         },
@@ -1253,7 +1230,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1278,7 +1254,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
-
         commonTransactionParams: {
           maxTransactionFee: 5000000000,
         },
@@ -1325,7 +1300,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1482,7 +1456,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1781,7 +1754,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1841,7 +1813,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees: [],
         feeScheduleKey,
-
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
