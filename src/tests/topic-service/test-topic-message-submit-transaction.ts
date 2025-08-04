@@ -12,7 +12,6 @@ import {
 } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
-import { createAccount } from "@helpers/account";
 import { createFtToken } from "@helpers/token";
 
 /**
