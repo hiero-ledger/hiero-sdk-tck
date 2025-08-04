@@ -61,7 +61,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "Test topic memo";
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -73,7 +72,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "";
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -85,7 +83,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "a".repeat(100);
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -99,7 +96,6 @@ describe("TopicCreateTransaction", function () {
         const memo = "a".repeat(101);
         await JSONRPCRequest(this, "createTopic", {
           memo,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "MEMO_TOO_LONG", "Memo too long error");
@@ -114,7 +110,6 @@ describe("TopicCreateTransaction", function () {
         const memo = "Test\0memo";
         await JSONRPCRequest(this, "createTopic", {
           memo,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -132,7 +127,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "   ";
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -144,7 +138,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "!@#$%^&*()_+-=[]{};':\",./<>?";
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -156,7 +149,6 @@ describe("TopicCreateTransaction", function () {
       const memo = "测试主题备注 🚀";
       const response = await JSONRPCRequest(this, "createTopic", {
         memo,
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -192,7 +184,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -208,7 +199,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -227,7 +217,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey: privateKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -246,7 +235,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey: privateKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -275,7 +263,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -305,7 +292,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         adminKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -317,9 +303,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#7) Creates a topic with no admin key", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -330,7 +314,6 @@ describe("TopicCreateTransaction", function () {
       try {
         await JSONRPCRequest(this, "createTopic", {
           adminKey: invalidKey,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         // receive -32001 expect -32603
@@ -373,7 +356,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -390,7 +372,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -409,7 +390,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey: privateKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -428,7 +408,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         submitKey: privateKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -457,7 +436,6 @@ describe("TopicCreateTransaction", function () {
 
       response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -487,7 +465,6 @@ describe("TopicCreateTransaction", function () {
 
       response = await JSONRPCRequest(this, "createTopic", {
         submitKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -499,9 +476,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#7) Creates a topic with no submit key", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -513,7 +488,6 @@ describe("TopicCreateTransaction", function () {
         const submitKey = invalidKey;
         await JSONRPCRequest(this, "createTopic", {
           submitKey,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -775,7 +749,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         autoRenewAccountId: autoRenewAccountId,
         adminKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [adminPrivateKey, autoRenewAccountPrivateKey],
         },
@@ -797,7 +770,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: "0.0.999999", // Non-existent account
           adminKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -838,7 +810,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: deletedAccountId,
           adminKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -870,7 +841,6 @@ describe("TopicCreateTransaction", function () {
       // According to the specification, newer consensus nodes allow this
       const response = await JSONRPCRequest(this, "createTopic", {
         autoRenewAccountId: autoRenewAccountId,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [autoRenewAccountPrivateKey],
         },
@@ -885,9 +855,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#5) Creates a topic with no auto renew account", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -906,7 +874,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           autoRenewAccountId: "invalid", // Invalid format
           adminKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [adminPrivateKey],
           },
@@ -951,7 +918,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -974,7 +940,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -1006,7 +971,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: privateKeys,
         },
@@ -1040,7 +1004,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKeys[0]], // Only need one signature for threshold 1
         },
@@ -1056,9 +1019,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#5) Creates a topic with no fee schedule key", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -1070,7 +1031,6 @@ describe("TopicCreateTransaction", function () {
         const feeScheduleKey = invalidKey;
         await JSONRPCRequest(this, "createTopic", {
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -1111,7 +1071,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeExemptKeys: [feeExemptKey],
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [privateKey],
         },
@@ -1141,7 +1100,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         feeExemptKeys,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [ed25519PrivateKey, ecdsaPrivateKey],
         },
@@ -1158,7 +1116,6 @@ describe("TopicCreateTransaction", function () {
     it("(#3) Creates a topic with empty fee exempt keys list", async function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         feeExemptKeys: [],
-        autoRenewPeriod: "7000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -1167,9 +1124,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#4) Creates a topic with no fee exempt keys", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -1181,7 +1136,6 @@ describe("TopicCreateTransaction", function () {
         const feeExemptKeys = [invalidKey];
         await JSONRPCRequest(this, "createTopic", {
           feeExemptKeys,
-          autoRenewPeriod: "7000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -1237,7 +1191,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1277,7 +1230,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1302,7 +1254,6 @@ describe("TopicCreateTransaction", function () {
 
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           maxTransactionFee: 5000000000,
         },
@@ -1349,7 +1300,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1362,9 +1312,7 @@ describe("TopicCreateTransaction", function () {
     });
 
     it("(#5) Creates a topic with no custom fees", async function () {
-      const response = await JSONRPCRequest(this, "createTopic", {
-        autoRenewPeriod: "7000000",
-      });
+      const response = await JSONRPCRequest(this, "createTopic", {});
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.topicId).to.not.be.null;
@@ -1392,7 +1340,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1431,7 +1378,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1470,7 +1416,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1508,7 +1453,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1541,7 +1485,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1580,7 +1523,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1619,7 +1561,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1675,7 +1616,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1715,7 +1655,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1769,7 +1708,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1807,7 +1745,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
@@ -1839,7 +1776,6 @@ describe("TopicCreateTransaction", function () {
         await JSONRPCRequest(this, "createTopic", {
           customFees,
           feeScheduleKey,
-          autoRenewPeriod: "7000000",
           commonTransactionParams: {
             signers: [feeSchedulePrivateKey],
             maxTransactionFee: 5000000000,
@@ -1867,7 +1803,6 @@ describe("TopicCreateTransaction", function () {
       const response = await JSONRPCRequest(this, "createTopic", {
         customFees: [],
         feeScheduleKey,
-        autoRenewPeriod: "7000000",
         commonTransactionParams: {
           signers: [feeSchedulePrivateKey],
           maxTransactionFee: 5000000000,
