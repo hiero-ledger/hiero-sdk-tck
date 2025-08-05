@@ -45,6 +45,10 @@ jobs:
           - TokenUpdate
           - TokenWipe
           - TransferCrypto
+          - TopicCreate
+          - TopicDelete
+          - TopicMessageSubmit
+          - TopicUpdate
       fail-fast: false
     steps:
       - name: Harden Runner
