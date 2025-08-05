@@ -866,13 +866,13 @@ describe("TopicMessageSubmitTransaction", function () {
       const { payerAccountId, payerPrivateKey } =
         await createPayerAccount(this);
       const customFees = createCustomFees(customFeeAmountHbar);
-      const feeSchedulePrivateKey = await generateEd25519PrivateKey(context);
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
       const feeScheduleKey = await generateEd25519PublicKey(
-        context,
+        this,
         feeSchedulePrivateKey,
       );
 
-      const createTopicResponse = await JSONRPCRequest(context, "createTopic", {
+      const createTopicResponse = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
         feeExemptKeys: [payerPrivateKey],
@@ -918,13 +918,13 @@ describe("TopicMessageSubmitTransaction", function () {
         denominatingTokenId,
       );
 
-      const feeSchedulePrivateKey = await generateEd25519PrivateKey(context);
+      const feeSchedulePrivateKey = await generateEd25519PrivateKey(this);
       const feeScheduleKey = await generateEd25519PublicKey(
-        context,
+        this,
         feeSchedulePrivateKey,
       );
 
-      const createTopicResponse = await JSONRPCRequest(context, "createTopic", {
+      const createTopicResponse = await JSONRPCRequest(this, "createTopic", {
         customFees,
         feeScheduleKey,
         feeExemptKeys: [payerPrivateKey],
