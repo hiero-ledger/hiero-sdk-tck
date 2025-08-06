@@ -195,7 +195,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.only("Memo", function () {
+  describe("Memo", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -349,7 +349,28 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe("AutoRenewPeriod", function () {
+  describe.only("AutoRenewPeriod", function () {
+    let ed25519PrivateKey: string;
+    let ed25519PublicKey: string;
+    let commonContractParams: any;
+
+    beforeEach(async function () {
+      ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      commonContractParams = {
+        bytecode: smartContractBytecode,
+        gas: "10000000",
+        adminKey: ed25519PublicKey,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      };
+    });
+
     const verifyContractCreationWithAutoRenewPeriod = async (
       contractId: string,
       expectedAutoRenewPeriod: string,
@@ -372,11 +393,10 @@ describe.only("ContractCreateTransaction", function () {
     };
 
     it("(#1) Creates a contract with valid auto renew period", async function () {
-      const bytecodeFileId = smartContractBytecode;
       const autoRenewPeriod = "7000000";
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        ...commonContractParams,
         autoRenewPeriod,
       });
 
@@ -389,11 +409,10 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#2) Creates a contract with minimum auto renew period", async function () {
-      const bytecodeFileId = smartContractBytecode;
       const autoRenewPeriod = "2592000"; // 30 days
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        ...commonContractParams,
         autoRenewPeriod,
       });
 
@@ -406,11 +425,10 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#3) Creates a contract with maximum auto renew period", async function () {
-      const bytecodeFileId = smartContractBytecode;
       const autoRenewPeriod = "8000001"; // Maximum valid period
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        ...commonContractParams,
         autoRenewPeriod,
       });
 
@@ -424,11 +442,10 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#4) Creates a contract with auto renew period below minimum", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "2591999"; // Below minimum
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
@@ -445,11 +462,10 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#5) Creates a contract with auto renew period above maximum", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "10000000"; // Above maximum
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
@@ -466,18 +482,17 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#6) Creates a contract with auto renew period of zero", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "0";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "AUTORENEW_DURATION_NOT_IN_RANGE",
-          "Auto renew duration zero error",
+          "INVALID_RENEWAL_PERIOD",
+          "Invalid renewal period",
         );
         return;
       }
@@ -487,18 +502,17 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#7) Creates a contract with negative auto renew period", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "-1";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "AUTORENEW_DURATION_NOT_IN_RANGE",
-          "Auto renew duration negative error",
+          "INVALID_RENEWAL_PERIOD",
+          "Invalid renewal period",
         );
         return;
       }
@@ -508,11 +522,10 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#8) Creates a contract with auto renew period of int64 max", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "9223372036854775807"; // int64 max
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
@@ -529,18 +542,17 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#9) Creates a contract with auto renew period of int64 min", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
         const autoRenewPeriod = "-9223372036854775808"; // int64 min
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          ...commonContractParams,
           autoRenewPeriod,
         });
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "AUTORENEW_DURATION_NOT_IN_RANGE",
-          "Auto renew duration int64 min error",
+          "INVALID_RENEWAL_PERIOD",
+          "Invalid renewal period",
         );
         return;
       }
@@ -549,10 +561,8 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#10) Creates a contract without auto renew period", async function () {
-      const bytecodeFileId = smartContractBytecode;
-
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        ...commonContractParams,
         memo: "Contract without auto renew period",
       });
 
