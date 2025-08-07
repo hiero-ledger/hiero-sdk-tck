@@ -84,7 +84,37 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#3) Creates a contract with zero gas", async function () {
+    it("(#3) Create contract with admin key and zero gas", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "0";
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Creates a contract with zero gas", async function () {
       try {
         const bytecode = smartContractBytecode;
         const gas = "0";
@@ -105,17 +135,74 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#4) Creates a contract with negative gas", async function () {
-      try {
-        const bytecode = smartContractBytecode;
-        const gas = "-1";
+    it("(#5) Create contract with admin key and excessive gas over limit", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "9223372036854775807";
 
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "MAX_GAS_LIMIT_EXCEEDED",
+          "Max gas limit exceeded error",
+        );
+        return;
+      }
+    });
+
+    it("(#6) Create contract without admin key and excessive gas over limit", async function () {
+      const bytecode = smartContractBytecode;
+      const gas = "9223372036854775807";
+
+      try {
         await JSONRPCRequest(this, "createContract", {
           bytecode,
           gas,
         });
       } catch (err: any) {
-        console.log(err);
+        assert.equal(
+          err.data.status,
+          "MAX_GAS_LIMIT_EXCEEDED",
+          "Max gas limit exceeded error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Create contract with admin key and negative gas", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "-1";
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
         assert.equal(
           err.data.status,
           "CONTRACT_NEGATIVE_GAS",
@@ -127,20 +214,28 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a contract with gas at int64 max", async function () {
-      const bytecode = smartContractBytecode;
-      const gas = "9223372036854775807";
+    it("(#8) Creates a contract without admin key and negative gas", async function () {
+      try {
+        const bytecode = smartContractBytecode;
+        const gas = "-1";
 
-      const response = await JSONRPCRequest(this, "createContract", {
-        bytecode,
-        gas,
-      });
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_GAS",
+          "Contract negative gas error",
+        );
+        return;
+      }
 
-      expect(response.status).to.equal("SUCCESS");
-      expect(response.contractId).to.not.be.null;
+      assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a contract with gas at int64 max - 1", async function () {
+    it("(#9) Creates a contract without admin key and gas at int64 max - 1", async function () {
       const bytecode = smartContractBytecode;
       const gas = "9223372036854775806";
 
@@ -153,7 +248,106 @@ describe.only("ContractCreateTransaction", function () {
       expect(response.contractId).to.not.be.null;
     });
 
-    it("(#6) Creates a contract with gas at int64 min", async function () {
+    it("(#10) Creates a contract with admin key and gas at int64 max - 1", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "9223372036854775806";
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        bytecode,
+        gas,
+        adminKey: ed25519PublicKey,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#11) Creates a contract with admin key and gas at int64 max", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "9223372036854775807";
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        bytecode,
+        gas,
+        adminKey: ed25519PublicKey,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#12) Creates a contract without admin key and gas at int64 max", async function () {
+      const bytecode = smartContractBytecode;
+      const gas = "9223372036854775807";
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        bytecode,
+        gas,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+    });
+
+    it("(#13) Creates a contract with admin key and gas at int64 min", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "-9223372036854775808";
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_GAS",
+          "Contract negative gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#14) Creates a contract without admin key and gas at int64 min", async function () {
       try {
         const bytecode = smartContractBytecode;
         const gas = "-9223372036854775808";
@@ -174,7 +368,37 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Creates a contract with gas at int64 min + 1", async function () {
+    it("(#15) Creates a contract with admin key and gas at int64 min + 1", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      const bytecode = smartContractBytecode;
+      const gas = "-9223372036854775807";
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecode,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_GAS",
+          "Contract negative gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#16) Creates a contract without admin key and gas at int64 min + 1", async function () {
       try {
         const bytecode = smartContractBytecode;
         const gas = "-9223372036854775807";
