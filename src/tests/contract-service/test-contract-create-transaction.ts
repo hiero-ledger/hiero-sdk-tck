@@ -36,6 +36,89 @@ describe.only("ContractCreateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
+  describe.only("Initcode", function () {
+    const gas = "300000";
+    it("(#1) Create a contract with valid initcode under the transaction size limit", async function () {
+      const initcode = smartContractBytecode;
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode,
+        gas,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#2) Create a contract with missing initcode AND missing bytecodeFileId", async function () {
+      try {
+        const response = await JSONRPCRequest(this, "createContract", {
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_FILE_ID",
+          "Invalid file id error",
+        );
+      }
+    });
+
+    it("(#3) Create a contract with both valid initcode and valid bytecodeFileId supplied", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: smartContractBytecode,
+      });
+      const fileId = fileResponse.fileId;
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode: smartContractBytecode,
+        bytecodeFileId: fileId,
+        gas,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#4) Create a contract with an invalid initcode hex string", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: "0xZZ",
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+    });
+
+    it("(#5) Create a contract with a valid initcode but insufficient gas", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: smartContractBytecode,
+          gas: "0",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
+
   describe("Gas", function () {
     const gas = "300000";
     it("(#1) Creates a contract with admin key and reasonable gas", async function () {
