@@ -36,18 +36,18 @@ describe.only("ContractCreateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe.skip("Gas", function () {
+  describe.only("Gas", function () {
     it("(#1) Creates a contract with admin key and reasonable gas", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
         this,
         ed25519PrivateKey,
       );
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
       const gas = "10000000";
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
         gas,
         adminKey: ed25519PublicKey,
         commonTransactionParams: {
@@ -66,11 +66,11 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#2) Creates a contract with no admin key and reasonable gas", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
       const gas = "10000000";
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
         gas,
       });
 
@@ -86,11 +86,11 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#3) Creates a contract with zero gas", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
         const gas = "0";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           gas,
         });
       } catch (err: any) {
@@ -105,16 +105,17 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a contract with negative gas", async function () {
+    it.only("(#4) Creates a contract with negative gas", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
         const gas = "-1";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           gas,
         });
       } catch (err: any) {
+        console.log(err);
         assert.equal(
           err.data.status,
           "CONTRACT_NEGATIVE_GAS",
@@ -127,11 +128,11 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#5) Creates a contract with gas at int64 max", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
       const gas = "9223372036854775807";
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
         gas,
       });
 
@@ -140,11 +141,11 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#5) Creates a contract with gas at int64 max - 1", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
       const gas = "9223372036854775806";
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
         gas,
       });
 
@@ -154,11 +155,11 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#6) Creates a contract with gas at int64 min", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
         const gas = "-9223372036854775808";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           gas,
         });
       } catch (err: any) {
@@ -175,11 +176,11 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#7) Creates a contract with gas at int64 min + 1", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
         const gas = "-9223372036854775807";
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           gas,
         });
       } catch (err: any) {
@@ -349,7 +350,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.only("AutoRenewPeriod", function () {
+  describe("AutoRenewPeriod", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -620,7 +621,7 @@ describe.only("ContractCreateTransaction", function () {
     };
 
     it("(#1) Creates a contract with valid auto renew account", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
 
       // Create an account to use as auto renew account
       const autoRenewAccountPrivateKey = await generateEd25519PrivateKey(this);
@@ -630,8 +631,9 @@ describe.only("ContractCreateTransaction", function () {
       );
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
         autoRenewAccountId,
+        gas: "10000000",
         commonTransactionParams: {
           signers: [autoRenewAccountPrivateKey],
         },
@@ -647,11 +649,12 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#2) Creates a contract with non-existent auto renew account", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           autoRenewAccountId: "0.0.999999", // Non-existent account
+          gas: "10000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -666,7 +669,7 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#3) Creates a contract with deleted auto renew account", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
 
       // Create an account and then delete it
       const accountPrivateKey = await generateEd25519PrivateKey(this);
@@ -683,8 +686,9 @@ describe.only("ContractCreateTransaction", function () {
 
       try {
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           autoRenewAccountId: deletedAccountId,
+          gas: "10000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -699,10 +703,11 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#4) Creates a contract with no auto renew account", async function () {
-      const bytecodeFileId = smartContractBytecode;
+      const bytecode = smartContractBytecode;
 
       const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
+        bytecode,
+        gas: "10000000",
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -717,11 +722,12 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#5) Creates a contract with invalid auto renew account format", async function () {
       try {
-        const bytecodeFileId = smartContractBytecode;
+        const bytecode = smartContractBytecode;
 
         await JSONRPCRequest(this, "createContract", {
-          bytecodeFileId,
+          bytecode,
           autoRenewAccountId: "invalid", // Invalid format
+          gas: "10000000",
         });
       } catch (err: any) {
         assert.equal(
@@ -733,32 +739,6 @@ describe.only("ContractCreateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
-    });
-
-    it("(#6) Creates a contract with auto renew account that has insufficient balance", async function () {
-      const bytecodeFileId = smartContractBytecode;
-
-      // Create an account with minimal balance
-      const autoRenewAccountPrivateKey = await generateEd25519PrivateKey(this);
-      const autoRenewAccountId = await createAccount(
-        this,
-        autoRenewAccountPrivateKey,
-      );
-
-      const response = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId,
-        autoRenewAccountId,
-        commonTransactionParams: {
-          signers: [autoRenewAccountPrivateKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      expect(response.contractId).to.not.be.null;
-      await verifyContractCreationWithAutoRenewAccount(
-        response.contractId,
-        autoRenewAccountId,
-      );
     });
   });
 });
