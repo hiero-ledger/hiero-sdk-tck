@@ -36,7 +36,7 @@ describe.only("ContractCreateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe.only("Initcode", function () {
+  describe("Initcode", function () {
     const gas = "300000";
     it("(#1) Create a contract with valid initcode under the transaction size limit", async function () {
       const initcode = smartContractBytecode;
@@ -773,6 +773,95 @@ describe.only("ContractCreateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
+    });
+  });
+
+  describe.only("DeclineStakingReward", function () {
+    let ed25519PrivateKey: string;
+    let ed25519PublicKey: string;
+    let commonContractParams: any;
+
+    beforeEach(async function () {
+      ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      commonContractParams = {
+        initcode: smartContractBytecode,
+        gas: "300000",
+      };
+    });
+
+    it("(#1) Create a contract with an admin key that decline staking rewards", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        declineStakingReward: true,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+
+      expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(true);
+    });
+
+    it("(#2) Create a contract with no admin key that decline staking rewards", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        declineStakingReward: true,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(true);
+    });
+
+    it("(#3) Create a contract with an admin key that that accept staking rewards", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        declineStakingReward: false,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(false);
+    });
+
+    it("(#4) Create a contract with no admin key that accept staking rewards", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        declineStakingReward: false,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(false);
     });
   });
 });
