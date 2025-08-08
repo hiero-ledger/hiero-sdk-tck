@@ -15,7 +15,6 @@ import {
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { ContractFunctionParameters } from "@hashgraph/sdk";
-import { getRawKeyFromHex } from "@helpers/asn1-decoder";
 
 const smartContractBytecode =
   "608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029";
@@ -44,7 +43,7 @@ describe.only("ContractCreateTransaction", function () {
     }).join("");
   };
 
-  describe.only("Bytecode File Id", function () {
+  describe("Bytecode File Id", function () {
     const gas = "300000";
     it("(#1) reate a contract with valid file containing bytecode", async function () {
       const fileResponse = await JSONRPCRequest(this, "createFile", {
@@ -84,6 +83,7 @@ describe.only("ContractCreateTransaction", function () {
         );
         return;
       }
+      assert.fail("Should throw an error");
     });
 
     it("(#3) Create a contract with `bytecodeFileId` which does not exist", async function () {
@@ -100,7 +100,9 @@ describe.only("ContractCreateTransaction", function () {
           "INVALID_FILE_ID",
           "Invalid file id error",
         );
+        return;
       }
+      assert.fail("Should throw an error");
     });
 
     it("(#4) Create a contract with a valid file ID but no content", async function () {
@@ -120,7 +122,9 @@ describe.only("ContractCreateTransaction", function () {
           "CONTRACT_FILE_EMPTY",
           "Contract file empty error",
         );
+        return;
       }
+      assert.fail("Should throw an error");
     });
 
     it("(#5) Create and deploy a valid ERC-20 contract", async function () {
@@ -214,7 +218,7 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#9) Create and deploy a valid contract that uses the Hiero account service system contract", async function () {
+    it("(#7) Create and deploy a valid contract that uses the Hiero account service system contract", async function () {
       const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
       const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -256,7 +260,7 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#7) Create and deploy a valid contract that uses the Hiero token service system contract", async function () {
+    it("(#8) Create and deploy a valid contract that uses the Hiero token service system contract", async function () {
       const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
       const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -298,7 +302,7 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#8) Create and deploy a valid contract that uses the the Hiero schedule service system contract", async function () {
+    it("(#9) Create and deploy a valid contract that uses the the Hiero schedule service system contract", async function () {
       const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
       const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -330,7 +334,7 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#8) Create and deploy a valid contract that uses the the Hiero exchange rate system contract", async function () {
+    it("(#10) Create and deploy a valid contract that uses the the Hiero exchange rate system contract", async function () {
       const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
       const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -362,7 +366,7 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#9) Create and deploy a valid contract that uses the the Hiero psuedo random number generator system contract", async function () {
+    it("(#11) Create and deploy a valid contract that uses the the Hiero psuedo random number generator system contract", async function () {
       const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
       const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -393,9 +397,87 @@ describe.only("ContractCreateTransaction", function () {
       );
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
+
+    it("(#12) Create and deploy a valid contract and set the payer account that does not have sufficient funds", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: smartContractBytecode,
+      });
+      const fileId = fileResponse.fileId;
+
+      const payerPrivateKey = await generateEd25519PrivateKey(this);
+      const payerAccountId = await createAccount(this, payerPrivateKey);
+
+      await setOperator(this, payerAccountId, payerPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_PAYER_BALANCE",
+          "insufficient balance",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#13) Create and deploy a valid contract and set the file ID to be a system file for exchange rate - 0.0.112", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: "0.0.112",
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_FILE_ID", "invalid file id");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#14) Create and deploy a valid contract and set the file ID to be a deleted file ID", async function () {
+      const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
+      const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
+        this,
+        fileCreateEd25519PrivateKey,
+      );
+
+      const createFileResponse = await JSONRPCRequest(this, "createFile", {
+        keys: [fileCreateEd25519PublicKey],
+        contents: smartContractBytecode,
+        commonTransactionParams: {
+          signers: [fileCreateEd25519PrivateKey],
+        },
+      });
+
+      const fileId = createFileResponse.fileId;
+
+      const deleteFileResponse = await JSONRPCRequest(this, "deleteFile", {
+        fileId,
+        commonTransactionParams: {
+          signers: [fileCreateEd25519PrivateKey],
+        },
+      });
+
+      expect(deleteFileResponse.status).to.equal("SUCCESS");
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "FILE_DELETED", "file deleted");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
   });
 
-  describe("Initcode", function () {
+  describe.only("Initcode", function () {
     const gas = "300000";
     it("(#1) Create a contract with valid initcode under the transaction size limit", async function () {
       const initcode = smartContractBytecode;
@@ -460,9 +542,32 @@ describe.only("ContractCreateTransaction", function () {
         );
         return;
       }
+      assert.fail("Should throw an error");
     });
 
-    it("(#5) Create a contract with a valid initcode but insufficient gas", async function () {
+    // TODO: Fix this test
+    it.skip("(#5) Create a contract with a valid initcode with constructorParameters", async function () {
+      const constructorParameters = new ContractFunctionParameters()
+        .addUint256(1)
+        ._build();
+
+      const initcode =
+        "6080604052348015600e575f5ffd5b506040516101493803806101498339818101604052810190602e9190606b565b805f81905550506091565b5f5ffd5b5f819050919050565b604d81603d565b81146056575f5ffd5b50565b5f815190506065816046565b92915050565b5f60208284031215607d57607c6039565b5b5f6088848285016059565b91505092915050565b60ac8061009d5f395ff3fe6080604052348015600e575f5ffd5b50600436106026575f3560e01c80636d619daa14602a575b5f5ffd5b60306044565b604051603b9190605f565b60405180910390f35b5f5481565b5f819050919050565b6059816049565b82525050565b5f60208201905060705f8301846052565b9291505056fea2646970667358221220084a38ba3cab209cd2154230b84b3abc0ef94ea339d088a86544e2c56ffe557564736f6c634300081e0033";
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode,
+        gas: "300000",
+        constructorParameters: toHexString(constructorParameters),
+      });
+      expect(response.status).to.equal("SUCCESS");
+
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#6) Create a contract with a valid initcode but insufficient gas", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -476,11 +581,10 @@ describe.only("ContractCreateTransaction", function () {
         );
         return;
       }
-
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Create a contract with empty initcode", async function () {
+    it("(#7) Create a contract with empty initcode", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: "",
@@ -492,7 +596,9 @@ describe.only("ContractCreateTransaction", function () {
           "CONTRACT_BYTECODE_EMPTY",
           "Contract file empty error",
         );
+        return;
       }
+      assert.fail("Should throw an error");
     });
   });
 
