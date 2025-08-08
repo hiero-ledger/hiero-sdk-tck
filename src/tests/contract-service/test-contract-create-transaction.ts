@@ -416,7 +416,7 @@ describe.only("ContractCreateTransaction", function () {
 
     it("(#2) Create a contract with missing initcode AND missing bytecodeFileId", async function () {
       try {
-        const response = await JSONRPCRequest(this, "createContract", {
+        await JSONRPCRequest(this, "createContract", {
           gas,
         });
       } catch (err: any) {
@@ -425,7 +425,10 @@ describe.only("ContractCreateTransaction", function () {
           "INVALID_FILE_ID",
           "Invalid file id error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#3) Create a contract with both valid initcode and valid bytecodeFileId supplied", async function () {
@@ -1150,7 +1153,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.only("DeclineStakingReward", function () {
+  describe("DeclineStakingReward", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -1236,6 +1239,435 @@ describe.only("ContractCreateTransaction", function () {
         response.contractId,
       );
       expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(false);
+    });
+  });
+
+  describe.only("MaxAutomaticTokenAssociations", function () {
+    let ed25519PrivateKey: string;
+    let ed25519PublicKey: string;
+    let commonContractParams: any;
+
+    beforeEach(async function () {
+      ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      commonContractParams = {
+        initcode: smartContractBytecode,
+        gas: "300000",
+      };
+    });
+
+    it("(#1) Create contract with admin key and maxAutomaticTokenAssociations = 0", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: 0,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(0);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(0);
+      });
+    });
+
+    it("(#2) Create contract without admin key and maxAutomaticTokenAssociations = 0", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: 0,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(0);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(0);
+      });
+    });
+
+    it.only("(#3) Create contract with admin key and maxAutomaticTokenAssociations = 10", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: 10,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(10);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        console.log(mirrorContractInfo);
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          10,
+        );
+      });
+    });
+
+    it("(#4) Create contract without admin key and maxAutomaticTokenAssociations = 10", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: 10,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(10);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          10,
+        );
+      });
+    });
+
+    it("(#5) Create contract with admin key and maxAutomaticTokenAssociations = 1000", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: 1000,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1000);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          1000,
+        );
+      });
+    });
+
+    it("(#6) Create contract without admin key and maxAutomaticTokenAssociations = 1000", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: 1000,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1000);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          1000,
+        );
+      });
+    });
+
+    it("(#7) Create contract with admin key and maxAutomaticTokenAssociations = -1 (no-limit per HIP-904)", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: -1,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(-1);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          -1,
+        );
+      });
+    });
+
+    it("(#8) Create contract without admin key and maxAutomaticTokenAssociations = -1 (no-limit per HIP-904)", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: -1,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(-1);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(
+          -1,
+        );
+      });
+    });
+
+    it("(#9) Create contract with admin key and invalid negative maxAutomaticTokenAssociations = -2", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          adminKey: ed25519PublicKey,
+          maxAutomaticTokenAssociations: -2,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_MAX_AUTO_ASSOCIATIONS",
+          "Invalid max auto associations error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#10) Create contract without admin key and invalid negative maxAutomaticTokenAssociations = -2", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          maxAutomaticTokenAssociations: -2,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_MAX_AUTO_ASSOCIATIONS",
+          "Invalid max auto associations error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Create contract with admin key and maxAutomaticTokenAssociations equal to used_auto_associations (3)", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: 3,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(3);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(3);
+      });
+    });
+
+    it("(#12) Create contract without admin key and maxAutomaticTokenAssociations equal to used_auto_associations", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: 3,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(3);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(3);
+      });
+    });
+
+    it("(#13) Create contract with admin key and maxAutomaticTokenAssociations < used_auto_associations (1 < 3)", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        maxAutomaticTokenAssociations: 1,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(1);
+      });
+    });
+
+    it("(#14) Create contract without admin key and maxAutomaticTokenAssociations < used_auto_associations (1 < 3)", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        maxAutomaticTokenAssociations: 1,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+      //   const contractInfo = await consensusInfoClient.getContractInfo(
+      //     response.contractId,
+      //   );
+      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1);
+
+      await retryOnError(async () => {
+        const mirrorContractInfo = await mirrorNodeClient.getContractData(
+          response.contractId,
+        );
+        expect(mirrorContractInfo.max_automatic_token_associations).to.equal(1);
+      });
+    });
+
+    it("(#15) Create contract without admin key and maxAutomaticTokenAssociations = 2,147,483,647", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          maxAutomaticTokenAssociations: 2147483647,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT",
+          "Requested num automatic associations exceeds association limit error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#16) Create contract with admin key and maxAutomaticTokenAssociations = 2,147,483,647", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          adminKey: ed25519PublicKey,
+          maxAutomaticTokenAssociations: 2147483647,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT",
+          "Requested num automatic associations exceeds association limit error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#17) Create contract without admin key and maxAutomaticTokenAssociations = -2,147,483,647", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          maxAutomaticTokenAssociations: -2147483647,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_MAX_AUTO_ASSOCIATIONS",
+          "Invalid max auto associations error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#18) Create contract with admin key and maxAutomaticTokenAssociations = -2,147,483,647", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          ...commonContractParams,
+          adminKey: ed25519PublicKey,
+          maxAutomaticTokenAssociations: -2147483647,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_MAX_AUTO_ASSOCIATIONS",
+          "Invalid max auto associations error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
     });
   });
 });
