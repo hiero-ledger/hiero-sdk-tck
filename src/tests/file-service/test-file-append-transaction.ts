@@ -176,7 +176,7 @@ describe("FileAppendTransaction", function () {
       await verifyFileContents(fileId, "Initial file contents" + appendContent);
     });
 
-    // cannot reach this status in consensus
+    // TODO: unskip me
     it.skip("(#3) Appends contents exceeding maximum size", async function () {
       // Create a string of 7KiB (7168 bytes)
       const appendContent = "a".repeat(7168);

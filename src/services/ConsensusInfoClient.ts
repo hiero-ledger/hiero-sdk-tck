@@ -5,6 +5,9 @@ import {
   AccountInfo,
   AccountInfoQuery,
   Client,
+  ContractId,
+  ContractInfo,
+  ContractInfoQuery,
   FileContentsQuery,
   FileId,
   FileInfo,
@@ -102,6 +105,12 @@ class ConsensusInfoClient {
   async executeTopicMethod(topicId: string, method: TopicInfoQuery) {
     method.setTopicId(TopicId.fromString(topicId));
     return method.execute(this.sdkClient);
+  }
+
+  async getContractInfo(contractId: string): Promise<ContractInfo> {
+    const query = new ContractInfoQuery();
+    query.setContractId(ContractId.fromString(contractId));
+    return query.execute(this.sdkClient);
   }
 }
 
