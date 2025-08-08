@@ -198,6 +198,10 @@ The available test options include:
 - TokenUpdate
 - TokenWipe
 - TransferCrypto
+- TopicCreate
+- TopicDelete
+- TopicMessageSubmit
+- TopicUpdate
 - ALL (runs all tests)
 
 Running an invalid test name will display the complete list of available tests.

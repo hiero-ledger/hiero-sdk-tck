@@ -14,6 +14,13 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   FileCreate: "src/tests/file-service/test-file-create-transaction.ts",
   FileUpdate: "src/tests/file-service/test-file-update-transaction.ts",
 
+  // Topic Service Tests
+  TopicCreate: "src/tests/topic-service/test-topic-create-transaction.ts",
+  TopicDelete: "src/tests/topic-service/test-topic-delete-transaction.ts",
+  TopicMessageSubmit:
+    "src/tests/topic-service/test-topic-message-submit-transaction.ts",
+  TopicUpdate: "src/tests/topic-service/test-topic-update-transaction.ts",
+
   // Token Service Tests
   TokenAirdropCancel:
     "src/tests/token-service/test-token-airdrop-cancel-transaction.ts",
