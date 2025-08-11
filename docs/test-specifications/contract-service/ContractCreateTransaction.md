@@ -104,7 +104,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | 4       | Create a contract with an invalid initcode hex string                        | initcode="0xZZ"                                                              | Fails with an SDK internal error.                                                                                 | N                 |
 | 5       | Create a contract with a valid initcode with constructorParameters           | initcode=<VALID_INITCODE_HEX>, constructorParameters=<VALID_ABI_ENCODED_HEX> | Transaction succeeds; constructor runs with provided params (verify via `ContractFunctionResult` on mirror node). | N                 |
 | 6       | Create a contract with a valid initcode but insufficient gas                 | initcode=<VALID_INITCODE_HEX>, gas="0"                                       | Transaction fails with `INSUFFICIENT_GAS`.                                                                        | N                 |
-| 7       | Create a contract with no bytecode                                           | bytecodeFileId=<VALID_FILE_ID>                                               | Fails with `CONTRACT_BYTECODE_EMPTY`.                                                                             | N                 |
+| 7       | Create a contract with empty bytecode                                        | bytecodeFileId=<VALID_FILE_ID>                                               | Fails with `CONTRACT_BYTECODE_EMPTY`.                                                                             | N                 |
 
 
 ---
