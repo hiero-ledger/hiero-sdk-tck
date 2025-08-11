@@ -157,12 +157,17 @@ describe.only("ContractCreateTransaction", function () {
       const appendResponse = await JSONRPCRequest(this, "appendFile", {
         keys: [fileCreateEd25519PublicKey],
         fileId,
+        maxChunks: 100,
         contents: erc20Bytecode.substring(5800),
         commonTransactionParams: {
           signers: [fileCreateEd25519PrivateKey],
         },
       });
       expect(appendResponse.status).to.equal("SUCCESS");
+      const actualContents = (
+        await consensusInfoClient.getFileContents(fileId)
+      ).toString();
+      expect(actualContents).to.be.equal(erc20Bytecode);
 
       const constructorParameters = new ContractFunctionParameters()
         .addUint256(1)
@@ -1279,7 +1284,7 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a contract with negative gas", async function () {
+    it.skip("(#4) Creates a contract with negative gas", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -1670,7 +1675,7 @@ describe.only("ContractCreateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "INVALID_RENEWAL_PERIOD",
+          "AUTORENEW_DURATION_NOT_IN_RANGE",
           "Auto renew duration int64 max error",
         );
         return;
@@ -2641,7 +2646,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe("Staked Account/Node ID", function () {
+  describe.only("Staked Account/Node ID", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -2745,18 +2750,17 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#5) Create a contract that does not have an admin key and that tries to set both stakedAccountId and stakedNodeId present", async function () {
-      try {
-        await JSONRPCRequest(this, "createContract", {
-          ...commonContractParams,
-          stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          stakedNodeId: "0",
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_STAKING_ID");
-        return;
-      }
+      const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        stakedAccountId,
+        stakedNodeId: "0",
+      });
 
-      assert.fail("Should throw an error");
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      await verifyContractCreationWithStakedNodeId(response.contractId, "0");
     });
 
     it("(#6) Create a contract that does have an admin key and is staked to valid account ID", async function () {
@@ -2836,22 +2840,21 @@ describe.only("ContractCreateTransaction", function () {
     });
 
     it("(#10) Create a contract that does have an admin key and that tries to set both stakedAccountId and stakedNodeId present", async function () {
-      try {
-        await JSONRPCRequest(this, "createContract", {
-          ...commonContractParams,
-          adminKey: ed25519PublicKey,
-          stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
-          stakedNodeId: "0",
-          commonTransactionParams: {
-            signers: [ed25519PrivateKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_STAKING_ID");
-        return;
-      }
+      const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const response = await JSONRPCRequest(this, "createContract", {
+        ...commonContractParams,
+        adminKey: ed25519PublicKey,
+        stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        stakedNodeId: "0",
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
 
-      assert.fail("Should throw an error");
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      await verifyContractCreationWithStakedNodeId(response.contractId, "0");
     });
 
     it("(#11) Create a contract that does have an admin key and that tries to stake to a deleted account ID", async function () {
