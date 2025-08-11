@@ -1964,7 +1964,7 @@ describe.only("ContractCreateTransaction", function () {
   });
 
   // TODO: Remove skip once the SDK is updated
-  describe.skip("MaxAutomaticTokenAssociations", function () {
+  describe.only("MaxAutomaticTokenAssociations", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -1995,10 +1995,10 @@ describe.only("ContractCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
 
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(0);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(0);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2016,10 +2016,10 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(0);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(0);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2041,10 +2041,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(10);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        10,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2064,10 +2066,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(10);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        10,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2091,10 +2095,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1000);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        1000,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2114,10 +2120,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1000);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        1000,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2141,10 +2149,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(-1);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        -1,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2164,10 +2174,12 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(-1);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(
+        -1,
+      );
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2231,10 +2243,10 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(3);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(3);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2252,10 +2264,10 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(3);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(3);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2277,10 +2289,10 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(1);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
@@ -2298,10 +2310,10 @@ describe.only("ContractCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.contractId).to.not.be.null;
-      //   const contractInfo = await consensusInfoClient.getContractInfo(
-      //     response.contractId,
-      //   );
-      //   expect(contractInfo.maxAutomaticTokenAssociations).to.equal(1);
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.maxAutomaticTokenAssociations.toNumber()).to.equal(1);
 
       await retryOnError(async () => {
         const mirrorContractInfo = await mirrorNodeClient.getContractData(
