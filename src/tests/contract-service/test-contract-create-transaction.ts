@@ -23,7 +23,7 @@ import {
 import { invalidKey } from "@constants/key-type";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
-import { ContractFunctionParameters, Hbar } from "@hashgraph/sdk";
+import { ContractFunctionParameters, EvmAddress, Hbar } from "@hashgraph/sdk";
 
 const smartContractBytecode =
   "608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029";
@@ -486,7 +486,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.only("Initcode", function () {
+  describe("Initcode", function () {
     const gas = "300000";
     it("(#1) Create a contract with valid initcode under the transaction size limit", async function () {
       const initcode = smartContractBytecode;
@@ -617,18 +617,6 @@ describe.only("ContractCreateTransaction", function () {
     const gas = "200000";
 
     this.timeout(30000);
-
-    beforeEach(async function () {
-      await setOperator(
-        this,
-        process.env.OPERATOR_ACCOUNT_ID as string,
-        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
-      );
-    });
-
-    afterEach(async function () {
-      await JSONRPCRequest(this, "reset");
-    });
 
     it("(#1) Create a contract with an admin key and valid initial balance", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
@@ -1032,6 +1020,195 @@ describe.only("ContractCreateTransaction", function () {
           // TODO: fail invalid
           "FAIL_INVALID",
           "Insufficient payer balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe.only("Constructor Parameters", function () {
+    const gas = "300000";
+    const bytecode =
+      "6080604052348015600e575f5ffd5b506040516101493803806101498339818101604052810190602e9190606b565b805f81905550506091565b5f5ffd5b5f819050919050565b604d81603d565b81146056575f5ffd5b50565b5f815190506065816046565b92915050565b5f60208284031215607d57607c6039565b5b5f6088848285016059565b91505092915050565b60ac8061009d5f395ff3fe6080604052348015600e575f5ffd5b50600436106026575f3560e01c80636d619daa14602a575b5f5ffd5b60306044565b604051603b9190605f565b60405180910390f35b5f5481565b5f819050919050565b6059816049565b82525050565b5f60208201905060705f8301846052565b9291505056fea2646970667358221220084a38ba3cab209cd2154230b84b3abc0ef94ea339d088a86544e2c56ffe557564736f6c634300081e0033";
+
+    it("(#1) Create contract with admin key and valid ABI‑encoded parameters", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: bytecode,
+      });
+      const fileId = fileResponse.fileId;
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const constructorParams = new ContractFunctionParameters()
+        .addUint256(1)
+        ._build();
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        bytecodeFileId: fileId,
+        gas,
+        adminKey: ed25519PublicKey,
+        constructorParameters: toHexString(constructorParams),
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#2) Create contract without admin key and valid ABI‑encoded parameters", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: bytecode,
+      });
+      const fileId = fileResponse.fileId;
+
+      const constructorParams = new ContractFunctionParameters()
+        .addUint256(1)
+        ._build();
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        bytecodeFileId: fileId,
+        gas,
+        constructorParameters: toHexString(constructorParams),
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+    });
+
+    it("(#3) Create contract with admin key and invalid hex string", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: bytecode,
+      });
+      const fileId = fileResponse.fileId;
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+          constructorParameters: "0xZZ",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Create contract without admin key and invalid hex string", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: bytecode,
+      });
+      const fileId = fileResponse.fileId;
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+          constructorParameters: "0xZZ",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Create contract with admin key and oversized constructor parameters", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents:
+          "608060405234801561000f575f5ffd5b506040516101fb3803806101fb833981810160405281019061003191906100d4565b805f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f5ffd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f5ffd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b60f08061010b5f395ff3fe6080604052348015600e575f5ffd5b50600436106026575f3560e01c80636d619daa14602a575b5f5ffd5b60306044565b604051603b919060a3565b60405180910390f35b5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f608f826068565b9050919050565b609d816087565b82525050565b5f60208201905060b45f8301846096565b9291505056fea2646970667358221220465e188fcf3a681c75a48154a23316e61ee35f29ee5908e42d53f793acd1f8ef64736f6c634300081e0033",
+      });
+      const fileId = fileResponse.fileId;
+
+      const constructorParams = "a".repeat(5500);
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+          constructorParameters: constructorParams,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Create contract without admin key and oversized constructor parameters", async function () {
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents:
+          "608060405234801561000f575f5ffd5b506040516101fb3803806101fb833981810160405281019061003191906100d4565b805f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f5ffd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f5ffd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b60f08061010b5f395ff3fe6080604052348015600e575f5ffd5b50600436106026575f3560e01c80636d619daa14602a575b5f5ffd5b60306044565b604051603b919060a3565b60405180910390f35b5f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f608f826068565b9050919050565b609d816087565b82525050565b5f60208201905060b45f8301846096565b9291505056fea2646970667358221220465e188fcf3a681c75a48154a23316e61ee35f29ee5908e42d53f793acd1f8ef64736f6c634300081e0033",
+      });
+      const fileId = fileResponse.fileId;
+
+      const constructorParams = "a".repeat(5500);
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          bytecodeFileId: fileId,
+          gas,
+          constructorParameters: constructorParams,
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
         );
         return;
       }
