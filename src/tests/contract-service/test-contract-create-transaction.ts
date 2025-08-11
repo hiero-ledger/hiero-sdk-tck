@@ -1266,7 +1266,35 @@ describe.only("ContractCreateTransaction", function () {
       expect(contractInfo.contractId.toString()).to.equal(response.contractId);
     });
 
-    it("(#3) Creates a contract with zero gas", async function () {
+    it("(#3) Create contract with admin key and zero gas", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: smartContractBytecode,
+          gas: "0",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Creates a contract without admin key and zero gas", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -1284,7 +1312,35 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#4) Creates a contract with negative gas", async function () {
+    it("(#5) Create contract with admin key and negative gas", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: smartContractBytecode,
+          gas: "-1",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Creates a contract without admin key and negative gas", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -1302,7 +1358,35 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Creates a contract with gas at int64 min", async function () {
+    it("(#7) Creates a contract with admin key and gas at int64 min", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: smartContractBytecode,
+          gas: "-9223372036854775808",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Creates a contract without admin key and gas at int64 min", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -1320,7 +1404,34 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Creates a contract with gas at int64 min + 1", async function () {
+    it("(#9) Creates a contract with admin key and gas at int64 min + 1", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: smartContractBytecode,
+          gas: "-9223372036854775807",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#10) Creates a contract without admin key and gas at int64 min + 1", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
