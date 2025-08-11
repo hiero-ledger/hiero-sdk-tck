@@ -1222,7 +1222,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.skip("Gas", function () {
+  describe("Gas", function () {
     const gas = "300000";
     it("(#1) Creates a contract with admin key and reasonable gas", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
@@ -1284,7 +1284,7 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#4) Creates a contract with negative gas", async function () {
+    it("(#4) Creates a contract with negative gas", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: smartContractBytecode,
@@ -2657,7 +2657,7 @@ describe.only("ContractCreateTransaction", function () {
     });
   });
 
-  describe.only("Staked Account/Node ID", function () {
+  describe("Staked Account/Node ID", function () {
     let ed25519PrivateKey: string;
     let ed25519PublicKey: string;
     let commonContractParams: any;
@@ -2868,12 +2868,12 @@ describe.only("ContractCreateTransaction", function () {
       await verifyContractCreationWithStakedNodeId(response.contractId, "0");
     });
 
-    it("(#11) Create a contract that does have an admin key and that tries to stake to a deleted account ID", async function () {
+    // TODO: fix in services
+    it.skip("(#11) Create a contract that does have an admin key and that tries to stake to a deleted account ID", async function () {
       // First, create a test account that we can delete
       const testAccountKey = await generateEd25519PrivateKey(this);
       const testAccount = await JSONRPCRequest(this, "createAccount", {
         key: testAccountKey,
-        initialBalance: "100000000", // 1 HBAR
       });
 
       // Delete the test account
@@ -2884,9 +2884,6 @@ describe.only("ContractCreateTransaction", function () {
           signers: [testAccountKey],
         },
       });
-
-      // Wait a moment for the deletion to propagate
-      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Now try to create a contract staked to the deleted account
       try {
