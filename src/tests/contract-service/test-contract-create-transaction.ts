@@ -14,7 +14,7 @@ import {
 } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
-import { ContractFunctionParameters } from "@hashgraph/sdk";
+import { ContractFunctionParameters, Hbar } from "@hashgraph/sdk";
 
 const smartContractBytecode =
   "608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029";
@@ -545,7 +545,7 @@ describe.only("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: Fix this test
+    // TODO: needs investigation
     it.skip("(#5) Create a contract with a valid initcode with constructorParameters", async function () {
       const constructorParameters = new ContractFunctionParameters()
         .addUint256(1)
@@ -598,6 +598,435 @@ describe.only("ContractCreateTransaction", function () {
         );
         return;
       }
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe("Initial Balance", function () {
+    const bytecode =
+      "6080604052603e80600f5f395ff3fe60806040525f5ffdfea264697066735822122075befcb607eba7ac26552e70e14ad0b62dc41442ac32e038255f817e635c013164736f6c634300081e0033";
+    const gas = "200000";
+
+    this.timeout(30000);
+
+    beforeEach(async function () {
+      await setOperator(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+      );
+    });
+
+    afterEach(async function () {
+      await JSONRPCRequest(this, "reset");
+    });
+
+    it("(#1) Create a contract with an admin key and valid initial balance", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode: bytecode,
+        gas,
+        initialBalance: "1000",
+        adminKey: ed25519PublicKey,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+
+      // Verify initial balance
+      const accountInfo = await consensusInfoClient.getAccountInfo(
+        response.contractId,
+      );
+      expect(accountInfo.balance.toTinybars().toString()).to.equal("1000");
+    });
+
+    it("(#2) Create a contract with no admin key and valid initial balance", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode: bytecode,
+        gas,
+        initialBalance: "1000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+
+      // Verify initial balance
+      const accountInfo = await consensusInfoClient.getAccountInfo(
+        response.contractId,
+      );
+      expect(accountInfo.balance.toTinybars().toString()).to.equal("1000");
+    });
+
+    it("(#3) Create a contract with no admin key and with zero initial balance", async function () {
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode: bytecode,
+        gas,
+        initialBalance: "0",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+
+      // Verify initial balance
+      const accountInfo = await consensusInfoClient.getAccountInfo(
+        response.contractId,
+      );
+      expect(accountInfo.balance.toTinybars().toString()).to.equal("0");
+    });
+
+    it("(#4) Create a contract with an admin key and with zero initial balance", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createContract", {
+        initcode: bytecode,
+        gas,
+        initialBalance: "0",
+        adminKey: ed25519PublicKey,
+        commonTransactionParams: {
+          signers: [ed25519PrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.contractId).to.not.be.null;
+
+      // Verify contract was created successfully
+      const contractInfo = await consensusInfoClient.getContractInfo(
+        response.contractId,
+      );
+      expect(contractInfo.contractId.toString()).to.equal(response.contractId);
+
+      // Verify initial balance
+      const accountInfo = await consensusInfoClient.getAccountInfo(
+        response.contractId,
+      );
+      expect(accountInfo.balance.toTinybars().toString()).to.equal("0");
+    });
+
+    it("(#5) Create a contract with an admin key and negative balance", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-1000",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Create a contract with no admin key and negative balance", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-1000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Create a contract with an admin key and greater than payer balance", async function () {
+      const payerAccountPrivateKey = await generateEd25519PrivateKey(this);
+      const payerAccountId = await createAccount(this, payerAccountPrivateKey);
+
+      await setOperator(this, payerAccountId, payerAccountPrivateKey);
+
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "1000",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_PAYER_BALANCE",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Create a contract with no admin key and greater than payer balance", async function () {
+      const payerAccountPrivateKey = await generateEd25519PrivateKey(this);
+      const payerAccountId = await createAccount(this, payerAccountPrivateKey);
+
+      await setOperator(this, payerAccountId, payerAccountPrivateKey);
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "1000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_PAYER_BALANCE",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#9) Create contract with admin key and initial balance = int64 min", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-9223372036854775808",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#10) Create contract without admin key and initial balance = int64 min", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-9223372036854775808",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#11) Create contract with admin key and initial balance = int64 min + 1", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-9223372036854775807",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#12) Create contract without admin key and initial balance = int64 min + 1", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "-9223372036854775807",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_NEGATIVE_VALUE",
+          "Invalid initial balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#13) Create contract with admin key and initial balance = int64 max - 1", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "9223372036854775807",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          // TODO: fail invalid
+          "FAIL_INVALID",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#14) Create contract without admin key and initial balance = int64 max - 1", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "9223372036854775806",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          // TODO fail invalid
+          "FAIL_INVALID",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+    });
+
+    it("(#15) Create contract with admin key and initial balance = int64 max", async function () {
+      const ed25519PrivateKey = await generateEd25519PrivateKey(this);
+      const ed25519PublicKey = await generateEd25519PublicKey(
+        this,
+        ed25519PrivateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "9223372036854775807",
+          adminKey: ed25519PublicKey,
+          commonTransactionParams: {
+            signers: [ed25519PrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          // TODO: fail invalid
+          "FAIL_INVALID",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#16) Create contract without admin key and initial balance = int64 max", async function () {
+      try {
+        await JSONRPCRequest(this, "createContract", {
+          initcode: bytecode,
+          gas,
+          initialBalance: "9223372036854775807",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          // TODO: fail invalid
+          "FAIL_INVALID",
+          "Insufficient payer balance error",
+        );
+        return;
+      }
+
       assert.fail("Should throw an error");
     });
   });
