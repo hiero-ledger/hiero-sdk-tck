@@ -18,7 +18,7 @@ import {
 import {
   verifyContractKey,
   verifyContractKeyList,
-  verifyContractUpdateWithNullKey,
+  verifyContractCreateWithNullKey,
 } from "@helpers/verify-contract-tx";
 import { invalidKey } from "@constants/key-type";
 
@@ -54,7 +54,7 @@ describe.only("ContractCreateTransaction", function () {
 
   describe("Bytecode File Id", function () {
     const gas = "300000";
-    it("(#1) reate a contract with valid file containing bytecode", async function () {
+    it("(#1) Create a contract with valid file containing bytecode", async function () {
       const fileResponse = await JSONRPCRequest(this, "createFile", {
         contents: smartContractBytecode,
       });
@@ -2542,7 +2542,7 @@ describe.only("ContractCreateTransaction", function () {
       adminKey: string | null,
     ) => {
       if (adminKey === null) {
-        await verifyContractUpdateWithNullKey(contractId, "adminKey");
+        await verifyContractCreateWithNullKey(contractId, "adminKey");
       } else {
         await verifyContractKey(contractId, adminKey, "adminKey");
       }

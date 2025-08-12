@@ -73,7 +73,7 @@ const transformConsensusToMirrorNodeProp = (key: string): string => {
   return key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 };
 
-export const verifyContractUpdateWithNullKey = async (
+export const verifyContractCreateWithNullKey = async (
   contractId: string,
   keyType: string,
 ) => {
@@ -81,13 +81,12 @@ export const verifyContractUpdateWithNullKey = async (
   const consensusNodeKey = (
     await consensusInfoClient.getContractInfo(contractId)
   )[keyType as keyof ContractInfo];
-  console.log(consensusNodeKey);
+
   expect(null).to.equal(consensusNodeKey);
 
   await retryOnError(async () => {
     const mirrorNodeContract =
       await mirrorNodeClient.getContractData(contractId);
-    console.log(mirrorNodeContract);
     expect(mirrorNodeContract.admin_key).to.be.null;
   });
 };
