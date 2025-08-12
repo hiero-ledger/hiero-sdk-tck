@@ -4,6 +4,7 @@ import { retryOnError } from "@helpers/retry-on-error";
 import {
   TokenRelationshipResponse,
   AccountInfo,
+  Contract,
   CryptoAllowancesResponse,
   NftAllowancesResponse,
   Nfts,
@@ -86,6 +87,11 @@ class MirrorNodeClient {
     accountId: string,
   ): Promise<TokenAirdropsResponse> {
     const url = `${this.mirrorNodeRestJavaUrl}/api/v1/accounts/${accountId}/airdrops/pending`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getContractData(contractId: string): Promise<Contract> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/contracts/${contractId}`;
     return retryOnError(async () => fetchData(url));
   }
 }
