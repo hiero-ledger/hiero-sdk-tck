@@ -31,7 +31,7 @@ const smartContractBytecode =
 /**
  * Tests for ContractCreateTransaction
  */
-describe.only("ContractCreateTransaction", function () {
+describe("ContractCreateTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
