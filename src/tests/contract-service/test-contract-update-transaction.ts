@@ -186,15 +186,15 @@ describe.only("ContractUpdateTransaction", function () {
     expectedMaxAssociations: number,
   ) => {
     const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.maxAutomaticTokenAssociations).to.equal(
-      expectedMaxAssociations,
+    expect(contractInfo.maxAutomaticTokenAssociations?.toString()).to.equal(
+      expectedMaxAssociations.toString(),
     );
 
     await retryOnError(async () => {
       const contractData = await mirrorNodeClient.getContractData(contractId);
-      expect(contractData.max_automatic_token_associations).to.equal(
-        expectedMaxAssociations,
-      );
+      expect(
+        contractData.max_automatic_token_associations?.toString(),
+      ).to.equal(expectedMaxAssociations.toString());
     });
   };
 
@@ -895,7 +895,7 @@ describe.only("ContractUpdateTransaction", function () {
     });
   });
 
-  describe.only("AutoRenewAccount", function () {
+  describe("AutoRenewAccount", function () {
     it("(#1) Updates a contract with valid auto renew account", async function () {
       const autoRenewAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -998,7 +998,7 @@ describe.only("ContractUpdateTransaction", function () {
     });
   });
 
-  describe("Max Automatic Token Associations", function () {
+  describe.only("Max Automatic Token Associations", function () {
     it("(#1) Updates the max automatic token associations of a contract to a valid amount", async function () {
       const maxAutomaticTokenAssociations = 100;
 
