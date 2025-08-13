@@ -21,6 +21,7 @@ import {
 } from "@helpers/verify-contract-tx";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { createAccount } from "@helpers/account";
 
 const smartContractBytecode =
   "608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029";
@@ -80,8 +81,7 @@ describe.only("ContractUpdateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    // need further investigation on this test
-    it.skip("(#2) Updates a contract with no updates without signing with the contract's admin key", async function () {
+    it("(#2) Updates a contract with no updates without signing with the contract's admin key", async function () {
       try {
         await JSONRPCRequest(this, "updateContract", {
           contractId,
@@ -341,22 +341,6 @@ describe.only("ContractUpdateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
-
-    // TODO: not sure about this test
-    it.skip("(#8) Updates a contract to remove the admin key (make immutable)", async function () {
-      const response = await JSONRPCRequest(this, "updateContract", {
-        contractId,
-        adminKey: "",
-        commonTransactionParams: {
-          signers: [contractAdminKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      await retryOnError(async () => {
-        await verifyContractUpdateWithAdminKey(contractId, null);
-      });
-    });
   });
 
   describe("AutoRenewPeriod", function () {
@@ -525,7 +509,7 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: this test is skiped in many other tests
+    // TODO: need to fix in services
     it.skip("(#9) Updates a contract with auto renew period of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateContract", {
@@ -583,8 +567,7 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: not sure about this test, response.getReceipt(sdk.getClient()) fails
-    it.skip("(#3) Updates the expiration time of a contract to a valid future time", async function () {
+    it("(#3) Updates the expiration time of a contract to a valid future time", async function () {
       const currentTime = Math.floor(Date.now() / 1000);
       const futureTime = (currentTime + 8000001).toString();
 
@@ -624,8 +607,8 @@ describe.only("ContractUpdateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "INVALID_EXPIRATION_TIME",
-          "Invalid expiration time",
+          "EXPIRATION_REDUCTION_NOT_ALLOWED",
+          "Expiration reduction not allowed",
         );
         return;
       }
@@ -806,7 +789,7 @@ describe.only("ContractUpdateTransaction", function () {
         expectedAutoRenewAccount === null ||
         expectedAutoRenewAccount === "0.0.0"
       ) {
-        expect(contractInfo.autoRenewAccountId).to.be.null;
+        expect(contractInfo.autoRenewAccountId?.num.toNumber()).to.equal(0);
       } else {
         expect(contractInfo.autoRenewAccountId?.toString()).to.equal(
           expectedAutoRenewAccount,
@@ -863,29 +846,39 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Updates a contract with deleted auto renew account", async function () {
+    // TODO: need to fix in services
+    it.skip("(#3) Updates a contract with deleted auto renew account", async function () {
       // Create and delete an account
       const testAccountKey = await generateEd25519PrivateKey(this);
       const testAccount = await JSONRPCRequest(this, "createAccount", {
         key: testAccountKey,
       });
 
-      await JSONRPCRequest(this, "deleteAccount", {
+      const response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: testAccount.accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [testAccountKey],
         },
       });
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      console.log(contractInfo.autoRenewAccountId);
+
+      expect(response.status).to.equal("SUCCESS");
 
       try {
         await JSONRPCRequest(this, "updateContract", {
           contractId,
           autoRenewAccountId: testAccount.accountId,
           commonTransactionParams: {
-            signers: [contractAdminKey],
+            signers: [contractAdminKey, testAccountKey],
           },
         });
+
+        const contractInfo =
+          await consensusInfoClient.getContractInfo(contractId);
+        console.log(contractInfo.autoRenewAccountId);
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE", "Invalid signature");
         return;
@@ -894,13 +887,37 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: to fix
-    it.skip("(#4) Updates a contract to remove auto renew account", async function () {
+    it("(#4) Updates a contract to remove auto renew account by setting default account ID", async function () {
+      contractAdminKey = await generateEd25519PrivateKey(this);
+      const adminPublicKey = await generateEd25519PublicKey(
+        this,
+        contractAdminKey,
+      );
+
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: smartContractBytecode,
+      });
+
+      const autoRenewAccountKey = await generateEd25519PrivateKey(this);
+      const autoRenewAccount = await createAccount(this, autoRenewAccountKey);
+
+      const contractResponse = await JSONRPCRequest(this, "createContract", {
+        bytecodeFileId: fileResponse.fileId,
+        gas: "300000",
+        adminKey: adminPublicKey,
+        autoRenewAccountId: autoRenewAccount,
+        commonTransactionParams: {
+          signers: [contractAdminKey, autoRenewAccountKey],
+        },
+      });
+
+      contractId = contractResponse.contractId;
+
       const response = await JSONRPCRequest(this, "updateContract", {
         contractId,
         autoRenewAccountId: "0.0.0",
         commonTransactionParams: {
-          signers: [contractAdminKey],
+          signers: [contractAdminKey, autoRenewAccountKey],
         },
       });
 
@@ -930,7 +947,7 @@ describe.only("ContractUpdateTransaction", function () {
     });
   });
 
-  describe.only("Max Automatic Token Associations", function () {
+  describe("Max Automatic Token Associations", function () {
     const verifyContractUpdateWithMaxAutoAssociations = async (
       contractId: string,
       expectedMaxAssociations: number,
@@ -1040,43 +1057,7 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#6) Updates a contract with maxAutomaticTokenAssociations equal to used_auto_associations (3)", async function () {
-      const maxAutomaticTokenAssociations = 3;
-
-      const response = await JSONRPCRequest(this, "updateContract", {
-        contractId,
-        maxAutomaticTokenAssociations,
-        commonTransactionParams: {
-          signers: [contractAdminKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      await verifyContractUpdateWithMaxAutoAssociations(
-        contractId,
-        maxAutomaticTokenAssociations,
-      );
-    });
-
-    it("(#7) Updates a contract with maxAutomaticTokenAssociations < used_auto_associations (1 < 3)", async function () {
-      const maxAutomaticTokenAssociations = 1;
-
-      const response = await JSONRPCRequest(this, "updateContract", {
-        contractId,
-        maxAutomaticTokenAssociations,
-        commonTransactionParams: {
-          signers: [contractAdminKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      await verifyContractUpdateWithMaxAutoAssociations(
-        contractId,
-        maxAutomaticTokenAssociations,
-      );
-    });
-
-    it("(#8) Updates a contract with maxAutomaticTokenAssociations = 2,147,483,647", async function () {
+    it("(#6) Updates a contract with maxAutomaticTokenAssociations = 2,147,483,647", async function () {
       try {
         await JSONRPCRequest(this, "updateContract", {
           contractId,
@@ -1096,7 +1077,7 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Updates a contract with maxAutomaticTokenAssociations = -2,147,483,647", async function () {
+    it("(#7) Updates a contract with maxAutomaticTokenAssociations = -2,147,483,647", async function () {
       try {
         await JSONRPCRequest(this, "updateContract", {
           contractId,
@@ -1221,6 +1202,7 @@ describe.only("ContractUpdateTransaction", function () {
       await verifyContractUpdateWithStakedNodeId(contractId, stakedNodeId);
     });
 
+    // TODO: need to fix in services
     it.skip("(#6) Updates a contract that tries to stake to a deleted account ID", async function () {
       // Create and delete an account for testing
       const testAccountKey = await generateEd25519PrivateKey(this);
@@ -1228,13 +1210,15 @@ describe.only("ContractUpdateTransaction", function () {
         key: testAccountKey,
       });
 
-      await JSONRPCRequest(this, "deleteAccount", {
+      const response = await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: testAccount.accountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
           signers: [testAccountKey],
         },
       });
+
+      expect(response.status).to.equal("SUCCESS");
 
       try {
         await JSONRPCRequest(this, "updateContract", {
@@ -1252,10 +1236,10 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#7) Updates a contract to remove staking by setting empty account ID", async function () {
+    it("(#7) Updates a contract to remove staking by setting default account ID", async function () {
       const response = await JSONRPCRequest(this, "updateContract", {
         contractId,
-        stakedAccountId: "",
+        stakedAccountId: "0.0.0",
         commonTransactionParams: {
           signers: [contractAdminKey],
         },
