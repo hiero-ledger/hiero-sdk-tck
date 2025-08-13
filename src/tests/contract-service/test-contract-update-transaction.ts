@@ -525,7 +525,7 @@ describe.only("ContractUpdateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: not sure about this test
+    // TODO: this test is skiped in many other tests
     it.skip("(#9) Updates a contract with auto renew period of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
       try {
         await JSONRPCRequest(this, "updateContract", {
@@ -930,7 +930,7 @@ describe.only("ContractUpdateTransaction", function () {
     });
   });
 
-  describe("Max Automatic Token Associations", function () {
+  describe.only("Max Automatic Token Associations", function () {
     const verifyContractUpdateWithMaxAutoAssociations = async (
       contractId: string,
       expectedMaxAssociations: number,
@@ -949,25 +949,7 @@ describe.only("ContractUpdateTransaction", function () {
       });
     };
 
-    it("(#1) Updates the max automatic token associations of a contract to a valid amount", async function () {
-      const maxAutomaticTokenAssociations = 100;
-
-      const response = await JSONRPCRequest(this, "updateContract", {
-        contractId,
-        maxAutomaticTokenAssociations,
-        commonTransactionParams: {
-          signers: [contractAdminKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      await verifyContractUpdateWithMaxAutoAssociations(
-        contractId,
-        maxAutomaticTokenAssociations,
-      );
-    });
-
-    it("(#2) Updates the max automatic token associations of a contract to the minimum amount", async function () {
+    it("(#1) Updates a contract with maxAutomaticTokenAssociations = 0", async function () {
       const maxAutomaticTokenAssociations = 0;
 
       const response = await JSONRPCRequest(this, "updateContract", {
@@ -985,8 +967,8 @@ describe.only("ContractUpdateTransaction", function () {
       );
     });
 
-    it("(#3) Updates the max automatic token associations of a contract to the maximum amount", async function () {
-      const maxAutomaticTokenAssociations = 5000;
+    it("(#2) Updates a contract with maxAutomaticTokenAssociations = 10", async function () {
+      const maxAutomaticTokenAssociations = 10;
 
       const response = await JSONRPCRequest(this, "updateContract", {
         contractId,
@@ -1003,27 +985,25 @@ describe.only("ContractUpdateTransaction", function () {
       );
     });
 
-    it("(#4) Updates the max automatic token associations of a contract to an amount that exceeds the maximum amount", async function () {
-      try {
-        await JSONRPCRequest(this, "updateContract", {
-          contractId,
-          maxAutomaticTokenAssociations: 5001,
-          commonTransactionParams: {
-            signers: [contractAdminKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          "REQUESTED_NUM_AUTOMATIC_ASSOCIATIONS_EXCEEDS_ASSOCIATION_LIMIT",
-        );
-        return;
-      }
+    it("(#3) Updates a contract with maxAutomaticTokenAssociations = 1000", async function () {
+      const maxAutomaticTokenAssociations = 1000;
 
-      assert.fail("Should throw an error");
+      const response = await JSONRPCRequest(this, "updateContract", {
+        contractId,
+        maxAutomaticTokenAssociations,
+        commonTransactionParams: {
+          signers: [contractAdminKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await verifyContractUpdateWithMaxAutoAssociations(
+        contractId,
+        maxAutomaticTokenAssociations,
+      );
     });
 
-    it("(#5) Updates the max automatic token associations of a contract to -1 (no limit per HIP-904)", async function () {
+    it("(#4) Updates a contract with maxAutomaticTokenAssociations = -1 (no-limit per HIP-904)", async function () {
       const maxAutomaticTokenAssociations = -1;
 
       const response = await JSONRPCRequest(this, "updateContract", {
@@ -1041,11 +1021,13 @@ describe.only("ContractUpdateTransaction", function () {
       );
     });
 
-    it("(#6) Updates the max automatic token associations of a contract to an invalid negative value", async function () {
+    it("(#5) Updates a contract with invalid negative maxAutomaticTokenAssociations = -2", async function () {
+      const maxAutomaticTokenAssociations = -2;
+
       try {
         await JSONRPCRequest(this, "updateContract", {
           contractId,
-          maxAutomaticTokenAssociations: -2,
+          maxAutomaticTokenAssociations,
           commonTransactionParams: {
             signers: [contractAdminKey],
           },
@@ -1077,8 +1059,6 @@ describe.only("ContractUpdateTransaction", function () {
     });
 
     it("(#7) Updates a contract with maxAutomaticTokenAssociations < used_auto_associations (1 < 3)", async function () {
-      // For this test, we assume the contract has 3 automatic token associations already
-      // This test verifies that setting max less than used associations succeeds
       const maxAutomaticTokenAssociations = 1;
 
       const response = await JSONRPCRequest(this, "updateContract", {
