@@ -68,149 +68,6 @@ describe.only("ContractUpdateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  /**
-   * Helper function to verify contract update with memo
-   */
-  const verifyContractUpdateWithMemo = async (
-    contractId: string,
-    expectedMemo: string,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.contractMemo).to.equal(expectedMemo);
-
-    await retryOnError(async () => {
-      const contractData = await mirrorNodeClient.getContractData(contractId);
-      expect(contractData.memo).to.equal(expectedMemo);
-    });
-  };
-
-  /**
-   * Helper function to verify contract update with auto renew period
-   */
-  const verifyContractUpdateWithAutoRenewPeriod = async (
-    contractId: string,
-    expectedAutoRenewPeriod: string,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.autoRenewPeriod?.seconds?.toString()).to.equal(
-      expectedAutoRenewPeriod,
-    );
-
-    await retryOnError(async () => {
-      const contractData = await mirrorNodeClient.getContractData(contractId);
-      expect(contractData?.auto_renew_period?.toString()).to.equal(
-        expectedAutoRenewPeriod,
-      );
-    });
-  };
-
-  /**
-   * Helper function to verify contract update with auto renew account
-   */
-  const verifyContractUpdateWithAutoRenewAccount = async (
-    contractId: string,
-    expectedAutoRenewAccount: string | null,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    if (
-      expectedAutoRenewAccount === null ||
-      expectedAutoRenewAccount === "0.0.0"
-    ) {
-      expect(contractInfo.autoRenewAccountId).to.be.null;
-    } else {
-      expect(contractInfo.autoRenewAccountId?.toString()).to.equal(
-        expectedAutoRenewAccount,
-      );
-    }
-
-    await retryOnError(async () => {
-      const contractData = await mirrorNodeClient.getContractData(contractId);
-      if (
-        expectedAutoRenewAccount === null ||
-        expectedAutoRenewAccount === "0.0.0"
-      ) {
-        expect(contractData.auto_renew_account).to.be.null;
-      } else {
-        expect(contractData.auto_renew_account).to.equal(
-          expectedAutoRenewAccount,
-        );
-      }
-    });
-  };
-
-  /**
-   * Helper function to verify contract update with admin key
-   */
-  const verifyContractUpdateWithAdminKey = async (
-    contractId: string,
-    adminKey: string | null,
-  ) => {
-    if (adminKey === null) {
-      await verifyContractCreateWithNullKey(contractId, "adminKey");
-    } else {
-      await verifyContractKey(contractId, adminKey, "adminKey");
-    }
-  };
-
-  /**
-   * Helper function to verify contract update with staked account ID
-   */
-  const verifyContractUpdateWithStakedAccountId = async (
-    contractId: string,
-    stakedAccountId: string,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.stakingInfo?.stakedAccountId?.toString()).to.equal(
-      stakedAccountId,
-    );
-  };
-
-  /**
-   * Helper function to verify contract update with staked node ID
-   */
-  const verifyContractUpdateWithStakedNodeId = async (
-    contractId: string,
-    stakedNodeId: string,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.stakingInfo?.stakedNodeId?.toString()).to.equal(
-      stakedNodeId,
-    );
-  };
-
-  /**
-   * Helper function to verify contract update with max automatic token associations
-   */
-  const verifyContractUpdateWithMaxAutoAssociations = async (
-    contractId: string,
-    expectedMaxAssociations: number,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.maxAutomaticTokenAssociations?.toString()).to.equal(
-      expectedMaxAssociations.toString(),
-    );
-
-    await retryOnError(async () => {
-      const contractData = await mirrorNodeClient.getContractData(contractId);
-      expect(
-        contractData.max_automatic_token_associations?.toString(),
-      ).to.equal(expectedMaxAssociations.toString());
-    });
-  };
-
-  /**
-   * Helper function to verify contract update with decline staking reward
-   */
-  const verifyContractUpdateWithDeclineStakingReward = async (
-    contractId: string,
-    expectedDeclineReward: boolean,
-  ) => {
-    const contractInfo = await consensusInfoClient.getContractInfo(contractId);
-    expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(
-      expectedDeclineReward,
-    );
-  };
-
   describe("Contract ID", function () {
     it("(#1) Updates a contract with valid contractID", async function () {
       const response = await JSONRPCRequest(this, "updateContract", {
@@ -327,6 +184,17 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("Admin Key", function () {
+    const verifyContractUpdateWithAdminKey = async (
+      contractId: string,
+      adminKey: string | null,
+    ) => {
+      if (adminKey === null) {
+        await verifyContractCreateWithNullKey(contractId, "adminKey");
+      } else {
+        await verifyContractKey(contractId, adminKey, "adminKey");
+      }
+    };
+
     it("(#1) Updates the admin key of a contract to a new valid ED25519 public key", async function () {
       const newPrivateKey = await generateEd25519PrivateKey(this);
       const newPublicKey = await generateEd25519PublicKey(this, newPrivateKey);
@@ -492,6 +360,24 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("AutoRenewPeriod", function () {
+    const verifyContractUpdateWithAutoRenewPeriod = async (
+      contractId: string,
+      expectedAutoRenewPeriod: string,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.autoRenewPeriod?.seconds?.toString()).to.equal(
+        expectedAutoRenewPeriod,
+      );
+
+      await retryOnError(async () => {
+        const contractData = await mirrorNodeClient.getContractData(contractId);
+        expect(contractData?.auto_renew_period?.toString()).to.equal(
+          expectedAutoRenewPeriod,
+        );
+      });
+    };
+
     it("(#1) Updates a contract with valid auto renew period", async function () {
       const autoRenewPeriod = "7000000";
 
@@ -766,6 +652,20 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("Memo", function () {
+    const verifyContractUpdateWithMemo = async (
+      contractId: string,
+      expectedMemo: string,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.contractMemo).to.equal(expectedMemo);
+
+      await retryOnError(async () => {
+        const contractData = await mirrorNodeClient.getContractData(contractId);
+        expect(contractData.memo).to.equal(expectedMemo);
+      });
+    };
+
     it("(#1) Updates a contract with valid memo", async function () {
       const memo = "Updated contract memo";
 
@@ -896,6 +796,38 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("AutoRenewAccount", function () {
+    const verifyContractUpdateWithAutoRenewAccount = async (
+      contractId: string,
+      expectedAutoRenewAccount: string | null,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      if (
+        expectedAutoRenewAccount === null ||
+        expectedAutoRenewAccount === "0.0.0"
+      ) {
+        expect(contractInfo.autoRenewAccountId).to.be.null;
+      } else {
+        expect(contractInfo.autoRenewAccountId?.toString()).to.equal(
+          expectedAutoRenewAccount,
+        );
+      }
+
+      await retryOnError(async () => {
+        const contractData = await mirrorNodeClient.getContractData(contractId);
+        if (
+          expectedAutoRenewAccount === null ||
+          expectedAutoRenewAccount === "0.0.0"
+        ) {
+          expect(contractData.auto_renew_account).to.be.null;
+        } else {
+          expect(contractData.auto_renew_account).to.equal(
+            expectedAutoRenewAccount,
+          );
+        }
+      });
+    };
+
     it("(#1) Updates a contract with valid auto renew account", async function () {
       const autoRenewAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -999,6 +931,24 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("Max Automatic Token Associations", function () {
+    const verifyContractUpdateWithMaxAutoAssociations = async (
+      contractId: string,
+      expectedMaxAssociations: number,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.maxAutomaticTokenAssociations?.toString()).to.equal(
+        expectedMaxAssociations.toString(),
+      );
+
+      await retryOnError(async () => {
+        const contractData = await mirrorNodeClient.getContractData(contractId);
+        expect(
+          contractData.max_automatic_token_associations?.toString(),
+        ).to.equal(expectedMaxAssociations.toString());
+      });
+    };
+
     it("(#1) Updates the max automatic token associations of a contract to a valid amount", async function () {
       const maxAutomaticTokenAssociations = 100;
 
@@ -1109,8 +1059,6 @@ describe.only("ContractUpdateTransaction", function () {
     });
 
     it("(#6) Updates a contract with maxAutomaticTokenAssociations equal to used_auto_associations (3)", async function () {
-      // For this test, we assume the contract has 3 automatic token associations already
-      // This test verifies that setting max equal to used associations succeeds
       const maxAutomaticTokenAssociations = 3;
 
       const response = await JSONRPCRequest(this, "updateContract", {
@@ -1186,7 +1134,29 @@ describe.only("ContractUpdateTransaction", function () {
     });
   });
 
-  describe.only("Staked ID", function () {
+  describe("Staked ID", function () {
+    const verifyContractUpdateWithStakedAccountId = async (
+      contractId: string,
+      stakedAccountId: string,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.stakingInfo?.stakedAccountId?.toString()).to.equal(
+        stakedAccountId,
+      );
+    };
+
+    const verifyContractUpdateWithStakedNodeId = async (
+      contractId: string,
+      stakedNodeId: string,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.stakingInfo?.stakedNodeId?.toString()).to.equal(
+        stakedNodeId,
+      );
+    };
+
     it("(#1) Updates the staked account ID of a contract to a valid account ID", async function () {
       const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -1338,6 +1308,17 @@ describe.only("ContractUpdateTransaction", function () {
   });
 
   describe("Decline Staking Reward", function () {
+    const verifyContractUpdateWithDeclineStakingReward = async (
+      contractId: string,
+      expectedDeclineReward: boolean,
+    ) => {
+      const contractInfo =
+        await consensusInfoClient.getContractInfo(contractId);
+      expect(contractInfo.stakingInfo?.declineStakingReward).to.equal(
+        expectedDeclineReward,
+      );
+    };
+
     it("(#1) Updates the decline reward policy of a contract to decline staking rewards", async function () {
       const declineStakingReward = true;
 
