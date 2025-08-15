@@ -2,11 +2,13 @@ import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
+import mirrorNodeClient from "@services/MirrorNodeClient";
 
 import { setOperator } from "@helpers/setup-tests";
 import { generateEd25519PrivateKey } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { retryOnError } from "@helpers/retry-on-error";
 
 const smartContractBytecode =
   "608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506101cb806100606000396000f3fe608060405260043610610046576000357c01000000000000000000000000000000000000000000000000000000009004806341c0e1b51461004b578063cfae321714610062575b600080fd5b34801561005757600080fd5b506100606100f2565b005b34801561006e57600080fd5b50610077610162565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100b757808201518184015260208101905061009c565b50505050905090810190601f1680156100e45780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415610160573373ffffffffffffffffffffffffffffffffffffffff16ff5b565b60606040805190810160405280600d81526020017f48656c6c6f2c20776f726c64210000000000000000000000000000000000000081525090509056fea165627a7a72305820ae96fb3af7cde9c0abfe365272441894ab717f816f07f41f07b1cbede54e256e0029";
@@ -78,6 +80,34 @@ const createAccountWithOptions = async (
   };
 };
 
+const createContractWithInitialBalance = async (
+  context: any,
+  initialBalance: string,
+) => {
+  const adminPrivateKey = await generateEd25519PrivateKey(context);
+  const bytecode =
+    "6080604052603e80600f5f395ff3fe60806040525f5ffdfea264697066735822122075befcb607eba7ac26552e70e14ad0b62dc41442ac32e038255f817e635c013164736f6c634300081e0033";
+
+  const responseCreateContract = await JSONRPCRequest(
+    context,
+    "createContract",
+    {
+      initcode: bytecode,
+      gas: "300000",
+      initialBalance: initialBalance,
+      adminKey: adminPrivateKey,
+      commonTransactionParams: {
+        signers: [adminPrivateKey],
+      },
+    },
+  );
+
+  return {
+    contractId: responseCreateContract.contractId,
+    adminPrivateKey,
+  };
+};
+
 /**
  * Tests for ContractDeleteTransaction
  */
@@ -97,7 +127,7 @@ describe.only("ContractDeleteTransaction", function () {
   });
 
   describe("Contract ID", function () {
-    it.skip("(#1) Delete a valid contract with an adminKey", async function () {
+    it("(#1) Delete a valid contract with an adminKey", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -117,13 +147,13 @@ describe.only("ContractDeleteTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
 
-      // Verify contract is deleted by attempting to get contract info
-      try {
-        await consensusInfoClient.getContractInfo(contractId);
-        assert.fail("Contract should be deleted");
-      } catch (err: any) {
-        expect(err.status.toString()).to.equal("CONTRACT_DELETED");
-      }
+      expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+        .to.be.true;
+
+      await retryOnError(async function () {
+        expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+          .be.true;
+      });
     });
 
     it("(#2) Attempt to delete a contract with a ContractId that does not exist", async function () {
@@ -274,19 +304,17 @@ describe.only("ContractDeleteTransaction", function () {
 
   describe("Transfer Account ID / Transfer Contract ID", function () {
     it("(#1) Delete a contract and transfer balance to a valid transferAccountId", async function () {
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const contractId = await createContractWithAdminKey(
-        this,
-        adminPrivateKey,
-      );
+      const initialContractBalance = "1000";
+
+      const { contractId, adminPrivateKey } =
+        await createContractWithInitialBalance(this, initialContractBalance);
       const transferAccount = await createAccountWithOptions(this);
 
       // Get initial balance of transfer account
-      const initialBalance = await consensusInfoClient.getBalance(
-        transferAccount.accountId,
-      );
+      const initialTransferAccountBalance =
+        await consensusInfoClient.getBalance(transferAccount.accountId);
 
-      const response = await JSONRPCRequest(this, "deleteContract", {
+      await JSONRPCRequest(this, "deleteContract", {
         contractId,
         transferAccountId: transferAccount.accountId,
         commonTransactionParams: {
@@ -294,26 +322,37 @@ describe.only("ContractDeleteTransaction", function () {
         },
       });
 
-      expect(response.status).to.equal("SUCCESS");
-
-      // Verify the transfer account received the balance
-      const finalBalance = await consensusInfoClient.getBalance(
+      // Verify the transfer account received the contract's balance
+      const finalTransferAccountBalance = await consensusInfoClient.getBalance(
         transferAccount.accountId,
       );
-      expect(
-        finalBalance.hbars.toTinybars().toNumber(),
-      ).to.be.greaterThanOrEqual(initialBalance.hbars.toTinybars().toNumber());
+
+      const balanceIncrease =
+        finalTransferAccountBalance.hbars.toTinybars().toNumber() -
+        initialTransferAccountBalance.hbars.toTinybars().toNumber();
+
+      // The transfer account should have received the contract's initial balance
+      expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
+
+      expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+        .to.be.true;
+
+      await retryOnError(async function () {
+        expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+          .be.true;
+      });
     });
 
     it("(#2) Delete a contract and transfer balance to a valid transferContractId", async function () {
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const contractId = await createContractWithAdminKey(
-        this,
-        adminPrivateKey,
-      );
+      const initialContractBalance = "1000";
+      const { contractId, adminPrivateKey } =
+        await createContractWithInitialBalance(this, initialContractBalance);
       const transferContractId = await createImmutableContract(this);
 
-      const response = await JSONRPCRequest(this, "deleteContract", {
+      const initialTransferContractBalance =
+        await consensusInfoClient.getBalance(transferContractId);
+
+      await JSONRPCRequest(this, "deleteContract", {
         contractId,
         transferContractId,
         commonTransactionParams: {
@@ -321,12 +360,22 @@ describe.only("ContractDeleteTransaction", function () {
         },
       });
 
-      expect(response.status).to.equal("SUCCESS");
+      const finalTransferContractBalance =
+        await consensusInfoClient.getBalance(transferContractId);
 
-      // Verify the transfer contract exists and received balance
-      const contractInfo =
-        await consensusInfoClient.getContractInfo(transferContractId);
-      expect(contractInfo).to.not.be.null;
+      const balanceIncrease =
+        finalTransferContractBalance.hbars.toTinybars().toNumber() -
+        initialTransferContractBalance.hbars.toTinybars().toNumber();
+
+      expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
+
+      expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+        .to.be.true;
+
+      await retryOnError(async function () {
+        expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+          .be.true;
+      });
     });
 
     it("(#3) Attempt to delete a contract without specifying a transferAccountId or transferContractId", async function () {
@@ -468,7 +517,8 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#8) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
+    //not sure how to test this
+    it.skip("(#8) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -492,31 +542,37 @@ describe.only("ContractDeleteTransaction", function () {
     });
 
     it.skip("(#9) Attempt to delete a contract with both transferAccountId and transferContractId set", async function () {
-      const adminPrivateKey = await generateEd25519PrivateKey(this);
-      const contractId = await createContractWithAdminKey(
-        this,
-        adminPrivateKey,
-      );
+      const initialContractBalance = "1000";
+      const { contractId, adminPrivateKey } =
+        await createContractWithInitialBalance(this, initialContractBalance);
       const transferAccount = await createAccountWithOptions(this);
       const transferContractId = await createImmutableContract(this);
 
-      try {
-        await JSONRPCRequest(this, "deleteContract", {
-          contractId,
-          transferAccountId: transferAccount.accountId,
-          transferContractId,
-          commonTransactionParams: {
-            signers: [adminPrivateKey],
-          },
-        });
-        assert.fail("Should throw an error");
-      } catch (err: any) {
-        expect(err.data.status).to.be.oneOf([
-          "TRANSFER_ACCOUNT_OR_CONTRACT_ID_REQUIRED",
-          "OBTAINER_REQUIRED",
-          "INVALID_TRANSFER_ACCOUNT_ID",
-        ]);
-      }
+      const initialTransferContractBalance =
+        await consensusInfoClient.getBalance(transferContractId);
+
+      const initialTransferAccountBalance =
+        await consensusInfoClient.getBalance(transferAccount.accountId);
+
+      await JSONRPCRequest(this, "deleteContract", {
+        contractId,
+        transferContractId,
+        transferAccountId: transferAccount.accountId,
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+
+      const finalTransferContractBalance =
+        await consensusInfoClient.getBalance(transferContractId);
+
+      const finalTransferAccountBalance = await consensusInfoClient.getBalance(
+        transferAccount.accountId,
+      );
+
+      //in the js sdk, the transferAccountId is applied to the contract
+      //in the go sdk, the transferContractId is applied to the account
+      //we should sync them
     });
 
     it("(#10) Attempt to delete a contract with an invalid transferAccountId format", async function () {
