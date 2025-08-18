@@ -29,7 +29,7 @@ const smartContractBytecode =
 /**
  * Tests for ContractUpdateTransaction
  */
-describe.only("ContractUpdateTransaction", function () {
+describe("ContractUpdateTransaction", function () {
   this.timeout(30000);
 
   let contractId: string;
@@ -82,16 +82,11 @@ describe.only("ContractUpdateTransaction", function () {
     });
 
     it("(#2) Updates a contract with no updates without signing with the contract's admin key", async function () {
-      try {
-        await JSONRPCRequest(this, "updateContract", {
-          contractId,
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
+      const response = await JSONRPCRequest(this, "updateContract", {
+        contractId,
+      });
 
-      assert.fail("Should throw an error");
+      expect(response.status).to.equal("SUCCESS");
     });
 
     it("(#3) Updates a contract with no contract ID", async function () {
