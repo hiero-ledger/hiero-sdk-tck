@@ -517,8 +517,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    //not sure how to test this
-    it.skip("(#8) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
+    it("(#8) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -534,7 +533,7 @@ describe.only("ContractDeleteTransaction", function () {
         contractId,
         transferAccountId: transferAccount.accountId,
         commonTransactionParams: {
-          signers: [adminPrivateKey, transferAccount.privateKey], // Both keys
+          signers: [adminPrivateKey, transferAccount.privateKey],
         },
       });
 
