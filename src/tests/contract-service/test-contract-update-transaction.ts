@@ -627,6 +627,27 @@ describe("ContractUpdateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
+    it("(#6) Updates the expiration time of a contract to -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
+      try {
+        await JSONRPCRequest(this, "updateContract", {
+          contractId,
+          expirationTime: "-9223372036854775808",
+          commonTransactionParams: {
+            signers: [contractAdminKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "EXPIRATION_REDUCTION_NOT_ALLOWED",
+          "Expiration reduction not allowed",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Memo", function () {
@@ -856,9 +877,9 @@ describe("ContractUpdateTransaction", function () {
           signers: [testAccountKey],
         },
       });
-      const contractInfo =
-        await consensusInfoClient.getContractInfo(contractId);
-      console.log(contractInfo.autoRenewAccountId);
+      // const contractInfo =
+      //   await consensusInfoClient.getContractInfo(contractId);
+      // console.log(contractInfo.autoRenewAccountId);
 
       expect(response.status).to.equal("SUCCESS");
 
@@ -871,9 +892,9 @@ describe("ContractUpdateTransaction", function () {
           },
         });
 
-        const contractInfo =
-          await consensusInfoClient.getContractInfo(contractId);
-        console.log(contractInfo.autoRenewAccountId);
+        // const contractInfo =
+        //   await consensusInfoClient.getContractInfo(contractId);
+        // console.log(contractInfo.autoRenewAccountId);
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE", "Invalid signature");
         return;
