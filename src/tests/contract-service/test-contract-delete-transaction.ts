@@ -540,15 +540,13 @@ describe.only("ContractDeleteTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it.skip("(#9) Attempt to delete a contract with both transferAccountId and transferContractId set", async function () {
+    it.only("(#9) Attempt to delete a contract with both transferAccountId and transferContractId set", async function () {
+      // based on the last passed param it will be determined if the transferAccountId or transferContractId is getting the balance
       const initialContractBalance = "1000";
       const { contractId, adminPrivateKey } =
         await createContractWithInitialBalance(this, initialContractBalance);
       const transferAccount = await createAccountWithOptions(this);
       const transferContractId = await createImmutableContract(this);
-
-      const initialTransferContractBalance =
-        await consensusInfoClient.getBalance(transferContractId);
 
       const initialTransferAccountBalance =
         await consensusInfoClient.getBalance(transferAccount.accountId);
@@ -562,16 +560,23 @@ describe.only("ContractDeleteTransaction", function () {
         },
       });
 
-      const finalTransferContractBalance =
-        await consensusInfoClient.getBalance(transferContractId);
-
       const finalTransferAccountBalance = await consensusInfoClient.getBalance(
         transferAccount.accountId,
       );
 
-      //in the js sdk, the transferAccountId is applied to the contract
-      //in the go sdk, the transferContractId is applied to the account
-      //we should sync them
+      const balanceIncrease =
+        finalTransferAccountBalance.hbars.toTinybars().toNumber() -
+        initialTransferAccountBalance.hbars.toTinybars().toNumber();
+
+      expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
+
+      expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+        .to.be.true;
+
+      await retryOnError(async function () {
+        expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+          .be.true;
+      });
     });
 
     it("(#10) Attempt to delete a contract with an invalid transferAccountId format", async function () {
