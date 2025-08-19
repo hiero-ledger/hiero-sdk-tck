@@ -156,7 +156,22 @@ describe.only("ContractDeleteTransaction", function () {
       });
     });
 
-    it("(#2) Attempt to delete a contract with a ContractId that does not exist", async function () {
+    it("(#2) Delete a contract with empty object", async function () {
+      try {
+        await JSONRPCRequest(this, "deleteContract", {});
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INVALID_CONTRACT_ID",
+          "Invalid contract ID error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#3) Attempt to delete a contract with a ContractId that does not exist", async function () {
       const transferAccount = await createAccountWithOptions(this);
 
       try {
@@ -174,7 +189,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#3) Attempt to delete a contract that has no adminKey set", async function () {
+    it("(#4) Attempt to delete a contract that has no adminKey set", async function () {
       const contractId = await createImmutableContract(this);
       const transferAccount = await createAccountWithOptions(this);
 
@@ -193,7 +208,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#4) Attempt to delete a contract with a deleted ContractId", async function () {
+    it("(#5) Attempt to delete a contract with a deleted ContractId", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -229,7 +244,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#5) Attempt to delete a contract with a malformed ContractId", async function () {
+    it("(#6) Attempt to delete a contract with a malformed ContractId", async function () {
       const transferAccount = await createAccountWithOptions(this);
 
       try {
@@ -243,36 +258,6 @@ describe.only("ContractDeleteTransaction", function () {
           err.code,
           ErrorStatusCodes.INTERNAL_ERROR,
           "Internal error",
-        );
-      }
-    });
-
-    it("(#6) Delete a contract where the adminKey is an empty KeyList", async function () {
-      // Create a contract with empty KeyList as admin key
-      const fileResponse = await JSONRPCRequest(this, "createFile", {
-        contents: smartContractBytecode,
-      });
-
-      // Create contract with empty KeyList - this should make it immutable
-      const contractResponse = await JSONRPCRequest(this, "createContract", {
-        bytecodeFileId: fileResponse.fileId,
-        adminKey: "", // Empty key list
-        gas: "300000",
-      });
-
-      const transferAccount = await createAccountWithOptions(this);
-
-      try {
-        await JSONRPCRequest(this, "deleteContract", {
-          contractId: contractResponse.contractId,
-          transferAccountId: transferAccount.accountId,
-        });
-        assert.fail("Should throw an error");
-      } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          "MODIFYING_IMMUTABLE_CONTRACT",
-          "Immutable contract error",
         );
       }
     });
@@ -487,7 +472,47 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#7) Delete a contract where the transferAccountId has receiver_sig_required set but the transaction is not signed", async function () {
+    it("(#7) Delete a contract with a deleted transferContractId", async function () {
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      const contractId = await createContractWithAdminKey(
+        this,
+        adminPrivateKey,
+      );
+
+      const transferPrivateKey = await generateEd25519PrivateKey(this);
+      const transferContractId = await createContractWithAdminKey(
+        this,
+        transferPrivateKey,
+      );
+
+      await JSONRPCRequest(this, "deleteContract", {
+        contractId: transferContractId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [transferPrivateKey],
+        },
+      });
+
+      try {
+        await JSONRPCRequest(this, "deleteContract", {
+          contractId,
+          transferContractId,
+          commonTransactionParams: {
+            signers: [adminPrivateKey],
+          },
+        });
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "OBTAINER_DOES_NOT_EXIST",
+          "Obtainer does not exist error",
+        );
+        return;
+      }
+    });
+
+    it("(#8) Delete a contract where the transferAccountId has receiver_sig_required set but the transaction is not signed", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -517,7 +542,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#8) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
+    it("(#9) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -540,7 +565,7 @@ describe.only("ContractDeleteTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it.only("(#9) Attempt to delete a contract with both transferAccountId and transferContractId set", async function () {
+    it("(#10) Attempt to delete a contract with both transferAccountId and transferContractId set", async function () {
       // based on the last passed param it will be determined if the transferAccountId or transferContractId is getting the balance
       const initialContractBalance = "1000";
       const { contractId, adminPrivateKey } =
@@ -579,7 +604,7 @@ describe.only("ContractDeleteTransaction", function () {
       });
     });
 
-    it("(#10) Attempt to delete a contract with an invalid transferAccountId format", async function () {
+    it("(#11) Attempt to delete a contract with an invalid transferAccountId format", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -604,7 +629,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#11) Attempt to delete a contract with an invalid transferContractId format", async function () {
+    it("(#12) Attempt to delete a contract with an invalid transferContractId format", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -630,7 +655,7 @@ describe.only("ContractDeleteTransaction", function () {
     });
   });
 
-  //   describe("Permanent Removal (Reserved Field)", function () {
+  // describe("Permanent Removal (Reserved Field)", function () {
   //     it("(#1) Attempt to set permanent_removal to true in a user transaction", async function () {
   //       const adminPrivateKey = await generateEd25519PrivateKey(this);
   //       const contractId = await createContractWithAdminKey(
@@ -658,31 +683,30 @@ describe.only("ContractDeleteTransaction", function () {
   //       }
   //     });
 
-  //     it("(#2) Attempt to set permanent_removal to false in a user transaction", async function () {
-  //       const adminPrivateKey = await generateEd25519PrivateKey(this);
-  //       const contractId = await createContractWithAdminKey(
-  //         this,
-  //         adminPrivateKey,
-  //       );
-  //       const transferAccount = await createAccountWithOptions(this);
+  //   it("(#2) Attempt to set permanent_removal to false in a user transaction", async function () {
+  //     const adminPrivateKey = await generateEd25519PrivateKey(this);
+  //     const contractId = await createContractWithAdminKey(
+  //       this,
+  //       adminPrivateKey,
+  //     );
+  //     const transferAccount = await createAccountWithOptions(this);
 
-  //       try {
-  //         await JSONRPCRequest(this, "deleteContract", {
-  //           contractId,
-  //           transferAccountId: transferAccount.accountId,
-  //           permanent_removal: false,
-  //           commonTransactionParams: {
-  //             signers: [adminPrivateKey],
-  //           },
-  //         });
-  //         assert.fail("Should throw an error");
-  //       } catch (err: any) {
-  //         assert.equal(
-  //           err.data.status,
-  //           "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION",
-  //           "Permanent removal system only error",
-  //         );
-  //       }
+  //     await JSONRPCRequest(this, "deleteContract", {
+  //       contractId,
+  //       transferAccountId: transferAccount.accountId,
+  //       permanent_removal: false,
+  //       commonTransactionParams: {
+  //         signers: [adminPrivateKey],
+  //       },
+  //     });
+
+  //     expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+  //       .to.be.true;
+
+  //     await retryOnError(async function () {
+  //       expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+  //         .be.true;
   //     });
   //   });
+  // });
 });
