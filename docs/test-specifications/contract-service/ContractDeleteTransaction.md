@@ -57,7 +57,7 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 
 | Parameter Name | Type   | Description/Notes                                      |
 | -------------- | ------ | ------------------------------------------------------ |
-| status         | string | Hedera network response code from `TransactionReceipt` |
+| status         | string | Hiero network response code from `TransactionReceipt` |
 
 ---
 
@@ -94,7 +94,7 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 | 7       | Attempt to delete a contract with a deleted `transferContractId`                                                  | contractId=<VALID_CONTRACT_ID>, transferContractId=<DELETED_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                       | Fails with `OBTAINER_DOES_NOT_EXIST`.                                                          | N                 |
 | 8       | Delete a contract where the `transferAccountId` has `receiver_sig_required` set but the transaction is not signed | contractId=<VALID_CONTRACT_ID>, transferAccountId=<ACCOUNT_WITH_RECEIVER_SIG_REQUIRED>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                         | Fails with `INVALID_SIGNATURE`.                                                                | N                 |
 | 9       | Delete a contract where the `transferAccountId` has `receiver_sig_required` set and the transaction is signed     | contractId=<VALID_CONTRACT_ID>, transferAccountId=<ACCOUNT_WITH_RECEIVER_SIG_REQUIRED>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>, <RECEIVER_PRIVATE_KEY>] | Transaction succeeds, `AccountInfoQuery` for `transferAccountId` shows an increased balance.   | N                 |
-| 10      | Attempt to delete a contract with both `transferAccountId` and `transferContractId` set                           | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, transferContractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]   | Transaction succeeds and transfers the HBAR to the last field that was set.                    | N                 |
+| 10      | Attempt to delete a contract with both `transferAccountId` and `transferContractId` set in that order             | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, transferContractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]   | Transaction succeeds and transfers the HBAR to the `transferContractId` .                    | N                 |
 | 11      | Attempt to delete a contract with an invalid `transferAccountId` format                                           | contractId=<VALID_CONTRACT_ID>, transferAccountId="invalid", commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                                    | Fails with an SDK internal error.                                                              | N                 |
 | 12      | Attempt to delete a contract with an invalid `transferContractId` format                                          | contractId=<VALID_CONTRACT_ID>, transferContractId="invalid", commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                                   | Fails with an SDK internal error.                                                              | N                 |
 
