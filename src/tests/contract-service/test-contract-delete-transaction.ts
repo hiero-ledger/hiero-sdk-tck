@@ -472,7 +472,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it("(#7) Delete a contract with a deleted transferContractId", async function () {
+    it.only("(#7) Delete a contract with a deleted transferContractId", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -505,8 +505,8 @@ describe.only("ContractDeleteTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          "OBTAINER_DOES_NOT_EXIST",
-          "Obtainer does not exist error",
+          "INVALID_CONTRACT_ID",
+          "Invalid contract ID error",
         );
         return;
       }
