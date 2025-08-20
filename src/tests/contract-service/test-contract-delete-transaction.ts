@@ -472,7 +472,7 @@ describe.only("ContractDeleteTransaction", function () {
       }
     });
 
-    it.only("(#7) Delete a contract with a deleted transferContractId", async function () {
+    it("(#7) Delete a contract with a deleted transferContractId", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
@@ -655,58 +655,58 @@ describe.only("ContractDeleteTransaction", function () {
     });
   });
 
-  // describe("Permanent Removal (Reserved Field)", function () {
-  //     it("(#1) Attempt to set permanent_removal to true in a user transaction", async function () {
-  //       const adminPrivateKey = await generateEd25519PrivateKey(this);
-  //       const contractId = await createContractWithAdminKey(
-  //         this,
-  //         adminPrivateKey,
-  //       );
-  //       const transferAccount = await createAccountWithOptions(this);
+  describe("Permanent Removal (Reserved Field)", function () {
+    it("(#1) Attempt to set permanentRemoval to true in a user transaction", async function () {
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      const contractId = await createContractWithAdminKey(
+        this,
+        adminPrivateKey,
+      );
+      const transferAccount = await createAccountWithOptions(this);
 
-  //       try {
-  //         await JSONRPCRequest(this, "deleteContract", {
-  //           contractId,
-  //           transferAccountId: transferAccount.accountId,
-  //           permanent_removal: true,
-  //           commonTransactionParams: {
-  //             signers: [adminPrivateKey],
-  //           },
-  //         });
-  //         assert.fail("Should throw an error");
-  //       } catch (err: any) {
-  //         assert.equal(
-  //           err.data.status,
-  //           "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION",
-  //           "Permanent removal system only error",
-  //         );
-  //       }
-  //     });
+      try {
+        await JSONRPCRequest(this, "deleteContract", {
+          contractId,
+          transferAccountId: transferAccount.accountId,
+          permanentRemoval: true,
+          commonTransactionParams: {
+            signers: [adminPrivateKey],
+          },
+        });
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION",
+          "Permanent removal system only error",
+        );
+      }
+    });
 
-  //   it("(#2) Attempt to set permanent_removal to false in a user transaction", async function () {
-  //     const adminPrivateKey = await generateEd25519PrivateKey(this);
-  //     const contractId = await createContractWithAdminKey(
-  //       this,
-  //       adminPrivateKey,
-  //     );
-  //     const transferAccount = await createAccountWithOptions(this);
+    it("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      const contractId = await createContractWithAdminKey(
+        this,
+        adminPrivateKey,
+      );
+      const transferAccount = await createAccountWithOptions(this);
 
-  //     await JSONRPCRequest(this, "deleteContract", {
-  //       contractId,
-  //       transferAccountId: transferAccount.accountId,
-  //       permanent_removal: false,
-  //       commonTransactionParams: {
-  //         signers: [adminPrivateKey],
-  //       },
-  //     });
+      await JSONRPCRequest(this, "deleteContract", {
+        contractId,
+        transferAccountId: transferAccount.accountId,
+        permanentRemoval: false,
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
 
-  //     expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
-  //       .to.be.true;
+      expect((await consensusInfoClient.getContractInfo(contractId)).isDeleted)
+        .to.be.true;
 
-  //     await retryOnError(async function () {
-  //       expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
-  //         .be.true;
-  //     });
-  //   });
-  // });
+      await retryOnError(async function () {
+        expect((await mirrorNodeClient.getContractData(contractId)).deleted).to
+          .be.true;
+      });
+    });
+  });
 });
