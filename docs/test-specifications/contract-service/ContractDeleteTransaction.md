@@ -46,7 +46,7 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 ### Input Parameters
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                                      |
-| ----------------------- | ------------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
+|-------------------------|---------------------------------------------------------|-------------------|----------------------------------------------------------------------------------------|
 | contractId              | string                                                  | optional          | The ID of the contract to be deleted.                                                  |
 | transferAccountId       | string                                                  | optional          | The account ID to receive the remaining HBAR balance from the deleted contract.        |
 | transferContractId      | string                                                  | optional          | The contract ID to receive the remaining HBAR balance from the deleted contract.       |
@@ -55,8 +55,8 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 
 ### Output Parameters
 
-| Parameter Name | Type   | Description/Notes                                      |
-| -------------- | ------ | ------------------------------------------------------ |
+| Parameter Name | Type   | Description/Notes                                     |
+|----------------|--------|-------------------------------------------------------|
 | status         | string | Hiero network response code from `TransactionReceipt` |
 
 ---
@@ -68,9 +68,9 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 - The unique identifier of the smart contract to be deleted. This field is required for the transaction to proceed. The smart contract must have an `adminKey` set, and the corresponding private key must sign the transaction.
 
 | Test no | Name                                                                             | Input                                                                                 | Expected Response                                                                      | Implemented (Y/N) |
-| ------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------- |
+|---------|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------|
 | 1       | Delete a valid contract with an `adminKey`                                       | contractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>] | Transaction succeeds, `ContractInfoQuery` for the contract returns `CONTRACT_DELETED`. | N                 |
-| 2       | Delete a contract with no contract id                                              |                                                                                    | Fails with `INVALID_CONTRACT_ID`.                                                      | N                 |
+| 2       | Delete a contract with no contract id                                            |                                                                                       | Fails with `INVALID_CONTRACT_ID`.                                                      | N                 |
 | 3       | Attempt to delete a contract with a `ContractId` that does not exist             | contractId="0.0.9999999"                                                              | Fails with `INVALID_CONTRACT_ID`.                                                      | N                 |
 | 4       | Attempt to delete a contract that has no `adminKey` set                          | contractId=<IMMUTABLE_CONTRACT_ID>                                                    | Fails with `MODIFYING_IMMUTABLE_CONTRACT`.                                             | N                 |
 | 5       | Attempt to delete a contract with a deleted `ContractId`                         | contractId=<DELETED_CONTRACT_ID>                                                      | Fails with `CONTRACT_DELETED`.                                                         | N                 |
@@ -84,7 +84,7 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 - The account or contract that will receive the remaining HBAR balance from the deleted smart contract. One of these fields must be set. The transaction will fail if both are set.
 
 | Test no | Name                                                                                                              | Input                                                                                                                                                                 | Expected Response                                                                              | Implemented (Y/N) |
-| ------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------- |
+|---------|-------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|-------------------|
 | 1       | Delete a contract and transfer balance to a valid `transferAccountId`                                             | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                           | Transaction succeeds, `AccountInfoQuery` for `transferAccountId` shows an increased balance.   | N                 |
 | 2       | Delete a contract and transfer balance to a valid `transferContractId`                                            | contractId=<VALID_CONTRACT_ID>, transferContractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                         | Transaction succeeds, `ContractInfoQuery` for `transferContractId` shows an increased balance. | N                 |
 | 3       | Attempt to delete a contract without specifying a `transferAccountId` or `transferContractId`                     | contractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                                                                 | Fails with a `OBTAINER_REQUIRED` or similar response.                                          | N                 |
@@ -94,20 +94,20 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 | 7       | Attempt to delete a contract with a deleted `transferContractId`                                                  | contractId=<VALID_CONTRACT_ID>, transferContractId=<DELETED_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                       | Fails with `OBTAINER_DOES_NOT_EXIST`.                                                          | N                 |
 | 8       | Delete a contract where the `transferAccountId` has `receiver_sig_required` set but the transaction is not signed | contractId=<VALID_CONTRACT_ID>, transferAccountId=<ACCOUNT_WITH_RECEIVER_SIG_REQUIRED>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                         | Fails with `INVALID_SIGNATURE`.                                                                | N                 |
 | 9       | Delete a contract where the `transferAccountId` has `receiver_sig_required` set and the transaction is signed     | contractId=<VALID_CONTRACT_ID>, transferAccountId=<ACCOUNT_WITH_RECEIVER_SIG_REQUIRED>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>, <RECEIVER_PRIVATE_KEY>] | Transaction succeeds, `AccountInfoQuery` for `transferAccountId` shows an increased balance.   | N                 |
-| 10      | Attempt to delete a contract with both `transferAccountId` and `transferContractId` set in that order             | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, transferContractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]   | Transaction succeeds and transfers the HBAR to the `transferContractId` .                    | N                 |
+| 10      | Attempt to delete a contract with both `transferAccountId` and `transferContractId` set in that order             | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, transferContractId=<VALID_CONTRACT_ID>, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]   | Transaction succeeds and transfers the HBAR to the `transferContractId` .                      | N                 |
 | 11      | Attempt to delete a contract with an invalid `transferAccountId` format                                           | contractId=<VALID_CONTRACT_ID>, transferAccountId="invalid", commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                                    | Fails with an SDK internal error.                                                              | N                 |
 | 12      | Attempt to delete a contract with an invalid `transferContractId` format                                          | contractId=<VALID_CONTRACT_ID>, transferContractId="invalid", commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]                                                   | Fails with an SDK internal error.                                                              | N                 |
 
 ---
 
-### **Permanent Removal (Reserved Field)**
+### **Permanent Removal**
 
-- The `permanent_removal` field is for internal system use only and should never be set in a user-initiated transaction.
+- The `permanentRemoval` field is for internal system use only and should never be set in a user-initiated transaction.
 
 | Test no | Name                                                                | Input                                                                                                                                                | Expected Response                                          | Implemented (Y/N) |
-| ------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------- |
-| 1       | Attempt to set `permanent_removal` to `true` in a user transaction  | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, permanent_removal=true, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]  | Fails with `PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION`. | N                 |
-| 2       | Attempt to set `permanent_removal` to `false` in a user transaction | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, permanent_removal=false, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>] | Transaction succeeds.                                      | N                 |
+|---------|---------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|-------------------|
+| 1       | Attempt to set `permanentRemoval` to `true` in a user transaction  | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, permanentRemoval=true, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>]  | Fails with `PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION`. | N                 |
+| 2       | Attempt to set `permanentRemoval` to `false` in a user transaction | contractId=<VALID_CONTRACT_ID>, transferAccountId=<VALID_ACCOUNT_ID>, permanentRemoval=false, commonTransactionParams.signers=[<ADMIN_PRIVATE_KEY>] | Transaction succeeds.                                      | N                 |
 
 ---
 
