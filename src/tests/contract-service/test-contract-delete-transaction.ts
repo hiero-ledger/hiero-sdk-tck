@@ -111,7 +111,7 @@ const createContractWithInitialBalance = async (
 /**
  * Tests for ContractDeleteTransaction
  */
-describe.only("ContractDeleteTransaction", function () {
+describe("ContractDeleteTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
