@@ -49,6 +49,9 @@ jobs:
           - TopicDelete
           - TopicMessageSubmit
           - TopicUpdate
+          - ContractCreate
+          - ContractUpdate
+          - ContractDelete
       fail-fast: false
     steps:
       - name: Harden Runner
