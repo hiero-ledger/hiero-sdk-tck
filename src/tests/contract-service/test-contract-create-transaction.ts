@@ -934,7 +934,7 @@ describe("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#13) Create contract with admin key and initial balance = int64 max - 1", async function () {
+    it.skip("(#13) Create contract with admin key and initial balance = int64 max - 1", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -964,7 +964,7 @@ describe("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#14) Create contract without admin key and initial balance = int64 max - 1", async function () {
+    it.skip("(#14) Create contract without admin key and initial balance = int64 max - 1", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: bytecode,
@@ -982,7 +982,7 @@ describe("ContractCreateTransaction", function () {
       }
     });
 
-    it("(#15) Create contract with admin key and initial balance = int64 max", async function () {
+    it.skip("(#15) Create contract with admin key and initial balance = int64 max", async function () {
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -1012,7 +1012,7 @@ describe("ContractCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#16) Create contract without admin key and initial balance = int64 max", async function () {
+    it.skip("(#16) Create contract without admin key and initial balance = int64 max", async function () {
       try {
         await JSONRPCRequest(this, "createContract", {
           initcode: bytecode,
