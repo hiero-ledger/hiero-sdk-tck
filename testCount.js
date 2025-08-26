@@ -50,7 +50,11 @@ async function fetchAllMarkdownFiles(dirPath) {
 
 // 🧠 Parse mardown file
 function parseMarkdownWithTables(content) {
-  const md = new MarkdownIt();
+  const md = new MarkdownIt({
+    html: false,
+    linkify: true,
+    breaks: true,
+  });
   const html = md.render(content);
   const dom = new JSDOM(html);
   const document = dom.window.document;
