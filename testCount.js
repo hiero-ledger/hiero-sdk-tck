@@ -1,7 +1,9 @@
-const axios = require("axios");
-require("dotenv").config();
-const MarkdownIt = require("markdown-it");
-const { JSDOM } = require("jsdom");
+import axios from "axios";
+import dotenv from "dotenv";
+import MarkdownIt from "markdown-it";
+import { JSDOM } from "jsdom";
+
+dotenv.config();
 
 const owner = "hiero-ledger";
 const repo = "hiero-sdk-tck";
