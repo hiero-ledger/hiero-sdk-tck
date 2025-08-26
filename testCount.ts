@@ -2,8 +2,7 @@ import axios from "axios";
 import "dotenv/config";
 import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
-import createDOMPurify, { type DOMPurifyI } from "dompurify";
-
+import createDOMPurify from "dompurify";
 
 
 const owner = "hiero-ledger";
@@ -78,7 +77,7 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
   const renderedHtml = md.render(content);
   const { window } = new JSDOM("");
   const domWindow = window as unknown as Window & typeof globalThis;
-  const DOMPurify: DOMPurifyI = createDOMPurify(domWindow);
+  const DOMPurify = createDOMPurify(domWindow);
   const safeHtml:string = DOMPurify.sanitize(renderedHtml, {
     ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "th", "td", "a", "p", "em", "strong", "code", "pre"],
     ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
