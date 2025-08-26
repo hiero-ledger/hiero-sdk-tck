@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 jobs:
-  count:
+  countTests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
