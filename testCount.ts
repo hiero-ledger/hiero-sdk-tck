@@ -73,10 +73,10 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
   const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
 
   const renderedHtml = md.render(content);
-  const { window } = new JSDOM(""); // create a clean window for DOMPurify
+  const { window } = new JSDOM("");
+  type DomWindow = Window & typeof globalThis;
   const DOMPurify = createDOMPurify(window as unknown as Window);
   const safeHtml = DOMPurify.sanitize(renderedHtml, {
-    // Tables + basic inline tags are all we need
     ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "th", "td", "a", "p", "em", "strong", "code", "pre"],
     ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
   });
