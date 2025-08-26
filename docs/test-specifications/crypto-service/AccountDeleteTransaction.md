@@ -67,6 +67,8 @@ The tests contained in this specification will assume that a valid account was a
 | 6       | Deletes an account without signing with the account's private key | deleteAccountId=<CREATED_ACCOUNT_ID>, transferAccountId=<OPERATOR_ACCOUNT_ID>                                                                     | The account deletion fails with an INVALID_SIGNATURE response code from the network.                        | Y                 |
 | 7       | Deletes an account but signs with an incorrect private key        | deleteAccountId=<CREATED_ACCOUNT_ID>, transferAccountId=<OPERATOR_ACCOUNT_ID>, commonTransactionParams.signers=[<INCORRECT_VALID_PRIVATE_KEY>]    | The account deletion fails with an INVALID_SIGNATURE response code from the network.                        | Y                 |
 | 8       | Deletes an account with a token balance                           | deleteAccountId=<CREATED_ACCOUNT_ID>, transferAccountId=<OPERATOR_ACCOUNT_ID>, commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account deletion fails with an TRANSACTION_REQUIRES_ZERO_TOKEN_BALANCES response code from the network. | Y                 |
+| 9       | Deletes a Treasury Account                           | deleteAccountId=<CREATED_ACCOUNT_ID>, transferAccountId=<OPERATOR_ACCOUNT_ID>, commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account deletion fails with an ACCOUNT_IS_TREASURY response code from the network. | N                 |
+
 
 #### JSON Request Example
 

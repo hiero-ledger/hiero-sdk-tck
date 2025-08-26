@@ -66,51 +66,51 @@ A successful contract execution transaction (i.e., the transaction reached conse
 ### **Contract ID**
 - The ID of the contract to execute.
 
-| Test no | Name                                               | Input                            | Expected Response                                 | Implemented (Y/N) |
-|---------|----------------------------------------------------|----------------------------------|---------------------------------------------------|-------------------|
-| 1       | Execute a contract with valid contract ID          | contractId=<VALID_CONTRACT_ID>   | Transaction succeeds, contract function executed. | N                 |
-| 2       | Execute a contract without contract ID             |                                  | Transaction fails with `INVALID_CONTRACT_ID`.     | N                 |
-| 3       | Execute a contract with non-existent contract ID   | contractId="0.0.9999999"         | Fails with `INVALID_CONTRACT_ID`.                 | N                 |
-| 4       | Execute a contract with deleted contract ID        | contractId=<DELETED_CONTRACT_ID> | Fails with `CONTRACT_DELETED`.                    | N                 |
-| 5       | Execute a contract with invalid contract ID format | contractId="invalid"             | Fails with SDK internal error.                    | N                 |
-| 6       | Execute a contract with empty contract ID          | contractId=""                    | Fails with SDK internal error.                    | N                 |
-| 7       | Execute a contract with contract ID as account ID  | contractId=<VALID_ACCOUNT_ID>    | Fails with `INVALID_CONTRACT_ID`.                 | N                 |
+| Test no | Name                                               | Input                                                                          | Expected Response                                 | Implemented (Y/N) |
+|---------|----------------------------------------------------|--------------------------------------------------------------------------------|---------------------------------------------------|-------------------|
+| 1       | Execute a contract with valid contract ID          | contractId=<VALID_CONTRACT_ID>, parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>   | Transaction succeeds, contract function executed. | N                 |
+| 2       | Execute a contract without contract ID             | parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                                   | Transaction fails with `INVALID_CONTRACT_ID`.     | N                 |
+| 3       | Execute a contract with non-existent contract ID   | contractId="0.0.9999999", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>         | Fails with `INVALID_CONTRACT_ID`.                 | N                 |
+| 4       | Execute a contract with deleted contract ID        | contractId=<DELETED_CONTRACT_ID>, parameters=<SET_MESSAGE_FUNCTION_PARAMETERS> | Fails with `CONTRACT_DELETED`.                    | N                 |
+| 5       | Execute a contract with invalid contract ID format | contractId="invalid", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>             | Fails with SDK internal error.                    | N                 |
+| 6       | Execute a contract with empty contract ID          | contractId="", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                    | Fails with SDK internal error.                    | N                 |
+| 7       | Execute a contract with contract ID as account ID  | contractId=<VALID_ACCOUNT_ID>, parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>    | Fails with `INVALID_CONTRACT_ID`.                 | N                 |
 
 ---
 
 ### **Gas**
 - Gas is the amount of computational effort (measured in gas units) allocated for contract execution within the EVM.
 
-| Test no | Name                                                | Input                                                      | Expected Response                                      | Implemented (Y/N) |
-|---------|-----------------------------------------------------|------------------------------------------------------------|--------------------------------------------------------|-------------------|
-| 1       | Execute contract with reasonable gas                | contractId=<VALID_CONTRACT_ID>, gas="1000000"              | Transaction succeeds, contract function executed.      | N                 |
-| 2       | Execute contract with zero gas                      | contractId=<VALID_CONTRACT_ID>, gas="0"                    | Fails with `INSUFFICIENT_GAS`.                         | N                 |
-| 3       | Execute contract with negative gas                  | contractId=<VALID_CONTRACT_ID>, gas="-1"                   | Fails with internal SDK error.                         | N                 |
-| 4       | Execute contract with gas = int64 max               | contractId=<VALID_CONTRACT_ID>, gas="9223372036854775807"  | Transaction succeeds or fails with `INSUFFICIENT_GAS`. | N                 |
-| 5       | Execute contract with gas = int64 max - 1           | contractId=<VALID_CONTRACT_ID>, gas="9223372036854775806"  | Transaction succeeds or fails with `INSUFFICIENT_GAS`. | N                 |
-| 6       | Execute contract with gas = int64 min               | contractId=<VALID_CONTRACT_ID>, gas="-9223372036854775808" | Fails with internal SDK error.                         | N                 |
-| 7       | Execute contract with gas = int64 min + 1           | contractId=<VALID_CONTRACT_ID>, gas="-9223372036854775807" | Fails with internal SDK error.                         | N                 |
-| 8       | Execute contract with insufficient gas for function | contractId=<VALID_CONTRACT_ID>, gas="1000"                 | Fails with `INSUFFICIENT_GAS`.                         | N                 |
-| 9       | Execute contract with no gas specified              | contractId=<VALID_CONTRACT_ID>                             | Fails with `INSUFFICIENT_GAS`.                         | N                 |
+| Test no | Name                                                | Input                                                                                                    | Expected Response                                      | Implemented (Y/N) |
+|---------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------|--------------------------------------------------------|-------------------|
+| 1       | Execute contract with reasonable gas                | contractId=<VALID_CONTRACT_ID>, gas="1000000", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>              | Transaction succeeds, contract function executed.      | N                 |
+| 2       | Execute contract with zero gas                      | contractId=<VALID_CONTRACT_ID>, gas="0", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                    | Fails with `INSUFFICIENT_GAS`.                         | N                 |
+| 3       | Execute contract with negative gas                  | contractId=<VALID_CONTRACT_ID>, gas="-1", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                   | Fails with internal SDK error.                         | N                 |
+| 4       | Execute contract with gas = int64 max               | contractId=<VALID_CONTRACT_ID>, gas="9223372036854775807", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>  | Transaction succeeds or fails with `INSUFFICIENT_GAS`. | N                 |
+| 5       | Execute contract with gas = int64 max - 1           | contractId=<VALID_CONTRACT_ID>, gas="9223372036854775806", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>  | Transaction succeeds or fails with `INSUFFICIENT_GAS`. | N                 |
+| 6       | Execute contract with gas = int64 min               | contractId=<VALID_CONTRACT_ID>, gas="-9223372036854775808", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS> | Fails with internal SDK error.                         | N                 |
+| 7       | Execute contract with gas = int64 min + 1           | contractId=<VALID_CONTRACT_ID>, gas="-9223372036854775807", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS> | Fails with internal SDK error.                         | N                 |
+| 8       | Execute contract with insufficient gas for function | contractId=<VALID_CONTRACT_ID>, gas="1000", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                 | Fails with `INSUFFICIENT_GAS`.                         | N                 |
+| 9       | Execute contract with no gas specified              | contractId=<VALID_CONTRACT_ID>, parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                             | Fails with `INSUFFICIENT_GAS`.                         | N                 |
 
 ---
 
 ### **Amount**
 - The amount of HBAR to send to the contract during execution.
 
-| Test no | Name                                                         | Input                                                         | Expected Response                                     | Implemented (Y/N) |
-|---------|--------------------------------------------------------------|---------------------------------------------------------------|-------------------------------------------------------|-------------------|
-| 1       | Execute contract with valid amount                           | contractId=<VALID_CONTRACT_ID>, amount="1000"                 | Transaction succeeds, amount transferred to contract. | N                 |
-| 2       | Execute contract with zero amount                            | contractId=<VALID_CONTRACT_ID>, amount="0"                    | Transaction succeeds, no amount transferred.          | N                 |
-| 3       | Execute contract with negative amount                        | contractId=<VALID_CONTRACT_ID>, amount="-100"                 | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
-| 4       | Execute contract with amount greater than payer balance      | contractId=<VALID_CONTRACT_ID>, amount=<PAYER_BALANCE+1>      | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
-| 5       | Execute contract with amount = int64 max                     | contractId=<VALID_CONTRACT_ID>, amount="9223372036854775807"  | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
-| 6       | Execute contract with amount = int64 min                     | contractId=<VALID_CONTRACT_ID>, amount="-9223372036854775808" | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
-| 7       | Execute contract with amount = int64 min + 1                 | contractId=<VALID_CONTRACT_ID>, amount="-9223372036854775807" | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
-| 8       | Execute contract with amount = int64 max - 1                 | contractId=<VALID_CONTRACT_ID>, amount="9223372036854775806"  | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
-| 9       | Execute contract with no amount specified (defaults to zero) | contractId=<VALID_CONTRACT_ID>                                | Transaction succeeds, no amount transferred.          | N                 |
-| 10      | Execute contract with amount for non-payable function        | contractId=<VALID_CONTRACT_ID>, amount="1000"                 | Fails with `CONTRACT_REVERT_EXECUTED`.                | N                 |
-| 11      | Execute contract with zero amount for non-payable function   | contractId=<VALID_CONTRACT_ID>, amount="0"                    | Transaction succeeds, function executed.              | N                 |
+| Test no | Name                                                         | Input                                                                                                       | Expected Response                                     | Implemented (Y/N) |
+|---------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|-------------------|
+| 1       | Execute contract with valid amount                           | contractId=<VALID_CONTRACT_ID>, amount="1000", parameters=<PAYABLE_FUNCTION_PARAMETERS>                     | Transaction succeeds, amount transferred to contract. | N                 |
+| 2       | Execute contract with zero amount                            | contractId=<VALID_CONTRACT_ID>, amount="0", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                    | Transaction succeeds, no amount transferred.          | N                 |
+| 3       | Execute contract with negative amount                        | contractId=<VALID_CONTRACT_ID>, amount="-100", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                 | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
+| 4       | Execute contract with amount greater than payer balance      | contractId=<VALID_CONTRACT_ID>, amount=<PAYER_BALANCE+1>, parameters=<PAYABLE_FUNCTION_PARAMETERS>          | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
+| 5       | Execute contract with amount = int64 max                     | contractId=<VALID_CONTRACT_ID>, amount="9223372036854775807", parameters=<PAYABLE_FUNCTION_PARAMETERS>      | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
+| 6       | Execute contract with amount = int64 min                     | contractId=<VALID_CONTRACT_ID>, amount="-9223372036854775808", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS> | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
+| 7       | Execute contract with amount = int64 min + 1                 | contractId=<VALID_CONTRACT_ID>, amount="-9223372036854775807", parameters=<SET_MESSAGE_FUNCTION_PARAMETERS> | Fails with `CONTRACT_NEGATIVE_VALUE`.                 | N                 |
+| 8       | Execute contract with amount = int64 max - 1                 | contractId=<VALID_CONTRACT_ID>, amount="9223372036854775806", parameters=<PAYABLE_FUNCTION_PARAMETERS>      | Fails with `INSUFFICIENT_PAYER_BALANCE`.              | N                 |
+| 9       | Execute contract with no amount specified (defaults to zero) | contractId=<VALID_CONTRACT_ID>, parameters=<SET_MESSAGE_FUNCTION_PARAMETERS>                                | Transaction succeeds, no amount transferred.          | N                 |
+| 10      | Execute contract with amount for non-payable function        | contractId=<VALID_CONTRACT_ID>, amount="1000", parameters=<NON_PAYABLE_FUNCTION_PARAMETERS>                 | Fails with `CONTRACT_REVERT_EXECUTED`.                | N                 |
+| 11      | Execute contract with zero amount for non-payable function   | contractId=<VALID_CONTRACT_ID>, amount="0", parameters=<NON_PAYABLE_FUNCTION_PARAMETERS>                    | Transaction succeeds, function executed.              | N                 |
 
 ---
 

@@ -1,11 +1,20 @@
 name: "PR Formatting"
 on:
-  workflow_dispatch:
-  pull_request:
+  pull_request_target:
     types:
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
       - opened
       - reopened
       - edited
+      - converted_to_draft
+      - ready_for_review
+      - review_requested
+      - review_request_removed
+      - locked
+      - unlocked
       - synchronize
 
 defaults:
@@ -13,7 +22,7 @@ defaults:
     shell: bash
 
 permissions:
-  contents: read
+  statuses: write
 
 concurrency:
   group: pr-checks-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -22,17 +31,29 @@ concurrency:
 jobs:
   title-check:
     name: Title Check
-    runs-on: hiero-client-sdk-linux-medium
-    if: ${{ !github.event.pull_request.base.repo.fork }}
-    permissions:
-      statuses: write
+    runs-on: hiero-network-node-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
         with:
           egress-policy: audit
 
       - name: Check PR Title
-        uses: step-security/conventional-pr-title-action@8a8989588c2547f23167c4c42f0fb2356479e81b # v3.2.1
+        uses: step-security/conventional-pr-title-action@101b3d5adffb51b5789997fea508c8313c8ddf02 # v3.2.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  assignee-check:
+    name: Assignee Check
+    runs-on: hiero-network-node-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: Check Assignee
+        if: ${{ github.event.pull_request.assignees == null || github.event.pull_request.assignees[0] == null }}
+        run: |
+          echo "Assignee is not set. Failing the workflow."
+          exit 1
