@@ -68,8 +68,7 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
 
   const renderedHtml = md.render(content);
 
-  const window = new JSDOM("").window as unknown as Window;
-  const DOMPurify = createDOMPurify(window);
+  const DOMPurify = createDOMPurify(window as unknown as Window & typeof globalThis);
   const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
 
   const dom = new JSDOM(sanitizedHtml);
