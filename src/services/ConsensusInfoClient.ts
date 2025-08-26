@@ -131,6 +131,20 @@ class ConsensusInfoClient {
 
     return query.execute(this.sdkClient);
   }
+
+  async getContractBalance(
+    contractId: string,
+  ): Promise<ContractFunctionResult> {
+    const query = new ContractCallQuery();
+    const functionParameters = new ContractFunctionParameters()._build(
+      "getContractBalance",
+    );
+    query.setContractId(ContractId.fromString(contractId));
+    query.setFunctionParameters(functionParameters);
+    query.setGas(100000);
+
+    return query.execute(this.sdkClient);
+  }
 }
 
 export default new ConsensusInfoClient();
