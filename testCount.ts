@@ -1,10 +1,8 @@
 import axios from "axios";
-import dotenv from "dotenv";
+import "dotenv/config";
 import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
-import { config } from "dotenv";
-
-config();
+import createDOMPurify from "dompurify";
 
 const owner = "hiero-ledger";
 const repo = "hiero-sdk-tck";
@@ -23,6 +21,22 @@ interface GitHubContentItem {
   name: string;
   path: string;
   download_url?: string;
+}
+
+function errorMsg(e: unknown): string {
+  if (axios.isAxiosError(e)) {
+    const status = e.response?.status;
+    const statusText = e.response?.statusText;
+    return `AxiosError: ${e.message}${
+      status ? ` (${status}${statusText ? ` ${statusText}` : ""})` : ""
+    }`;
+  }
+  if (e instanceof Error) return `${e.name}: ${e.message}`;
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
 
 // 🔁 Fetch all markdown files from the branch
@@ -45,8 +59,8 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
       }
       hasMore = res.data.length === 100;
       page++;
-    } catch (err: any) {
-      console.error(`❌ Failed to fetch ${url}: ${err?.message ?? err}`);
+    } catch (err: unknown) {
+      console.error(`❌ Failed to fetch ${url}: ${errorMsg(err)}`);
       hasMore = false;
     }
   }
@@ -57,37 +71,47 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
 // 🧠 Parse markdown file 
 function parseMarkdownWithTables(content: string): { implementedCount: number; notImplementedCount: number } {
   const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
-  const renderedHtml = md.render(content);
 
-  const dom = new JSDOM(renderedHtml);
+  const renderedHtml = md.render(content);
+  const { window } = new JSDOM(""); // create a clean window for DOMPurify
+  const DOMPurify = createDOMPurify(window as unknown as Window);
+  const safeHtml = DOMPurify.sanitize(renderedHtml, {
+    // Tables + basic inline tags are all we need
+    ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "th", "td", "a", "p", "em", "strong", "code", "pre"],
+    ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
+  });
+
+  const dom = new JSDOM(safeHtml);
   const document = dom.window.document;
 
   let implementedCount = 0;
   let notImplementedCount = 0;
 
   document.querySelectorAll("table").forEach((table) => {
-    if (!table.rows || table.rows.length === 0) return;
+    if (table.rows.length === 0) return;
 
     const headerCells = Array.from(table.rows[0].cells).map((c) =>
-      (c.textContent || "").trim().toLowerCase()
+      (c.textContent ?? "").trim().toLowerCase()
     );
     const implIdx = headerCells.findIndex((h) => h.includes("implemented"));
     if (implIdx < 0) return;
 
-    Array.from(table.rows).slice(1).forEach((row) => {
-      const cell = row.cells.item(implIdx);
-      if (!cell) return;
-      const val = (cell.textContent || "").trim().toLowerCase();
+    Array.from(table.rows)
+      .slice(1)
+      .forEach((row) => {
+        const cell = row.cells.item(implIdx);
+        if (!cell) return;
+        const val = (cell.textContent ?? "").trim().toLowerCase();
 
-      if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
-        implementedCount++;
-      } else if (["n", "no", "false", "0"].includes(val)) {
-        notImplementedCount++;
-      } else {
-        // treat unknowns as not implemented
-        notImplementedCount++;
-      }
-    });
+        if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
+          implementedCount++;
+        } else if (["n", "no", "false", "0"].includes(val)) {
+          notImplementedCount++;
+        } else {
+          // treat unknowns as not implemented
+          notImplementedCount++;
+        }
+      });
   });
 
   return { implementedCount, notImplementedCount };
@@ -117,8 +141,8 @@ async function main(): Promise<void> {
 
       totalImplemented += implementedCount;
       totalNotImplemented += notImplementedCount;
-    } catch (err: any) {
-      console.warn(`⚠️  Skipped ${file.path} (${err?.message ?? err})`);
+    } catch (err: unknown) {
+      console.warn(`⚠️  Skipped ${file.path} (${errorMsg(err)})`);
     }
   }
 
@@ -130,7 +154,7 @@ async function main(): Promise<void> {
   console.log(`❌ Not Implemented: ${totalNotImplemented}`);
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((e: unknown) => {
+  console.error(errorMsg(e));
   process.exit(1);
 });
