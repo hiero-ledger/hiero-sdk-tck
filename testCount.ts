@@ -2,8 +2,9 @@ import axios from "axios";
 import dotenv from "dotenv";
 import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
+import { config } from "dotenv";
 
-dotenv.config();
+config();
 
 const owner = "hiero-ledger";
 const repo = "hiero-sdk-tck";
