@@ -10,6 +10,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "lib": ["ES2022", "DOM"],
+    "allowSyntheticDefaultImports": true
     "baseUrl": "./",
     "paths": {
       "@helpers/*": ["src/utils/helpers/*"],
