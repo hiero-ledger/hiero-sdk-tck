@@ -8,6 +8,9 @@
     "json-bigint": "^1.0.0",
     "json-rpc-2.0": "^1.7.0",
     "mocha": "^11.5.0"
+    "jsdom": "^24.1.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-task-lists": "^2.1.0"
   },
   "scripts": {
     "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit",
