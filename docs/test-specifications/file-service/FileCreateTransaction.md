@@ -23,6 +23,10 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/file_create.pro
 
 https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
 
+**Mirror Node APIs:**
+
+https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+
 ## JSON-RPC API Endpoint Documentation
 
 ### Method Name
@@ -37,7 +41,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | contents                | string                                                  | optional          | The contents of the file                                                                                                 |
 | expirationTime          | string                                                  | optional          | The time at which this file should expire (in seconds since the epoch)                                                   |
 | memo                    | string                                                  | optional          | Short description of the file (UTF-8 encoding max 100 bytes)                                                             |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                          |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                          |
 
 ### Output Parameters
 

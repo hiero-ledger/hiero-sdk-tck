@@ -23,6 +23,10 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/file_append.pro
 
 https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
 
+**Mirror Node APIs:**
+
+https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+
 ## JSON-RPC API Endpoint Documentation
 
 ### Method Name
@@ -31,14 +35,13 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### Input Parameters
 
-| Parameter Name            | Type                                                    | Required/Optional | Description/Notes                                                                                                                           |
-|---------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| fileId                    | string                                                  | optional          | The ID of the file to append content to                                                                                                     |
-| contents                  | string                                                  | required          | The contents to append to the file                                                                                                          |
-| maxChunks                 | number                                                  | optional          | Maximum number of chunks allowed for this transaction (default: 20)                                                                         |
-| chunkSize                 | number                                                  | optional          | Size of each chunk in bytes (default: 4096)                                                                                                |
-
-| commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                             |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                   |
+|-------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------|
+| fileId                  | string                                                  | optional          | The ID of the file to append content to                             |
+| contents                | string                                                  | required          | The contents to append to the file                                  |
+| maxChunks               | number                                                  | optional          | Maximum number of chunks allowed for this transaction (default: 20) |
+| chunkSize               | number                                                  | optional          | Size of each chunk in bytes (default: 4096)                         |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                     |
 
 ### Output Parameters
 
@@ -52,52 +55,52 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 - The ID of the file to append content to.
 
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Appends to a file with valid file ID                                                          | fileId="<CREATED_FILE_ID>"                                                                                                          | The file append succeeds.                                                                                                        | Y                 |
-| 2       | Appends to a file with non-existent file ID                                                   | fileId="0.0.999999"                                                                                                                 | The file append fails with `INVALID_FILE_ID`.                                                                                    | Y                 |
-| 3       | Appends to a file with invalid file ID format                                                 | fileId="invalid format"                                                                                                             | The file append fails with an SDK internal error.                                                                               | Y                 |
-| 4       | Appends to a deleted file                                                                      | fileId="<DELETED_FILE_ID>"                                                                                                          | The file append fails with `FILE_DELETED`.                                                                                       | Skipped (delete file not implemented) |
-| 5       | Appends to a file without file ID                                                             | fileId not provided                                                                                                                  | The file append fails with `INVALID_FILE_ID`.                                                                                    | Y                 |
+| Test no | Name                                          | Input                      | Expected response                                 | Implemented (Y/N)                     |
+|---------|-----------------------------------------------|----------------------------|---------------------------------------------------|---------------------------------------|
+| 1       | Appends to a file with valid file ID          | fileId="<CREATED_FILE_ID>" | The file append succeeds.                         | Y                                     |
+| 2       | Appends to a file with non-existent file ID   | fileId="0.0.999999"        | The file append fails with `INVALID_FILE_ID`.     | Y                                     |
+| 3       | Appends to a file with invalid file ID format | fileId="invalid format"    | The file append fails with an SDK internal error. | Y                                     |
+| 4       | Appends to a deleted file                     | fileId="<DELETED_FILE_ID>" | The file append fails with `FILE_DELETED`.        | Skipped (delete file not implemented) |
+| 5       | Appends to a file without file ID             | fileId not provided        | The file append fails with `INVALID_FILE_ID`.     | Y                                     |
 
 ### **Contents:**
 
 - The contents to append to the file.
 
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Appends valid contents to a file                                                              | contents="Appended file contents"                                                                                                   | The file append succeeds and the file contains the appended contents.                                                           | Y                 |
-| 2       | Appends contents at maximum size (5.8KiB)                                                     | contents=<5800_BYTE_STRING>                                                                                                         | The file append succeeds.                                                                                                        | Y                 |
-| 3       | Appends contents exceeding maximum size                                                       | contents=<7KiB_STRING>                                                                                                              | The file append fails with `TRANSACTION_OVERSIZE`.                                                                               | Skipped (cannot reach this status in consensus) |
-| 4       | Appends contents containing only whitespace                                                   | contents="   "                                                                                                                      | The file append succeeds and appends whitespace content.                                                                        | Y                 |
-| 5       | Appends contents containing special characters                                                 | contents="!@#$%^&*()_+-=[]{};':\",./<>?"                                                                                          | The file append succeeds and appends the special characters.                                                                     | Y                 |
-| 6       | Appends contents containing unicode characters                                                 | contents="测试文件内容 🚀"                                                                                                           | The file append succeeds and appends the unicode characters.                                                                     | Y                 |
+| Test no | Name                                           | Input                                    | Expected response                                                     | Implemented (Y/N)                               |
+|---------|------------------------------------------------|------------------------------------------|-----------------------------------------------------------------------|-------------------------------------------------|
+| 1       | Appends valid contents to a file               | contents="Appended file contents"        | The file append succeeds and the file contains the appended contents. | Y                                               |
+| 2       | Appends contents at maximum size (5.8KiB)      | contents=<5800_BYTE_STRING>              | The file append succeeds.                                             | Y                                               |
+| 3       | Appends contents exceeding maximum size        | contents=<7KiB_STRING>                   | The file append fails with `TRANSACTION_OVERSIZE`.                    | Skipped (cannot reach this status in consensus) |
+| 4       | Appends contents containing only whitespace    | contents="   "                           | The file append succeeds and appends whitespace content.              | Y                                               |
+| 5       | Appends contents containing special characters | contents="!@#$%^&*()_+-=[]{};':\",./<>?" | The file append succeeds and appends the special characters.          | Y                                               |
+| 6       | Appends contents containing unicode characters | contents="测试文件内容 🚀"                     | The file append succeeds and appends the unicode characters.          | Y                                               |
 
 ### **MaxChunks:**
 
 - Maximum number of chunks allowed for this transaction.
 
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Appends with default max chunks (20)                                                          | maxChunks=20                                                                                                                        | The file append succeeds.                                                                                                        | Y                 |
-| 2       | Appends with custom max chunks                                                                | maxChunks=10                                                                                                                        | The file append succeeds.                                                                                                        | Y                 |
-| 3       | Appends with max chunks set to 1                                                              | maxChunks=1                                                                                                                         | The file append succeeds for small content.                                                                                     | Y                 |
-| 4       | Appends with max chunks set to 0                                                              | maxChunks=0                                                                                                                         | The file append fails with an SDK internal error.                                                                               | Y                 |
-| 5       | Appends with max chunks set to negative value                                                 | maxChunks=-1                                                                                                                        | The file append fails with an SDK internal error.                                                                               | Y                 |
-| 6       | Appends content requiring more chunks than maxChunks                                          | maxChunks=1, contents=<LARGE_CONTENT_REQUIRING_MORE_CHUNKS>, chunkSize=1000                                                       | The file append fails with an SDK internal error.                                                                               | Y                 |
+| Test no | Name                                                 | Input                                                                       | Expected response                                 | Implemented (Y/N) |
+|---------|------------------------------------------------------|-----------------------------------------------------------------------------|---------------------------------------------------|-------------------|
+| 1       | Appends with default max chunks (20)                 | maxChunks=20                                                                | The file append succeeds.                         | Y                 |
+| 2       | Appends with custom max chunks                       | maxChunks=10                                                                | The file append succeeds.                         | Y                 |
+| 3       | Appends with max chunks set to 1                     | maxChunks=1                                                                 | The file append succeeds for small content.       | Y                 |
+| 4       | Appends with max chunks set to 0                     | maxChunks=0                                                                 | The file append fails with an SDK internal error. | Y                 |
+| 5       | Appends with max chunks set to negative value        | maxChunks=-1                                                                | The file append fails with an SDK internal error. | Y                 |
+| 6       | Appends content requiring more chunks than maxChunks | maxChunks=1, contents=<LARGE_CONTENT_REQUIRING_MORE_CHUNKS>, chunkSize=1000 | The file append fails with an SDK internal error. | Y                 |
 
 ### **ChunkSize:**
 
 - Size of each chunk in bytes.
 
-| Test no | Name                                                                                          | Input                                                                                                                                | Expected response                                                                                                                | Implemented (Y/N) |
-|---------|-----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|-------------------|
-| 1       | Appends with default chunk size (4096)                                                        | chunkSize=4096                                                                                                                      | The file append succeeds.                                                                                                        | Y                 |
-| 2       | Appends with custom chunk size                                                                | chunkSize=1024                                                                                                                      | The file append succeeds.                                                                                                        | Y                 |
-| 3       | Appends with chunk size set to 1                                                              | chunkSize=1                                                                                                                         | The file append succeeds.                                                                                                        | Y                 |
-| 4       | Appends with chunk size set to 0                                                              | chunkSize=0                                                                                                                         | The file append fails with an SDK internal error.                                                                               | Y                 |
-| 5       | Appends with chunk size set to negative value                                                 | chunkSize=-1                                                                                                                        | The file append fails with an SDK internal error.                                                                               | Y                 |
-| 6       | Appends with chunk size larger than content                                                   | chunkSize=10000, contents="small content"                                                                                          | The file append succeeds with single chunk.                                                                                     | Y                 |
+| Test no | Name                                          | Input                                     | Expected response                                 | Implemented (Y/N) |
+|---------|-----------------------------------------------|-------------------------------------------|---------------------------------------------------|-------------------|
+| 1       | Appends with default chunk size (4096)        | chunkSize=4096                            | The file append succeeds.                         | Y                 |
+| 2       | Appends with custom chunk size                | chunkSize=1024                            | The file append succeeds.                         | Y                 |
+| 3       | Appends with chunk size set to 1              | chunkSize=1                               | The file append succeeds.                         | Y                 |
+| 4       | Appends with chunk size set to 0              | chunkSize=0                               | The file append fails with an SDK internal error. | Y                 |
+| 5       | Appends with chunk size set to negative value | chunkSize=-1                              | The file append fails with an SDK internal error. | Y                 |
+| 6       | Appends with chunk size larger than content   | chunkSize=10000, contents="small content" | The file append succeeds with single chunk.       | Y                 |
 
 #### JSON Request Example
 

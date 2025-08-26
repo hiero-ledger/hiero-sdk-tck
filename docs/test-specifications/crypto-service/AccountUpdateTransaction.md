@@ -47,7 +47,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | stakedAccountId           | string                                                  | optional          |                                                                                                                                            |
 | stakedNodeId              | string                                                  | optional          |                                                                                                                                            |
 | declineStakingReward      | bool                                                    | optional          |                                                                                                                                            |
-| commonTransactionParams   | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                            |
+| commonTransactionParams   | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                                            |
 
 ### Output Parameters
 
@@ -155,7 +155,7 @@ The tests contained in this specification will assume that a valid account was a
 | 3       | Updates the auto-renew period of an account to the minimum period of 30 days (2,592,000 seconds)                  | accountId=<CREATED_ACCOUNT_ID>, autoRenewPeriod="2592000", commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account update succeeds and the account's auto renew period should equal 2,592,000 seconds.  | Y                 |
 | 4       | Updates the auto-renew period of an account to the minimum period of 30 days minus one second (2,591,999 seconds) | accountId=<CREATED_ACCOUNT_ID>, autoRenewPeriod="2591999", commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account update fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 | 5       | Updates the auto-renew period of an account to the maximum period of 8,000,001 seconds                            | accountId=<CREATED_ACCOUNT_ID>, autoRenewPeriod="8000001", commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account update succeeds and the account's auto renew period should equal 8,000,001 seconds.  | Y                 |
-| 6       | Updates the auto-renew period of an account to the maximum period plus 1mil seconds (9,000,000 seconds)             | accountId=<CREATED_ACCOUNT_ID>, autoRenewPeriod="9000000", commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account update fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
+| 6       | Updates the auto-renew period of an account to the maximum period plus 1mil seconds (9,000,000 seconds)           | accountId=<CREATED_ACCOUNT_ID>, autoRenewPeriod="9000000", commonTransactionParams.signers=[<PRIVATE_KEY_OF_CREATED_ACCOUNT>] | The account update fails with an AUTORENEW_DURATION_NOT_IN_RANGE response code from the network. | Y                 |
 
 #### JSON Request Example
 

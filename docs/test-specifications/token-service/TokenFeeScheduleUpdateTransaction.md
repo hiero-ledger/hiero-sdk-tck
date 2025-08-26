@@ -38,8 +38,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                           |
 |-------------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------|
 | tokenId                 | string                                                  | optional          | The ID of the token whose fee schedule shall be updated.    |
-| customFees              | list<[json object](customFee.md)>                       | optional          | The new fees to be assessed during a transfer of the token. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                             |
+| customFees              | list<[json object](../common/CustomFee.md)>             | optional          | The new fees to be assessed during a transfer of the token. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                             |
 
 ### Output Parameters
 
