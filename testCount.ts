@@ -74,8 +74,8 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
 
   const renderedHtml = md.render(content);
   const { window } = new JSDOM("");
-  type DomWindow = Window & typeof globalThis;
-  const DOMPurify = createDOMPurify(window as unknown as Window);
+  const domWindow = window as unknown as Window & typeof globalThis;
+  const DOMPurify = createDOMPurify(domWindow);
   const safeHtml = DOMPurify.sanitize(renderedHtml, {
     ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "th", "td", "a", "p", "em", "strong", "code", "pre"],
     ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
