@@ -14,7 +14,7 @@ const headers = {
   "X-GitHub-Api-Version": "2022-11-28",
 };
 
-// 🔁  fetch all markdown files from the branch
+// 🔁  Fetch all markdown files from the branch
 async function fetchAllMarkdownFiles(dirPath) {
   const files = [];
   let page = 1;
