@@ -15,6 +15,8 @@ Each test within the test specification is linked to one of the properties withi
 
 A successful contract execution transaction (i.e., the transaction reached consensus and the contract function was executed) can be confirmed by retrieving a TransactionReceipt or TransactionRecord, or by querying the contract state to verify the execution results. The Mirror Node REST API can also be used to verify transaction status and execution outcomes. Error codes are derived from the Hedera ResponseCode.proto definitions and reflect both network-level and contract-level execution outcomes.
 
+**Note**: The test contract used for these tests will be located in `src/contracts` directory and will contain various functions to support the different test scenarios (payable functions, view functions, pure functions, state-changing functions, etc.).
+
 **Transaction Properties:**
 
 - https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/call-a-smart-contract-function
