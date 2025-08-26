@@ -96,19 +96,21 @@ jobs:
           hieroVersion: ${{ env.CONSENSUS_NODE_VERSION }}
           mirrorNodeVersion: v0.134.0
 
-      # Set Operator Account from Solo outputs
-      - name: Set Operator Account
+      # Create TCK Environment File
+      - name: Create TCK Environment File
         run: |
-          echo "OPERATOR_ACCOUNT_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
-          echo "OPERATOR_ACCOUNT_PRIVATE_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
+          cat > .env.custom_node << EOF
+          OPERATOR_ACCOUNT_ID=${{ steps.solo.outputs.ed25519AccountId }}
+          OPERATOR_ACCOUNT_PRIVATE_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}
+          JSON_RPC_SERVER_URL=http://127.0.0.1:8544
+          NODE_IP=127.0.0.1:50211
+          MIRROR_NODE_REST_URL=http://127.0.0.1:5551
+          MIRROR_NODE_REST_JAVA_URL=http://127.0.0.1:8084
+          NETWORK=local
+          EOF
 
       # Start the TCK client
       - name: Start tck-client
-        env:
-          JSON_RPC_SERVER_URL: "http://127.0.0.1:8544"
-          NODE_IP: "127.0.0.1:50211"
-          MIRROR_NODE_REST_URL: "http://127.0.0.1:5551"
-          MIRROR_NODE_REST_JAVA_URL: "http://127.0.0.1:8084"
         run: npm run test
 
       # Stop the TCK server
