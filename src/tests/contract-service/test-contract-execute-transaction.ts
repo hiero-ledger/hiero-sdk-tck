@@ -249,4 +249,188 @@ describe.only("ContractExecuteTransaction", function () {
       assert.fail("Should throw an error");
     });
   });
+
+  describe.only("Gas", function () {
+    const message = "message";
+    const constructorParams = new ContractFunctionParameters()
+      .addString(message)
+      ._build("setMessage");
+    let contractId: string;
+
+    const validateMessage = async (contractId: string, message: string) => {
+      const functionResult =
+        await consensusInfoClient.getContractFunctionResult(
+          contractId,
+          "getMessage",
+        );
+      expect(functionResult.getString(0)).to.equal(message);
+    };
+
+    beforeEach(async function () {
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      contractId = await createContractWithAdminKey(this, adminPrivateKey);
+    });
+
+    it("(#1) Execute a contract with valid contract ID", async function () {
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        gas: "100000",
+        functionParameters: toHexString(constructorParams),
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(contractId, message);
+    });
+
+    it("(#2) Execute contract with zero gas", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "0",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#3) Execute contract with negative gas", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "-1",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it.skip("(#4) Execute contract with gas = int64 max", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "9223372036854775807",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it.skip("(#5) Execute contract with gas = int64 max - 1", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "9223372036854775806",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Execute contract with gas = int64 min", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "-9223372036854775808",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Execute contract with gas = int64 min + 1", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "-9223372036854775807",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Execute contract with insufficient gas for function", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "1000",
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#9) Execute contract with no gas specified", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
 });
