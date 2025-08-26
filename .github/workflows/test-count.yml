@@ -8,11 +8,19 @@ on:
       - "testCount.js"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/test-count.yml"
   push:
     branches:
-       - main
-       - feat/**
-  workflow_dispatch:
+      - main
+      - feat/**
+    paths:
+      - "docs/test-specifications/**"
+      - "src/tests/**"
+      - "testCount.js"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/test-count.yml"
+  workflow_dispatch: {}  
 
 permissions:
   contents: read
@@ -20,7 +28,6 @@ permissions:
 jobs:
   count:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,20 +45,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -o pipefail
-          echo "Running testCount.js…"
-          npm run -s test:count | tee test-count.log
-          echo
-          echo "----- Raw Output Above -----"
-
-      - name: Show results
-        if: always()
-        run: |
-          {
-            echo "## TCK Test Count Results"
-            echo
-            echo '```text'
-            cat test-count.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
+          echo "Running testCount.js..."
+          node testCount.js
