@@ -1,7 +1,7 @@
 ---
 title: Pending Airdrop
 parent: Helpers
-nav_order: 7
+nav_order: 5
 ---
 # Pending Airdrop
 
