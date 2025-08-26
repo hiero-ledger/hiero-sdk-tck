@@ -1,5 +1,5 @@
 ---
-title: Contract Service
-nav_order: 1
+title: Smart Contract Service
+nav_order: 5
 has_children: true
 ---

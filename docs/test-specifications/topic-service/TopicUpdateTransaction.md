@@ -1,7 +1,7 @@
 ---
 title: Topic Update Transaction
-parent: Topic Service
-nav_order: 2
+parent: Consensus Service
+nav_order: 4
 ---
 # TopicUpdateTransaction - Test specification
 

@@ -1,7 +1,7 @@
 ---
 title: Topic Delete Transaction
-parent: Topic Service
-nav_order: 3
+parent: Consensus Service
+nav_order: 2
 ---
 
 # TopicDeleteTransaction - Test specification
