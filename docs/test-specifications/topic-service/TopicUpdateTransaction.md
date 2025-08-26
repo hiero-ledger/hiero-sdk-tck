@@ -1,7 +1,7 @@
 ---
 title: Topic Update Transaction
-parent: Topic Service
-nav_order: 2
+parent: Consensus Service
+nav_order: 4
 ---
 # TopicUpdateTransaction - Test specification
 
@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/consensus_update_topic.proto
+https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/update-a-topic
 
 **TopicUpdate protobufs:**
 
@@ -46,8 +46,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | expirationTime          | string                                                  | optional          | Effective consensus timestamp at (and after) which all consensus transactions and queries will fail. The expirationTime may be no longer than MAX_AUTORENEW_PERIOD (8000001 seconds) from the consensus timestamp of this transaction. Must be strictly later than the existing expiration time. If unspecified, no change. |
 | feeScheduleKey          | string                                                  | optional          | A key that controls updates and deletions of topic fees. DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. If unspecified, no change. If empty keyList - the feeScheduleKey is cleared.                                           |
 | feeExemptKeys           | string[]                                                | optional          | A list of keys that, if used to sign a message submission, allow the sender to bypass fees. DER-encoded hex string representation for private or public keys. If unspecified, no change.                                                                                                                                    |
-| customFees              | list<[json object](../common/customFee.md)>             | optional          | A fee structure applied to message submissions for revenue generation. If unspecified, no change.                                                                                                                                                                                                                           |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                                                                                                                                                                                                             |
+| customFees              | list<[json object](../common/CustomFee.md)>             | optional          | A fee structure applied to message submissions for revenue generation. If unspecified, no change.                                                                                                                                                                                                                           |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                                                                                                                                                                                                                             |
 
 ### Output Parameters
 
@@ -81,7 +81,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 5       | Updates a topic with memo containing null byte          | topicId="<CREATED_TOPIC_ID>", memo="Test\0memo"                    | The topic update fails with `INVALID_ZERO_BYTE_IN_STRING`.              | Y                 |
 | 6       | Updates a topic with memo containing only whitespace    | topicId="<CREATED_TOPIC_ID>", memo="   "                           | The topic update succeeds and the topic has the whitespace memo.        | Y                 |
 | 7       | Updates a topic with memo containing special characters | topicId="<CREATED_TOPIC_ID>", memo="!@#$%^&*()_+-=[]{};':\",./<>?" | The topic update succeeds and the topic has the special character memo. | Y                 |
-| 8       | Updates a topic with memo containing unicode characters | topicId="<CREATED_TOPIC_ID>", memo="测试主题备注 🚀"               | The topic update succeeds and the topic has the unicode memo.           | Y                 |
+| 8       | Updates a topic with memo containing unicode characters | topicId="<CREATED_TOPIC_ID>", memo="测试主题备注 🚀"                     | The topic update succeeds and the topic has the unicode memo.           | Y                 |
 
 ### **AdminKey:**
 

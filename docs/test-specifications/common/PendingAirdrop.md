@@ -1,7 +1,7 @@
 ---
 title: Pending Airdrop
 parent: Helpers
-nav_order: 7
+nav_order: 6
 ---
 # Pending Airdrop
 
@@ -9,12 +9,12 @@ This document specifies the structure of a pending airdrop object that is used i
 
 ## Pending Airdrop Definition
 
-| Parameter Name      | Type         | Required/Optional | Description/Notes                                    |
-|---------------------|--------------|-------------------|------------------------------------------------------|
-| senderAccountId     | string       | required          | The ID of the account that sent the airdrop          |
-| receiverAccountId   | string       | required          | The ID of the account that received the airdrop      |
-| tokenId            | string       | required          | The ID of the token that was airdropped              |
-| serialNumbers      | list<string> | optional          | The serial numbers of the NFTs to cancel airdrops    |
+| Parameter Name    | Type         | Required/Optional | Description/Notes                                    |
+|-------------------|--------------|-------------------|------------------------------------------------------|
+| senderAccountId   | string       | required          | The ID of the account that sent the airdrop          |
+| receiverAccountId | string       | required          | The ID of the account that received the airdrop      |
+| tokenId           | string       | required          | The ID of the token that was airdropped              |
+| serialNumbers     | list<string> | optional          | The serial numbers of the NFTs to cancel airdrops    |
 
 ## Example Usage
 

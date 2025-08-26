@@ -1,5 +1,5 @@
 ---
-title: Token Service
+title: Smart Contract Service
 nav_order: 5
 has_children: true
 ---
