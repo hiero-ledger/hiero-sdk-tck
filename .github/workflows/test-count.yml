@@ -1,0 +1,56 @@
+name: Test Spec Count
+
+on:
+  pull_request:
+    paths:
+      - "docs/test-specifications/**"
+      - "src/tests/**"
+      - "testCount.js"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  count:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run test count script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running testCount.js…"
+          npm run -s test:count | tee test-count.log
+
+      - name: Show results
+        if: always()
+        run: |
+          {
+            echo "## Test Count Results"
+            echo
+            echo '```text'
+            cat test-count.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw log (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-count-log
+          path: test-count.log
