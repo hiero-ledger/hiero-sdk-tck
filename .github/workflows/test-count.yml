@@ -8,6 +8,16 @@ on:
       - "testCount.js"
       - "package.json"
       - "package-lock.json"
+  push:
+    branches:
+       - main
+       - feat/**         # include your feature branch pattern
+    paths:
+       - "docs/test-specifications/**"
+       - "src/tests/**"
+       - "testCount.js"
+       - "package.json"
+       - "package-lock.json"
   workflow_dispatch:
 
 permissions:
