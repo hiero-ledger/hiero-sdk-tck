@@ -2,6 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
+import createDOMPurify from "dompurify";
 
 dotenv.config();
 
@@ -10,15 +11,24 @@ const repo = "hiero-sdk-tck";
 const branch = "main";
 const rootPath = "docs/test-specifications";
 
-const headers = {
-  Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+const headers: Record<string, string> = {
+  Authorization: `Bearer ${process.env.GITHUB_TOKEN ?? ""}`,
   Accept: "application/vnd.github+json",
   "X-GitHub-Api-Version": "2022-11-28",
 };
 
-// 🔁  Fetch all markdown files from the branch
-async function fetchAllMarkdownFiles(dirPath) {
-  const files = [];
+type GitHubItemType = "file" | "dir";
+
+interface GitHubContentItem {
+  type: GitHubItemType;
+  name: string;
+  path: string;
+  download_url?: string;
+}
+
+/** 🔁 Fetch all markdown files from the branch */
+async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem[]> {
+  const files: GitHubContentItem[] = [];
   let page = 1;
   let hasMore = true;
 
@@ -26,7 +36,7 @@ async function fetchAllMarkdownFiles(dirPath) {
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${dirPath}?ref=${branch}&per_page=100&page=${page}`;
 
     try {
-      const res = await axios.get(url, { headers });
+      const res = await axios.get<GitHubContentItem[]>(url, { headers });
 
       for (const item of res.data) {
         if (item.type === "file" && item.name.endsWith(".md")) {
@@ -39,8 +49,8 @@ async function fetchAllMarkdownFiles(dirPath) {
 
       hasMore = res.data.length === 100;
       page++;
-    } catch (err) {
-      console.error(`❌ Failed to fetch ${url}: ${err.message}`);
+    } catch (err: any) {
+      console.error(`❌ Failed to fetch ${url}: ${err?.message ?? err}`);
       hasMore = false;
     }
   }
@@ -48,23 +58,31 @@ async function fetchAllMarkdownFiles(dirPath) {
   return files;
 }
 
-// 🧠 Parse mardown file
-function parseMarkdownWithTables(content) {
+/** 🧠 Parse markdown file */
+function parseMarkdownWithTables(content: string): { implementedCount: number; notImplementedCount: number } {
   const md = new MarkdownIt({
-    html: false,
+    html: false, // block raw HTML in the markdown input
     linkify: true,
     breaks: true,
   });
-  const html = md.render(content);
-  const dom = new JSDOM(html);
+
+  const renderedHtml = md.render(content);
+
+  const window = new JSDOM("").window as unknown as Window;
+  const DOMPurify = createDOMPurify(window);
+  const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
+
+  const dom = new JSDOM(sanitizedHtml);
   const document = dom.window.document;
 
   let implementedCount = 0;
   let notImplementedCount = 0;
 
   document.querySelectorAll("table").forEach((table) => {
+    if (!table.rows || table.rows.length === 0) return;
+
     const headerCells = Array.from(table.rows[0].cells).map((c) =>
-      c.textContent.trim().toLowerCase()
+      (c.textContent || "").trim().toLowerCase()
     );
     const implIdx = headerCells.findIndex((h) => h.includes("implemented"));
     if (implIdx < 0) return;
@@ -72,19 +90,26 @@ function parseMarkdownWithTables(content) {
     Array.from(table.rows)
       .slice(1)
       .forEach((row) => {
-        const cell = row.cells[implIdx];
+        if (implIdx >= row.cells.length) return;
+        const cell = row.cells.item(implIdx);
         if (!cell) return;
-        const val = cell.textContent.trim().toLowerCase();
 
-        if (["y", "yes", "✓"].includes(val)) implementedCount++;
-        else if (["n", "no"].includes(val)) notImplementedCount++;
+        const val = (cell.textContent || "").trim().toLowerCase();
+
+        if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
+          implementedCount++;
+        } else if (["n", "no", "false", "0"].includes(val)) {
+          notImplementedCount++;
+        } else {
+          notImplementedCount++;
+        }
       });
   });
 
   return { implementedCount, notImplementedCount };
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log(`📦 Branch: ${branch}`);
   const files = await fetchAllMarkdownFiles(rootPath);
   console.log(`📄 Found ${files.length} markdown files \n`);
@@ -95,23 +120,23 @@ async function main() {
 
   for (const file of files) {
     try {
-      const res = await axios.get(file.download_url, { headers });
-      const { implementedCount, notImplementedCount } = parseMarkdownWithTables(
-        res.data
-      );
+      if (!file.download_url) {
+        console.warn(`⚠️  Skipped ${file.path} (no download_url)`);
+        continue;
+      }
+      const res = await axios.get<string>(file.download_url, { headers });
+      const { implementedCount, notImplementedCount } = parseMarkdownWithTables(res.data);
 
       const total = implementedCount + notImplementedCount;
       if (total > 0) {
-        console.log(
-          `🔎 ${file.path}: ✅ ${implementedCount} | ❌ ${notImplementedCount}`
-        );
+        console.log(`🔎 ${file.path}: ✅ ${implementedCount} | ❌ ${notImplementedCount}`);
       }
 
       totalImplemented += implementedCount;
       totalNotImplemented += notImplementedCount;
       totalTestCount += total;
-    } catch (err) {
-      console.warn(`⚠️  Skipped ${file.path} (${err.message})`);
+    } catch (err: any) {
+      console.warn(`⚠️  Skipped ${file.path} (${err?.message ?? err})`);
     }
   }
 
