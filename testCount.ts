@@ -2,7 +2,6 @@ import axios from "axios";
 import dotenv from "dotenv";
 import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
-import createDOMPurify from "dompurify";
 
 dotenv.config();
 
@@ -18,7 +17,6 @@ const headers: Record<string, string> = {
 };
 
 type GitHubItemType = "file" | "dir";
-
 interface GitHubContentItem {
   type: GitHubItemType;
   name: string;
@@ -26,7 +24,7 @@ interface GitHubContentItem {
   download_url?: string;
 }
 
-/** 🔁 Fetch all markdown files from the branch */
+// 🔁 Fetch all markdown files from the branch
 async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem[]> {
   const files: GitHubContentItem[] = [];
   let page = 1;
@@ -34,10 +32,8 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
 
   while (hasMore) {
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${dirPath}?ref=${branch}&per_page=100&page=${page}`;
-
     try {
       const res = await axios.get<GitHubContentItem[]>(url, { headers });
-
       for (const item of res.data) {
         if (item.type === "file" && item.name.endsWith(".md")) {
           files.push(item);
@@ -46,7 +42,6 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
           files.push(...subFiles);
         }
       }
-
       hasMore = res.data.length === 100;
       page++;
     } catch (err: any) {
@@ -58,20 +53,12 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
   return files;
 }
 
-/** 🧠 Parse markdown file */
+// 🧠 Parse markdown file 
 function parseMarkdownWithTables(content: string): { implementedCount: number; notImplementedCount: number } {
-  const md = new MarkdownIt({
-    html: false, // block raw HTML in the markdown input
-    linkify: true,
-    breaks: true,
-  });
-
+  const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
   const renderedHtml = md.render(content);
 
-  const DOMPurify = createDOMPurify(window as unknown as Window & typeof globalThis);
-  const sanitizedHtml = DOMPurify.sanitize(renderedHtml);
-
-  const dom = new JSDOM(sanitizedHtml);
+  const dom = new JSDOM(renderedHtml);
   const document = dom.window.document;
 
   let implementedCount = 0;
@@ -86,23 +73,20 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
     const implIdx = headerCells.findIndex((h) => h.includes("implemented"));
     if (implIdx < 0) return;
 
-    Array.from(table.rows)
-      .slice(1)
-      .forEach((row) => {
-        if (implIdx >= row.cells.length) return;
-        const cell = row.cells.item(implIdx);
-        if (!cell) return;
+    Array.from(table.rows).slice(1).forEach((row) => {
+      const cell = row.cells.item(implIdx);
+      if (!cell) return;
+      const val = (cell.textContent || "").trim().toLowerCase();
 
-        const val = (cell.textContent || "").trim().toLowerCase();
-
-        if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
-          implementedCount++;
-        } else if (["n", "no", "false", "0"].includes(val)) {
-          notImplementedCount++;
-        } else {
-          notImplementedCount++;
-        }
-      });
+      if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
+        implementedCount++;
+      } else if (["n", "no", "false", "0"].includes(val)) {
+        notImplementedCount++;
+      } else {
+        // treat unknowns as not implemented
+        notImplementedCount++;
+      }
+    });
   });
 
   return { implementedCount, notImplementedCount };
@@ -115,7 +99,6 @@ async function main(): Promise<void> {
 
   let totalImplemented = 0;
   let totalNotImplemented = 0;
-  let totalTestCount = 0;
 
   for (const file of files) {
     try {
@@ -125,19 +108,20 @@ async function main(): Promise<void> {
       }
       const res = await axios.get<string>(file.download_url, { headers });
       const { implementedCount, notImplementedCount } = parseMarkdownWithTables(res.data);
-
       const total = implementedCount + notImplementedCount;
+
       if (total > 0) {
         console.log(`🔎 ${file.path}: ✅ ${implementedCount} | ❌ ${notImplementedCount}`);
       }
 
       totalImplemented += implementedCount;
       totalNotImplemented += notImplementedCount;
-      totalTestCount += total;
     } catch (err: any) {
       console.warn(`⚠️  Skipped ${file.path} (${err?.message ?? err})`);
     }
   }
+
+  const totalTestCount = totalImplemented + totalNotImplemented;
 
   console.log("\n🔢 Grand Total Summary:");
   console.log(`🧪 Total Tests Found: ${totalTestCount}`);
@@ -145,4 +129,7 @@ async function main(): Promise<void> {
   console.log(`❌ Not Implemented: ${totalNotImplemented}`);
 }
 
-main().catch(console.error);
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
