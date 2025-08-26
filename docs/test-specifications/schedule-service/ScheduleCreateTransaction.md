@@ -38,7 +38,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | adminKey                | string                                                  | optional          | DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. |
 | payerAccountId          | string                                                  | optional          | ID of the account to pay for the scheduled transaction.                                                                                     |
 | expirationTime          | string                                                  | optional          | The time at which this schedule should expire (in seconds since the epoch)                                                                  |
-| waitForExpirty          | bool                                                    | optional          | Should the schedule wait until its expiration time to execute?                                                                              |
+| waitForExpiry           | bool                                                    | optional          | Should the schedule wait until its expiration time to execute?                                                                              |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                                             |
 
 ### Output Parameters
