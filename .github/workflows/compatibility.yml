@@ -33,7 +33,7 @@ env:
   SOLO_NAMESPACE: "solo-tck-e2e"
   SOLO_DEPLOYMENT: "solo-tck-deployment"
   SOLO_CLUSTER_SETUP_NAMESPACE: "solo-setup"
-  CONSENSUS_NODE_VERSION: "v0.61.4"
+  CONSENSUS_NODE_VERSION: "v0.65.0-rc.4"
 
 jobs:
   # Execute TCK Regression Tests using specified version of hiero-consensus-node
