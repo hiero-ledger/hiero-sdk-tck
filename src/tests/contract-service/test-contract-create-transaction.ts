@@ -19,6 +19,7 @@ import {
   verifyContractKey,
   verifyContractKeyList,
   verifyContractCreateWithNullKey,
+  toHexString,
 } from "@helpers/verify-contract-tx";
 import { invalidKey } from "@constants/key-type";
 
@@ -45,12 +46,6 @@ describe("ContractCreateTransaction", function () {
   afterEach(async function () {
     await JSONRPCRequest(this, "reset");
   });
-
-  const toHexString = (byteArray: Uint8Array) => {
-    return Array.from(byteArray, function (byte) {
-      return ("0" + (byte & 0xff).toString(16)).slice(-2);
-    }).join("");
-  };
 
   describe("Bytecode File Id", function () {
     const gas = "300000";
