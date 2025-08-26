@@ -1,4 +1,4 @@
-import { assert } from "chai";
+import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
@@ -11,6 +11,7 @@ import {
 import { createFtToken } from "@helpers/token";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import mirrorNodeClient from "@services/MirrorNodeClient";
 
 describe("AccountDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
@@ -230,6 +231,59 @@ describe("AccountDeleteTransaction", function () {
       // The test failed, no error was thrown.
       assert.fail("Should throw an error");
     });
+
+    it("(#9) Deletes a treasury account", async function () {
+      // Create an Account that is "Treasury"
+      let response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+
+      const accountPrivateKey = response.key;
+
+      response = await JSONRPCRequest(this, "createAccount", {
+        key: accountPrivateKey,
+      });
+
+      const accountId = response.accountId;
+
+      // Add a Token to this newly created Account (This makes it "Treasury")
+      response = await JSONRPCRequest(this, "createToken", {
+        name: "test name",
+        symbol: "test symbol",
+        treasuryAccountId: accountId,
+        commonTransactionParams: {
+          signers: [accountPrivateKey],
+        },
+      });
+
+      // Validate if this account has this new token
+      const tokenId = response.tokenId;
+      expect(accountId).to.equal(
+        (
+          await consensusInfoClient.getTokenInfo(tokenId)
+        ).treasuryAccountId?.toString(),
+      );
+      expect(accountId).to.equal(
+        (await mirrorNodeClient.getTokenData(tokenId)).treasury_account_id,
+      );
+
+      // Delete of this Treasury account should fail with a specific error below
+      try {
+        await JSONRPCRequest(this, "deleteAccount", {
+          deleteAccountId: accountId,
+          transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+          commonTransactionParams: {
+            signers: [accountPrivateKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_IS_TREASURY");
+        return;
+      }
+
+      // The test failed, no error was thrown.
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Transfer Account Id", async function () {
@@ -308,7 +362,7 @@ describe("AccountDeleteTransaction", function () {
 
       const deletedAccountId = response.accountId;
       // Delete the account.
-      response = await JSONRPCRequest(this, "deleteAccount", {
+      await JSONRPCRequest(this, "deleteAccount", {
         deleteAccountId: deletedAccountId,
         transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
         commonTransactionParams: {
@@ -318,7 +372,7 @@ describe("AccountDeleteTransaction", function () {
 
       try {
         // Attempt to delete the account with the deleted account as the transfer account. The network should respond with an ACCOUNT_DELETED status.
-        response = await JSONRPCRequest(this, "deleteAccount", {
+        await JSONRPCRequest(this, "deleteAccount", {
           deleteAccountId: accountId,
           transferAccountId: deletedAccountId,
           commonTransactionParams: {
