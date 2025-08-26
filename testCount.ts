@@ -70,8 +70,9 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
 
 // 🧠 Parse markdown file 
 function parseMarkdownWithTables(content: string): { implementedCount: number; notImplementedCount: number } {
-  const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
-
+  type MDOptions = ConstructorParameters<typeof MarkdownIt>[0];
+  const mdOptions: MDOptions = { html: false, linkify: true, breaks: true };
+  const md: InstanceType<typeof MarkdownIt> = new MarkdownIt(mdOptions);
   const renderedHtml = md.render(content);
   const { window } = new JSDOM("");
   const domWindow = window as unknown as Window & typeof globalThis;
