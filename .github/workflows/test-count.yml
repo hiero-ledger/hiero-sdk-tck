@@ -46,4 +46,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Running testCount.js..."
-          node testCount.js
+          npx ts-node testCount.ts
