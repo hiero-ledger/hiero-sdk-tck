@@ -356,7 +356,7 @@ describe("AccountDeleteTransaction", function () {
       const key = await generateEcdsaSecp256k1PrivateKey(this);
 
       // Create an account with the key.
-      let response = await JSONRPCRequest(this, "createAccount", {
+      const response = await JSONRPCRequest(this, "createAccount", {
         key,
       });
 
