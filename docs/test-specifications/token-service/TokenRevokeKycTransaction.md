@@ -39,7 +39,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 |-------------------------|---------------------------------------------------------|-------------------|-----------------------------------------------|
 | tokenId                 | string                                                  | optional          | The ID of the token of which to revoke KYC.   |
 | accountId               | string                                                  | optional          | The ID of the account to which to revoke KYC. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                               |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                               |
 
 ### Output Parameters
 
