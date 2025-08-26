@@ -38,8 +38,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -o pipefail
           echo "Running testCount.js…"
           npm run -s test:count | tee test-count.log
+          echo
+          echo "----- Raw Output Above -----"
 
       - name: Show results
         if: always()
@@ -48,13 +51,7 @@ jobs:
             echo "## TCK Test Count Results"
             echo
             echo '```text'
-            cat test-count.log
+            cat test-count.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload raw log (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-count-log
-          path: test-count.log
