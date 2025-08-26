@@ -232,7 +232,7 @@ describe("AccountDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Deletes a treasury account", async function () {
+    it("(#9) Delete a treasury account", async function () {
       // Create an Account that is "Treasury"
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
