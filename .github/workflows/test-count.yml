@@ -40,6 +40,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+      
+      - name: Ensure TS types for libs
+        run: npm i -D @types/markdown-it @types/jsdom
 
       - name: Run test count script
         env:
