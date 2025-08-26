@@ -9,6 +9,7 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "lib": ["ES2022", "DOM"],
     "baseUrl": "./",
     "paths": {
       "@helpers/*": ["src/utils/helpers/*"],
