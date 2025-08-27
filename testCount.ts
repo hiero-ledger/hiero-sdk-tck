@@ -4,7 +4,6 @@ import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
 import createDOMPurify from "dompurify";
 
-
 const owner = "hiero-ledger";
 const repo = "hiero-sdk-tck";
 const branch = "main";
@@ -32,7 +31,9 @@ function errorMsg(e: unknown): string {
       status ? ` (${status}${statusText ? ` ${statusText}` : ""})` : ""
     }`;
   }
-  if (e instanceof Error) return `${e.name}: ${e.message}`;
+  if (e instanceof Error) {
+    return `${e.name}: ${e.message}`;
+  }
   try {
     return JSON.stringify(e);
   } catch {
@@ -41,7 +42,9 @@ function errorMsg(e: unknown): string {
 }
 
 // 🔁 Fetch all markdown files from the branch
-async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem[]> {
+async function fetchAllMarkdownFiles(
+  dirPath: string,
+): Promise<GitHubContentItem[]> {
   const files: GitHubContentItem[] = [];
   let page = 1;
   let hasMore = true;
@@ -69,8 +72,11 @@ async function fetchAllMarkdownFiles(dirPath: string): Promise<GitHubContentItem
   return files;
 }
 
-// 🧠 Parse markdown file 
-function parseMarkdownWithTables(content: string): { implementedCount: number; notImplementedCount: number } {
+// 🧠 Parse markdown file
+function parseMarkdownWithTables(content: string): {
+  implementedCount: number;
+  notImplementedCount: number;
+} {
   type MDOptions = ConstructorParameters<typeof MarkdownIt>[0];
   const mdOptions: MDOptions = { html: false, linkify: true, breaks: true };
   const md: InstanceType<typeof MarkdownIt> = new MarkdownIt(mdOptions);
@@ -79,7 +85,20 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
   const domWindow = window as unknown as Window & typeof globalThis;
   const DOMPurify = createDOMPurify(domWindow);
   const safeHtml: string = DOMPurify.sanitize(renderedHtml, {
-    ALLOWED_TAGS: ["table", "thead", "tbody", "tr", "th", "td", "a", "p", "em", "strong", "code", "pre"],
+    ALLOWED_TAGS: [
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "a",
+      "p",
+      "em",
+      "strong",
+      "code",
+      "pre",
+    ],
     ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
   });
 
@@ -90,22 +109,32 @@ function parseMarkdownWithTables(content: string): { implementedCount: number; n
   let notImplementedCount = 0;
 
   document.querySelectorAll("table").forEach((table) => {
-    if (table.rows.length === 0) return;
+    if (table.rows.length === 0) {
+      return;
+    }
 
     const headerCells = Array.from(table.rows[0].cells).map((c) =>
       (c.textContent ?? "").trim().toLowerCase()
     );
     const implIdx = headerCells.findIndex((h) => h.includes("implemented"));
-    if (implIdx < 0) return;
+    if (implIdx < 0) {
+      return;
+    }
 
     Array.from(table.rows)
       .slice(1)
       .forEach((row) => {
         const cell = row.cells.item(implIdx);
-        if (!cell) return;
+        if (!cell) {
+          return;
+        }
         const val = (cell.textContent ?? "").trim().toLowerCase();
 
-        if (["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(val)) {
+        if (
+          ["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(
+            val,
+          )
+        ) {
           implementedCount++;
         } else if (["n", "no", "false", "0"].includes(val)) {
           notImplementedCount++;
@@ -134,11 +163,15 @@ async function main(): Promise<void> {
         continue;
       }
       const res = await axios.get<string>(file.download_url, { headers });
-      const { implementedCount, notImplementedCount } = parseMarkdownWithTables(res.data);
+      const { implementedCount, notImplementedCount } = parseMarkdownWithTables(
+        res.data,
+      );
       const total = implementedCount + notImplementedCount;
 
       if (total > 0) {
-        console.log(`🔎 ${file.path}: ✅ ${implementedCount} | ❌ ${notImplementedCount}`);
+        console.log(
+          `🔎 ${file.path}: ✅ ${implementedCount} | ❌ ${notImplementedCount}`,
+        );
       }
 
       totalImplemented += implementedCount;
