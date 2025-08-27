@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - "docs/test-specifications/**"
-      - "src/tests/**"
       - "testCount.js"
       - "package.json"
       - "package-lock.json"
@@ -15,7 +14,6 @@ on:
       - feat/**
     paths:
       - "docs/test-specifications/**"
-      - "src/tests/**"
       - "testCount.js"
       - "package.json"
       - "package-lock.json"
