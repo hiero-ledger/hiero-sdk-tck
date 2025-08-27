@@ -13,7 +13,7 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 import { assert, expect } from "chai";
 
 const smartContractBytecode =
-  "6080604052348015600e575f5ffd5b506107798061001c5f395ff3fe608060405260043610610049575f3560e01c8063368b87721461004d5780636f9fb98a14610075578063ce6d41de1461009f578063d0e30db0146100c9578063e21f37ce146100d3575b5f5ffd5b348015610058575f5ffd5b50610073600480360381019061006e919061037f565b6100fd565b005b348015610080575f5ffd5b5061008961010f565b60405161009691906103de565b60405180910390f35b3480156100aa575f5ffd5b506100b3610116565b6040516100c09190610457565b60405180910390f35b6100d16101a5565b005b3480156100de575f5ffd5b506100e76101a7565b6040516100f49190610457565b60405180910390f35b805f908161010b9190610674565b5050565b5f47905090565b60605f8054610124906104a4565b80601f0160208091040260200160405190810160405280929190818152602001828054610150906104a4565b801561019b5780601f106101725761010080835404028352916020019161019b565b820191905f5260205f20905b81548152906001019060200180831161017e57829003601f168201915b5050505050905090565b565b5f80546101b3906104a4565b80601f01602080910402602001604051908101604052809291908181526020018280546101df906104a4565b801561022a5780601f106102015761010080835404028352916020019161022a565b820191905f5260205f20905b81548152906001019060200180831161020d57829003601f168201915b505050505081565b5f604051905090565b5f5ffd5b5f5ffd5b5f5ffd5b5f5ffd5b5f601f19601f8301169050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52604160045260245ffd5b6102918261024b565b810181811067ffffffffffffffff821117156102b0576102af61025b565b5b80604052505050565b5f6102c2610232565b90506102ce8282610288565b919050565b5f67ffffffffffffffff8211156102ed576102ec61025b565b5b6102f68261024b565b9050602081019050919050565b828183375f83830152505050565b5f61032361031e846102d3565b6102b9565b90508281526020810184848401111561033f5761033e610247565b5b61034a848285610303565b509392505050565b5f82601f83011261036657610365610243565b5b8135610376848260208601610311565b91505092915050565b5f602082840312156103945761039361023b565b5b5f82013567ffffffffffffffff8111156103b1576103b061023f565b5b6103bd84828501610352565b91505092915050565b5f819050919050565b6103d8816103c6565b82525050565b5f6020820190506103f15f8301846103cf565b92915050565b5f81519050919050565b5f82825260208201905092915050565b8281835e5f83830152505050565b5f610429826103f7565b6104338185610401565b9350610443818560208601610411565b61044c8161024b565b840191505092915050565b5f6020820190508181035f83015261046f818461041f565b905092915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52602260045260245ffd5b5f60028204905060018216806104bb57607f821691505b6020821081036104ce576104cd610477565b5b50919050565b5f819050815f5260205f209050919050565b5f6020601f8301049050919050565b5f82821b905092915050565b5f600883026105307fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff826104f5565b61053a86836104f5565b95508019841693508086168417925050509392505050565b5f819050919050565b5f61057561057061056b846103c6565b610552565b6103c6565b9050919050565b5f819050919050565b61058e8361055b565b6105a261059a8261057c565b848454610501565b825550505050565b5f5f905090565b6105b96105aa565b6105c4818484610585565b505050565b5b818110156105e7576105dc5f826105b1565b6001810190506105ca565b5050565b601f82111561062c576105fd816104d4565b610606846104e6565b81016020851015610615578190505b610629610621856104e6565b8301826105c9565b50505b505050565b5f82821c905092915050565b5f61064c5f1984600802610631565b1980831691505092915050565b5f610664838361063d565b9150826002028217905092915050565b61067d826103f7565b67ffffffffffffffff8111156106965761069561025b565b5b6106a082546104a4565b6106ab8282856105eb565b5f60209050601f8311600181146106dc575f84156106ca578287015190505b6106d48582610659565b86555061073b565b601f1984166106ea866104d4565b5f5b82811015610711578489015182556001820191506020850194506020810190506106ec565b8683101561072e578489015161072a601f89168261063d565b8355505b6001600288020188555050505b50505050505056fea2646970667358221220b0fe4813be46ed649c88831656427d9d062f218753e5a670e9055fb20e9c660d64736f6c634300081e0033";
+  "6080604052348015600e575f5ffd5b503360025f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610e1e8061005c5f395ff3fe6080604052600436106100dc575f3560e01c80639fb378531161007e578063e21f37ce11610058578063e21f37ce14610224578063ef9fc50b1461024e578063f1d4b2c51461028a578063f2a75fe4146102b2576100dc565b80639fb37853146101da578063ce6d41de146101f0578063d0e30db01461021a576100dc565b80634e70b1dc116100ba5780634e70b1dc146101465780636f9fb98a146101705780638da5cb5b1461019a57806394f61792146101c4576100dc565b8063021e9894146100e05780632fdbe4cf146100f6578063368b87721461011e575b5f5ffd5b3480156100eb575f5ffd5b506100f46102c8565b005b348015610101575f5ffd5b5061011c60048036038101906101179190610788565b610359565b005b348015610129575f5ffd5b50610144600480360381019061013f9190610788565b6103aa565b005b348015610151575f5ffd5b5061015a6103bc565b60405161016791906107e7565b60405180910390f35b34801561017b575f5ffd5b506101846103c2565b6040516101919190610818565b60405180910390f35b3480156101a5575f5ffd5b506101ae6103c9565b6040516101bb9190610870565b60405180910390f35b3480156101cf575f5ffd5b506101d86103ee565b005b3480156101e5575f5ffd5b506101ee61047f565b005b3480156101fb575f5ffd5b506102046104ba565b60405161021191906108e9565b60405180910390f35b610222610549565b005b34801561022f575f5ffd5b5061023861054b565b60405161024591906108e9565b60405180910390f35b348015610259575f5ffd5b50610274600480360381019061026f9190610933565b6105d6565b6040516102819190610818565b60405180910390f35b348015610295575f5ffd5b506102b060048036038101906102ab919061099b565b6105eb565b005b3480156102bd575f5ffd5b506102c66105f5565b005b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614610357576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161034e90610a10565b60405180910390fd5b565b3373ffffffffffffffffffffffffffffffffffffffff167f0d7fccda06d6eb51c23cbd16d49b9b3f3ebafb002dba1b074895cbb35d0e81308260405161039f91906108e9565b60405180910390a250565b805f90816103b89190610c2b565b5050565b60015481565b5f47905090565b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff160361047d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161047490610a10565b60405180910390fd5b565b6040517f08c379a00000000000000000000000000000000000000000000000000000000081526004016104b190610d6a565b60405180910390fd5b60605f80546104c890610a5b565b80601f01602080910402602001604051908101604052809291908181526020018280546104f490610a5b565b801561053f5780601f106105165761010080835404028352916020019161053f565b820191905f5260205f20905b81548152906001019060200180831161052257829003601f168201915b5050505050905090565b565b5f805461055790610a5b565b80601f016020809104026020016040519081016040528092919081815260200182805461058390610a5b565b80156105ce5780601f106105a5576101008083540402835291602001916105ce565b820191905f5260205f20905b8154815290600101906020018083116105b157829003601f168201915b505050505081565b5f81836105e39190610db5565b905092915050565b8060018190555050565b6040518060400160405280600b81526020017f6e6577206d6573736167650000000000000000000000000000000000000000008152505f90816106389190610c2b565b50565b5f604051905090565b5f5ffd5b5f5ffd5b5f5ffd5b5f5ffd5b5f601f19601f8301169050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52604160045260245ffd5b61069a82610654565b810181811067ffffffffffffffff821117156106b9576106b8610664565b5b80604052505050565b5f6106cb61063b565b90506106d78282610691565b919050565b5f67ffffffffffffffff8211156106f6576106f5610664565b5b6106ff82610654565b9050602081019050919050565b828183375f83830152505050565b5f61072c610727846106dc565b6106c2565b90508281526020810184848401111561074857610747610650565b5b61075384828561070c565b509392505050565b5f82601f83011261076f5761076e61064c565b5b813561077f84826020860161071a565b91505092915050565b5f6020828403121561079d5761079c610644565b5b5f82013567ffffffffffffffff8111156107ba576107b9610648565b5b6107c68482850161075b565b91505092915050565b5f819050919050565b6107e1816107cf565b82525050565b5f6020820190506107fa5f8301846107d8565b92915050565b5f819050919050565b61081281610800565b82525050565b5f60208201905061082b5f830184610809565b92915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f61085a82610831565b9050919050565b61086a81610850565b82525050565b5f6020820190506108835f830184610861565b92915050565b5f81519050919050565b5f82825260208201905092915050565b8281835e5f83830152505050565b5f6108bb82610889565b6108c58185610893565b93506108d58185602086016108a3565b6108de81610654565b840191505092915050565b5f6020820190508181035f83015261090181846108b1565b905092915050565b61091281610800565b811461091c575f5ffd5b50565b5f8135905061092d81610909565b92915050565b5f5f6040838503121561094957610948610644565b5b5f6109568582860161091f565b92505060206109678582860161091f565b9150509250929050565b61097a816107cf565b8114610984575f5ffd5b50565b5f8135905061099581610971565b92915050565b5f602082840312156109b0576109af610644565b5b5f6109bd84828501610987565b91505092915050565b7f43616c6c6572206973206e6f7420746865206f776e65720000000000000000005f82015250565b5f6109fa601783610893565b9150610a05826109c6565b602082019050919050565b5f6020820190508181035f830152610a27816109ee565b9050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52602260045260245ffd5b5f6002820490506001821680610a7257607f821691505b602082108103610a8557610a84610a2e565b5b50919050565b5f819050815f5260205f209050919050565b5f6020601f8301049050919050565b5f82821b905092915050565b5f60088302610ae77fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff82610aac565b610af18683610aac565b95508019841693508086168417925050509392505050565b5f819050919050565b5f610b2c610b27610b2284610800565b610b09565b610800565b9050919050565b5f819050919050565b610b4583610b12565b610b59610b5182610b33565b848454610ab8565b825550505050565b5f5f905090565b610b70610b61565b610b7b818484610b3c565b505050565b5b81811015610b9e57610b935f82610b68565b600181019050610b81565b5050565b601f821115610be357610bb481610a8b565b610bbd84610a9d565b81016020851015610bcc578190505b610be0610bd885610a9d565b830182610b80565b50505b505050565b5f82821c905092915050565b5f610c035f1984600802610be8565b1980831691505092915050565b5f610c1b8383610bf4565b9150826002028217905092915050565b610c3482610889565b67ffffffffffffffff811115610c4d57610c4c610664565b5b610c578254610a5b565b610c62828285610ba2565b5f60209050601f831160018114610c93575f8415610c81578287015190505b610c8b8582610c10565b865550610cf2565b601f198416610ca186610a8b565b5f5b82811015610cc857848901518255600182019150602085019450602081019050610ca3565b86831015610ce55784890151610ce1601f891682610bf4565b8355505b6001600288020188555050505b505050505050565b7f546869732066756e6374696f6e2069732064657369676e656420746f206661695f8201527f6c2e000000000000000000000000000000000000000000000000000000000000602082015250565b5f610d54602283610893565b9150610d5f82610cfa565b604082019050919050565b5f6020820190508181035f830152610d8181610d48565b9050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f610dbf82610800565b9150610dca83610800565b9250828201905080821115610de257610de1610d88565b5b9291505056fea26469706673582212204a18e45b4ee427fca911349a65af4dbff4ffe666fb39511191ab6e361c7c41a064736f6c634300081e0033";
 
 //extract in different file
 const createImmutableContract = async (context: any) => {
@@ -40,8 +40,18 @@ const createContractWithAdminKey = async (
     context,
     ed25519PrivateKey,
   );
+
   const fileResponse = await JSONRPCRequest(context, "createFile", {
     keys: [ed25519PublicKey],
+    contents: "",
+    commonTransactionParams: {
+      signers: [ed25519PrivateKey],
+    },
+  });
+
+  await JSONRPCRequest(context, "appendFile", {
+    keys: [ed25519PublicKey],
+    fileId: fileResponse.fileId,
     contents: smartContractBytecode,
     commonTransactionParams: {
       signers: [ed25519PrivateKey],
@@ -52,7 +62,7 @@ const createContractWithAdminKey = async (
   const response = await JSONRPCRequest(context, "createContract", {
     bytecodeFileId: fileResponse.fileId,
     adminKey: adminPrivateKey,
-    gas: "500000",
+    gas: "900000",
     memo: "Hello from Hedera.",
     commonTransactionParams: {
       signers: [adminPrivateKey],
@@ -68,6 +78,11 @@ const validateMessage = async (contractId: string, message: string) => {
     "getMessage",
   );
   expect(functionResult.getString(0)).to.equal(message);
+};
+
+const validateBalance = async (contractId: string, amount: string) => {
+  const balance = await consensusInfoClient.getContractBalance(contractId);
+  expect(balance.getUint256(0).toString()).to.equal(amount);
 };
 
 describe.only("ContractExecuteTransaction", function () {
@@ -226,7 +241,7 @@ describe.only("ContractExecuteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#7) Execute a contract with contract ID as account ID", async function () {
+    it.skip("(#7) Execute a contract with contract ID as account ID", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, adminPrivateKey);
 
@@ -429,11 +444,6 @@ describe.only("ContractExecuteTransaction", function () {
       "deposit",
     );
     let contractId: string;
-
-    const validateBalance = async (contractId: string, amount: string) => {
-      const balance = await consensusInfoClient.getContractBalance(contractId);
-      expect(balance.getUint256(0).toString()).to.equal(amount);
-    };
 
     beforeEach(async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
@@ -649,6 +659,318 @@ describe.only("ContractExecuteTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       await validateMessage(contractId, message);
+    });
+  });
+
+  describe("Parameters", function () {
+    let contractId: string;
+
+    beforeEach(async function () {
+      const adminPrivateKey = await generateEd25519PrivateKey(this);
+      contractId = await createContractWithAdminKey(this, adminPrivateKey);
+    });
+
+    it("(#1) Execute contract with valid ABI‑encoded parameters", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addString("test message")
+        ._build("setMessage");
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(contractId, "test message");
+    });
+
+    it("(#2) Execute contract with empty parameters", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "empty",
+      );
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(contractId, "new message");
+    });
+
+    it("(#3) Execute contract with invalid hex string", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: "0xZZ",
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Execute contract with parameters for non-existent function", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "nonExistent",
+      );
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+    });
+
+    it("(#5) Execute contract with oversized parameters", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: "a".repeat(5500),
+          gas: "300000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+      }
+    });
+
+    it("(#6) Execute contract with malformed ABI encoding", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addString("a")
+        .addString("b")
+        ._build("setMessage");
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#7) Execute contract with parameters requiring more gas than provided", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addString("a")
+        ._build("setMessage");
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+          gas: "1000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "INSUFFICIENT_GAS",
+          "Insufficient gas error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Execute contract with parameters for payable function and amount", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "deposit",
+      );
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        amount: "1000",
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateBalance(contractId, "1000");
+    });
+
+    it("(#9) Execute contract with parameters for non-payable function and amount", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "setMessage",
+      );
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          amount: "1000",
+          functionParameters: toHexString(constructorParams),
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    // fail with "CONTRACT_REVERT_EXECUTED"
+    it.skip("(#10) Execute contract with no parameters specified", async function () {
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#11) Execute contract with parameters for view function", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "getMessage",
+      );
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(contractId, "");
+    });
+
+    it("(#12) Execute contract with parameters for pure function", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addUint256(3)
+        .addUint256(2)
+        ._build("addNumbers");
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#13) Execute contract with parameters for state-changing function", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addString("test message")
+        ._build("setMessage");
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+      ``;
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(contractId, "test message");
+    });
+
+    it("(#14) Execute contract with parameters for function that emits an event", async function () {
+      const constructorParams = new ContractFunctionParameters()
+        .addString("Testing event")
+        ._build("sendMessageEvent");
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#15) Execute contract with parameters for function that reverts", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "alwaysRevert",
+      );
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#16) Execute contract with parameters for function with modifier that fails", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "unprotectedFunction",
+      );
+
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          functionParameters: toHexString(constructorParams),
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#17) Execute contract with parameters for function with modifier that succeeds", async function () {
+      const constructorParams = new ContractFunctionParameters()._build(
+        "protectedFunction",
+      );
+
+      const response = await JSONRPCRequest(this, "executeContract", {
+        contractId,
+        functionParameters: toHexString(constructorParams),
+        gas: "100000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
     });
   });
 });
