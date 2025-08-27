@@ -39,7 +39,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 |-------------------------|---------------------------------------------------------|-------------------|----------------------------------|
 | tokenId                 | string                                                  | optional          | The ID of the token to freeze.   |
 | accountId               | string                                                  | optional          | The ID of the account to freeze. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                  |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                  |
 
 ### Output Parameters
 
