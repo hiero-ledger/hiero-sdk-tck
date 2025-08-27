@@ -98,22 +98,17 @@ const sanitizeSchema: Schema = {
       "p",
     ]),
   ),
-  attributes: {
+attributes: {
     ...(defaultSchema.attributes ?? {}),
-    a: [
-      ...((defaultSchema.attributes as any)?.a ?? []),
-      "href",
-      "rel",
-      "target",
-    ],
+    a: [...(defaultSchema.attributes?.a ?? []), "href", "rel", "target"],
     td: [
-      ...((defaultSchema.attributes as any)?.td ?? []),
+      ...(defaultSchema.attributes?.td ?? []),
       "colspan",
       "rowspan",
       "align",
     ],
     th: [
-      ...((defaultSchema.attributes as any)?.th ?? []),
+      ...(defaultSchema.attributes?.th ?? []),
       "colspan",
       "rowspan",
       "align",
@@ -121,7 +116,7 @@ const sanitizeSchema: Schema = {
   },
 };
 
-// 🔄 Render Markdown → sanitized HTML
+// 🔄 Render Markdown
 async function renderSafeHtml(markdown: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
@@ -140,8 +135,8 @@ async function parseMarkdownWithTables(
 ): Promise<{ implementedCount: number; notImplementedCount: number }> {
   const safeHtml: string = await renderSafeHtml(content);
 
-  const domObject = new JSDOM(safeHtml);
-  const document: Document = domObject.window.document;
+  const domHtml = new JSDOM(safeHtml);
+  const document: Document = domHtml.window.document;
 
   let implementedCount = 0;
   let notImplementedCount = 0;
@@ -180,7 +175,6 @@ async function parseMarkdownWithTables(
         } else if (["n", "no", "false", "0"].includes(val)) {
           notImplementedCount++;
         } else {
-          // treat unknowns as not implemented
           notImplementedCount++;
         }
       });
