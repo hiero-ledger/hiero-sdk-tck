@@ -7,7 +7,7 @@ permissions:
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       custom-job-name:
         description: "The custom job name to use for the job:"
