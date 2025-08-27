@@ -1,12 +1,31 @@
 # SPDX-License-Identifier: Apache-2.0
 name: "System Compatibility"
+
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches: [main]
-  workflow_call:
+  workflow_dispatch:
     inputs:
       custom-job-name:
         description: "The custom job name to use for the job:"
+        required: false
+        type: string
+        default: "System Compatibility"
+      solo-version:
+        description: "The version of the Solo to use"
+        required: false
+        type: string
+        default: "0.37.1"
+      consensus-node-version:
+        description: "The version of the consensus node to use"
+        required: false
+        type: string
+        default: "v0.65.0-rc.4" # TODO: Could get it from the consensus node repo
+      js-sdk-version:
+        description: "The version of the JS SDK to use (defaults to latest tag if not specified)"
         required: false
         type: string
 
@@ -14,13 +33,10 @@ defaults:
   run:
     shell: bash
 
-env:
-  CONSENSUS_NODE_VERSION: "v0.65.0-rc.4"
-
 jobs:
   # Execute TCK Regression Tests using specified version of hiero-consensus-node
   tck-regression:
-    name: ${{ inputs.custom-job-name || 'Standard' }}
+    name: ${{ inputs.custom-job-name }}
     runs-on: hiero-client-sdk-linux-large
     steps:
       - name: Harden Runner
@@ -41,13 +57,19 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Checkout Latest Tag (JS-SDK)
+      - name: Checkout JS-SDK Version
         run: |
           cd sdk-server
-          git fetch --tags
-          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "Latest JS-SDK tag: $LATEST_TAG"
-          git checkout $LATEST_TAG
+          if [ -n "${{ inputs.js-sdk-version }}" ]; then
+            echo "Using specified JS-SDK version: ${{ inputs.js-sdk-version }}"
+            git checkout ${{ inputs.js-sdk-version }}
+          else
+            echo "Using latest JS-SDK tag"
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+            echo "Latest JS-SDK tag: $LATEST_TAG"
+            git checkout $LATEST_TAG
+          fi
 
       # Set up the node environment
       # Version 20.18.0 is the recommended version for solo.
@@ -90,10 +112,11 @@ jobs:
       # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@65ee5f72127b36e2ba80c1b50f8ac2eea32b621c # main
+        uses: hiero-ledger/hiero-solo-action@97b1a5dfff3a18ae92ffb4c27f5ada95906f66bb # v0.12.0
         with:
           installMirrorNode: true
-          hieroVersion: ${{ env.CONSENSUS_NODE_VERSION }}
+          soloVersion: ${{ inputs.solo-version }}
+          hieroVersion: ${{ inputs.consensus-node-version }}
           mirrorNodeVersion: v0.134.0
 
        # Start the TCK client
