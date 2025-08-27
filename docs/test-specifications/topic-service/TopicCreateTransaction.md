@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/consensus_create_topic.proto
+https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/create-a-topic
 
 **TopicCreate protobufs:**
 
@@ -44,8 +44,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | autoRenewAccount        | string                                                  | optional          | Optional account to be used at the topic's expirationTime to extend the life of the topic. Must sign transaction if specified.                                                                       |
 | feeScheduleKey          | string                                                  | optional          | A key that controls updates and deletions of topic fees. DER-encoded hex string representation for private or public keys. Keylists and threshold keys are the hex of the serialized protobuf bytes. |
 | feeExemptKeys           | string[]                                                | optional          | A list of keys that, if used to sign a message submission, allow the sender to bypass fees. DER-encoded hex string representation for private or public keys.                                        |
-| customFees              | list<[json object](../common/customFee.md)>             | optional          | A fee structure applied to message submissions for revenue generation.                                                                                                                               |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                                                                                                      |
+| customFees              | list<[json object](../common/CustomFee.md)>             | optional          | A fee structure applied to message submissions for revenue generation.                                                                                                                               |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                                                                                                      |
 
 ### Output Parameters
 
@@ -69,7 +69,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 5       | Creates a topic with memo containing null byte          | memo="Test\0memo"                    | The topic creation fails with `INVALID_ZERO_BYTE_IN_STRING`.              | Y                 |
 | 6       | Creates a topic with memo containing only whitespace    | memo="   "                           | The topic creation succeeds and the topic has the whitespace memo.        | Y                 |
 | 7       | Creates a topic with memo containing special characters | memo="!@#$%^&*()_+-=[]{};':\",./<>?" | The topic creation succeeds and the topic has the special character memo. | Y                 |
-| 8       | Creates a topic with memo containing unicode characters | memo="测试主题备注 🚀"               | The topic creation succeeds and the topic has the unicode memo.           | Y                 |
+| 8       | Creates a topic with memo containing unicode characters | memo="测试主题备注 🚀"                     | The topic creation succeeds and the topic has the unicode memo.           | Y                 |
 
 ### **AdminKey:**
 

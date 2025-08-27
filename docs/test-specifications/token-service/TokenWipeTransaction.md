@@ -35,13 +35,13 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 ### Input Parameters
 
-| Parameter Name          | Type                                             | Required/Optional | Description/Notes                                            |
-|-------------------------|--------------------------------------------------|-------------------|--------------------------------------------------------------|
-| tokenId                 | string                                           | optional          | The ID of the token to wipe.                                 |
-| accountId               | string                                           | optional          | The ID of the account from which to wipe the token.          |
-| amount                  | string                                           | optional          | The amount of fungible tokens to wipe from the account.      |
-| serialNumbers           | list<string>                                     | optional          | The list of serial numbers of NFTs to wipe from the account. |
-| commonTransactionParams | [json object](../commonTransactionParameters.md) | optional          |                                                              |
+| Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                            |
+|-------------------------|---------------------------------------------------------|-------------------|--------------------------------------------------------------|
+| tokenId                 | string                                                  | optional          | The ID of the token to wipe.                                 |
+| accountId               | string                                                  | optional          | The ID of the account from which to wipe the token.          |
+| amount                  | string                                                  | optional          | The amount of fungible tokens to wipe from the account.      |
+| serialNumbers           | list<string>                                            | optional          | The list of serial numbers of NFTs to wipe from the account. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                              |
 
 ### Output Parameters
 

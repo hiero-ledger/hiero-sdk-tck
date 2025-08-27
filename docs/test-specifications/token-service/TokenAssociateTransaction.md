@@ -39,7 +39,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 |-------------------------|---------------------------------------------------------|-------------------|--------------------------------------------------------|
 | accountId               | string                                                  | optional          | The ID of the account with which to associate a token. |
 | tokenIds                | list<string>                                            | optional          | The IDs of the tokens to associate.                    |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                        |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                        |
 
 ### Output Parameters
 
