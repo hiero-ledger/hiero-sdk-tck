@@ -18,7 +18,7 @@ on:
         description: "The version of the Solo to use"
         required: false
         type: string
-        default: "0.37.1"
+        default: "0.39.0"
       consensus-node-version:
         description: "The version of the consensus node to use"
         required: false
