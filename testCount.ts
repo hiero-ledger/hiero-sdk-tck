@@ -1,8 +1,14 @@
+/* eslint-disable no-console */
 import axios from "axios";
 import "dotenv/config";
-import MarkdownIt from "markdown-it";
 import { JSDOM } from "jsdom";
-import createDOMPurify from "dompurify";
+import remarkGfm from "remark-gfm";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import type { Schema } from "hast-util-sanitize";
 
 const owner = "hiero-ledger";
 const repo = "hiero-sdk-tck";
@@ -72,63 +78,98 @@ async function fetchAllMarkdownFiles(
   return files;
 }
 
-// 🧠 Parse markdown file
-function parseMarkdownWithTables(content: string): {
-  implementedCount: number;
-  notImplementedCount: number;
-} {
-  type MDOptions = ConstructorParameters<typeof MarkdownIt>[0];
-  const mdOptions: MDOptions = { html: false, linkify: true, breaks: true };
-  const md: InstanceType<typeof MarkdownIt> = new MarkdownIt(mdOptions);
-  const renderedHtml = md.render(content);
-  const { window } = new JSDOM("");
-  const domWindow = window as unknown as Window & typeof globalThis;
-  const DOMPurify = createDOMPurify(domWindow);
-  const safeHtml: string = DOMPurify.sanitize(renderedHtml, {
-    ALLOWED_TAGS: [
+// 🧼 Sanitizer schema
+const sanitizeSchema: Schema = {
+  ...defaultSchema,
+  tagNames: Array.from(
+    new Set([
+      ...(defaultSchema.tagNames ?? []),
       "table",
       "thead",
       "tbody",
       "tr",
       "th",
       "td",
-      "a",
-      "p",
-      "em",
-      "strong",
       "code",
       "pre",
+      "em",
+      "strong",
+      "a",
+      "p",
+    ]),
+  ),
+  attributes: {
+    ...(defaultSchema.attributes ?? {}),
+    a: [
+      ...((defaultSchema.attributes as any)?.a ?? []),
+      "href",
+      "rel",
+      "target",
     ],
-    ALLOWED_ATTR: ["href", "colspan", "rowspan", "align"],
-  });
+    td: [
+      ...((defaultSchema.attributes as any)?.td ?? []),
+      "colspan",
+      "rowspan",
+      "align",
+    ],
+    th: [
+      ...((defaultSchema.attributes as any)?.th ?? []),
+      "colspan",
+      "rowspan",
+      "align",
+    ],
+  },
+};
+
+// 🔄 Render Markdown → sanitized HTML
+async function renderSafeHtml(markdown: string): Promise<string> {
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeStringify)
+    .process(markdown);
+
+  return String(file);
+}
+
+// 🧠 Parse markdown file
+async function parseMarkdownWithTables(
+  content: string,
+): Promise<{ implementedCount: number; notImplementedCount: number }> {
+  const safeHtml: string = await renderSafeHtml(content);
 
   const domObject = new JSDOM(safeHtml);
-  const document = domObject.window.document;
+  const document: Document = domObject.window.document;
 
   let implementedCount = 0;
   let notImplementedCount = 0;
 
-  document.querySelectorAll("table").forEach((table) => {
+  document.querySelectorAll<HTMLTableElement>("table").forEach((table) => {
     if (table.rows.length === 0) {
       return;
     }
 
-    const headerCells = Array.from(table.rows[0].cells).map((c) =>
-      (c.textContent ?? "").trim().toLowerCase()
+    const headerCells: string[] = Array.from(table.rows[0].cells).map(
+      (c: HTMLTableCellElement) => (c.textContent ?? "").trim().toLowerCase(),
     );
-    const implIdx = headerCells.findIndex((h) => h.includes("implemented"));
+
+    const implIdx: number = headerCells.findIndex((h) =>
+      h.includes("implemented"),
+    );
     if (implIdx < 0) {
       return;
     }
 
     Array.from(table.rows)
       .slice(1)
-      .forEach((row) => {
-        const cell = row.cells.item(implIdx);
+      .forEach((row: HTMLTableRowElement) => {
+        const cell: HTMLTableCellElement | null = row.cells.item(implIdx);
         if (!cell) {
           return;
         }
-        const val = (cell.textContent ?? "").trim().toLowerCase();
+        const val: string = (cell.textContent ?? "").trim().toLowerCase();
 
         if (
           ["y", "yes", "✓", "✅", "true", "1", "implemented", "done"].includes(
@@ -163,9 +204,7 @@ async function main(): Promise<void> {
         continue;
       }
       const res = await axios.get<string>(file.download_url, { headers });
-      const { implementedCount, notImplementedCount } = parseMarkdownWithTables(
-        res.data,
-      );
+      const { implementedCount, notImplementedCount } = await parseMarkdownWithTables(res.data);
       const total = implementedCount + notImplementedCount;
 
       if (total > 0) {
