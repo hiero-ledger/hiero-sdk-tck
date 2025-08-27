@@ -105,7 +105,9 @@ jobs:
           NODE_IP: "127.0.0.1:50211"
           MIRROR_NODE_REST_URL: "http://127.0.0.1:5551"
           MIRROR_NODE_REST_JAVA_URL: "http://127.0.0.1:8084"
-        run: npm run test
+        run: |
+          cp .env.custom_node .env
+          npm run test
 
       # Stop the TCK server
       - name: Stop tck-server
