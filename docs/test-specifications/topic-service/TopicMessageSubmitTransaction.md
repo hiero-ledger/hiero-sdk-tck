@@ -1,7 +1,7 @@
 ---
 title: Topic Message Submit Transaction
-parent: Topic Service
-nav_order: 4
+parent: Consensus Service
+nav_order: 3
 ---
 # TopicMessageSubmitTransaction - Test specification
 
@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/consensus_submit_message.proto
+https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
 
 **TopicMessageSubmit protobufs:**
 
@@ -41,8 +41,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | message                 | string                                                  | optional          | The message content to submit. UTF-8 encoding. Will be automatically chunked if the message exceeds the chunk size. |
 | maxChunks               | int64                                                   | optional          | The maximum number of chunks the message can be split into. Default: 20. Used when message size exceeds chunk size. |
 | chunkSize               | int64                                                   | optional          | The size of each chunk in bytes. Default: SDK-specific chunk size. Used for splitting large messages.               |
-| customFeeLimits         | list<[json object](../common/customFeeLimit.md)>        | optional          | The maximum custom fees the user is willing to pay for message submission.                                          |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                     |
+| customFeeLimits         | list<[json object](../common/CustomFeeLimit.md)>        | optional          | The maximum custom fees the user is willing to pay for message submission.                                          |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                     |
 
 ### Output Parameters
 
@@ -79,7 +79,7 @@ The tests contained in this specification will assume that valid topics were alr
 | 1       | Submits a valid text message to a public topic                   | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="Hello, world!"                 | The message submission succeeds and the message is published to the topic.            | Y                 |
 | 2       | Submits an empty message to a public topic                       | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=""                              | The message submission fails with an SDK internal error.                              | Y                 |
 | 3       | Submits a message with special characters to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="!@#$%^&*()_+-=[]{};':\",./<>?" | The message submission succeeds and the message with special characters is published. | Y                 |
-| 4       | Submits a message with unicode characters to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="测试消息 🚀"                   | The message submission succeeds and the unicode message is published to the topic.    | Y                 |
+| 4       | Submits a message with unicode characters to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>", message="测试消息 🚀"                       | The message submission succeeds and the unicode message is published to the topic.    | Y                 |
 | 5       | Submits a message at maximum single chunk size to a public topic | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<MAX_CHUNK_SIZE_MESSAGE>        | The message submission succeeds and the message is published as a single chunk.       | Y                 |
 | 6       | Submits a message that requires chunking to a public topic       | topicId="<CREATED_PUBLIC_TOPIC_ID>", message=<LARGE_MESSAGE>                 | The message submission succeeds and the message is published as multiple chunks.      | Y                 |
 | 7       | Submits a message without message content to a public topic      | topicId="<CREATED_PUBLIC_TOPIC_ID>"                                          | The message submission fails with an `INVALID_TOPIC_MESSAGE`                          | Y                 |

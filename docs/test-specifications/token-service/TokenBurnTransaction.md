@@ -40,7 +40,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | tokenId                 | string                                                  | optional          | The ID of the token to burn.                |
 | amount                  | string                                                  | optional          | The amount of fungible tokens to burn.      |
 | serialNumbers           | list<string>                                            | optional          | The list of serial numbers of NFTs to burn. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                             |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                             |
 
 ### Output Parameters
 
