@@ -160,13 +160,69 @@ describe.only("ScheduleCreateTransaction", function () {
   };
 
   describe("Scheduled Transaction", function () {
-    it("(#1) Creates a scheduled transaction", async function () {
+    it("(#1) Creates a scheduled crypto transfer transaction", async function () {
+      // Create sender and receiver accounts
+      const senderPrivateKey = await generateEd25519PrivateKey(this);
+      const receiverPrivateKey = await generateEd25519PrivateKey(this);
+
+      const senderAccountId = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: senderPrivateKey,
+          initialBalance: "100",
+        })
+      ).accountId;
+
+      const receiverAccountId = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: receiverPrivateKey,
+        })
+      ).accountId;
+
       const scheduledTransaction = {
-        maxTransactionFee: "1000000000",
-        memo: "This is a scheduled transaction!",
-        method: "createAccount",
+        method: "transferCrypto",
         params: {
-          key: await generateEd25519PrivateKey(this),
+          transfers: [
+            {
+              hbar: {
+                accountId: senderAccountId,
+                amount: "-10",
+              },
+            },
+            {
+              hbar: {
+                accountId: receiverAccountId,
+                amount: "10",
+              },
+            },
+          ],
+        },
+      };
+
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreation(response.scheduleId);
+    });
+
+    it("(#2) Creates a scheduled consensus submit message transaction", async function () {
+      // Create a topic first
+      const topicResponse = await JSONRPCRequest(this, "createTopic", {
+        memo: "Test topic for scheduled message",
+      });
+      const topicId = topicResponse.topicId;
+
+      const scheduledTransaction = {
+        method: "submitMessage",
+        params: {
+          topicId,
+          message: "This is a scheduled message",
         },
       };
 
@@ -176,15 +232,136 @@ describe.only("ScheduleCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       expect(response.scheduleId).to.not.be.null;
-      expect(response.scheduleId).to.not.be.undefined;
-      expect(response.scheduleId).to.not.be.empty;
 
       await verifyScheduleCreation(response.scheduleId);
     });
 
-    it("(#2) Creates a scheduled transaction with no scheduled transaction", async function () {
+    it("(#3) Creates a scheduled token burn transaction", async function () {
+      // Create a fungible token first
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const treasuryAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
+        name: "Test Token",
+        symbol: "TT",
+        decimals: 2,
+        initialSupply: "1000",
+        treasuryAccountId,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [supplyKey],
+        },
+      });
+      const tokenId = tokenResponse.tokenId;
+
+      const scheduledTransaction = {
+        method: "burnToken",
+        params: {
+          tokenId,
+          amount: "10",
+        },
+      };
+
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        commonTransactionParams: {
+          signers: [supplyKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreation(response.scheduleId);
+    });
+
+    it("(#4) Creates a scheduled token mint transaction", async function () {
+      // Create a fungible token first
+      const supplyKey = await generateEd25519PrivateKey(this);
+      const treasuryAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+
+      const tokenResponse = await JSONRPCRequest(this, "createToken", {
+        name: "Test Token",
+        symbol: "TT",
+        decimals: 2,
+        initialSupply: "1000",
+        treasuryAccountId,
+        supplyKey,
+        commonTransactionParams: {
+          signers: [supplyKey],
+        },
+      });
+      const tokenId = tokenResponse.tokenId;
+
+      const scheduledTransaction = {
+        method: "mintToken",
+        params: {
+          tokenId,
+          amount: "10",
+        },
+      };
+
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        commonTransactionParams: {
+          signers: [supplyKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreation(response.scheduleId);
+    });
+
+    it("(#5) Creates a scheduled crypto approve allowance transaction", async function () {
+      // Create owner and spender accounts
+      const ownerPrivateKey = await generateEd25519PrivateKey(this);
+      const spenderPrivateKey = await generateEd25519PrivateKey(this);
+
+      const ownerAccountId = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: ownerPrivateKey,
+          initialBalance: "100",
+        })
+      ).accountId;
+
+      const spenderAccountId = (
+        await JSONRPCRequest(this, "createAccount", {
+          key: spenderPrivateKey,
+        })
+      ).accountId;
+
+      const scheduledTransaction = {
+        method: "approveAllowance",
+        params: {
+          allowances: [
+            {
+              ownerAccountId: ownerAccountId,
+              spenderAccountId: spenderAccountId,
+              hbar: {
+                amount: "10",
+              },
+            },
+          ],
+        },
+      };
+
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        commonTransactionParams: {
+          signers: [ownerPrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreation(response.scheduleId);
+    });
+
+    it("(#6) Creates a scheduled transaction with no scheduled transaction", async function () {
       try {
-        // Attempt to create a schedule without providing a scheduled transaction
         await JSONRPCRequest(this, "createSchedule", {});
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_TRANSACTION");
@@ -194,14 +371,11 @@ describe.only("ScheduleCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: re-enable this test when we have a sign schedule transaction method
-    it.skip("(#3) Creates a scheduled transaction that's not a whitelisted transaction", async function () {
+    it("(#7) Creates a scheduled transaction that's not a whitelisted transaction", async function () {
       const scheduledTransaction = {
-        maxTransactionFee: "1000000000",
-        memo: "This should fail!",
-        method: "signSchedule",
+        method: "createTopic",
         params: {
-          someParam: "someValue",
+          memo: "Test topic memo",
         },
       };
 
@@ -439,7 +613,29 @@ describe.only("ScheduleCreateTransaction", function () {
       );
     });
 
-    it("(#2) Creates a schedule with an empty payer account ID", async function () {
+    it("(#2) Creates a schedule with a payer account ID that doesn't exist", async function () {
+      const scheduledTransaction = {
+        method: "createAccount",
+        params: {
+          key: await generateEd25519PrivateKey(this),
+        },
+      };
+
+      const payerAccountId = "123.456.789";
+      try {
+        await JSONRPCRequest(this, "createSchedule", {
+          scheduledTransaction,
+          payerAccountId,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "ACCOUNT_ID_DOES_NOT_EXIST");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#3) Creates a schedule with an empty payer account ID", async function () {
       const scheduledTransaction = {
         method: "createAccount",
         params: {
@@ -462,6 +658,71 @@ describe.only("ScheduleCreateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
+    });
+
+    it("(#4) Creates a schedule with a payer account ID that was deleted", async function () {
+      // Create an account to use as the payer
+      const payerPrivateKey = await generateEd25519PrivateKey(this);
+      const payerAccountId = await createAccount(this, payerPrivateKey);
+
+      // Delete the account
+      await JSONRPCRequest(this, "deleteAccount", {
+        deleteAccountId: payerAccountId,
+        transferAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        commonTransactionParams: {
+          signers: [payerPrivateKey],
+        },
+      });
+
+      const scheduledTransaction = {
+        method: "createAccount",
+        params: {
+          key: await generateEd25519PrivateKey(this),
+        },
+      };
+
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        payerAccountId,
+        commonTransactionParams: {
+          signers: [payerPrivateKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreationWithPayerAccountId(
+        response.scheduleId,
+        payerAccountId,
+      );
+    });
+
+    it("(#5) Creates a schedule with a payer account ID that doesn't sign", async function () {
+      // Create an account to use as the payer
+      const payerPrivateKey = await generateEd25519PrivateKey(this);
+      const payerAccountId = await createAccount(this, payerPrivateKey);
+
+      const scheduledTransaction = {
+        method: "createAccount",
+        params: {
+          key: await generateEd25519PrivateKey(this),
+        },
+      };
+
+      // Don't provide the payer's private key in signers
+      const response = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction,
+        payerAccountId,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.scheduleId).to.not.be.null;
+
+      await verifyScheduleCreationWithPayerAccountId(
+        response.scheduleId,
+        payerAccountId,
+      );
     });
   });
 
@@ -930,7 +1191,7 @@ describe.only("ScheduleCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Creates a schedule with expiration time of 8,000,001 seconds from the current time", async function () {
+    it("(#9) Creates a schedule with expiration time of 5,356,700 seconds from the current time", async function () {
       const scheduledTransaction = {
         method: "createAccount",
         params: {
@@ -939,7 +1200,7 @@ describe.only("ScheduleCreateTransaction", function () {
       };
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-      const expirationTime = (currentTimeInSeconds + 5356700).toString();
+      const expirationTime = (currentTimeInSeconds + 5356800).toString();
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -955,7 +1216,7 @@ describe.only("ScheduleCreateTransaction", function () {
       );
     });
 
-    it("(#10) Creates a schedule with expiration time of 9,000,000 seconds from the current time", async function () {
+    it("(#10) Creates a schedule with expiration time of 5,356,901 seconds from the current time", async function () {
       const scheduledTransaction = {
         method: "createAccount",
         params: {
@@ -963,9 +1224,8 @@ describe.only("ScheduleCreateTransaction", function () {
         },
       };
 
-      // Set expiration time to 9,000,000 seconds from current time (about 104 days)
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-      const expirationTime = (currentTimeInSeconds + 9000000).toString();
+      const expirationTime = (currentTimeInSeconds + 5356801).toString();
 
       try {
         await JSONRPCRequest(this, "createSchedule", {
