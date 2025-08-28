@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the functions within
 
 **Transaction properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts-and-hbar/create-an-account
+https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts-and-hbar/approve-an-allowance
 
 **CryptoApproveAllowance protobufs:**
 
@@ -37,8 +37,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes          |
 |-------------------------|---------------------------------------------------------|-------------------|----------------------------|
-| allowances              | list<[json object](allowances.md)>                      | required          | The allowance information. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                            |
+| allowances              | list<[json object](../common/Allowances.md)>            | required          | The allowance information. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                            |
 
 ### Output Parameters
 

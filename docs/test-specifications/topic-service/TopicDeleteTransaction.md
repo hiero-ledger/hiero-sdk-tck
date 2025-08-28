@@ -1,7 +1,7 @@
 ---
 title: Topic Delete Transaction
-parent: Topic Service
-nav_order: 3
+parent: Consensus Service
+nav_order: 2
 ---
 
 # TopicDeleteTransaction - Test specification
@@ -39,14 +39,14 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 ### Input Parameters
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes              |
-| ----------------------- | ------------------------------------------------------- | ----------------- | ------------------------------ |
+|-------------------------|---------------------------------------------------------|-------------------|--------------------------------|
 | topicId                 | string                                                  | optional          | The ID of the topic to delete. |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                |
 
 ### Output Parameters
 
 | Parameter Name | Type   | Description/Notes                                                                   |
-| -------------- | ------ | ----------------------------------------------------------------------------------- |
+|----------------|--------|-------------------------------------------------------------------------------------|
 | status         | string | The status of the submitted `TopicDeleteTransaction` (from a `TransactionReceipt`). |
 
 ## Property Tests
@@ -56,7 +56,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 - The ID of the topic to delete.
 
 | Test no | Name                                                       | Input                                                                                               | Expected response                                                                  | Implemented (Y/N) |
-| ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ----------------- |
+|---------|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|-------------------|
 | 1       | Deletes a mutable topic                                    | topicId=<VALID_MUTABLE_TOPIC_ID>, commonTransactionParams.signers=[<VALID_MUTABLE_TOPIC_ADMIN_KEY>] | The topic deletion succeeds.                                                       | Y                 |
 | 2       | Deletes a topic that doesn't exist                         | topicId="123.456.789"                                                                               | The topic deletion fails with an INVALID_TOPIC_ID response code from the network.  | Y                 |
 | 3       | Deletes a topic with no topic ID                           | topicId=""                                                                                          | The topic deletion fails with an SDK internal error.                               | Y                 |
