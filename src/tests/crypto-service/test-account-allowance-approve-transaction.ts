@@ -1250,7 +1250,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.only("(#18) Approves an NFT allowance to a spender account from an owner account after already granting an NFT allowance to another account", async function () {
+    it("(#18) Approves an NFT allowance to a spender account from an owner account after already granting an NFT allowance to another account", async function () {
       const key = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, key);
       const serialNumbers = ["1", "2", "3"];
@@ -1273,18 +1273,22 @@ describe("AccountAllowanceApproveTransaction", function () {
       );
 
       for (const serialNumber of serialNumbers) {
-        verifyNftAllowance(
-          true,
-          ownerAccountId,
-          accountId,
-          tokenId,
-          serialNumber,
+        await retryOnError(async () =>
+          verifyNftAllowance(
+            true,
+            ownerAccountId,
+            accountId,
+            tokenId,
+            serialNumber,
+          ),
         );
       }
 
-      const mirrorNodeInfo =
-        await mirrorNodeClient.getNftAllowances(spenderAccountId);
-      expect(mirrorNodeInfo.allowances?.length).to.equal(0);
+      await retryOnError(async () => {
+        const mirrorNodeInfo =
+          await mirrorNodeClient.getNftAllowances(spenderAccountId);
+        expect(mirrorNodeInfo.allowances?.length).to.equal(0);
+      });
     });
 
     it("(#19) Approves an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
