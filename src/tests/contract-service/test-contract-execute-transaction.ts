@@ -48,7 +48,7 @@ const createContractWithAdminKey = async (
     bytecodeFileId: fileResponse.fileId,
     adminKey: adminPrivateKey,
     gas: "900000",
-    memo: "Hello from Hedera.",
+    memo: "Memo.",
     commonTransactionParams: {
       signers: [adminPrivateKey],
     },
@@ -87,7 +87,7 @@ describe("ContractExecuteTransaction", function () {
 
   describe("Contract ID", function () {
     const message = "message";
-    const constructorParams = new ContractFunctionParameters()
+    const functionParams = new ContractFunctionParameters()
       .addString(message)
       ._build("setMessage");
 
@@ -101,7 +101,7 @@ describe("ContractExecuteTransaction", function () {
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
         gas: "100000",
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -111,7 +111,7 @@ describe("ContractExecuteTransaction", function () {
     it("(#2) Execute a contract without contract ID", async function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -127,13 +127,13 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#3) Execute a contract with non-existent contract ID", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString(message)
         ._build("setMessage");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId: "0.0.9999999",
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -141,7 +141,7 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#4) Execute a contract with deleted contract ID", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString(message)
         ._build("setMessage");
 
@@ -163,7 +163,7 @@ describe("ContractExecuteTransaction", function () {
 
       const executeResponse = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -176,7 +176,7 @@ describe("ContractExecuteTransaction", function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -196,7 +196,7 @@ describe("ContractExecuteTransaction", function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -217,7 +217,7 @@ describe("ContractExecuteTransaction", function () {
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId: accountId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -227,7 +227,7 @@ describe("ContractExecuteTransaction", function () {
 
   describe("Gas", function () {
     const message = "message";
-    const constructorParams = new ContractFunctionParameters()
+    const functionParams = new ContractFunctionParameters()
       .addString(message)
       ._build("setMessage");
     let contractId: string;
@@ -241,7 +241,7 @@ describe("ContractExecuteTransaction", function () {
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
         gas: "100000",
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -253,7 +253,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           gas: "0",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -272,7 +272,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           gas: "-1",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -291,7 +291,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           gas: "-9223372036854775808",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -310,7 +310,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           gas: "-9223372036854775807",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -329,7 +329,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           gas: "1000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -347,7 +347,7 @@ describe("ContractExecuteTransaction", function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -363,9 +363,7 @@ describe("ContractExecuteTransaction", function () {
   });
 
   describe("Amount", function () {
-    const constructorParams = new ContractFunctionParameters()._build(
-      "deposit",
-    );
+    const functionParams = new ContractFunctionParameters()._build("deposit");
     let contractId: string;
 
     beforeEach(async function () {
@@ -377,7 +375,7 @@ describe("ContractExecuteTransaction", function () {
       const amount = "1000";
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         amount,
         gas: "100000",
       });
@@ -390,7 +388,7 @@ describe("ContractExecuteTransaction", function () {
       const amount = "0";
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         amount,
         gas: "100000",
       });
@@ -404,7 +402,7 @@ describe("ContractExecuteTransaction", function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           amount,
           gas: "100000",
         });
@@ -435,7 +433,7 @@ describe("ContractExecuteTransaction", function () {
           contractId,
           amount: (Number(amount) + 1).toString(),
           gas: "100000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -446,6 +444,7 @@ describe("ContractExecuteTransaction", function () {
       }
     });
 
+    // TODO: FAIL_INVALID in services
     it.skip("(#5) Execute contract with amount = int64 max", async function () {
       const amount = "9223372036854775807";
       try {
@@ -453,7 +452,7 @@ describe("ContractExecuteTransaction", function () {
           contractId,
           amount,
           gas: "100000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -474,7 +473,7 @@ describe("ContractExecuteTransaction", function () {
           contractId,
           amount,
           gas: "100000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -495,7 +494,7 @@ describe("ContractExecuteTransaction", function () {
           contractId,
           amount,
           gas: "100000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -509,6 +508,7 @@ describe("ContractExecuteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // TODO: FAIL_INVALID in services
     it.skip("(#8) Execute contract with amount = int64 max - 1", async function () {
       const amount = "9223372036854775806";
       try {
@@ -516,7 +516,7 @@ describe("ContractExecuteTransaction", function () {
           contractId,
           amount,
           gas: "100000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
         });
       } catch (err: any) {
         assert.equal(
@@ -534,7 +534,7 @@ describe("ContractExecuteTransaction", function () {
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
         gas: "100000",
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -594,13 +594,13 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#1) Execute contract with valid ABI‑encoded parameters", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString("test message")
         ._build("setMessage");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -609,13 +609,11 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#2) Execute contract with empty parameters", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
-        "empty",
-      );
+      const functionParams = new ContractFunctionParameters()._build("empty");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -643,14 +641,14 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#4) Execute contract with parameters for non-existent function", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "nonExistent",
       );
 
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -680,7 +678,7 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#6) Execute contract with malformed ABI encoding", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString("a")
         .addString("b")
         ._build("setMessage");
@@ -688,7 +686,7 @@ describe("ContractExecuteTransaction", function () {
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -704,14 +702,14 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#7) Execute contract with parameters requiring more gas than provided", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString("a")
         ._build("setMessage");
 
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "1000",
         });
       } catch (err: any) {
@@ -727,14 +725,12 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#8) Execute contract with parameters for payable function and amount", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
-        "deposit",
-      );
+      const functionParams = new ContractFunctionParameters()._build("deposit");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
         amount: "1000",
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -743,7 +739,7 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#9) Execute contract with parameters for non-payable function and amount", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "setMessage",
       );
 
@@ -751,7 +747,7 @@ describe("ContractExecuteTransaction", function () {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
           amount: "1000",
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -766,24 +762,32 @@ describe("ContractExecuteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // fail with "CONTRACT_REVERT_EXECUTED"
-    it.skip("(#10) Execute contract with no parameters specified", async function () {
-      const response = await JSONRPCRequest(this, "executeContract", {
-        contractId,
-        gas: "100000",
-      });
+    it("(#10) Execute contract with no parameters specified", async function () {
+      try {
+        await JSONRPCRequest(this, "executeContract", {
+          contractId,
+          gas: "100000",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "CONTRACT_REVERT_EXECUTED",
+          "Contract revert executed error",
+        );
+        return;
+      }
 
-      expect(response.status).to.equal("SUCCESS");
+      assert.fail("Should throw an error");
     });
 
     it("(#11) Execute contract with parameters for view function", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "getMessage",
       );
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -792,14 +796,14 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#12) Execute contract with parameters for pure function", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addUint256(3)
         .addUint256(2)
         ._build("addNumbers");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -807,13 +811,13 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#13) Execute contract with parameters for state-changing function", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString("test message")
         ._build("setMessage");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
       ``;
@@ -823,13 +827,13 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#14) Execute contract with parameters for function that emits an event", async function () {
-      const constructorParams = new ContractFunctionParameters()
+      const functionParams = new ContractFunctionParameters()
         .addString("Testing event")
         ._build("sendMessageEvent");
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
@@ -837,14 +841,14 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#15) Execute contract with parameters for function that reverts", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "alwaysRevert",
       );
 
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -860,14 +864,14 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#16) Execute contract with parameters for function with modifier that fails", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "unprotectedFunction",
       );
 
       try {
         await JSONRPCRequest(this, "executeContract", {
           contractId,
-          functionParameters: toHexString(constructorParams),
+          functionParameters: toHexString(functionParams),
           gas: "100000",
         });
       } catch (err: any) {
@@ -883,13 +887,13 @@ describe("ContractExecuteTransaction", function () {
     });
 
     it("(#17) Execute contract with parameters for function with modifier that succeeds", async function () {
-      const constructorParams = new ContractFunctionParameters()._build(
+      const functionParams = new ContractFunctionParameters()._build(
         "protectedFunction",
       );
 
       const response = await JSONRPCRequest(this, "executeContract", {
         contractId,
-        functionParameters: toHexString(constructorParams),
+        functionParameters: toHexString(functionParams),
         gas: "100000",
       });
 
