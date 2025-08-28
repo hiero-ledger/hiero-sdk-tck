@@ -1273,18 +1273,18 @@ describe("AccountAllowanceApproveTransaction", function () {
       );
 
       for (const serialNumber of serialNumbers) {
-          verifyNftAllowance(
-            true,
-            ownerAccountId,
-            accountId,
-            tokenId,
-            serialNumber,
-          ),
+        verifyNftAllowance(
+          true,
+          ownerAccountId,
+          accountId,
+          tokenId,
+          serialNumber,
+        );
       }
 
-        const mirrorNodeInfo =
-          await mirrorNodeClient.getNftAllowances(spenderAccountId);
-        expect(mirrorNodeInfo.allowances?.length).to.equal(0);
+      const mirrorNodeInfo =
+        await mirrorNodeClient.getNftAllowances(spenderAccountId);
+      expect(mirrorNodeInfo.allowances?.length).to.equal(0);
     });
 
     it("(#19) Approves an NFT allowance to a spender account from an owner account with a token frozen on the owner account", async function () {
