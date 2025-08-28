@@ -5,6 +5,9 @@ import {
   AccountInfo,
   AccountInfoQuery,
   Client,
+  ContractCallQuery,
+  ContractFunctionParameters,
+  ContractFunctionResult,
   ContractId,
   ContractInfo,
   ContractInfoQuery,
@@ -119,6 +122,36 @@ class ConsensusInfoClient {
   async getScheduleInfo(scheduleId: string): Promise<ScheduleInfo> {
     const query = new ScheduleInfoQuery();
     query.setScheduleId(ScheduleId.fromString(scheduleId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getContractFunctionResult(
+    contractId: string,
+    functionName: string,
+  ): Promise<ContractFunctionResult> {
+    const query = new ContractCallQuery();
+    const functionParameters = new ContractFunctionParameters()._build(
+      functionName,
+    );
+
+    query.setContractId(ContractId.fromString(contractId));
+    query.setFunctionParameters(functionParameters);
+    query.setGas(100000);
+
+    return query.execute(this.sdkClient);
+  }
+
+  async getContractBalance(
+    contractId: string,
+  ): Promise<ContractFunctionResult> {
+    const query = new ContractCallQuery();
+    const functionParameters = new ContractFunctionParameters()._build(
+      "getContractBalance",
+    );
+    query.setContractId(ContractId.fromString(contractId));
+    query.setFunctionParameters(functionParameters);
+    query.setGas(100000);
+
     return query.execute(this.sdkClient);
   }
 }
