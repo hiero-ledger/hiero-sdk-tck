@@ -38,8 +38,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes                                                                                                             |
 |-------------------------|---------------------------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| allowances              | list<[json object](allowances.md)>                      | optional          | The allowance information. The allowances input here should ONLY be "nft" allowances. Should return INVALID_PARAMS otherwise. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                                                                                                                               |
+| allowances              | list<[json object](../common/Allowances.md)>            | optional          | The allowance information. The allowances input here should ONLY be "nft" allowances. Should return INVALID_PARAMS otherwise. |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                                                                                                                               |
 
 ### Output Parameters
 

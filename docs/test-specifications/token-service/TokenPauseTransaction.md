@@ -38,7 +38,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes             |
 |-------------------------|---------------------------------------------------------|-------------------|-------------------------------|
 | tokenId                 | string                                                  | optional          | The ID of the token to pause. |
-| commonTransactionParams | [json object](../common/commonTransactionParameters.md) | optional          |                               |
+| commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                               |
 
 ### Output Parameters
 
