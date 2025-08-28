@@ -1,0 +1,50 @@
+name: TCK Test Count
+
+on:
+  pull_request:
+    paths:
+      - "docs/test-specifications/**"
+      - "testCount.js"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/test-count.yml"
+  push:
+    branches:
+      - main
+      - feat/**
+    paths:
+      - "docs/test-specifications/**"
+      - "testCount.js"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/test-count.yml"
+  workflow_dispatch: {}  
+
+permissions:
+  contents: read
+
+jobs:
+  countTests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Ensure TS types for libs
+        run: npm i -D @types/markdown-it @types/jsdom
+
+      - name: Run test count script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running testCount.js..."
+          npx ts-node testCount.ts
