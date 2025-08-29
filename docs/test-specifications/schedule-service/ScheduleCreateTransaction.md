@@ -46,6 +46,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | Parameter Name | Type   | Description/Notes                                                                      |
 |----------------|--------|----------------------------------------------------------------------------------------|
 | scheduleId     | string | The ID of the created schedule.                                                        |
+| transactionId  | string | The ID of the scheduled transaction.                                                   |
 | status         | string | The status of the submitted `ScheduleCreateTransaction` (from a `TransactionReceipt`). |
 
 ### Additional Notes
