@@ -83,12 +83,10 @@ jobs:
             sleep 1
           done
           echo "Hedera local network is ready!"
-
       # TODO: Update this once we have a dynamically updated image
       - name: Pull JS TCK Server
         run: |
           docker pull ivaylogarnev/js-tck-server-amd
-
       - name: Start tck-server in background
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
@@ -100,13 +98,11 @@ jobs:
             sleep 1
           done
           echo "TCK server is ready!"
-
       - name: Run ${{ matrix.suite }} tests
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up \
             --abort-on-container-exit \
             --exit-code-from hiero-tck-client hiero-tck-client
-
       - name: Stop the local node and containers
         if: ${{ always() }}
         run: |
