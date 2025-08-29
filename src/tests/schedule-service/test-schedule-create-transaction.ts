@@ -25,7 +25,7 @@ import {
 /**
  * Tests for ScheduleCreateTransaction
  */
-describe.only("ScheduleCreateTransaction", function () {
+describe("ScheduleCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
