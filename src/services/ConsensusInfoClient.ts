@@ -16,6 +16,9 @@ import {
   FileInfo,
   FileInfoQuery,
   NftId,
+  ScheduleId,
+  ScheduleInfo,
+  ScheduleInfoQuery,
   TokenInfo,
   TokenInfoQuery,
   TokenNftInfo,
@@ -113,6 +116,12 @@ class ConsensusInfoClient {
   async getContractInfo(contractId: string): Promise<ContractInfo> {
     const query = new ContractInfoQuery();
     query.setContractId(ContractId.fromString(contractId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getScheduleInfo(scheduleId: string): Promise<ScheduleInfo> {
+    const query = new ScheduleInfoQuery();
+    query.setScheduleId(ScheduleId.fromString(scheduleId));
     return query.execute(this.sdkClient);
   }
 
