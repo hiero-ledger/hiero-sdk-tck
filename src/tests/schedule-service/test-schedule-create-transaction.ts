@@ -159,6 +159,35 @@ describe.only("ScheduleCreateTransaction", function () {
     });
   };
 
+  const createCryptoTransfer = async (context: any) => {
+    const receiverPrivateKey = await generateEd25519PrivateKey(context);
+    const receiverAccountId = await createAccount(context, receiverPrivateKey);
+    const senderAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+
+    return {
+      method: "transferCrypto",
+      params: {
+        transfers: [
+          {
+            hbar: {
+              accountId: senderAccountId,
+              amount: "-10",
+            },
+          },
+          {
+            hbar: {
+              accountId: receiverAccountId,
+              amount: "10",
+            },
+          },
+        ],
+      },
+      commonTransactionParams: {
+        maxTransactionFee: 100000,
+      },
+    };
+  };
+
   describe("Scheduled Transaction", function () {
     it("(#1) Creates a scheduled crypto transfer transaction", async function () {
       // Create sender and receiver accounts
@@ -178,25 +207,7 @@ describe.only("ScheduleCreateTransaction", function () {
         })
       ).accountId;
 
-      const scheduledTransaction = {
-        method: "transferCrypto",
-        params: {
-          transfers: [
-            {
-              hbar: {
-                accountId: senderAccountId,
-                amount: "-10",
-              },
-            },
-            {
-              hbar: {
-                accountId: receiverAccountId,
-                amount: "10",
-              },
-            },
-          ],
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -212,7 +223,6 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#2) Creates a scheduled consensus submit message transaction", async function () {
-      // Create a topic first
       const topicResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic for scheduled message",
       });
@@ -237,7 +247,6 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#3) Creates a scheduled token burn transaction", async function () {
-      // Create a fungible token first
       const supplyKey = await generateEd25519PrivateKey(this);
       const treasuryAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -276,7 +285,6 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#4) Creates a scheduled token mint transaction", async function () {
-      // Create a fungible token first
       const supplyKey = await generateEd25519PrivateKey(this);
       const treasuryAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
 
@@ -394,12 +402,7 @@ describe.only("ScheduleCreateTransaction", function () {
 
   describe("Memo", function () {
     it("(#1) Creates a schedule with valid memo", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const memo = "test memo";
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -414,12 +417,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#2) Creates a schedule with memo at maximum length (100 bytes)", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Create a string of exactly 100 bytes
       const memo = "a".repeat(100);
@@ -435,12 +433,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#3) Creates a schedule with memo exceeding maximum length", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       try {
         // Create a string of 101 bytes
@@ -458,12 +451,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#4) Creates a schedule with invalid memo", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       try {
         // Create a memo with null byte
@@ -481,12 +469,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#5) Creates a schedule with memo containing only whitespace", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const memo = "   ";
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -501,12 +484,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#6) Creates a schedule with memo containing special characters", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const memo = "!@#$%^&*()_+-=[]{};':\",./<>?";
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -521,12 +499,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#7) Creates a schedule with memo containing unicode characters", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const memo = "测试文件备注 🚀";
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -541,12 +514,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#8) Creates a schedule with memo containing exactly 100 ASCII characters", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Create exactly 100 ASCII characters (100 bytes)
       const memo = "a".repeat(100);
@@ -562,12 +530,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#9) Creates a schedule with memo containing exactly 100 UTF-8 bytes (fewer characters)", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // 🚀 is 4 bytes in UTF-8, so 25 rocket emojis = 100 bytes
       const memo = "🚀".repeat(25);
@@ -589,12 +552,7 @@ describe.only("ScheduleCreateTransaction", function () {
       const payerPrivateKey = await generateEd25519PrivateKey(this);
       const payerAccountId = await createAccount(this, payerPrivateKey);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -614,12 +572,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#2) Creates a schedule with a payer account ID that doesn't exist", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const payerAccountId = "123.456.789";
       try {
@@ -636,12 +589,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#3) Creates a schedule with an empty payer account ID", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       try {
         await JSONRPCRequest(this, "createSchedule", {
@@ -674,12 +622,7 @@ describe.only("ScheduleCreateTransaction", function () {
         },
       });
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -703,12 +646,7 @@ describe.only("ScheduleCreateTransaction", function () {
       const payerPrivateKey = await generateEd25519PrivateKey(this);
       const payerAccountId = await createAccount(this, payerPrivateKey);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Don't provide the payer's private key in signers
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -734,12 +672,7 @@ describe.only("ScheduleCreateTransaction", function () {
         adminPrivateKey,
       );
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -765,12 +698,7 @@ describe.only("ScheduleCreateTransaction", function () {
         adminPrivateKey,
       );
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -792,12 +720,7 @@ describe.only("ScheduleCreateTransaction", function () {
     it("(#3) Creates a schedule with a valid ED25519 private key as its admin key", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -819,12 +742,7 @@ describe.only("ScheduleCreateTransaction", function () {
     it("(#4) Creates a schedule with a valid ECDSAsecp256k1 private key as its admin key", async function () {
       const adminPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -846,12 +764,7 @@ describe.only("ScheduleCreateTransaction", function () {
     it("(#5) Creates a schedule with a valid KeyList of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -876,12 +789,7 @@ describe.only("ScheduleCreateTransaction", function () {
         twoLevelsNestedKeyListParams,
       );
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -903,12 +811,7 @@ describe.only("ScheduleCreateTransaction", function () {
     it("(#7) Creates a schedule with a valid ThresholdKey of ED25519 and ECDSAsecp256k1 private and public keys as its admin key", async function () {
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const response = await JSONRPCRequest(this, "createSchedule", {
         scheduledTransaction,
@@ -930,15 +833,9 @@ describe.only("ScheduleCreateTransaction", function () {
     it("(#8) Creates a schedule with a valid admin key without signing with the new key", async function () {
       const adminPublicKey = await generateEd25519PublicKey(this);
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       try {
-        // Don't provide the admin key's private key in signers
         await JSONRPCRequest(this, "createSchedule", {
           scheduledTransaction,
           adminKey: adminPublicKey,
@@ -955,12 +852,7 @@ describe.only("ScheduleCreateTransaction", function () {
       const adminPublicKey = await generateEd25519PublicKey(this);
       const incorrectPrivateKey = await generateEd25519PrivateKey(this); // Different key, not corresponding to adminPublicKey
 
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       try {
         // Provide incorrect private key that doesn't correspond to the admin public key
@@ -982,12 +874,7 @@ describe.only("ScheduleCreateTransaction", function () {
 
   describe("Expiration Time", function () {
     it("(#1) Creates a schedule with valid expiration time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Set expiration time to 30 minutes from current time
       const expirationTime = (Math.floor(Date.now() / 1000) + 1800).toString();
@@ -1007,12 +894,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#2) Creates a schedule with expiration time in the past", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Set expiration time to 7,200 seconds in the past (2 hours ago)
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
@@ -1035,12 +917,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it.skip("(#3) Creates a schedule with expiration time equal to current", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Set expiration time to current time
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
@@ -1060,12 +937,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#4) Creates a schedule with too large expiration time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       // Set expiration time to 9,000,000 seconds from current time (about 104 days)
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
@@ -1088,12 +960,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#5) Creates a schedule with expiration time of 9,223,372,036,854,775,807 (int64 max) seconds", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const expirationTime = "9223372036854775807";
 
@@ -1114,12 +981,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#6) Creates a schedule with expiration time of 9,223,372,036,854,775,806 (int64 max - 1) seconds", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const expirationTime = "9223372036854775806";
 
@@ -1140,12 +1002,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#7) Creates a schedule with expiration time of -9,223,372,036,854,775,808 (int64 min) seconds", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const expirationTime = "-9223372036854775808";
 
@@ -1166,12 +1023,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#8) Creates a schedule with expiration time of -9,223,372,036,854,775,807 (int64 min + 1) seconds", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const expirationTime = "-9223372036854775807";
 
@@ -1192,12 +1044,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#9) Creates a schedule with expiration time of 5,356,700 seconds from the current time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
       const expirationTime = (currentTimeInSeconds + 5356800).toString();
@@ -1217,12 +1064,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#10) Creates a schedule with expiration time of 5,356,901 seconds from the current time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
       const expirationTime = (currentTimeInSeconds + 5356801).toString();
@@ -1246,12 +1088,7 @@ describe.only("ScheduleCreateTransaction", function () {
 
   describe("Wait for Expiry", function () {
     it("(#1) Creates a schedule with wait for expiry and expiration time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
       const expirationTime = (currentTimeInSeconds + 5356700).toString();
@@ -1273,12 +1110,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#2) Creates a schedule without wait for expiry", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const waitForExpiry = false;
       const response = await JSONRPCRequest(this, "createSchedule", {
@@ -1296,12 +1128,7 @@ describe.only("ScheduleCreateTransaction", function () {
     });
 
     it("(#3) Creates a schedule with wait for expiry and no expiration time", async function () {
-      const scheduledTransaction = {
-        method: "createAccount",
-        params: {
-          key: await generateEd25519PrivateKey(this),
-        },
-      };
+      const scheduledTransaction = await createCryptoTransfer(this);
 
       const waitForExpiry = true;
       try {
