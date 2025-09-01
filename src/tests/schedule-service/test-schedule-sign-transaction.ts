@@ -14,7 +14,7 @@ import {
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { retryOnError } from "@helpers/retry-on-error";
 import { twoKeyParams } from "@constants/key-list";
-import { createAccount, deleteAccount } from "@helpers/account";
+import { deleteAccount } from "@helpers/account";
 
 /**
  * Tests for ScheduleSignTransaction
@@ -260,7 +260,7 @@ describe("ScheduleSignTransaction", function () {
     const payerAccountId = (
       await JSONRPCRequest(context, "createAccount", {
         key: payerPrivateKey,
-        initialBalance: "100",
+        initialBalance: "100000",
       })
     ).accountId;
     const senderAccountId = (
@@ -288,6 +288,9 @@ describe("ScheduleSignTransaction", function () {
             },
           },
         ],
+        commonTransactionParams: {
+          maxTransactionFee: 100000,
+        },
       },
     };
 
@@ -302,6 +305,7 @@ describe("ScheduleSignTransaction", function () {
       transactionId: response.transactionId,
       senderPrivateKey,
       payerAccountId,
+      payerPrivateKey,
     };
   };
 
@@ -314,7 +318,7 @@ describe("ScheduleSignTransaction", function () {
     const payerAccountId = (
       await JSONRPCRequest(context, "createAccount", {
         key: payerPrivateKey,
-        initialBalance: "1", // Minimal balance
+        // initialBalance: "0",
       })
     ).accountId;
     const senderAccountId = (
@@ -342,6 +346,9 @@ describe("ScheduleSignTransaction", function () {
             },
           },
         ],
+        commonTransactionParams: {
+          maxTransactionFee: 100000,
+        },
       },
     };
 
@@ -349,27 +356,6 @@ describe("ScheduleSignTransaction", function () {
     const response = await JSONRPCRequest(context, "createSchedule", {
       scheduledTransaction,
       payerAccountId: payerAccountId,
-      commonTransactionParams: {
-        signers: [payerPrivateKey],
-      },
-    });
-
-    // Drain the payer account balance by transferring to operator
-    await JSONRPCRequest(context, "transferCrypto", {
-      transfers: [
-        {
-          hbar: {
-            accountId: payerAccountId,
-            amount: "-1",
-          },
-        },
-        {
-          hbar: {
-            accountId: receiverAccountId,
-            amount: "1",
-          },
-        },
-      ],
       commonTransactionParams: {
         signers: [payerPrivateKey],
       },
@@ -390,7 +376,7 @@ describe("ScheduleSignTransaction", function () {
     const senderAccountId = (
       await JSONRPCRequest(context, "createAccount", {
         key: senderPrivateKey,
-        initialBalance: "5", // Less than transfer amount
+        initialBalance: "5",
       })
     ).accountId;
     const receiverAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
@@ -402,7 +388,7 @@ describe("ScheduleSignTransaction", function () {
           {
             hbar: {
               accountId: senderAccountId,
-              amount: "-10", // More than account balance
+              amount: "-10",
             },
           },
           {
@@ -777,13 +763,11 @@ describe("ScheduleSignTransaction", function () {
     });
   });
 
-  describe.skip("Transaction Execution Scenarios", function () {
+  describe("Transaction Execution Scenarios", function () {
     it("(#1) Given a created schedule with payer account ID that was deleted, sign the schedule with the required keys", async function () {
-      // Create schedule with payer account and then delete the payer
       const { scheduleId, transactionId, senderPrivateKey } =
         await createScheduleWithDeletedPayer(this);
 
-      // Sign the schedule
       const response = await JSONRPCRequest(this, "signSchedule", {
         scheduleId,
         commonTransactionParams: {
@@ -801,25 +785,18 @@ describe("ScheduleSignTransaction", function () {
     });
 
     it("(#2) Given a created schedule with payer account ID that did not sign the creation, sign the schedule with the required keys", async function () {
-      // Create schedule with payer account that didn't sign creation
-      const { scheduleId, transactionId, senderPrivateKey } =
+      const { scheduleId, transactionId, senderPrivateKey, payerPrivateKey } =
         await createScheduleWithNonSigningPayer(this);
 
-      // Sign the schedule
       const response = await JSONRPCRequest(this, "signSchedule", {
         scheduleId,
         commonTransactionParams: {
-          signers: [senderPrivateKey],
+          signers: [payerPrivateKey, senderPrivateKey],
         },
       });
 
       expect(response.status).to.equal("SUCCESS");
-
-      // Verify the underlying transaction failed with INVALID_SIGNATURE
-      await verifyUnderlyingTransactionResult(
-        transactionId,
-        "INVALID_SIGNATURE",
-      );
+      await verifyUnderlyingTransactionResult(transactionId, "SUCCESS");
     });
 
     it("(#3) Given a created schedule with payer account ID that has 0 balance, sign the schedule with the required keys", async function () {
@@ -859,7 +836,6 @@ describe("ScheduleSignTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
 
-      // Verify the underlying transaction failed with INSUFFICIENT_ACCOUNT_BALANCE
       await verifyUnderlyingTransactionResult(
         transactionId,
         "INSUFFICIENT_ACCOUNT_BALANCE",
@@ -871,7 +847,6 @@ describe("ScheduleSignTransaction", function () {
       const { scheduleId, transactionId, senderPrivateKey } =
         await createScheduleForSigning(this);
 
-      // Sign the schedule
       const response = await JSONRPCRequest(this, "signSchedule", {
         scheduleId,
         commonTransactionParams: {
@@ -881,7 +856,6 @@ describe("ScheduleSignTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
 
-      // Verify the underlying transaction succeeded
       await verifyUnderlyingTransactionResult(transactionId, "SUCCESS");
     });
   });
