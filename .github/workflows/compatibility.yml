@@ -86,17 +86,17 @@ jobs:
         with:
           node-version: 22
 
-      # Set up the npm dependencies and cache on the tck-client
-      - name: Set up the tck-client
-        run: |
-          npm cache clean --force
-          npm install
-
       # Build the JS-SDK using its task
       - name: Build JS-SDK
         run: |
           task -v build
         working-directory: sdk-server
+
+      # Set up the npm dependencies and cache on the tck-client
+      - name: Set up the tck-client
+        run: |
+          npm cache clean --force
+          npm install
 
       # Set up and start the TCK server
       - name: Install and Start TCK Server
