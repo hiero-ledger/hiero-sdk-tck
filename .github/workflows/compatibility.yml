@@ -53,6 +53,7 @@ jobs:
           repository: hiero-ledger/hiero-sdk-js
           fetch-depth: 0
           fetch-tags: true
+          submodules: true
 
       - name: Checkout JS-SDK Version
         run: |
@@ -85,6 +86,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
+          cache: 'pnpm'
 
       # Build the JS-SDK using its task
       - name: Build JS-SDK
