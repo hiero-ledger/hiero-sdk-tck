@@ -5,22 +5,24 @@ permissions:
   contents: read
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       custom-job-name:
-        description: "The custom job name to use for the job:"
+        description: "The custom job name to use for the job(could include the version of the JS SDK, Solo, and consensus node):"
         required: false
         type: string
       solo-version:
-        description: "The version of the Solo to use"
+        description: "The version of the Solo to use(defaults to 0.38.0 if not specified):"
         required: false
         type: string
       consensus-node-version:
-        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified)"
+        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
         required: false
         type: string
       js-sdk-version:
-        description: "The version of the JS SDK to use (defaults to latest tag if not specified)"
+        description: "The version of the JS SDK to use (defaults to latest tag if not specified):"
         required: false
         type: string
 
@@ -87,17 +89,7 @@ jobs:
       - name: Install NodeJS Dependencies (sdk-server)
         id: start-sdk-server
         run: |
-          # Extract package versions from the parent package.json
-          SDK_VERSION=$(node -e "console.log(require('../package.json').version)")
-          LONG_VERSION=$(node -e "console.log(require('../package.json').dependencies.long)")
-          PROTO_VERSION=$(node -e "console.log(require('../package.json').dependencies['@hashgraph/proto'])")
-
-          echo "Using SDK version: $SDK_VERSION"
-          echo "Using long version: $LONG_VERSION"
-          echo "Using proto version: $PROTO_VERSION"
-
-          # Install with the extracted versions
-          pnpm add @hashgraph/sdk@^${SDK_VERSION} long@${LONG_VERSION} @hashgraph/proto@${PROTO_VERSION}
+          # Install dependencies using the versions from the checked-out JS-SDK version
           pnpm install
           nohup pnpm start &
           server_pid=$!
