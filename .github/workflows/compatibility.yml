@@ -44,12 +44,14 @@ jobs:
       # Checkout the current TCK repository
       - name: Checkout TCK Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: tck
 
       # Checkout the JS-SDK server
       - name: Checkout JS-SDK Server
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          path: ../sdk-server
+          path: sdk-server
           repository: hiero-ledger/hiero-sdk-js
           fetch-depth: 0
           fetch-tags: true
@@ -57,7 +59,7 @@ jobs:
 
       - name: Checkout JS-SDK Version
         run: |
-          cd ../sdk-server
+          cd sdk-server
           if [ -n "${{ inputs.js-sdk-version }}" ]; then
             echo "Using specified JS-SDK version: ${{ inputs.js-sdk-version }}"
             git checkout ${{ inputs.js-sdk-version }}
@@ -91,13 +93,14 @@ jobs:
       - name: Build JS-SDK
         run: |
           task -v build
-        working-directory: ../sdk-server
+        working-directory: sdk-server
 
       # Set up the npm dependencies and cache on the tck-client
       - name: Set up the tck-client
         run: |
           npm cache clean --force
           npm install
+        working-directory: tck
 
       # Set up and start the TCK server
       - name: Install and Start TCK Server
@@ -107,7 +110,7 @@ jobs:
           nohup npm run start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
-        working-directory: ../sdk-server/tck
+        working-directory: sdk-server/tck
 
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
@@ -147,6 +150,7 @@ jobs:
           NODE_ACCOUNT_ID: "0.0.3"
         run: |
           npm run test
+        working-directory: tck
 
       # Stop the TCK server
       - name: Stop tck-server
