@@ -85,12 +85,25 @@ jobs:
           npm cache clean --force
           npm install
 
+      # Build the JS-SDK from source
+      - name: Build JS-SDK
+        run: |
+          pnpm install
+          pnpm build
+          # Pack the built SDK into a tarball
+          pnpm pack
+        working-directory: sdk-server
+        
       # Set up the npm dependencies and cache on the sdk-server
       - name: Install NodeJS Dependencies (sdk-server)
         id: start-sdk-server
         run: |
-          # Install dependencies using the versions from the checked-out JS-SDK version
+          # Install dependencies
           pnpm install
+          # Install the locally built SDK
+          SDK_TARBALL=$(ls ../*.tgz | head -n1)
+          echo "Installing SDK from: $SDK_TARBALL"
+          pnpm add @hashgraph/sdk@file:$SDK_TARBALL
           nohup pnpm start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
