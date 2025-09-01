@@ -85,42 +85,23 @@ jobs:
           npm cache clean --force
           npm install
 
-      # Build the JS-SDK from source
+      # Install Task runner
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
+      # Build the JS-SDK using its task
       - name: Build JS-SDK
         run: |
-          # Clean up any yalc configuration
-          rm -rf .yalc yalc.lock .yalc.sig 2>/dev/null || true
-          
-          # Install global yalc if needed and remove any yalc installations
-          npm install -g yalc 2>/dev/null || true
-          yalc installations clean 2>/dev/null || true
-          
-          # Install dependencies (this might restore yalc links)
-          pnpm install --ignore-scripts
-          
-          # Remove yalc again after install
-          rm -rf .yalc yalc.lock .yalc.sig 2>/dev/null || true
-          
-          # Build the SDK
-          pnpm build
-          
-          # Pack the built SDK
-          pnpm pack
+          task build
         working-directory: sdk-server
 
-      # Set up the npm dependencies and cache on the sdk-server
-      - name: Install NodeJS Dependencies (sdk-server)
+      # Set up and start the TCK server
+      - name: Install and Start TCK Server
         id: start-sdk-server
         run: |
-          # Install dependencies
-          pnpm install
-          
-          # Find and install the locally built SDK
-          SDK_TARBALL=$(ls ../*.tgz | head -n1)
-          echo "Installing SDK from local build: $SDK_TARBALL"
-          pnpm add @hashgraph/sdk@file:$SDK_TARBALL
-          
-          nohup pnpm start &
+          npm install
+          nohup npm run start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
         working-directory: sdk-server/tck
