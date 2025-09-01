@@ -25,7 +25,7 @@ import {
 /**
  * Tests for ScheduleCreateTransaction
  */
-describe.only("ScheduleCreateTransaction", function () {
+describe("ScheduleCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -916,7 +916,7 @@ describe.only("ScheduleCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#3) Creates a schedule with expiration time equal to current", async function () {
+    it("(#3) Creates a schedule with expiration time equal to current", async function () {
       const scheduledTransaction = await createCryptoTransfer(this);
 
       // Set expiration time to current time
@@ -929,7 +929,10 @@ describe.only("ScheduleCreateTransaction", function () {
           expirationTime,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "AUTORENEW_DURATION_NOT_IN_RANGE");
+        assert.equal(
+          err.data.status,
+          "SCHEDULE_EXPIRATION_TIME_MUST_BE_HIGHER_THAN_CONSENSUS_TIME",
+        );
         return;
       }
 
@@ -1043,7 +1046,7 @@ describe.only("ScheduleCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#9) Creates a schedule with expiration time of 5,356,700 seconds from the current time", async function () {
+    it("(#9) Creates a schedule with expiration time of 5,356,800 seconds from the current time", async function () {
       const scheduledTransaction = await createCryptoTransfer(this);
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
@@ -1063,11 +1066,11 @@ describe.only("ScheduleCreateTransaction", function () {
       );
     });
 
-    it("(#10) Creates a schedule with expiration time of 5,356,901 seconds from the current time", async function () {
+    it("(#10) Creates a schedule with expiration time of 5,356,803 seconds from the current time", async function () {
       const scheduledTransaction = await createCryptoTransfer(this);
 
       const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-      const expirationTime = (currentTimeInSeconds + 5356801).toString();
+      const expirationTime = (currentTimeInSeconds + 5356803).toString();
 
       try {
         await JSONRPCRequest(this, "createSchedule", {
