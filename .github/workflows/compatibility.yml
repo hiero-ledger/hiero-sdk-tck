@@ -88,22 +88,38 @@ jobs:
       # Build the JS-SDK from source
       - name: Build JS-SDK
         run: |
-          pnpm install
+          # Clean up any yalc configuration
+          rm -rf .yalc yalc.lock .yalc.sig 2>/dev/null || true
+          
+          # Install global yalc if needed and remove any yalc installations
+          npm install -g yalc 2>/dev/null || true
+          yalc installations clean 2>/dev/null || true
+          
+          # Install dependencies (this might restore yalc links)
+          pnpm install --ignore-scripts
+          
+          # Remove yalc again after install
+          rm -rf .yalc yalc.lock .yalc.sig 2>/dev/null || true
+          
+          # Build the SDK
           pnpm build
-          # Pack the built SDK into a tarball
+          
+          # Pack the built SDK
           pnpm pack
         working-directory: sdk-server
-        
+
       # Set up the npm dependencies and cache on the sdk-server
       - name: Install NodeJS Dependencies (sdk-server)
         id: start-sdk-server
         run: |
           # Install dependencies
           pnpm install
-          # Install the locally built SDK
+          
+          # Find and install the locally built SDK
           SDK_TARBALL=$(ls ../*.tgz | head -n1)
-          echo "Installing SDK from: $SDK_TARBALL"
+          echo "Installing SDK from local build: $SDK_TARBALL"
           pnpm add @hashgraph/sdk@file:$SDK_TARBALL
+          
           nohup pnpm start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
