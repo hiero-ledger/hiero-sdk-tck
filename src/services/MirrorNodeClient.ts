@@ -12,6 +12,7 @@ import {
   TokenAirdropsResponse,
   Topic,
   TopicMessagesResponse,
+  Schedule,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -40,6 +41,11 @@ class MirrorNodeClient {
 
   async getTopicMessages(topicId: string): Promise<TopicMessagesResponse> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/topics/${topicId}/messages`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getScheduleData(scheduleId: string): Promise<Schedule> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/schedules/${scheduleId}`;
     return retryOnError(async () => fetchData(url));
   }
 
