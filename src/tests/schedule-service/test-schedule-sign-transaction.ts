@@ -15,6 +15,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { retryOnError } from "@helpers/retry-on-error";
 import { twoKeyParams } from "@constants/key-list";
 import { deleteAccount } from "@helpers/account";
+import { invalidKey } from "@constants/key-type";
 
 /**
  * Tests for ScheduleSignTransaction
@@ -623,21 +624,21 @@ describe("ScheduleSignTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#2) Sign a schedule with invalid signature", async function () {
+    it("(#2) Sign a schedule with no new valid signature", async function () {
       const { scheduleId } = await createScheduleForSigning(this);
 
-      const invalidKey = "invalid_private_key_format";
+      const privateKey = await generateEd25519PrivateKey(this);
 
       try {
         await JSONRPCRequest(this, "signSchedule", {
           scheduleId,
           commonTransactionParams: {
-            signers: [invalidKey],
+            signers: [privateKey],
           },
         });
       } catch (err: any) {
-        expect(err.data.status).to.equal("KEY_PREFIX_MISMATCH");
-        await verifySignatureNotAdded(scheduleId, invalidKey);
+        expect(err.data.status).to.equal("NO_NEW_VALID_SIGNATURES");
+        await verifySignatureNotAdded(scheduleId, privateKey);
         return;
       }
       assert.fail("Should throw an error");
