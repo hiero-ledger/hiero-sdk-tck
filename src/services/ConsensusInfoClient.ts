@@ -26,6 +26,9 @@ import {
   TopicId,
   TopicInfo,
   TopicInfoQuery,
+  TransactionId,
+  TransactionReceipt,
+  TransactionReceiptQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
@@ -122,6 +125,16 @@ class ConsensusInfoClient {
   async getScheduleInfo(scheduleId: string): Promise<ScheduleInfo> {
     const query = new ScheduleInfoQuery();
     query.setScheduleId(ScheduleId.fromString(scheduleId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getTransactionReceipt(
+    transactionId: string,
+  ): Promise<TransactionReceipt> {
+    const query = new TransactionReceiptQuery();
+    query
+      .setValidateStatus(false)
+      .setTransactionId(TransactionId.fromString(transactionId));
     return query.execute(this.sdkClient);
   }
 
