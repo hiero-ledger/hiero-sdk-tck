@@ -28,6 +28,6 @@ services:
 
 networks:
   hedera-network-node:
-    external: true
+    driver: bridge
   hedera-mirror-node:
-    external: true
+    driver: bridge
