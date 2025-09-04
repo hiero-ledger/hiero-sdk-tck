@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-name: "System Compatibility"
+name: "System Compatibility (JS SDK)"
 
 permissions:
   contents: read
@@ -73,6 +73,7 @@ jobs:
           fetch-tags: true
           submodules: true
 
+      # Checkout the JS-SDK Version
       - name: Checkout JS-SDK Version
         run: |
           cd sdk-server
