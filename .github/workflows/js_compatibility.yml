@@ -23,6 +23,24 @@ on:
         description: "The version of the JS SDK to use (defaults to latest tag if not specified):"
         required: false
         type: string
+  workflow_call:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use"
+        required: false
+        type: string
+      consensus-node-version:
+        description: "The version of the consensus node to use"
+        required: false
+        type: string
+      js-sdk-version:
+        description: "The version of the JS SDK to use"
+        required: false
+        type: string
 
 defaults:
   run:

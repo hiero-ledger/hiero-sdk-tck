@@ -1,0 +1,92 @@
+name: "SDK Compatibility Testing"
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sdk-type:
+        description: "Which SDK to test"
+        required: true
+        type: choice
+        options:
+          - "js"
+          - "go"
+          - "both"
+        default: "both"
+      custom-job-name:
+        description: "Custom job name"
+        required: false
+        type: string
+      solo-version:
+        description: "Solo version (defaults to 0.38.0)"
+        required: false
+        type: string
+      consensus-node-version:
+        description: "Consensus node version (defaults to latest stable)"
+        required: false
+        type: string
+      js-sdk-version:
+        description: "JS SDK version (defaults to latest tag)"
+        required: false
+        type: string
+      go-sdk-version:
+        description: "Go SDK version (defaults to latest tag)"
+        required: false
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Test JavaScript SDK
+  js-compatibility:
+    if: ${{ inputs.sdk-type == 'js' || inputs.sdk-type == 'both' || github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: ${{ inputs.custom-job-name || 'JS SDK Compatibility' }}
+      solo-version: ${{ inputs.solo-version }}
+      consensus-node-version: ${{ inputs.consensus-node-version }}
+      js-sdk-version: ${{ inputs.js-sdk-version }}
+    secrets: inherit
+
+  # Test Go SDK  
+  go-compatibility:
+    if: ${{ inputs.sdk-type == 'go' || inputs.sdk-type == 'both' }}
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: ${{ inputs.custom-job-name || 'Go SDK Compatibility' }}
+      solo-version: ${{ inputs.solo-version }}
+      consensus-node-version: ${{ inputs.consensus-node-version }}
+      go-sdk-version: ${{ inputs.go-sdk-version }}
+    secrets: inherit
+
+  # Summary job
+  summary:
+    needs: [js-compatibility, go-compatibility]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Results Summary
+        run: |
+          echo "## Compatibility Test Results" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.js-compatibility.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.js-compatibility.result }}" == "success" ]]; then
+              echo "✅ **JS SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **JS SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          if [[ "${{ needs.go-compatibility.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.go-compatibility.result }}" == "success" ]]; then
+              echo "✅ **Go SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Go SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi 
