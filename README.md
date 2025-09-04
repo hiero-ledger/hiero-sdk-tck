@@ -205,6 +205,9 @@ The available test options include:
 - ContractCreate
 - ContractUpdate
 - ContractDelete
+- ContractExecute
+- ScheduleCreate
+- ScheduleSign
 - ALL (runs all tests)
 
 Running an invalid test name will display the complete list of available tests.

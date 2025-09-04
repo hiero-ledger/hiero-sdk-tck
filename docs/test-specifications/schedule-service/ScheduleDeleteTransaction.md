@@ -1,7 +1,7 @@
 ---
 title: Schedule Delete Transaction
 parent: Schedule Service
-nav_order: 2
+nav_order: 3
 ---
 # ScheduleDeleteTransaction - Test specification
 
