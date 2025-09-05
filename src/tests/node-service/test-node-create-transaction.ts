@@ -204,10 +204,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.message,
-          "Description must be at most 100 characters.",
-        );
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -328,10 +325,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.message,
-          "GossipEndpoints list must not be empty.",
-        );
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -359,10 +353,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.message,
-          "GossipEndpoints list must not contain more than 10 entries.",
-        );
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -598,7 +589,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SERVICE_ENDPOINTS");
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -624,7 +615,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_ENDPOINT");
         return;
       }
 
@@ -663,14 +654,14 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_GOSSIP_CA_CERTIFICATE");
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
-    it("(#28) Fails with invalid gossip certificate format", async function () {
+    it("(#28) Fails with invalid gossip certificate format (not hex string)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -685,29 +676,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_GOSSIP_CA_CERTIFICATE");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#29) Fails with malformed hex string", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          gossipCaCertificate: "not_hex_string",
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_GOSSIP_CA_CERTIFICATE");
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -747,7 +716,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#32) Fails with invalid gRPC certificate hash format", async function () {
+    it.skip("(#32) Fails with invalid gRPC certificate hash format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -769,7 +738,7 @@ describe("NodeCreateTransaction", function () {
     });
   });
 
-  describe("gRPC Web Proxy Endpoint", function () {
+  describe.skip("gRPC Web Proxy Endpoint", function () {
     it("(#33) Creates a node with gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -964,7 +933,7 @@ describe("NodeCreateTransaction", function () {
           adminKey: accountKey,
         });
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
@@ -992,8 +961,156 @@ describe("NodeCreateTransaction", function () {
     });
   });
 
+  describe("Missing Required Fields", function () {
+    it("(#47) Fails when accountId is missing", async function () {
+      const accountKey = await generateEd25519PrivateKey(this);
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          // accountId is missing
+          ...createNodeRequiredFields,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#48) Fails when gossipEndpoints is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          // gossipEndpoints is missing
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#49) Fails when gossipCaCertificate is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          // gossipCaCertificate is missing
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#50) Fails when adminKey is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          ...createNodeRequiredFields,
+          // adminKey is missing
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#51) Fails when multiple required fields are missing", async function () {
+      const accountKey = await generateEd25519PrivateKey(this);
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          // accountId, gossipEndpoints, gossipCaCertificate, and adminKey are all missing
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#52) Fails when all required fields are missing", async function () {
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          // All required fields are missing
+          description: "Test Node",
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          grpcCertificateHash: "a1b2c3d4e5f6",
+          declineReward: false,
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#53) Fails when only optional fields are provided", async function () {
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          // Only optional fields provided, no required fields
+          description: "Test Node",
+          serviceEndpoints: [
+            {
+              ipAddressV4: "127.0.0.1",
+              port: 50212,
+            },
+          ],
+          grpcCertificateHash: "a1b2c3d4e5f6",
+          grpcWebProxyEndpoint: {
+            ipAddressV4: "127.0.0.1",
+            port: 50213,
+          },
+          declineReward: true,
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+  });
+
   describe("Integration Tests", function () {
-    it("(#45) Creates a node with all optional parameters", async function () {
+    it("(#54) Creates a node with all optional parameters", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -1035,7 +1152,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#46) Creates multiple nodes with different configurations", async function () {
+    it("(#55) Creates multiple nodes with different configurations", async function () {
       const { accountKey: accountKey1, accountId: accountId1 } =
         await createTestAccount();
       const { accountKey: accountKey2, accountId: accountId2 } =

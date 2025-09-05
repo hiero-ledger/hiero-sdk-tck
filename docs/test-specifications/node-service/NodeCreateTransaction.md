@@ -53,11 +53,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 #### ServiceEndpointParams Structure
 
-| Parameter Name | Type   | Required/Optional | Description/Notes                                            |
-| -------------- | ------ | ----------------- | ------------------------------------------------------------ |
-| ipAddressV4    | string | optional          | IPv4 address as string (e.g., "127.0.0.1"). |
-| port           | number | required          | Port number for the service endpoint.                        |
-| domainName     | string | optional          | Fully qualified domain name (max 253 characters).            |
+See [ServiceEndpointParams Structure](ServiceEndpointParams.md) for detailed information about the endpoint parameter structure.
 
 ### Output Parameters
 
