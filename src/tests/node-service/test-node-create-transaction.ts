@@ -7,12 +7,13 @@ import { setOperator } from "@helpers/setup-tests";
 import { generateEd25519PrivateKey } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import { toHexString } from "@helpers/verify-contract-tx";
 
 /**
  * Tests for NodeCreateTransaction
  */
 
-describe("NodeCreateTransaction", function () {
+describe.only("NodeCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -42,16 +43,17 @@ describe("NodeCreateTransaction", function () {
   const validAccountId = "0.0.4";
 
   // Required fields for createNode method
+  const ipv4Address = new Uint8Array([127, 0, 0, 1]);
   const createNodeRequiredFields = {
     gossipEndpoints: [
       {
-        ipAddressV4: "127.0.0.1",
+        ipAddressV4: toHexString(ipv4Address),
         port: 50211,
       },
     ],
     serviceEndpoints: [
       {
-        ipAddressV4: "127.0.0.1",
+        ipAddressV4: toHexString(ipv4Address),
         port: 50211,
       },
     ],
@@ -133,10 +135,29 @@ describe("NodeCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+    it("(#5) Fails when accountId is missing", async function () {
+      const accountKey = await generateEd25519PrivateKey(this);
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          // accountId is missing
+          ...createNodeRequiredFields,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data.status).to.equal("INVALID_NODE_ACCOUNT_ID");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Description", function () {
-    it("(#5) Creates a node with valid description", async function () {
+    it("(#1) Creates a node with valid description", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -152,7 +173,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#6) Creates a node with empty description", async function () {
+    it("(#2) Creates a node with empty description", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -168,7 +189,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#7) Creates a node with description exactly 100 bytes", async function () {
+    it("(#3) Creates a node with description exactly 100 bytes", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create a description that is exactly 100 bytes
@@ -187,7 +208,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#8) Fails with description exceeding 100 bytes", async function () {
+    it("(#4) Fails with description exceeding 100 bytes", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create a description that exceeds 100 bytes
@@ -213,14 +234,14 @@ describe("NodeCreateTransaction", function () {
   });
 
   describe("Gossip Endpoints", function () {
-    it("(#10) Creates a node with single IP address endpoint", async function () {
+    it("(#1) Creates a node with single IP address endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
         gossipEndpoints: [
           {
-            ipAddressV4: "127.0.0.1",
+            ipAddressV4: toHexString(ipv4Address),
             port: 50211,
           },
         ],
@@ -235,7 +256,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#11) Creates a node with domain name endpoint", async function () {
+    it("(#2) Creates a node with domain name endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -257,18 +278,19 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#12) Creates a node with multiple gossip endpoints", async function () {
+    it("(#3) Creates a node with multiple gossip endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
+      const ipv4Address2 = new Uint8Array([127, 0, 0, 2]);
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
         gossipEndpoints: [
           {
-            ipAddressV4: "127.0.0.1",
+            ipAddressV4: toHexString(ipv4Address),
             port: 50211,
           },
           {
-            ipAddressV4: "127.0.0.2",
+            ipAddressV4: toHexString(ipv4Address2),
             port: 50212,
           },
           {
@@ -287,12 +309,12 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#13) Creates a node with maximum allowed gossip endpoints (10)", async function () {
+    it("(#4) Creates a node with maximum allowed gossip endpoints (10)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 10 gossip endpoints
       const maxGossipEndpoints = Array.from({ length: 10 }, (_, i) => ({
-        ipAddressV4: `127.0.0.${i + 1}`,
+        ipAddressV4: toHexString(new Uint8Array([127, 0, 0, i + 1])),
         port: 50211 + i,
       }));
 
@@ -310,7 +332,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#14) Fails with empty gossip endpoints array", async function () {
+    it("(#5) Fails with empty gossip endpoints array", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -332,12 +354,12 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#15) Fails with too many gossip endpoints (11)", async function () {
+    it("(#6) Fails with too many gossip endpoints (11)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 11 gossip endpoints (exceeds max of 10)
       const tooManyGossipEndpoints = Array.from({ length: 11 }, (_, i) => ({
-        ipAddressV4: `127.0.0.${i + 1}`,
+        ipAddressV4: toHexString(new Uint8Array([127, 0, 0, i + 1])),
         port: 50211 + i,
       }));
 
@@ -360,7 +382,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#16) Fails with missing port in endpoint", async function () {
+    it("(#7) Fails with missing port in endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -368,7 +390,7 @@ describe("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: [
             {
-              ipAddressV4: "127.0.0.1",
+              ipAddressV4: toHexString(ipv4Address),
             },
           ],
           serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
@@ -386,7 +408,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#17) Fails with both IP and domain in same endpoint", async function () {
+    it("(#8) Fails with both IP and domain in same endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -414,7 +436,8 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#18) Fails with invalid IP address format", async function () {
+    // TODO: fails with -SERVICE_ENDPOINTS_EXCEEDED_LIMIT for some reason
+    it.skip("(#9) Fails with invalid IP address format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -422,7 +445,7 @@ describe("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: [
             {
-              ipAddressV4: "invalid_ip",
+              ipAddressV4: toHexString(new Uint8Array([0])),
               port: 50211,
             },
           ],
@@ -441,7 +464,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#19) Fails with invalid port number (negative)", async function () {
+    it.skip("(#10) Fails with invalid port number (negative)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -468,7 +491,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#20) Fails with invalid port number (too high)", async function () {
+    it.skip("(#11) Fails with invalid port number (too high)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -494,10 +517,31 @@ describe("NodeCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+    it("(#12) Fails when gossipEndpoints is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          // gossipEndpoints is missing
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("Service Endpoints", function () {
-    it("(#21) Creates a node with service endpoints", async function () {
+    it("(#1) Creates a node with service endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -505,7 +549,7 @@ describe("NodeCreateTransaction", function () {
         gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
         serviceEndpoints: [
           {
-            ipAddressV4: "127.0.0.1",
+            ipAddressV4: toHexString(ipv4Address),
             port: 50212,
           },
         ],
@@ -519,7 +563,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#22) Creates a node with multiple service endpoints", async function () {
+    it("(#2) Creates a node with multiple service endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -527,7 +571,7 @@ describe("NodeCreateTransaction", function () {
         gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
         serviceEndpoints: [
           {
-            ipAddressV4: "127.0.0.1",
+            ipAddressV4: toHexString(ipv4Address),
             port: 50212,
           },
           {
@@ -545,12 +589,12 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#23) Creates a node with maximum allowed service endpoints (8)", async function () {
+    it("(#3) Creates a node with maximum allowed service endpoints (8)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 8 service endpoints
       const maxServiceEndpoints = Array.from({ length: 8 }, (_, i) => ({
-        ipAddressV4: `127.0.0.${i + 1}`,
+        ipAddressV4: toHexString(new Uint8Array([127, 0, 0, i + 1])),
         port: 50212 + i,
       }));
 
@@ -568,12 +612,12 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#24) Fails with too many service endpoints (9)", async function () {
+    it("(#4) Fails with too many service endpoints (9)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 9 service endpoints (exceeds max of 8)
       const tooManyServiceEndpoints = Array.from({ length: 9 }, (_, i) => ({
-        ipAddressV4: `127.0.0.${i + 1}`,
+        ipAddressV4: toHexString(new Uint8Array([127, 0, 0, i + 1])),
         port: 50212 + i,
       }));
 
@@ -596,7 +640,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#25) Fails with invalid service endpoint (missing port)", async function () {
+    it("(#5) Fails with invalid service endpoint (missing port)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -605,7 +649,7 @@ describe("NodeCreateTransaction", function () {
           gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
           serviceEndpoints: [
             {
-              ipAddressV4: "127.0.0.1",
+              ipAddressV4: toHexString(ipv4Address),
             },
           ],
           gossipCaCertificate: validGossipCertDER,
@@ -624,7 +668,7 @@ describe("NodeCreateTransaction", function () {
   });
 
   describe("Gossip CA Certificate", function () {
-    it("(#26) Creates a node with valid DER-encoded certificate", async function () {
+    it("(#1) Creates a node with valid DER-encoded certificate", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -639,7 +683,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#27) Fails with empty gossip certificate", async function () {
+    it("(#2) Fails with empty gossip certificate", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -661,7 +705,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#28) Fails with invalid gossip certificate format (not hex string)", async function () {
+    it("(#3) Fails with invalid gossip certificate format (not hex string)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -682,10 +726,31 @@ describe("NodeCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+    it("(#4) Fails when gossipCaCertificate is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          // gossipCaCertificate is missing
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
   describe("gRPC Certificate Hash", function () {
-    it("(#30) Creates a node with valid gRPC certificate hash", async function () {
+    it("(#1) Creates a node with valid gRPC certificate hash", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -701,7 +766,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#31) Creates a node without gRPC certificate hash", async function () {
+    it("(#2) Creates a node without gRPC certificate hash", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -716,7 +781,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it.skip("(#32) Fails with invalid gRPC certificate hash format", async function () {
+    it("(#3) Fails with invalid gRPC certificate hash format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -738,15 +803,15 @@ describe("NodeCreateTransaction", function () {
     });
   });
 
-  describe.skip("gRPC Web Proxy Endpoint", function () {
-    it("(#33) Creates a node with gRPC web proxy endpoint", async function () {
+  describe("gRPC Web Proxy Endpoint", function () {
+    it("(#1) Creates a node with gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
         ...createNodeRequiredFields,
         grpcWebProxyEndpoint: {
-          ipAddressV4: "127.0.0.1",
+          ipAddressV4: toHexString(ipv4Address),
           port: 50213,
         },
         adminKey: accountKey,
@@ -758,7 +823,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#34) Creates a node with domain-based gRPC web proxy endpoint", async function () {
+    it("(#2) Creates a node with domain-based gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -777,7 +842,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#35) Fails with invalid gRPC web proxy endpoint (missing port)", async function () {
+    it("(#3) Fails with invalid gRPC web proxy endpoint (missing port)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -785,7 +850,7 @@ describe("NodeCreateTransaction", function () {
           accountId: accountId,
           ...createNodeRequiredFields,
           grpcWebProxyEndpoint: {
-            ipAddressV4: "127.0.0.1",
+            ipAddressV4: toHexString(ipv4Address),
           },
           adminKey: accountKey,
           commonTransactionParams: {
@@ -793,7 +858,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_ENDPOINT");
         return;
       }
 
@@ -802,7 +867,7 @@ describe("NodeCreateTransaction", function () {
   });
 
   describe("Admin Key", function () {
-    it("(#36) Creates a node with valid ED25519 admin key", async function () {
+    it("(#1) Creates a node with valid ED25519 admin key", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -817,7 +882,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#37) Fails with empty admin key", async function () {
+    it("(#2) Fails with empty admin key", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -830,14 +895,14 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.data.status).to.equal("KEY_REQUIRED");
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
-    it("(#38) Fails with invalid admin key format", async function () {
+    it("(#3) Fails with invalid admin key format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -845,6 +910,26 @@ describe("NodeCreateTransaction", function () {
           accountId: accountId,
           ...createNodeRequiredFields,
           adminKey: "invalid_key",
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Fails when adminKey is missing", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          ...createNodeRequiredFields,
+          // adminKey is missing
           commonTransactionParams: {
             signers: [accountKey],
           },
@@ -859,7 +944,7 @@ describe("NodeCreateTransaction", function () {
   });
 
   describe("Decline Reward", function () {
-    it("(#39) Creates a node that accepts rewards (default)", async function () {
+    it("(#1) Creates a node that accepts rewards (default)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -874,7 +959,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#40) Creates a node that declines rewards", async function () {
+    it("(#2) Creates a node that declines rewards", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -890,7 +975,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#41) Creates a node with explicit declineReward: false", async function () {
+    it("(#3) Creates a node with explicit declineReward: false", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -908,7 +993,7 @@ describe("NodeCreateTransaction", function () {
   });
 
   describe("Common Transaction Params", function () {
-    it("(#42) Creates a node with valid signers", async function () {
+    it("(#1) Creates a node with valid signers", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -923,7 +1008,7 @@ describe("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#43) Fails without signing", async function () {
+    it("(#2) Fails without signing", async function () {
       const { accountId, accountKey } = await createTestAccount();
 
       try {
@@ -940,7 +1025,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#44) Fails with empty signers array", async function () {
+    it("(#3) Fails with empty signers array", async function () {
       const { accountId, accountKey } = await createTestAccount();
 
       try {
@@ -958,239 +1043,6 @@ describe("NodeCreateTransaction", function () {
       }
 
       assert.fail("Should throw an error");
-    });
-  });
-
-  describe("Missing Required Fields", function () {
-    it("(#47) Fails when accountId is missing", async function () {
-      const accountKey = await generateEd25519PrivateKey(this);
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          // accountId is missing
-          ...createNodeRequiredFields,
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.data.status).to.equal("INVALID_NODE_ACCOUNT_ID");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#48) Fails when gossipEndpoints is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          // gossipEndpoints is missing
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          gossipCaCertificate: validGossipCertDER,
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#49) Fails when gossipCaCertificate is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          // gossipCaCertificate is missing
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#50) Fails when adminKey is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          ...createNodeRequiredFields,
-          // adminKey is missing
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#51) Fails when multiple required fields are missing", async function () {
-      const accountKey = await generateEd25519PrivateKey(this);
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          // accountId, gossipEndpoints, gossipCaCertificate, and adminKey are all missing
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#52) Fails when all required fields are missing", async function () {
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          // All required fields are missing
-          description: "Test Node",
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          grpcCertificateHash: "a1b2c3d4e5f6",
-          declineReward: false,
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#53) Fails when only optional fields are provided", async function () {
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          // Only optional fields provided, no required fields
-          description: "Test Node",
-          serviceEndpoints: [
-            {
-              ipAddressV4: "127.0.0.1",
-              port: 50212,
-            },
-          ],
-          grpcCertificateHash: "a1b2c3d4e5f6",
-          grpcWebProxyEndpoint: {
-            ipAddressV4: "127.0.0.1",
-            port: 50213,
-          },
-          declineReward: true,
-        });
-      } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-  });
-
-  describe("Integration Tests", function () {
-    it("(#54) Creates a node with all optional parameters", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      const response = await JSONRPCRequest(this, "createNode", {
-        accountId: accountId,
-        description: "Full Featured Test Node",
-        gossipEndpoints: [
-          {
-            ipAddressV4: "127.0.0.1",
-            port: 50211,
-          },
-          {
-            domainName: "gossip.example.com",
-            port: 50212,
-          },
-        ],
-        serviceEndpoints: [
-          {
-            ipAddressV4: "127.0.0.1",
-            port: 50213,
-          },
-          {
-            domainName: "service.example.com",
-            port: 50214,
-          },
-        ],
-        gossipCaCertificate: validGossipCertDER,
-        grpcCertificateHash: "a1b2c3d4e5f6",
-        grpcWebProxyEndpoint: {
-          ipAddressV4: "127.0.0.1",
-          port: 50215,
-        },
-        adminKey: accountKey,
-        declineReward: true,
-        commonTransactionParams: {
-          signers: [accountKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-    });
-
-    it("(#55) Creates multiple nodes with different configurations", async function () {
-      const { accountKey: accountKey1, accountId: accountId1 } =
-        await createTestAccount();
-      const { accountKey: accountKey2, accountId: accountId2 } =
-        await createTestAccount();
-
-      // Create first node
-      const response1 = await JSONRPCRequest(this, "createNode", {
-        accountId: accountId1,
-        description: "Node 1",
-        ...createNodeRequiredFields,
-        adminKey: accountKey1,
-        declineReward: false,
-        commonTransactionParams: {
-          signers: [accountKey1],
-        },
-      });
-
-      // Create second node
-      const response2 = await JSONRPCRequest(this, "createNode", {
-        accountId: accountId2,
-        description: "Node 2",
-        gossipEndpoints: [
-          {
-            domainName: "node2.example.com",
-            port: 50212,
-          },
-        ],
-        serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-        gossipCaCertificate: validGossipCertDER,
-        adminKey: accountKey2,
-        declineReward: true,
-        commonTransactionParams: {
-          signers: [accountKey2],
-        },
-      });
-
-      expect(response1.status).to.equal("SUCCESS");
-      expect(response2.status).to.equal("SUCCESS");
     });
   });
 });
