@@ -4,6 +4,7 @@ import {
   AccountId,
   AccountInfo,
   AccountInfoQuery,
+  AddressBookQuery,
   Client,
   ContractCallQuery,
   ContractFunctionParameters,
@@ -40,7 +41,8 @@ class ConsensusInfoClient {
       };
       this.sdkClient = Client.forNetwork(node);
     } else {
-      this.sdkClient = Client.forTestnet();
+      this.sdkClient = Client.forLocalNode();
+      this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
     }
 
     this.sdkClient.setOperator(
@@ -144,6 +146,23 @@ class ConsensusInfoClient {
     query.setGas(100000);
 
     return query.execute(this.sdkClient);
+  }
+
+  async getNodeInfo(nodeId: string): Promise<any> {
+    const query = new AddressBookQuery();
+    query.setFileId("0.0.102"); // Address book file ID is always 0.0.102
+    const addressBook = await query.execute(this.sdkClient);
+
+    // Find the node with the specified node ID
+    const node = addressBook.nodeAddresses.find(
+      (nodeAddress) => nodeAddress.nodeId?.toString() === nodeId,
+    );
+
+    if (!node) {
+      throw new Error(`Node with ID ${nodeId} not found in address book`);
+    }
+
+    return node;
   }
 }
 
