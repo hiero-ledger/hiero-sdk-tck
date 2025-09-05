@@ -830,7 +830,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("KEY_REQUIRED");
         return;
       }
 
@@ -850,7 +850,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("KEY_REQUIRED");
         return;
       }
 
@@ -933,7 +933,7 @@ describe("NodeCreateTransaction", function () {
           adminKey: accountKey,
         });
       } catch (err: any) {
-        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        assert.equal(err.data.status, "INVALID_SIGNATURE");
         return;
       }
 
@@ -975,7 +975,7 @@ describe("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_NODE_ACCOUNT_ID");
         return;
       }
 
