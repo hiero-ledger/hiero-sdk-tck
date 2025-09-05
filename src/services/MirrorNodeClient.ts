@@ -12,6 +12,7 @@ import {
   TokenAirdropsResponse,
   Topic,
   TopicMessagesResponse,
+  NetworkNodesResponse,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -92,6 +93,11 @@ class MirrorNodeClient {
 
   async getContractData(contractId: string): Promise<Contract> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/contracts/${contractId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getNodeData(nodeId: string): Promise<NetworkNodesResponse> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/network/nodes?node.id=${nodeId}`;
     return retryOnError(async () => fetchData(url));
   }
 }
