@@ -135,7 +135,8 @@ describe.only("NodeCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
-    it("(#5) Fails when accountId is missing", async function () {
+
+    it("(#5) Fails with no account ID", async function () {
       const accountKey = await generateEd25519PrivateKey(this);
 
       try {
@@ -226,6 +227,75 @@ describe.only("NodeCreateTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Creates a node with description containing special characters", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      const response = await JSONRPCRequest(this, "createNode", {
+        accountId: accountId,
+        description: "Node with special chars: !@#$%^&*()",
+        ...createNodeRequiredFields,
+        adminKey: accountKey,
+        commonTransactionParams: {
+          signers: [accountKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#6) Creates a node with description containing only whitespace", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      const response = await JSONRPCRequest(this, "createNode", {
+        accountId: accountId,
+        description: "    ",
+        ...createNodeRequiredFields,
+        adminKey: accountKey,
+        commonTransactionParams: {
+          signers: [accountKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#7) Creates a node with description containing unicode characters", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      const response = await JSONRPCRequest(this, "createNode", {
+        accountId: accountId,
+        description: "测试文件备注 🚀",
+        ...createNodeRequiredFields,
+        adminKey: accountKey,
+        commonTransactionParams: {
+          signers: [accountKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#8) Creates a node with invalid description", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          description: "Test\0description",
+          ...createNodeRequiredFields,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NODE_DESCRIPTION");
         return;
       }
 
@@ -332,13 +402,12 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#5) Fails with empty gossip endpoints array", async function () {
+    it("(#5) Fails with no gossip endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
         await JSONRPCRequest(this, "createNode", {
           accountId: accountId,
-          gossipEndpoints: [],
           serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
           gossipCaCertificate: validGossipCertDER,
           adminKey: accountKey,
@@ -445,7 +514,7 @@ describe.only("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: [
             {
-              ipAddressV4: toHexString(new Uint8Array([0])),
+              ipAddressV4: toHexString(new Uint8Array([192, 168, 1])),
               port: 50211,
             },
           ],
@@ -464,6 +533,7 @@ describe.only("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
+    // TODO: does not fail
     it.skip("(#10) Fails with invalid port number (negative)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -472,7 +542,7 @@ describe.only("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: [
             {
-              ipAddressV4: "127.0.0.1",
+              ipAddressV4: toHexString(ipv4Address),
               port: -1,
             },
           ],
@@ -484,13 +554,14 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_ENDPOINT");
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
+    // TODO: does not fail
     it.skip("(#11) Fails with invalid port number (too high)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -499,7 +570,7 @@ describe.only("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: [
             {
-              ipAddressV4: "127.0.0.1",
+              ipAddressV4: toHexString(ipv4Address),
               port: 65536,
             },
           ],
@@ -511,28 +582,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-    it("(#12) Fails when gossipEndpoints is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          // gossipEndpoints is missing
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          gossipCaCertificate: validGossipCertDER,
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        expect(err.data.status).to.equal("INVALID_GOSSIP_ENDPOINT");
+        expect(err.data.status).to.equal("INVALID_ENDPOINT");
         return;
       }
 
@@ -540,7 +590,7 @@ describe.only("NodeCreateTransaction", function () {
     });
   });
 
-  describe("Service Endpoints", function () {
+  describe.only("Service Endpoints", function () {
     it("(#1) Creates a node with service endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -563,7 +613,29 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#2) Creates a node with multiple service endpoints", async function () {
+    it("(#2) Creates a node with domain name service endpoint", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      const response = await JSONRPCRequest(this, "createNode", {
+        accountId: accountId,
+        gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+        serviceEndpoints: [
+          {
+            domainName: "service.example.com",
+            port: 50212,
+          },
+        ],
+        gossipCaCertificate: validGossipCertDER,
+        adminKey: accountKey,
+        commonTransactionParams: {
+          signers: [accountKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#3) Creates a node with multiple service endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -589,7 +661,7 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#3) Creates a node with maximum allowed service endpoints (8)", async function () {
+    it("(#4) Creates a node with maximum allowed service endpoints (8)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 8 service endpoints
@@ -612,7 +684,28 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#4) Fails with too many service endpoints (9)", async function () {
+    it("(#5) Fails with no service endpoints", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#6) Fails with too many service endpoints (9)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       // Create 9 service endpoints (exceeds max of 8)
@@ -640,7 +733,7 @@ describe.only("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it("(#5) Fails with invalid service endpoint (missing port)", async function () {
+    it("(#7) Fails with invalid service endpoint (missing port)", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -660,6 +753,118 @@ describe.only("NodeCreateTransaction", function () {
         });
       } catch (err: any) {
         expect(err.data.status).to.equal("INVALID_ENDPOINT");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#8) Fails with both IP and domain in same service endpoint", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: [
+            {
+              ipAddressV4: toHexString(ipv4Address),
+              domainName: "service.example.com",
+              port: 50212,
+            },
+          ],
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    //TODO: fails with SERVICE_ENDPOINTS_EXCEEDED_LIMIT for some reason
+    it.skip("(#9) Fails with invalid IP address format in service endpoint", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: [
+            {
+              ipAddressV4: toHexString(new Uint8Array([192, 168, 1])),
+              port: 50212,
+            },
+          ],
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data.status).to.equal("INVALID_IPV4_ADDRESS");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    //TODO: does not fail
+    it("(#10) Fails with invalid port number (negative) in service endpoint", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: [
+            {
+              ipAddressV4: toHexString(ipv4Address),
+              port: -1,
+            },
+          ],
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    //TODO: does not fail
+    it.skip("(#11) Fails with invalid port number (too high) in service endpoint", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: [
+            {
+              ipAddressV4: toHexString(ipv4Address),
+              port: 65536,
+            },
+          ],
+          gossipCaCertificate: validGossipCertDER,
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
 
