@@ -1,21 +1,21 @@
 ---
-title: ServiceEndpointParams Structure
+title: ServiceEndpoint Structure
 parent: Node Service
 nav_order: 2
 ---
 
-# ServiceEndpointParams Structure
+# ServiceEndpoint Structure
 
 ## Description
 
-The `ServiceEndpointParams` structure defines the parameters for service endpoints used in node creation transactions. This structure is used for both gossip endpoints and service endpoints.
+The `ServiceEndpoint` structure defines the parameters for service endpoints used in node creation transactions. This structure is used for both gossip endpoints and service endpoints.
 
 ## Structure Definition
 
 | Parameter Name | Type   | Required/Optional | Description/Notes                                            |
 | -------------- | ------ | ----------------- | ------------------------------------------------------------ |
-| ipAddressV4    | string | optional          | IPv4 address as string (e.g., "127.0.0.1"). |
-| port           | number | required          | Port number for the service endpoint.                        |
+| ipAddressV4    | string | optional          | IPv4 address as hex string. |
+| port           | number | optional          | Port number for the service endpoint.                        |
 | domainName     | string | optional          | Fully qualified domain name (max 253 characters).            |
 
 ## Usage Notes
