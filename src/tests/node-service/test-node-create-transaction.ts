@@ -28,6 +28,9 @@ describe("NodeCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
+  // Global variable to track the current node ID for cleanup
+  let currentNodeId: string | null = null;
+
   beforeEach(async function () {
     await setOperator(
       this,
@@ -37,6 +40,19 @@ describe("NodeCreateTransaction", function () {
   });
 
   afterEach(async function () {
+    // Clean up the created node if it exists
+    if (currentNodeId) {
+      try {
+        await JSONRPCRequest(this, "deleteNode", {
+          nodeId: currentNodeId,
+        });
+      } catch (err) {
+        // Ignore cleanup errors - node might already be deleted or not exist
+        console.warn(`Failed to cleanup node ${currentNodeId}:`, err);
+      }
+      currentNodeId = null;
+    }
+
     await JSONRPCRequest(this, "reset");
   });
 
@@ -85,6 +101,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Fails with empty account ID", async function () {
@@ -183,6 +200,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node with empty description", async function () {
@@ -199,6 +217,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node with description exactly 100 bytes", async function () {
@@ -218,6 +237,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#4) Fails with description exceeding 100 bytes", async function () {
@@ -258,6 +278,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#6) Creates a node with description containing only whitespace", async function () {
@@ -274,6 +295,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#7) Creates a node with description containing unicode characters", async function () {
@@ -290,6 +312,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#8) Creates a node with invalid description", async function () {
@@ -335,6 +358,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node with domain name endpoint", async function () {
@@ -357,6 +381,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node with multiple gossip endpoints", async function () {
@@ -388,6 +413,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#4) Creates a node with maximum allowed gossip endpoints (10)", async function () {
@@ -411,6 +437,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#5) Fails with no gossip endpoints", async function () {
@@ -622,6 +649,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node with domain name service endpoint", async function () {
@@ -644,6 +672,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node with multiple service endpoints", async function () {
@@ -670,6 +699,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#4) Creates a node with maximum allowed service endpoints (8)", async function () {
@@ -693,6 +723,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#5) Fails with no service endpoints", async function () {
@@ -897,6 +928,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Fails with empty gossip certificate", async function () {
@@ -1002,6 +1034,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node with empty certificate hash", async function () {
@@ -1018,6 +1051,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node without gRPC certificate hash", async function () {
@@ -1033,6 +1067,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     //TODO: Does not failneeds investigation
@@ -1076,6 +1111,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node with domain-based gRPC web proxy endpoint", async function () {
@@ -1095,6 +1131,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Fails with invalid gRPC web proxy endpoint (missing port)", async function () {
@@ -1155,6 +1192,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node with valid ED25519 private key as admin key", async function () {
@@ -1171,6 +1209,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#4) Creates a node with valid ECDSAsecp256k1 private key as admin key", async function () {
@@ -1187,6 +1226,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#5) Creates a node with valid KeyList of ED25519 and ECDSAsecp256k1 keys as admin key", async function () {
@@ -1208,6 +1248,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#6) Creates a node with valid nested KeyList (three levels) as admin key", async function () {
@@ -1234,6 +1275,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#7) Creates a node with valid ThresholdKey of ED25519 and ECDSAsecp256k1 keys as admin key", async function () {
@@ -1250,6 +1292,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#8) Fails with invalid admin key format", async function () {
@@ -1352,6 +1395,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Creates a node that declines rewards", async function () {
@@ -1368,6 +1412,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#3) Creates a node with explicit declineReward: false", async function () {
@@ -1384,6 +1429,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
   });
 
@@ -1401,6 +1447,7 @@ describe("NodeCreateTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
+      currentNodeId = response.nodeId;
     });
 
     it("(#2) Fails without signing", async function () {
