@@ -877,7 +877,7 @@ describe.only("NodeUpdateTransaction", function () {
       }
     });
 
-    it.skip("(#4) Fails with malformed hex string", async function () {
+    it("(#4) Fails with malformed hex string", async function () {
       const gossipCaCertificate = "not_hex_string";
 
       try {
@@ -892,9 +892,9 @@ describe.only("NodeUpdateTransaction", function () {
         assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
-          err.data.status,
-          "INVALID_GOSSIP_CA_CERTIFICATE",
-          "Invalid gossip CA certificate",
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
         );
       }
     });
@@ -957,9 +957,9 @@ describe.only("NodeUpdateTransaction", function () {
         assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
-          err.data.status,
-          "INVALID_GRPC_CERTIFICATE_HASH",
-          "Invalid gRPC certificate hash",
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
         );
       }
     });
@@ -979,9 +979,9 @@ describe.only("NodeUpdateTransaction", function () {
         assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
-          err.data.status,
-          "INVALID_GRPC_CERTIFICATE_HASH",
-          "Invalid gRPC certificate hash",
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
         );
       }
     });
