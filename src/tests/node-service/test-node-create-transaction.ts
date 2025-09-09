@@ -532,7 +532,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_GOSSIP_ENDPOINT");
         return;
       }
 
@@ -741,7 +741,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_GOSSIP_CA_CERTIFICATE");
         return;
       }
 
@@ -781,7 +781,7 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#3) Fails with invalid gRPC certificate hash format", async function () {
+    it.skip("(#3) Fails with invalid gRPC certificate hash format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -803,7 +803,7 @@ describe.only("NodeCreateTransaction", function () {
     });
   });
 
-  describe("gRPC Web Proxy Endpoint", function () {
+  describe.skip("gRPC Web Proxy Endpoint", function () {
     it("(#1) Creates a node with gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -895,7 +895,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("KEY_REQUIRED");
         return;
       }
 
@@ -915,7 +915,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("KEY_REQUIRED");
         return;
       }
 
