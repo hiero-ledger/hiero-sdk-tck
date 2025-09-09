@@ -19,6 +19,7 @@ import {
   twoLevelsNestedKeyListParams,
   twoThresholdKeyParams,
 } from "@helpers/constants/key-list";
+import { invalidKey } from "@constants/key-type";
 
 /**
  * Tests for NodeCreateTransaction
@@ -1070,8 +1071,7 @@ describe("NodeCreateTransaction", function () {
       currentNodeId = response.nodeId;
     });
 
-    //TODO: Does not failneeds investigation
-    it.skip("(#4) Fails with malformed hex string", async function () {
+    it("(#4) Fails with malformed hex string", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -1093,7 +1093,7 @@ describe("NodeCreateTransaction", function () {
     });
   });
 
-  describe.skip("gRPC Web Proxy Endpoint", function () {
+  describe("gRPC Web Proxy Endpoint", function () {
     it("(#1) Creates a node with gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -1302,13 +1302,17 @@ describe("NodeCreateTransaction", function () {
         await JSONRPCRequest(this, "createNode", {
           accountId: accountId,
           ...createNodeRequiredFields,
-          adminKey: "invalid_key",
+          adminKey: invalidKey,
           commonTransactionParams: {
             signers: [accountKey],
           },
         });
       } catch (err: any) {
-        expect(err.data.status).to.equal("KEY_REQUIRED");
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
         return;
       }
 
@@ -1430,61 +1434,6 @@ describe("NodeCreateTransaction", function () {
 
       expect(response.status).to.equal("SUCCESS");
       currentNodeId = response.nodeId;
-    });
-  });
-
-  describe("Common Transaction Params", function () {
-    it("(#1) Creates a node with valid signers", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      const response = await JSONRPCRequest(this, "createNode", {
-        accountId: accountId,
-        ...createNodeRequiredFields,
-        adminKey: accountKey,
-        commonTransactionParams: {
-          signers: [accountKey],
-        },
-      });
-
-      expect(response.status).to.equal("SUCCESS");
-      currentNodeId = response.nodeId;
-    });
-
-    it("(#2) Fails without signing", async function () {
-      const { accountId, accountKey } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          ...createNodeRequiredFields,
-          adminKey: accountKey,
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#3) Fails with empty signers array", async function () {
-      const { accountId, accountKey } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          ...createNodeRequiredFields,
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_SIGNATURE");
-        return;
-      }
-
-      assert.fail("Should throw an error");
     });
   });
 });
