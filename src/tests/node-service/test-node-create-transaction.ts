@@ -25,7 +25,7 @@ import { invalidKey } from "@constants/key-type";
  * Tests for NodeCreateTransaction
  */
 
-describe("NodeCreateTransaction", function () {
+describe.only("NodeCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
@@ -544,8 +544,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    // TODO: fails with -SERVICE_ENDPOINTS_EXCEEDED_LIMIT for some reason
-    it.skip("(#9) Fails with invalid IP address format", async function () {
+    it("(#9) Fails with invalid IP address format", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -830,8 +829,7 @@ describe("NodeCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    //TODO: fails with SERVICE_ENDPOINTS_EXCEEDED_LIMIT for some reason
-    it.skip("(#9) Fails with invalid IP address format in service endpoint", async function () {
+    it("(#9) Fails with invalid IP address format in service endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
