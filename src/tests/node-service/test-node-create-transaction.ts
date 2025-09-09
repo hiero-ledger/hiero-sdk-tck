@@ -590,7 +590,7 @@ describe.only("NodeCreateTransaction", function () {
     });
   });
 
-  describe.only("Service Endpoints", function () {
+  describe("Service Endpoints", function () {
     it("(#1) Creates a node with service endpoints", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -903,14 +903,14 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        expect(err.data.status).to.equal("INVALID_GOSSIP_CA_CERTIFICATE");
         return;
       }
 
       assert.fail("Should throw an error");
     });
 
-    it("(#3) Fails with invalid gossip certificate format (not hex string)", async function () {
+    it("(#3) Fails with missing gossip certificate", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
@@ -918,28 +918,6 @@ describe.only("NodeCreateTransaction", function () {
           accountId: accountId,
           gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
           serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          gossipCaCertificate: "invalid_cert",
-          adminKey: accountKey,
-          commonTransactionParams: {
-            signers: [accountKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-    it("(#4) Fails when gossipCaCertificate is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
-
-      try {
-        await JSONRPCRequest(this, "createNode", {
-          accountId: accountId,
-          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
-          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
-          // gossipCaCertificate is missing
           adminKey: accountKey,
           commonTransactionParams: {
             signers: [accountKey],
@@ -952,9 +930,53 @@ describe.only("NodeCreateTransaction", function () {
 
       assert.fail("Should throw an error");
     });
+
+    it("(#4) Fails with invalid gossip certificate format", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          gossipCaCertificate: "ffff",
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data.status).to.equal("INVALID_GOSSIP_CA_CERTIFICATE");
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Fails with malformed hex string", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          gossipEndpoints: createNodeRequiredFields.gossipEndpoints,
+          serviceEndpoints: createNodeRequiredFields.serviceEndpoints,
+          gossipCaCertificate: "not_hex_string",
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.code, ErrorStatusCodes.INTERNAL_ERROR);
+        return;
+      }
+
+      assert.fail("Should throw an error");
+    });
   });
 
-  describe("gRPC Certificate Hash", function () {
+  describe.only("gRPC Certificate Hash", function () {
     it("(#1) Creates a node with valid gRPC certificate hash", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
@@ -971,7 +993,23 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it("(#2) Creates a node without gRPC certificate hash", async function () {
+    it("(#2) Creates a node with empty certificate hash", async function () {
+      const { accountKey, accountId } = await createTestAccount();
+
+      const response = await JSONRPCRequest(this, "createNode", {
+        accountId: accountId,
+        ...createNodeRequiredFields,
+        grpcCertificateHash: "",
+        adminKey: accountKey,
+        commonTransactionParams: {
+          signers: [accountKey],
+        },
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#3) Creates a node without gRPC certificate hash", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -986,14 +1024,14 @@ describe.only("NodeCreateTransaction", function () {
       expect(response.status).to.equal("SUCCESS");
     });
 
-    it.skip("(#3) Fails with invalid gRPC certificate hash format", async function () {
+    it("(#4) Fails with malformed hex string", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
       try {
         await JSONRPCRequest(this, "createNode", {
           accountId: accountId,
           ...createNodeRequiredFields,
-          grpcCertificateHash: "invalid_hash",
+          grpcCertificateHash: "not_hex_string",
           adminKey: accountKey,
           commonTransactionParams: {
             signers: [accountKey],
