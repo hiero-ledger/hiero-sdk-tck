@@ -25,7 +25,7 @@ import { invalidKey } from "@constants/key-type";
  * Tests for NodeCreateTransaction
  */
 
-describe.only("NodeCreateTransaction", function () {
+describe("NodeCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
