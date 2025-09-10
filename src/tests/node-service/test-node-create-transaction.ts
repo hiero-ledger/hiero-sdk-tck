@@ -1092,24 +1092,28 @@ describe.only("NodeCreateTransaction", function () {
   });
 
   describe("gRPC Web Proxy Endpoint", function () {
-    it("(#1) Creates a node with gRPC web proxy endpoint", async function () {
+    it("(#1) Fails with no domain name gRPC web proxy endpoint", async function () {
       const { accountKey, accountId } = await createTestAccount();
 
-      const response = await JSONRPCRequest(this, "createNode", {
-        accountId: accountId,
-        ...createNodeRequiredFields,
-        grpcWebProxyEndpoint: {
-          ipAddressV4: toHexString(ipv4Address),
-          port: 50213,
-        },
-        adminKey: accountKey,
-        commonTransactionParams: {
-          signers: [accountKey],
-        },
-      });
+      try {
+        await JSONRPCRequest(this, "createNode", {
+          accountId: accountId,
+          ...createNodeRequiredFields,
+          grpcWebProxyEndpoint: {
+            ipAddressV4: toHexString(ipv4Address),
+            port: 50213,
+          },
+          adminKey: accountKey,
+          commonTransactionParams: {
+            signers: [accountKey],
+          },
+        });
+      } catch (err: any) {
+        expect(err.data.status).to.equal("INVALID_SERVICE_ENDPOINT");
+        return;
+      }
 
-      expect(response.status).to.equal("SUCCESS");
-      currentNodeId = response.nodeId;
+      assert.fail("Should throw an error");
     });
 
     it("(#2) Creates a node with domain-based gRPC web proxy endpoint", async function () {
@@ -1148,7 +1152,7 @@ describe.only("NodeCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        expect(err.data.status).to.equal("INVALID_ENDPOINT");
+        expect(err.data.status).to.equal("INVALID_SERVICE_ENDPOINT");
         return;
       }
 
