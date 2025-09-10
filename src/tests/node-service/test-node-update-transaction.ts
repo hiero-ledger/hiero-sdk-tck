@@ -15,11 +15,10 @@ import { twoLevelsNestedKeyListParams } from "@constants/key-list";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { invalidKey } from "@constants/key-type";
 import { toHexString } from "@helpers/verify-contract-tx";
-import { retryOnError } from "@helpers/retry-on-error";
 /**
  * Tests for NodeUpdateTransaction
  */
-describe.only("NodeUpdateTransaction", function () {
+describe("NodeUpdateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
   let adminKey: string;
