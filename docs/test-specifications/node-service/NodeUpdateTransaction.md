@@ -75,6 +75,17 @@ The tests contained in this specification will assume that valid accounts were a
 | 3       | Cannot update a node without providing a node ID |                  | INTERNAL_ERROR                               | Y                 |
 | 4       | Cannot update a node with a negative node ID     | nodeId="-1"      | The node update fails with `INVALID_NODE_ID` | Y                 |
 
+### **AccountId:**
+
+- Tests the account ID parameter for updating a consensus node
+
+| Test no | Name                                 | Input                                                                                                                                     | Expected response                                                 | Implemented (Y/N) |
+| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------- |
+| 1       | Updates a node with valid account ID | nodeId="0", accountId=<CREATED_ACCOUNT_ID>, adminKey=<CREATED_ADMIN_KEY>, commonTransactionParams.signers=[<CREATED_ACCOUNT_PRIVATE_KEY>] | The node update succeeds.                                         | Y                 |
+| 2       | Fails with empty account ID          | nodeId="0", accountId="", adminKey=<CREATED_ADMIN_KEY>, commonTransactionParams.signers=[<CREATED_ACCOUNT_PRIVATE_KEY>]                   | The node update fails with an SDK internal error.                 | Y                 |
+| 3       | Fails with non-existent account ID   | nodeId="0", accountId="123.456.789", adminKey=<CREATED_ADMIN_KEY>, commonTransactionParams.signers=[<CREATED_ACCOUNT_PRIVATE_KEY>]        | The node update fails with an `INVALID_ACCOUNT_ID` response code. | Y                 |
+| 4       | Fails with invalid account ID        | nodeId="0", accountId="invalid.account.id", adminKey=<CREATED_ADMIN_KEY>, commonTransactionParams.signers=[<CREATED_ACCOUNT_PRIVATE_KEY>] | The node update fails with an SDK internal error.                 | Y                 |
+
 ### **Description:**
 
 - Tests the description parameter with various lengths and formats

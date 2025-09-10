@@ -137,12 +137,77 @@ describe.only("NodeUpdateTransaction", function () {
     });
   });
 
-  describe.skip("AccountId", function () {
+  describe("AccountId", function () {
     it("(#1) Updates a node with a valid account ID", async function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         accountId: validAccountId,
+        adminKey: adminKey,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
       });
+
+      expect(response.status).to.equal("SUCCESS");
+    });
+
+    it("(#2) Fails with empty account ID", async function () {
+      try {
+        await JSONRPCRequest(this, "updateNode", {
+          nodeId: nodeId,
+          accountId: "",
+          adminKey: adminKey,
+          commonTransactionParams: {
+            signers: [adminKey],
+          },
+        });
+
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+      }
+    });
+
+    it("(#3) Fails with non-existent account ID", async function () {
+      try {
+        await JSONRPCRequest(this, "updateNode", {
+          nodeId: nodeId,
+          accountId: "123.456.789",
+          adminKey: adminKey,
+          commonTransactionParams: {
+            signers: [adminKey],
+          },
+        });
+
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_NODE_ACCOUNT_ID");
+      }
+    });
+
+    it("(#4) Fails with invalid account ID", async function () {
+      try {
+        await JSONRPCRequest(this, "updateNode", {
+          nodeId: nodeId,
+          accountId: "invalid.account.id",
+          adminKey: adminKey,
+          commonTransactionParams: {
+            signers: [adminKey],
+          },
+        });
+
+        assert.fail("Should throw an error");
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+      }
     });
   });
 
