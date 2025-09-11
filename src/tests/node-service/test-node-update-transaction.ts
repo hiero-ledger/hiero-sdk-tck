@@ -30,30 +30,24 @@ describe("NodeUpdateTransaction", function () {
 
   const validAccountId = "0.0.4";
 
-  const ipv4Address = new Uint8Array([127, 0, 0, 1]);
+  const ipv4Address = toHexString(new Uint8Array([127, 0, 0, 1]));
   const createNodeRequiredFields = {
     gossipEndpoints: [
       {
-        ipAddressV4: toHexString(ipv4Address),
+        ipAddressV4: ipv4Address,
         port: 50211,
       },
     ],
     serviceEndpoints: [
       {
-        ipAddressV4: toHexString(ipv4Address),
+        ipAddressV4: ipv4Address,
         port: 50211,
       },
     ],
     gossipCaCertificate: validGossipCertDER,
   };
 
-  beforeEach(async function () {
-    await setOperator(
-      this,
-      process.env.OPERATOR_ACCOUNT_ID as string,
-      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
-    );
-
+  const createNode = async () => {
     adminKey = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string;
     ipAddressV4 = toHexString(new Uint8Array([127, 0, 0, 1]));
 
@@ -67,15 +61,21 @@ describe("NodeUpdateTransaction", function () {
     });
 
     nodeId = responseCreateNode.nodeId;
+  };
+
+  beforeEach(async function () {
+    await setOperator(
+      this,
+      process.env.OPERATOR_ACCOUNT_ID as string,
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+    );
+
+    if (!nodeId) {
+      await createNode();
+    }
   });
 
   afterEach(async function () {
-    if (nodeId) {
-      await JSONRPCRequest(this, "deleteNode", {
-        nodeId: nodeId,
-      });
-    }
-
     await JSONRPCRequest(this, "reset");
   });
 
@@ -105,9 +105,6 @@ describe("NodeUpdateTransaction", function () {
       try {
         await JSONRPCRequest(this, "updateNode", {
           description: "Test description",
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -131,6 +128,22 @@ describe("NodeUpdateTransaction", function () {
 
         assert.fail("Should throw an error");
       } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+      }
+    });
+
+    it("(#5) Cannot update a node with uint64 max node ID", async function () {
+      try {
+        await JSONRPCRequest(this, "updateNode", {
+          nodeId: "18446744073709551615",
+        });
+
+        assert.fail("Should throw an error");
+      } catch (err: any) {
         assert.equal(err.data.status, "INVALID_NODE_ID");
       }
     });
@@ -141,10 +154,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         accountId: validAccountId,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -155,10 +164,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           accountId: "",
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -176,10 +181,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           accountId: "123.456.789",
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -193,10 +194,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           accountId: "invalid.account.id",
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -216,10 +213,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -231,10 +224,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -247,10 +236,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           description: description,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -269,10 +254,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -284,10 +265,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -299,10 +276,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -314,10 +287,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -329,10 +298,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         description: description,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -351,10 +316,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         gossipEndpoints: gossipEndpoints,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -371,10 +332,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         gossipEndpoints: gossipEndpoints,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -396,10 +353,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         gossipEndpoints: gossipEndpoints,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -414,10 +367,6 @@ describe("NodeUpdateTransaction", function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         gossipEndpoints: gossipEndpoints,
-        adminKey: adminKey,
-        commonTransactionParams: {
-          signers: [adminKey],
-        },
       });
 
       expect(response.status).to.equal("SUCCESS");
@@ -433,10 +382,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           gossipEndpoints: gossipEndpoints,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -456,10 +401,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           gossipEndpoints: gossipEndpoints,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -483,10 +424,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           gossipEndpoints: gossipEndpoints,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -508,10 +445,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           gossipEndpoints: gossipEndpoints,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -527,7 +460,7 @@ describe("NodeUpdateTransaction", function () {
     it("(#9) Fails with invalid IP address format", async function () {
       const gossipEndpoints: any = [
         {
-          ipAddressV4: "invalid_ip",
+          ipAddressV4: toHexString(new Uint8Array([192, 168, 1])),
           port: 50211,
         },
       ];
@@ -536,10 +469,6 @@ describe("NodeUpdateTransaction", function () {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
           gossipEndpoints: gossipEndpoints,
-          adminKey: adminKey,
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
         });
 
         assert.fail("Should throw an error");
@@ -779,7 +708,7 @@ describe("NodeUpdateTransaction", function () {
     it("(#9) Fails with invalid IP address format in service endpoint", async function () {
       const serviceEndpoints: any = [
         {
-          ipAddressV4: "invalid_ip",
+          ipAddressV4: toHexString(new Uint8Array([192, 168, 1])),
           port: 50212,
         },
       ];
@@ -1079,6 +1008,14 @@ describe("NodeUpdateTransaction", function () {
   });
 
   describe("AdminKey", function () {
+    beforeEach(async function () {
+      await createNode();
+    });
+
+    afterEach(async function () {
+      nodeId = null as any;
+    });
+
     it("(#1) Updates a node with a valid ED25519 public key as admin key", async function () {
       const newPrivateKey = await generateEd25519PrivateKey(this);
       const newPublicKey = await generateEd25519PublicKey(this, newPrivateKey);
