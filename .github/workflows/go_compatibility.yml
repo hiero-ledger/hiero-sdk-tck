@@ -77,8 +77,8 @@ jobs:
         run: |
           cd sdk-server
           if [ -n "${{ inputs.go-sdk-version }}" ]; then
-            echo "Using specified GO SDK version: ${{ inputs.go-sdk-version }}"
-            git checkout ${{ inputs.go-sdk-version }}
+            echo "Using specified GO SDK version: tck-fix-old-tests"
+            git checkout tck-fix-old-tests
           else
             echo "Using latest GO SDK tag"
             git fetch --tags
