@@ -473,7 +473,11 @@ describe("NodeUpdateTransaction", function () {
 
         assert.fail("Should throw an error");
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_ENDPOINT", "Invalid endpoint");
+        assert.equal(
+          err.data.status,
+          "INVALID_IPV4_ADDRESS",
+          "Invalid IP address",
+        );
       }
     });
 
@@ -724,7 +728,11 @@ describe("NodeUpdateTransaction", function () {
 
         assert.fail("Should throw an error");
       } catch (err: any) {
-        assert.equal(err.data.status, "INVALID_ENDPOINT", "Invalid endpoint");
+        assert.equal(
+          err.data.status,
+          "INVALID_IPV4_ADDRESS",
+          "Invalid IP address",
+        );
       }
     });
 
