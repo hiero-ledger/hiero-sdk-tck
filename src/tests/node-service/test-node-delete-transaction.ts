@@ -187,29 +187,7 @@ describe.only("NodeDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Delete a node with empty node ID", async function () {
-      const adminKey = await generateEd25519PrivateKey(this);
-
-      try {
-        await JSONRPCRequest(this, "deleteNode", {
-          nodeId: "",
-          commonTransactionParams: {
-            signers: [adminKey],
-          },
-        });
-      } catch (err: any) {
-        assert.equal(
-          err.code,
-          ErrorStatusCodes.INTERNAL_ERROR,
-          "Internal error",
-        );
-        return;
-      }
-
-      assert.fail("Should throw an error");
-    });
-
-    it("(#7) Delete a node with negative node ID", async function () {
+    it("(#6) Delete a node with negative node ID", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
 
       try {
