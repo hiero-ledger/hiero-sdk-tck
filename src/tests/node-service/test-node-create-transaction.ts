@@ -41,9 +41,9 @@ describe("NodeCreateTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  const createTestAccount = async () => {
-    const accountKey = await generateEd25519PrivateKey(this);
-    const accountResponse = await JSONRPCRequest(this, "createAccount", {
+  const createTestAccount = async (context: any) => {
+    const accountKey = await generateEd25519PrivateKey(context);
+    const accountResponse = await JSONRPCRequest(context, "createAccount", {
       key: accountKey,
     });
     return { accountKey, accountId: accountResponse.accountId };
@@ -74,7 +74,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Account ID", function () {
     it("(#1) Creates a node with valid account ID", async function () {
-      const { accountKey } = await createTestAccount();
+      const { accountKey } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: validAccountId,
@@ -171,7 +171,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Description", function () {
     it("(#1) Creates a node with valid description", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -187,7 +187,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with empty description", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -203,7 +203,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node with description exactly 100 bytes", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create a description that is exactly 100 bytes
       const exactDescription = "a".repeat(100);
@@ -222,7 +222,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Fails with description exceeding 100 bytes", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create a description that exceeds 100 bytes
       const longDescription = "a".repeat(101);
@@ -246,7 +246,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#5) Creates a node with description containing special characters", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -262,7 +262,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#6) Creates a node with description containing only whitespace", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -278,7 +278,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#7) Creates a node with description containing unicode characters", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -294,7 +294,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#8) Creates a node with invalid description", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -317,7 +317,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Gossip Endpoints", function () {
     it("(#1) Creates a node with single IP address endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -339,7 +339,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with domain name endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -361,7 +361,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node with multiple gossip endpoints", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const ipv4Address2 = new Uint8Array([127, 0, 0, 2]);
       const response = await JSONRPCRequest(this, "createNode", {
@@ -392,7 +392,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Creates a node with maximum allowed gossip endpoints (10)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create 10 gossip endpoints
       const maxGossipEndpoints = Array.from({ length: 10 }, (_, i) => ({
@@ -415,7 +415,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#5) Fails with no gossip endpoints", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -436,7 +436,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#6) Fails with too many gossip endpoints (11)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create 11 gossip endpoints (exceeds max of 10)
       const tooManyGossipEndpoints = Array.from({ length: 11 }, (_, i) => ({
@@ -464,7 +464,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#7) Fails with missing port in endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -490,7 +490,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#8) Fails with both IP and domain in same endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -518,7 +518,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#9) Fails with invalid IP address format", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -546,7 +546,7 @@ describe("NodeCreateTransaction", function () {
 
     // TODO: does not fail
     it.skip("(#10) Fails with invalid port number (negative)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -574,7 +574,7 @@ describe("NodeCreateTransaction", function () {
 
     // TODO: does not fail
     it.skip("(#11) Fails with invalid port number (too high)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -603,7 +603,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Service Endpoints", function () {
     it("(#1) Creates a node with service endpoints", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -625,7 +625,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with domain name service endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -647,7 +647,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node with multiple service endpoints", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -673,7 +673,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Creates a node with maximum allowed service endpoints (8)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create 8 service endpoints
       const maxServiceEndpoints = Array.from({ length: 8 }, (_, i) => ({
@@ -696,7 +696,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#5) Fails with no service endpoints", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -717,7 +717,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#6) Fails with too many service endpoints (9)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       // Create 9 service endpoints (exceeds max of 8)
       const tooManyServiceEndpoints = Array.from({ length: 9 }, (_, i) => ({
@@ -745,7 +745,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#7) Fails with invalid service endpoint (missing port)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -771,7 +771,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#8) Fails with both IP and domain in same service endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -799,7 +799,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#9) Fails with invalid IP address format in service endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -827,7 +827,7 @@ describe("NodeCreateTransaction", function () {
 
     //TODO: does not fail
     it.skip("(#10) Fails with invalid port number (negative) in service endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -855,7 +855,7 @@ describe("NodeCreateTransaction", function () {
 
     //TODO: does not fail
     it.skip("(#11) Fails with invalid port number (too high) in service endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -884,7 +884,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Gossip CA Certificate", function () {
     it("(#1) Creates a node with valid DER-encoded certificate", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -899,7 +899,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Fails with empty gossip certificate", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -921,7 +921,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Fails with missing gossip certificate", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -942,7 +942,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Fails with invalid gossip certificate format", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -964,7 +964,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#5) Fails with malformed hex string", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -988,7 +988,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("gRPC Certificate Hash", function () {
     it("(#1) Creates a node with valid gRPC certificate hash", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1004,7 +1004,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with empty certificate hash", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1020,7 +1020,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node without gRPC certificate hash", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1035,7 +1035,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Fails with malformed hex string", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -1058,7 +1058,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("gRPC Web Proxy Endpoint", function () {
     it("(#1) Fails with no domain name gRPC web proxy endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -1082,7 +1082,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with domain-based gRPC web proxy endpoint", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1101,7 +1101,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Fails with invalid gRPC web proxy endpoint (missing port)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -1126,7 +1126,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Admin Key", function () {
     it("(#1) Creates a node with valid ED25519 admin key", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1141,7 +1141,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node with valid ECDSAsecp256k1 public key as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const ecdsaPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
       const ecdsaPublicKey = await generateEcdsaSecp256k1PublicKey(
         this,
@@ -1161,7 +1161,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node with valid ED25519 private key as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -1177,7 +1177,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#4) Creates a node with valid ECDSAsecp256k1 private key as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const ecdsaPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -1193,7 +1193,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#5) Creates a node with valid KeyList of ED25519 and ECDSAsecp256k1 keys as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const keyList = await generateKeyList(this, fourKeysKeyListParams);
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -1214,7 +1214,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#6) Creates a node with valid nested KeyList (three levels) as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const nestedKeyList = await generateKeyList(
         this,
         twoLevelsNestedKeyListParams,
@@ -1240,7 +1240,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#7) Creates a node with valid ThresholdKey of ED25519 and ECDSAsecp256k1 keys as admin key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const thresholdKey = await generateKeyList(this, twoThresholdKeyParams);
 
       const response = await JSONRPCRequest(this, "createNode", {
@@ -1256,7 +1256,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#8) Fails with invalid admin key format", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -1280,7 +1280,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#9) Fails when adminKey is missing", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       try {
         await JSONRPCRequest(this, "createNode", {
@@ -1300,7 +1300,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#10) Fails with valid admin key without signing with the new key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
 
       try {
@@ -1319,7 +1319,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#11) Fails with valid public key as admin key and signs with incorrect private key", async function () {
-      const { accountId } = await createTestAccount();
+      const { accountId } = await createTestAccount(this);
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
         this,
@@ -1347,7 +1347,7 @@ describe("NodeCreateTransaction", function () {
 
   describe("Decline Reward", function () {
     it("(#1) Creates a node that accepts rewards (default)", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1362,7 +1362,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#2) Creates a node that declines rewards", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
@@ -1378,7 +1378,7 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("(#3) Creates a node with explicit declineReward: false", async function () {
-      const { accountKey, accountId } = await createTestAccount();
+      const { accountKey, accountId } = await createTestAccount(this);
 
       const response = await JSONRPCRequest(this, "createNode", {
         accountId: accountId,
