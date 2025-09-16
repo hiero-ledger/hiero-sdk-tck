@@ -71,28 +71,50 @@ jobs:
           node-version: "20"
           cache: "npm"
 
-      - name: Start local Hedera network
+      - name: Setup Kind
+        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
+        with:
+          install_only: true
+          node_image: kindest/node:v1.31.4@sha256:2cb39f7295fe7eafee0842b1052a599a4fb0f8bcf3f83d96c7f4864c357c6c30
+          version: v0.26.0
+          kubectl_version: v1.31.4
+          verbosity: 3
+          wait: 120s
+
+      - name: Install Solo CLI
         run: |
-          # TODO: Remove the static version once the issue is fixed
-          ionice -c 2 -n 2 nice -n 19 npx @hashgraph/hedera-local@2.37.1 start -d \
-            --network local \
-            --balance=10000000 \
-            --cache-dir=/tmp/hedera-cache
-      - name: Wait for Hedera local network
+          set -euo pipefail
+          npm install -g @hashgraph/solo
+          solo --version
+          kind --version
+
+      - name: Deploy Solo
+        id: solo_deploy
+        env:
+          SOLO_CLUSTER_NAME: solo
+          SOLO_NAMESPACE: solo
+          SOLO_CLUSTER_SETUP_NAMESPACE: solo-cluster
+          SOLO_DEPLOYMENT: solo-deployment
         run: |
-          echo "Waiting for Hedera local network on port 50211..."
-          until bash -c 'exec 3>/dev/tcp/localhost/50211'; do
-            echo "Still waiting..."
-            sleep 1
-          done
-          echo "Hedera local network is ready!"
+          set -euo pipefail
+          kind create cluster -n "${SOLO_CLUSTER_NAME}"
+          solo quick-start single deploy | tee solo-deploy.log
+
+      - name: Check port forwarding
+        run: |
+          ps -ef | grep port-forward
+          env
+          curl -fsS http://localhost:8080/api/v1/network/nodes
+          curl -fsS http://localhost:8081/api/v1/network/nodes
       # TODO: Update this once we have a dynamically updated image
       - name: Pull JS TCK Server
         run: |
           docker pull ivaylogarnev/js-tck-server-amd
+
       - name: Start tck-server in background
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up -d tck-server
+
       - name: Wait for TCK server
         run: |
           echo "Waiting for TCK server on port 8544..."
@@ -101,11 +123,13 @@ jobs:
             sleep 1
           done
           echo "TCK server is ready!"
+
       - name: Run ${{ matrix.suite }} tests
         run: |
           TEST=${{ matrix.suite }} docker compose -f ./docker-compose.yml up \
             --abort-on-container-exit \
             --exit-code-from hiero-tck-client hiero-tck-client
+            
       - name: Stop the local node and containers
         if: ${{ always() }}
         run: |
