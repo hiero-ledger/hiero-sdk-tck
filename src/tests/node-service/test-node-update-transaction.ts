@@ -47,11 +47,11 @@ describe("NodeUpdateTransaction", function () {
     gossipCaCertificate: validGossipCertDER,
   };
 
-  const createNode = async () => {
+  const createNode = async (context: any) => {
     adminKey = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string;
     ipAddressV4 = toHexString(new Uint8Array([127, 0, 0, 1]));
 
-    const responseCreateNode = await JSONRPCRequest(this, "createNode", {
+    const responseCreateNode = await JSONRPCRequest(context, "createNode", {
       accountId: validAccountId,
       ...createNodeRequiredFields,
       adminKey: adminKey,
@@ -71,7 +71,7 @@ describe("NodeUpdateTransaction", function () {
     );
 
     if (!nodeId) {
-      await createNode();
+      await createNode(this);
     }
   });
 
@@ -1017,7 +1017,7 @@ describe("NodeUpdateTransaction", function () {
 
   describe("AdminKey", function () {
     beforeEach(async function () {
-      await createNode();
+      await createNode(this);
     });
 
     afterEach(async function () {
