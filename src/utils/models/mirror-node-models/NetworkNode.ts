@@ -63,4 +63,7 @@ export type NetworkNode = {
   stake_rewarded: number | null;
   staking_period: TimestampRangeNullable;
   timestamp: TimestampRange;
+  decline_reward: boolean | null;
+  grpc_proxy_endpoint: ServiceEndpoints | null;
+  gossip_endpoints: ServiceEndpoints | null;
 };

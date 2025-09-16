@@ -28,6 +28,13 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
     "src/tests/contract-service/test-contract-update-transaction.ts",
   ContractDelete:
     "src/tests/contract-service/test-contract-delete-transaction.ts",
+  ContractExecute:
+    "src/tests/contract-service/test-contract-execute-transaction.ts",
+
+  // Schedule Service Tests
+  ScheduleCreate:
+    "src/tests/schedule-service/test-schedule-create-transaction.ts",
+  ScheduleSign: "src/tests/schedule-service/test-schedule-sign-transaction.ts",
 
   // Token Service Tests
   TokenAirdropCancel:
