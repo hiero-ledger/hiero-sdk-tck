@@ -37,7 +37,7 @@ The TCK provides ready-to-use configurations to run tests against the [Hedera te
 
 ### Start a JSON-RPC server
 
-Start only the JSON-RPC server for the SDK you want to test. The JSON-RPC server for the specified SDK will parse the JSON formatted request received by the test driver. The JSON-RPC server will execute the corresponding function or procedure associated with that method and prepare the response in JSON format to send back to the test driver. 
+Start only the JSON-RPC server for the SDK you want to test. The JSON-RPC server for the specified SDK will parse the JSON formatted request received by the test driver. The JSON-RPC server will execute the corresponding function or procedure associated with that method and prepare the response in JSON format to send back to the test driver.
 
 By default, the TCK will look for a JSON-RPC Server at: `http://localhost:8544/`, but this can be configured by changing the `JSON_RPC_SERVER_URL` in your `.env` file:
 
@@ -86,6 +86,7 @@ npm run format
 The TCK uses OpenAPI model generation to create TypeScript interfaces and types from the `Hiero Mirror Node API` specification. This allows for type-safe interaction with the Mirror Node API and provides better development experience with autocompletion and type checking.
 
 The OpenAPI specification is defined in `mirror-node.yaml` and contains the complete API schema, including:
+
 - API endpoints and their paths
 - Request/response structures
 - Data types and models
@@ -95,21 +96,25 @@ The OpenAPI specification is defined in `mirror-node.yaml` and contains the comp
 #### Generation Process
 
 1. Generate the TypeScript models:
+
 ```bash
 npm run generate-mirror-node-models
 ```
 
 2. Clean up and reorganize the generated files:
+
 ```bash
 task cleanup-generated-mirror-node-models
 ```
 
 The cleanup task (defined in `Taskfile.yaml`) performs the following:
+
 - Removes unnecessary `core` and `services` directories
 - Flattens the directory structure by moving files from `models/` to the root
 - Updates import paths in `index.ts` to reflect the new structure
 
 **You can also run both steps together using (recommended):**
+
 ```bash
 task generate-mirror-node-models
 ```
@@ -133,7 +138,9 @@ docker pull ivaylogarnev/hiero-tck-client
 The Docker image supports running tests against both local and testnet environments.
 
 #### Local Network (Default)
+
 To run tests against a local network:
+
 ```bash
 # Run specific test
 docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}  ivaylogarnev/hiero-tck-client
@@ -142,13 +149,14 @@ docker run --network host -e TEST=AccountCreate -e  JSON_RPC_SERVER_URL=http://h
 docker run --network host -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} ivaylogarnev/tck-client
 ```
 
-*NOTE: The default port is 8544.*
+_NOTE: The default port is 8544._
 
 ### Configuring any custom local network
+
 To run tests against any other custom local network, you need to set the following environment variables:
 
 | Environment Variable           | Description                             |
-|--------------------------------|-----------------------------------------|
+| ------------------------------ | --------------------------------------- |
 | `OPERATOR_ACCOUNT_ID`          | The account ID of the operator          |
 | `OPERATOR_ACCOUNT_PRIVATE_KEY` | The private key of the operator account |
 | `JSON_RPC_SERVER_URL`          | The URL of the JSON-RPC server          |
@@ -156,20 +164,24 @@ To run tests against any other custom local network, you need to set the followi
 For a complete list of configurable environment variables, refer to the `.env.custom_node` file. This file contains default values and descriptions for each variable, which can be adjusted to fit your custom network setup.
 
 #### Testnet
+
 To run tests against Hedera Testnet:
+
 ```bash
 docker run --network host \
   -e NETWORK=testnet \
   -e OPERATOR_ACCOUNT_ID=your-account-id \
   -e OPERATOR_ACCOUNT_PRIVATE_KEY=your-private-key \
-  -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} 
+  -e  JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT}
   # Run specific test
   -e TEST=AccountCreate \
   ivaylogarnev/hiero-tck-client
 ```
 
 ### Available Tests
+
 The available test options include:
+
 - AccountAllowanceApprove
 - AccountAllowanceDelete
 - AccountCreate
@@ -205,6 +217,12 @@ The available test options include:
 - ContractCreate
 - ContractUpdate
 - ContractDelete
+- ContractExecute
+- ScheduleCreate
+- ScheduleSign
+- NodeCreate
+- NodeUpdate
+- NodeDelete
 - ALL (runs all tests)
 
 Running an invalid test name will display the complete list of available tests.
@@ -212,6 +230,7 @@ Running an invalid test name will display the complete list of available tests.
 ### Building the Docker Image Locally
 
 If you want to build the image locally:
+
 ```bash
 docker build -t hiero-tck-client .
 ```
@@ -222,11 +241,12 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 
 `RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
 
-
 ## TCK Release Process
 
 To release a new version of the TCK, follow these steps:
+
 1. **Rename the previous 'latest' Docker image with last tag in the repository**:
+
    ```sh
    # This pulls the current 'latest' image, tags it with the specified
    # version number, and pushes it to DockerHub
@@ -235,25 +255,27 @@ To release a new version of the TCK, follow these steps:
    ```
 
 2. **Update Test Suites:**
-   - Add new tests to `test_regression.yml` 
+
+   - Add new tests to `test_regression.yml`
    - Register test paths in `src/utils/constants/test-paths.ts`
    - Submit a pull request and merge the changes
 
 3. **Tag current version:**
+
    ```sh
-   git tag -a v*.*.* -m "Stable tag v*.*.*" 
+   git tag -a v*.*.* -m "Stable tag v*.*.*"
    git push origin v*.*.*
    ```
 
 4. **Build and Push New Docker Image:**
-   ```sh   
+   ```sh
    # Builds the Docker image and pushes it with the 'latest' tag
    task release-hiero-tck-client
    ```
 
 > **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
 
- **Note:** Ensure all tests pass before creating a new release.
+**Note:** Ensure all tests pass before creating a new release.
 
 ## Contributing
 

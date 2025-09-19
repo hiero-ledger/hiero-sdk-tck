@@ -70,3 +70,15 @@ export const twoThresholdKeyParams = {
     },
   ],
 };
+
+export const twoKeyParams = {
+  type: "keyList",
+  keys: [
+    {
+      type: "ed25519PrivateKey",
+    },
+    {
+      type: "ed25519PublicKey",
+    },
+  ],
+};
