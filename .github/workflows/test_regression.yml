@@ -55,6 +55,9 @@ jobs:
           - ContractExecute
           - ScheduleCreate
           - ScheduleSign
+          - NodeCreate
+          - NodeUpdate
+          - NodeDelete
       fail-fast: false
     steps:
       - name: Harden Runner
