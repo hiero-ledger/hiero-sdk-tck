@@ -7,7 +7,7 @@ import {
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
 
-describe.only("AccountBalanceQueryTransaction", function () {
+describe("AccountBalanceQueryTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -25,15 +25,15 @@ describe.only("AccountBalanceQueryTransaction", function () {
   describe("Account ID/Contract ID", function () {
     it("(#1) Queries the balance of an account", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const response = await JSONRPCRequest(this, "createAccount", {
+      const responseAccount = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
         initialBalance: "10",
       });
 
-      const balance = await JSONRPCRequest(this, "getAccountBalance", {
-        accountId: response.accountId,
+      const response = await JSONRPCRequest(this, "getAccountBalance", {
+        accountId: responseAccount.accountId,
       });
-      expect(balance).to.equal("10");
+      expect(response.balance).to.equal("10");
     });
 
     it("(#2) Query for the balance with no params", async function () {
@@ -68,7 +68,7 @@ describe.only("AccountBalanceQueryTransaction", function () {
         ed25519PrivateKey,
       );
 
-      const response = await JSONRPCRequest(this, "createContract", {
+      const responseContract = await JSONRPCRequest(this, "createContract", {
         initcode: bytecode,
         gas,
         initialBalance: "1000",
@@ -78,10 +78,10 @@ describe.only("AccountBalanceQueryTransaction", function () {
         },
       });
 
-      const balance = await JSONRPCRequest(this, "getAccountBalance", {
-        contractId: response.contractId,
+      const response = await JSONRPCRequest(this, "getAccountBalance", {
+        contractId: responseContract.contractId,
       });
-      expect(balance).to.equal("1000");
+      expect(response.balance).to.equal("1000");
     });
 
     it("(#5) Query for the balance of a contract that doesn't exist", async function () {
@@ -109,7 +109,7 @@ describe.only("AccountBalanceQueryTransaction", function () {
         ed25519PrivateKey,
       );
 
-      const response = await JSONRPCRequest(this, "createContract", {
+      const responseContract = await JSONRPCRequest(this, "createContract", {
         initcode: bytecode,
         gas,
         initialBalance: "1000",
@@ -119,12 +119,12 @@ describe.only("AccountBalanceQueryTransaction", function () {
         },
       });
 
-      const balance = await JSONRPCRequest(this, "getAccountBalance", {
-        contractId: response.contractId,
+      const response = await JSONRPCRequest(this, "getAccountBalance", {
+        contractId: responseContract.contractId,
         accountId: accountId,
       });
 
-      expect(balance).to.equal("1000");
+      expect(response.balance).to.equal("1000");
     });
   });
 
