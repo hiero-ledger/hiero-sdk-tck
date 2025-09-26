@@ -50,3 +50,28 @@ const transaction = new AccountBalanceQuery().setAccountId(accountId);
 | 4       | Query for the balance of a contract                      | contractId=<VALID_CONTRACT_ID>                               | The account balance query succeeds                                             | Y                 |
 | 5       | Query for the balance of an contract that doesn't exist  | contractId=1000000.0.0                                       | The account balance query fails and returns error response INVALID_CONTRACT_ID | Y                 |
 | 6       | Query for the balance with both accountId and contractId | accountId=<VALID_ACCOUNT_ID>, contractId=<VALID_CONTRACT_ID> | The account balance query succeeds with contractId                             | Y                 |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6539,
+  "method": "getAccountBalance",
+  "params": {
+    "accountId": "0.0.983"
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6539,
+  "result": {
+    "balance": "10"
+  }
+}
+```
