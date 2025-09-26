@@ -19,6 +19,9 @@ export async function createAccount(
   privateKey: string,
 ): Promise<string> {
   return (
-    await JSONRPCRequest(thisContext, "createAccount", { key: privateKey })
+    await JSONRPCRequest(thisContext, "createAccount", {
+      key: privateKey,
+      initialBalance: "100",
+    })
   ).accountId;
 }
