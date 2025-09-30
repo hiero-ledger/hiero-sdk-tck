@@ -36,6 +36,11 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
     "src/tests/schedule-service/test-schedule-create-transaction.ts",
   ScheduleSign: "src/tests/schedule-service/test-schedule-sign-transaction.ts",
 
+  // Node Service Tests
+  NodeCreate: "src/tests/node-service/test-node-create-transaction.ts",
+  NodeUpdate: "src/tests/node-service/test-node-update-transaction.ts",
+  NodeDelete: "src/tests/node-service/test-node-delete-transaction.ts",
+
   // Token Service Tests
   TokenAirdropCancel:
     "src/tests/token-service/test-token-airdrop-cancel-transaction.ts",
