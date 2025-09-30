@@ -21,7 +21,6 @@ export async function createAccount(
   return (
     await JSONRPCRequest(thisContext, "createAccount", {
       key: privateKey,
-      initialBalance: "100",
     })
   ).accountId;
 }
