@@ -188,7 +188,7 @@ describe("ScheduleDeleteTransaction", function () {
     });
   };
 
-  describe("Happy Path Schedule Test Cases", function () {
+  describe("Delete a Scheduled Tx using Schedule ID", function () {
     it("(#1) Deletes a scheduled transaction that is not yet executed", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const adminPublicKey = await generateEd25519PublicKey(
@@ -230,16 +230,17 @@ describe("ScheduleDeleteTransaction", function () {
       await retryOnError(async () => {
         const mirrorScheduleData =
           await mirrorNodeClient.getScheduleData(scheduleId);
-        console.debug(
-          "mirrorScheduleData.deleted = " + mirrorScheduleData.deleted,
-        );
         expect(mirrorScheduleData).to.not.be.null;
         expect(mirrorScheduleData.schedule_id?.toString()).to.equal(scheduleId);
+        // console.debug(
+        //  "mirrorScheduleData.deleted = " + mirrorScheduleData.deleted,
+        // );
+        // assert.equal(mirrorScheduleData.deleted, "true");
       });
     });
   });
 
-  describe("Error Path Schedule Test Cases", function () {
+  describe("Delete a Scheduled Tx using invalid/wrong parameters e.g. Schedule ID", function () {
     it("(#2) Deletes a scheduled transaction without the admin key", async function () {
       const { scheduleId, senderPrivateKey } =
         await createScheduleForSigning(this);
@@ -259,11 +260,6 @@ describe("ScheduleDeleteTransaction", function () {
     });
 
     it("(#3) Deletes a scheduled transaction with a schedule ID the doesn't exist", async function () {
-      const { scheduleId, senderPrivateKey } =
-        await createScheduleForSigning(this);
-
-      await verifyScheduleExists(scheduleId);
-
       const invalidScheduleId = "9.9.9999";
       try {
         await JSONRPCRequest(this, "deleteSchedule", {
@@ -278,22 +274,17 @@ describe("ScheduleDeleteTransaction", function () {
     });
 
     it("(#4) Deletes a scheduled transaction with an empty schedule ID", async function () {
-      const { scheduleId, senderPrivateKey } =
-        await createScheduleForSigning(this);
-
-      await verifyScheduleExists(scheduleId);
-
-      const emptyidScheduleId = "";
+      const emptyScheduleId = "";
 
       try {
         await JSONRPCRequest(this, "deleteSchedule", {
-          emptyidScheduleId,
+          scheduleId: emptyScheduleId,
           commonTransactionParams: {},
         });
       } catch (err: any) {
         // TODO: ScheduleDeleteTransaction.md says it should be..
         //  "The schedule deletion fails with an internal SDK error."
-        assert.equal(err.data.status, "INVALID_SCHEDULE_ID");
+        assert.equal(err.code, "-32603");
         return;
       }
       assert.fail("Should throw an error");
@@ -453,22 +444,17 @@ describe("ScheduleDeleteTransaction", function () {
     });
 
     it("(#9) Deletes a scheduled transaction with invalid schedule ID", async function () {
-      const { scheduleId, senderPrivateKey } =
-        await createScheduleForSigning(this);
-
-      await verifyScheduleExists(scheduleId);
-
       const invalidScheduleId = "Invalid.Schedule.Id";
 
       try {
         await JSONRPCRequest(this, "deleteSchedule", {
-          invalidScheduleId,
+          scheduleId: invalidScheduleId,
           commonTransactionParams: {},
         });
       } catch (err: any) {
         // TODO: ScheduleDeleteTransaction.md says it should be..
         //  "The schedule deletion fails with an internal SDK error."
-        assert.equal(err.data.status, "INVALID_SCHEDULE_ID");
+        assert.equal(err.code, "-32603");
         return;
       }
       assert.fail("Should throw an error");
