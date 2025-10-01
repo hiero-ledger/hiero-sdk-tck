@@ -26,15 +26,25 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/crypto_get_acco
 
 https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.proto
 
-## Initialisation:
+## JSON-RPC API Endpoint Documentation
 
-```jsx
-new AccountBalanceQuery();
+### Method Name
 
-//example
+`getAccountBalance`
 
-const transaction = new AccountBalanceQuery().setAccountId(accountId);
-```
+### Input Parameters
+
+| Parameter Name | Type   | Required/Optional | Description/Notes                |
+| -------------- | ------ | ----------------- | -------------------------------- |
+| accountId      | string | optional          | The ID of the account to query.  |
+| contractId     | string | optional          | The ID of the contract to query. |
+
+### Output Parameters
+
+| Parameter Name | Type   | Description/Notes                                    |
+| -------------- | ------ | ---------------------------------------------------- |
+| hbars          | string | The hbars of the submitted accountID/contractID.     |
+| tokens         | array  | The tokens associated with the accountID/contractID. |
 
 ## Properties
 
@@ -42,36 +52,22 @@ const transaction = new AccountBalanceQuery().setAccountId(accountId);
 
 - The ID of the account to query
 
-| Test no | Name                                                     | Input                                                        | Expected response                                                              | Implemented (Y/N) |
-| ------- | -------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------- |
-| 1       | Query for the balance of an account                      | accountId=<VALID_ACCOUNT_ID>                                 | The account balance query succeeds                                             | Y                 |
-| 2       | Query for the balance with no params                     |                                                              | The account balance query fails and returns error response INVALID_ACCOUNT_ID  | Y                 |
-| 3       | Query for the balance of an account that doesn't exist   | accountId=1000000.0.0                                        | The account balance query fails and returns error response INVALID_ACCOUNT_ID  | Y                 |
-| 4       | Query for the balance of a contract                      | contractId=<VALID_CONTRACT_ID>                               | The account balance query succeeds                                             | Y                 |
-| 5       | Query for the balance of an contract that doesn't exist  | contractId=1000000.0.0                                       | The account balance query fails and returns error response INVALID_CONTRACT_ID | Y                 |
-| 6       | Query for the balance with both accountId and contractId | accountId=<VALID_ACCOUNT_ID>, contractId=<VALID_CONTRACT_ID> | The account balance query succeeds with contractId                             | Y                 |
-
-#### JSON Request Example
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 6539,
-  "method": "getAccountBalance",
-  "params": {
-    "accountId": "0.0.983"
-  }
-}
-```
-
-#### JSON Response Example
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 6539,
-  "result": {
-    "balance": "10"
-  }
-}
-```
+<<<<<<< Updated upstream
+| Test no | Name | Input | Expected response | Implemented (Y/N) |
+|---------|--------------------------------------------------------|-----------------------|-------------------------------------------------------------------------------|-------------------|
+| 1 | Query for the balance of an account | accountId | The account balance query succeeds | N |
+| 2 | Query for the balance of no account | | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N |
+| 3 | Query for the balance of an account that doesn't exist | accountId=1000000.0.0 | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N |
+=======
+| Test no | Name | Input | Expected response | Implemented (Y/N) |
+| ------- | ------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------- |
+| 1 | Query for the balance of an account | accountId=<VALID_ACCOUNT_ID> | The account balance query succeeds | Y |
+| 2 | Query for the balance with no params | | The account balance query fails and returns error response INVALID_ACCOUNT_ID | Y |
+| 3 | Query for the balance of an account that doesn't exist | accountId=1000000.0.0 | The account balance query fails and returns error response INVALID_ACCOUNT_ID | Y |
+| 4 | Query for the balance of a contract | contractId=<VALID_CONTRACT_ID> | The contract balance query succeeds | Y |
+| 5 | Query for the balance of an contract that doesn't exist | contractId=1000000.0.0 | The account balance query fails and returns error response INVALID_CONTRACT_ID | Y |
+| 6 | Query for the balance with both accountId and contractId | accountId=<VALID_ACCOUNT_ID>, contractId=<VALID_CONTRACT_ID> | The account balance query succeeds with contractId | Y |
+| 7 | Query for token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
+| 8 | Query for multiple tokens balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
+| 9 | Query for NFT token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
+| 10 | Query for both Fungible tokens and NFT token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds with both tokens | Y |
