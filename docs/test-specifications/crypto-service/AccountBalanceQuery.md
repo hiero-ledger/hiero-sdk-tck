@@ -41,11 +41,11 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### Output Parameters
 
-| Parameter Name | Type        | Description/Notes                                                                                                |
-| -------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
-| hbars          | string      | The hbar balance of the account/contract in tinybars.                                                            |
-| tokenBalances  | json object | A map of token IDs to their balances. See [TokenBalance](#output-parameters---tokenbalance) for details.         |
-| tokenDecimals  | json object | A map of token IDs to their decimal places. See [TokenDecimals](#output-parameters---tokendecimals) for details. |
+| Parameter Name | Type                                                      | Description/Notes                                     |
+| -------------- | --------------------------------------------------------- | ----------------------------------------------------- |
+| hbars          | string                                                    | The hbar balance of the account/contract in tinybars. |
+| tokenBalances  | List<[TokenBalance](#output-parameters---tokenbalance)>   | A map of token IDs to their balances.                 |
+| tokenDecimals  | List<[TokenDecimals](#output-parameters---tokendecimals)> | A map of token IDs to their decimal places.           |
 
 ### Output Parameters - TokenBalance
 
