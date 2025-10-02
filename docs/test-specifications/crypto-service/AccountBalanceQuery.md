@@ -41,10 +41,25 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 ### Output Parameters
 
-| Parameter Name | Type   | Description/Notes                                    |
-| -------------- | ------ | ---------------------------------------------------- |
-| hbars          | string | The hbars of the submitted accountID/contractID.     |
-| tokens         | array  | The tokens associated with the accountID/contractID. |
+| Parameter Name | Type        | Description/Notes                                                                                                |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| hbars          | string      | The hbar balance of the account/contract in tinybars.                                                            |
+| tokenBalances  | json object | A map of token IDs to their balances. See [TokenBalance](#output-parameters---tokenbalance) for details.         |
+| tokenDecimals  | json object | A map of token IDs to their decimal places. See [TokenDecimals](#output-parameters---tokendecimals) for details. |
+
+### Output Parameters - TokenBalance
+
+| Parameter Name | Type   | Description/Notes                                                    |
+| -------------- | ------ | -------------------------------------------------------------------- |
+| tokenId        | string | The token ID for which the balance is being reported.                |
+| amount         | string | The balance amount for the token. The value includes decimal places. |
+
+### Output Parameters - TokenDecimals
+
+| Parameter Name | Type   | Description/Notes                                                        |
+| -------------- | ------ | ------------------------------------------------------------------------ |
+| tokenId        | string | The token ID for which the decimal places are being reported.            |
+| amount         | string | The number of decimal places for the token. Used for display formatting. |
 
 ## Properties
 
@@ -52,22 +67,21 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 - The ID of the account to query
 
-<<<<<<< Updated upstream
-| Test no | Name | Input | Expected response | Implemented (Y/N) |
-|---------|--------------------------------------------------------|-----------------------|-------------------------------------------------------------------------------|-------------------|
-| 1 | Query for the balance of an account | accountId | The account balance query succeeds | N |
-| 2 | Query for the balance of no account | | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N |
-| 3 | Query for the balance of an account that doesn't exist | accountId=1000000.0.0 | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N |
-=======
-| Test no | Name | Input | Expected response | Implemented (Y/N) |
+| Test no | Name                                                   | Input                 | Expected response                                                             | Implemented (Y/N) |
+| ------- | ------------------------------------------------------ | --------------------- | ----------------------------------------------------------------------------- | ----------------- |
+| 1       | Query for the balance of an account                    | accountId             | The account balance query succeeds                                            | N                 |
+| 2       | Query for the balance of no account                    |                       | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N                 |
+| 3       | Query for the balance of an account that doesn't exist | accountId=1000000.0.0 | The account balance query fails and returns error response INVALID_ACCOUNT_ID | N                 |
+
+| Test no | Name                                                                | Input                                                        | Expected response                                                              | Implemented (Y/N) |
 | ------- | ------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------- |
-| 1 | Query for the balance of an account | accountId=<VALID_ACCOUNT_ID> | The account balance query succeeds | Y |
-| 2 | Query for the balance with no params | | The account balance query fails and returns error response INVALID_ACCOUNT_ID | Y |
-| 3 | Query for the balance of an account that doesn't exist | accountId=1000000.0.0 | The account balance query fails and returns error response INVALID_ACCOUNT_ID | Y |
-| 4 | Query for the balance of a contract | contractId=<VALID_CONTRACT_ID> | The contract balance query succeeds | Y |
-| 5 | Query for the balance of an contract that doesn't exist | contractId=1000000.0.0 | The account balance query fails and returns error response INVALID_CONTRACT_ID | Y |
-| 6 | Query for the balance with both accountId and contractId | accountId=<VALID_ACCOUNT_ID>, contractId=<VALID_CONTRACT_ID> | The account balance query succeeds with contractId | Y |
-| 7 | Query for token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
-| 8 | Query for multiple tokens balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
-| 9 | Query for NFT token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds | Y |
-| 10 | Query for both Fungible tokens and NFT token balance with accountId | accountId=<VALID_ACCOUNT_ID>, | The account balance query succeeds with both tokens | Y |
+| 1       | Query for the balance of an account                                 | accountId=<VALID_ACCOUNT_ID>                                 | The account balance query succeeds                                             | Y                 |
+| 2       | Query for the balance with no params                                |                                                              | The account balance query fails and returns error response INVALID_ACCOUNT_ID  | Y                 |
+| 3       | Query for the balance of an account that doesn't exist              | accountId=1000000.0.0                                        | The account balance query fails and returns error response INVALID_ACCOUNT_ID  | Y                 |
+| 4       | Query for the balance of a contract                                 | contractId=<VALID_CONTRACT_ID>                               | The contract balance query succeeds                                            | Y                 |
+| 5       | Query for the balance of an contract that doesn't exist             | contractId=1000000.0.0                                       | The account balance query fails and returns error response INVALID_CONTRACT_ID | Y                 |
+| 6       | Query for the balance with both accountId and contractId            | accountId=<VALID_ACCOUNT_ID>, contractId=<VALID_CONTRACT_ID> | The account balance query succeeds with contractId                             | Y                 |
+| 7       | Query for token balance with accountId                              | accountId=<VALID_ACCOUNT_ID>,                                | The account balance query succeeds                                             | Y                 |
+| 8       | Query for multiple tokens balance with accountId                    | accountId=<VALID_ACCOUNT_ID>,                                | The account balance query succeeds                                             | Y                 |
+| 9       | Query for NFT token balance with accountId                          | accountId=<VALID_ACCOUNT_ID>,                                | The account balance query succeeds                                             | Y                 |
+| 10      | Query for both Fungible tokens and NFT token balance with accountId | accountId=<VALID_ACCOUNT_ID>,                                | The account balance query succeeds with both tokens                            | Y                 |

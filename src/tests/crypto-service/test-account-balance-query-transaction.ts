@@ -6,6 +6,7 @@ import {
   generateEd25519PublicKey,
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
+import { createFtToken, createNftToken } from "@helpers/token";
 
 describe("AccountBalanceQueryTransaction", function () {
   this.timeout(30000);
@@ -23,7 +24,7 @@ describe("AccountBalanceQueryTransaction", function () {
     await JSONRPCRequest(this, "reset");
   });
 
-  describe.only("Account ID/Contract ID", function () {
+  describe("Account ID/Contract ID", function () {
     it("(#1) Queries the balance of an account", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const responseAccount = await JSONRPCRequest(this, "createAccount", {
@@ -131,15 +132,12 @@ describe("AccountBalanceQueryTransaction", function () {
     it("(#7) Query for token balance with accountId", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, accountPrivateKey);
-
       const initialSupply = "110";
 
-      const responseToken = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
+      const tokenId = await createFtToken(this, {
         treasuryAccountId: accountId,
-        decimals: decimals,
+        initialSupply: initialSupply,
+        decimals: parseInt(decimals),
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
@@ -149,13 +147,13 @@ describe("AccountBalanceQueryTransaction", function () {
         accountId: accountId,
       });
 
-      expect(
-        responseBalance.tokenBalances[responseToken?.tokenId].toString(),
-      ).to.equal(initialSupply);
+      expect(responseBalance.tokenBalances[tokenId].toString()).to.equal(
+        initialSupply,
+      );
 
-      expect(
-        responseBalance.tokenDecimals[responseToken?.tokenId].toString(),
-      ).to.equal(decimals);
+      expect(responseBalance.tokenDecimals[tokenId].toString()).to.equal(
+        decimals,
+      );
     });
 
     it("(#8) Query for multiple tokens balance with accountId", async function () {
@@ -163,22 +161,19 @@ describe("AccountBalanceQueryTransaction", function () {
       const accountId = await createAccount(this, accountPrivateKey);
 
       const initialSupply = "110";
-      const responseToken1 = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: initialSupply,
+      const tokenId1 = await createFtToken(this, {
         treasuryAccountId: accountId,
+        initialSupply: initialSupply,
+        decimals: parseInt(decimals),
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
       });
 
-      const responseToken2 = await JSONRPCRequest(this, "createToken", {
-        name: "testname2",
-        symbol: "testsymbol2",
+      const tokenId2 = await createFtToken(this, {
         initialSupply: initialSupply + "10",
         treasuryAccountId: accountId,
-        decimals: 2,
+        decimals: parseInt(decimals),
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
@@ -188,36 +183,40 @@ describe("AccountBalanceQueryTransaction", function () {
         accountId: accountId,
       });
 
-      expect(
-        responseBalance.tokenBalances[responseToken1?.tokenId].toString(),
-      ).to.equal(initialSupply);
+      expect(responseBalance.tokenBalances[tokenId1].toString()).to.equal(
+        initialSupply,
+      );
 
-      expect(
-        responseBalance.tokenBalances[responseToken2?.tokenId].toString(),
-      ).to.equal(initialSupply + "10");
+      expect(responseBalance.tokenBalances[tokenId2].toString()).to.equal(
+        initialSupply + "10",
+      );
 
-      expect(
-        responseBalance.tokenDecimals[responseToken2?.tokenId].toString(),
-      ).to.equal("2");
+      expect(responseBalance.tokenDecimals[tokenId2].toString()).to.equal(
+        decimals,
+      );
     });
 
     it("(#9) Query for NFT token balance with accountId", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, accountPrivateKey);
-      const responseKey = await JSONRPCRequest(this, "generateKey", {
+      const supplyKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      const initialSupply = "0";
 
-      const responseToken = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
-        initialSupply: "0",
+      const tokenId = await createNftToken(this, {
         treasuryAccountId: accountId,
-        tokenType: "nft",
-        supplyKey: responseKey.key,
+        supplyKey: supplyKey.key,
         commonTransactionParams: {
           signers: [accountPrivateKey],
+        },
+      });
+
+      const metadata = "1234";
+      await JSONRPCRequest(this, "mintToken", {
+        tokenId,
+        metadata: [metadata],
+        commonTransactionParams: {
+          signers: [supplyKey.key],
         },
       });
 
@@ -225,13 +224,7 @@ describe("AccountBalanceQueryTransaction", function () {
         accountId: accountId,
       });
 
-      expect(
-        responseBalance.tokenBalances[responseToken?.tokenId].toString(),
-      ).to.equal(initialSupply);
-
-      expect(
-        responseBalance.tokenDecimals[responseToken?.tokenId].toString(),
-      ).to.equal("0");
+      expect(responseBalance.tokenBalances[tokenId].toString()).to.equal("1");
     });
 
     it("(#10) Query for both Fungible tokens and NFT token balance with accountId", async function () {
@@ -240,51 +233,50 @@ describe("AccountBalanceQueryTransaction", function () {
 
       const initialSupply = "110";
 
-      const responseToken = await JSONRPCRequest(this, "createToken", {
-        name: "testname",
-        symbol: "testsymbol",
+      const tokenId1 = await createFtToken(this, {
         initialSupply: initialSupply,
         treasuryAccountId: accountId,
-        decimals: decimals,
+        decimals: parseInt(decimals),
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
       });
 
-      const responseKey = await JSONRPCRequest(this, "generateKey", {
+      const supplyKey = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
-      const responseToken2 = await JSONRPCRequest(this, "createToken", {
-        name: "testname2",
-        symbol: "testsymbol",
-        initialSupply: "0",
+
+      const tokenId2 = await createNftToken(this, {
         treasuryAccountId: accountId,
-        tokenType: "nft",
-        supplyKey: responseKey.key,
+        supplyKey: supplyKey.key,
         commonTransactionParams: {
           signers: [accountPrivateKey],
         },
       });
 
+      const metadata = "1234";
+      await JSONRPCRequest(this, "mintToken", {
+        tokenId: tokenId2,
+        metadata: [metadata],
+        commonTransactionParams: {
+          signers: [supplyKey.key],
+        },
+      });
       const responseBalance = await JSONRPCRequest(this, "getAccountBalance", {
         accountId: accountId,
       });
 
-      expect(
-        responseBalance.tokenBalances[responseToken?.tokenId].toString(),
-      ).to.equal(initialSupply);
+      expect(responseBalance.tokenBalances[tokenId1].toString()).to.equal(
+        initialSupply,
+      );
 
-      expect(
-        responseBalance.tokenBalances[responseToken2?.tokenId].toString(),
-      ).to.equal("0");
+      expect(responseBalance.tokenBalances[tokenId2].toString()).to.equal("1");
 
-      expect(
-        responseBalance.tokenDecimals[responseToken?.tokenId].toString(),
-      ).to.equal(decimals);
+      expect(responseBalance.tokenDecimals[tokenId1].toString()).to.equal(
+        decimals,
+      );
 
-      expect(
-        responseBalance.tokenDecimals[responseToken2?.tokenId].toString(),
-      ).to.equal("0");
+      expect(responseBalance.tokenDecimals[tokenId2].toString()).to.equal("0");
     });
   });
 
