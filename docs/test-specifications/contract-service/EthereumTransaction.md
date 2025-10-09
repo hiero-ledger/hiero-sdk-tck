@@ -71,7 +71,7 @@ Each test within this specification will map to a property or behavior of `Ether
 | 7       | Create transaction with zero fee fields             | ethereumData with maxFeePerGas=maxPriorityFeePerGas=0 | Fails with `INSUFFICIENT_GAS`.                                 | N                 |
 | 8       | Create transaction with invalid `to` address length | ethereumData with malformed `to`                      | Fails with `INVALID_CONTRACT_ID`.                              | N                 |
 | 9       | Create transaction with empty callData              | ethereumData with callData = ""                       | Fails with `CONTRACT_REVERT_EXECUTED`.                         | N                 |
-| 10      | Create transaction with invalid signature           | ethereumData with bad r/s                             | Fails with `INVALID_ACCOUNT_ID`.                               | N                 |
+| 10      | Create transaction with invalid signature           | ethereumData with bad r/s                             | Fails with `INVALID_ETHEREUM_TRANSACTION`.                     | N                 |
 | 11      | Create transaction with missing signature fields    | ethereumData without v,r,s                            | Fails with `INVALID_ETHEREUM_TRANSACTION`.                     | N                 |
 | 12      | Create transaction with missing value fields        | ethereumData without value                            | Fails with `INVALID_ETHEREUM_TRANSACTION`.                     | N                 |
 
