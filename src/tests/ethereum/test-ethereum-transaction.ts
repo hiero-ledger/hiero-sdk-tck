@@ -10,6 +10,10 @@ import * as rlp from "@ethersproject/rlp";
 import { toHexString } from "@helpers/verify-contract-tx";
 import ConsensusInfoClient from "@services/ConsensusInfoClient";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
+import {
+  generateEd25519PrivateKey,
+  generateEd25519PublicKey,
+} from "@helpers/key";
 
 type EIP1559TxParams = {
   chainId?: Buffer;
@@ -23,7 +27,7 @@ type EIP1559TxParams = {
   accessList?: any[];
 };
 
-describe.only("EthereumTransaction", function () {
+describe("EthereumTransaction", function () {
   this.timeout(30000);
 
   beforeEach(async function () {
@@ -52,9 +56,29 @@ describe.only("EthereumTransaction", function () {
   const deployTestContract = async (
     context: any,
     initialMessage = "new message",
+    gas = "500000",
   ): Promise<{ contractId: string; contractAddress: string }> => {
+    const ed25519PrivateKey = await generateEd25519PrivateKey(context);
+    const ed25519PublicKey = await generateEd25519PublicKey(
+      context,
+      ed25519PrivateKey,
+    );
+
     const fileResponse = await JSONRPCRequest(context, "createFile", {
+      keys: [ed25519PublicKey],
+      contents: "",
+      commonTransactionParams: {
+        signers: [ed25519PrivateKey],
+      },
+    });
+
+    await JSONRPCRequest(context, "appendFile", {
+      keys: [ed25519PublicKey],
+      fileId: fileResponse.fileId,
       contents: SMART_CONTRACT_BYTECODE,
+      commonTransactionParams: {
+        signers: [ed25519PrivateKey],
+      },
     });
 
     const constructorParams = new ContractFunctionParameters()
@@ -63,7 +87,7 @@ describe.only("EthereumTransaction", function () {
 
     const contractResponse = await JSONRPCRequest(context, "createContract", {
       bytecodeFileId: fileResponse.fileId,
-      gas: "300000",
+      gas,
       constructorParameters: toHexString(constructorParams),
       memo: "[e2e::ContractCreateTransaction]",
     });
@@ -107,6 +131,7 @@ describe.only("EthereumTransaction", function () {
     options?: {
       skipSignature?: boolean;
       corruptSignature?: boolean;
+      withFile?: boolean;
     },
   ): Buffer => {
     const type = "02";
@@ -168,7 +193,7 @@ describe.only("EthereumTransaction", function () {
         gasLimit,
         params.to,
         value,
-        callData,
+        options?.withFile ? new Uint8Array() : callData,
         accessList,
         v,
         finalR,
@@ -523,6 +548,280 @@ describe.only("EthereumTransaction", function () {
           err.data.status,
           "INVALID_ETHEREUM_TRANSACTION",
           "Invalid Ethereum transaction",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe("Call Data File ID", function () {
+    it("(#1) Craete a transaction with callDataFileId for large callData", async function () {
+      const data = "a".repeat(100);
+      const { contractAddress } = await deployTestContract(
+        this,
+        data,
+        "900000",
+      );
+
+      // Create a file with large call data
+      const largeCallData = buildSetMessageCallData(data);
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        contents: Buffer.from(largeCallData).toString("hex"),
+      });
+
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      // Build transaction with empty callData but reference the file
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: largeCallData,
+        },
+        privateKey,
+        { withFile: true },
+      );
+
+      const response = await JSONRPCRequest(this, "createEthereumTransaction", {
+        ethereumData,
+        callDataFileId: fileResponse.fileId,
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(response.contractId, data);
+    });
+
+    it("(#2) Craete a transaction with non‑existent file ID", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: new Uint8Array(),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          callDataFileId: "0.0.9999999",
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INVALID_FILE_ID", "Invalid file ID");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#3) Craete a transaction with deleted file ID ", async function () {
+      const { contractAddress } = await deployTestContract(this);
+
+      const fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
+      const fileCreateEd25519PublicKey = await generateEd25519PublicKey(
+        this,
+        fileCreateEd25519PrivateKey,
+      );
+
+      // Create and then delete a file
+      const callData = buildSetMessageCallData("test message");
+      const fileResponse = await JSONRPCRequest(this, "createFile", {
+        keys: [fileCreateEd25519PublicKey],
+        contents: Buffer.from(callData).toString("hex"),
+        commonTransactionParams: {
+          signers: [fileCreateEd25519PrivateKey],
+        },
+      });
+
+      await JSONRPCRequest(this, "deleteFile", {
+        fileId: fileResponse.fileId,
+        commonTransactionParams: {
+          signers: [fileCreateEd25519PrivateKey],
+        },
+      });
+
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: new Uint8Array(),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          callDataFileId: fileResponse.fileId,
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "FILE_DELETED", "File deleted");
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Craete a transaction with invalid file ID format", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: new Uint8Array(),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          callDataFileId: "invalid",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.code,
+          ErrorStatusCodes.INTERNAL_ERROR,
+          "Internal error",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+  });
+
+  describe("Max Gas Allowance", function () {
+    it("(#1) Create transaction with sufficient allowance  ", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createEthereumTransaction", {
+        ethereumData,
+        maxGasAllowance: "100000000",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(response.contractId, "new message");
+    });
+
+    it("(#2) Create transaction with zero allowance ", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createEthereumTransaction", {
+        ethereumData,
+        maxGasAllowance: "0",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(response.contractId, "new message");
+    });
+
+    it("(#3) Create transaction with negative allowance", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          maxGasAllowance: "-1",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "NEGATIVE_ALLOWANCE_AMOUNT",
+          "Negative allowance amount",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#4) Create a contract with very small allowance (int64 min)", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          maxGasAllowance: "-9223372036854775808",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "NEGATIVE_ALLOWANCE_AMOUNT",
+          "Negative allowance amount",
+        );
+        return;
+      }
+      assert.fail("Should throw an error");
+    });
+
+    it("(#5) Create a contract with very small allowance (int64 min + 1)", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      try {
+        await JSONRPCRequest(this, "createEthereumTransaction", {
+          ethereumData,
+          maxGasAllowance: "-9223372036854775807",
+        });
+      } catch (err: any) {
+        assert.equal(
+          err.data.status,
+          "NEGATIVE_ALLOWANCE_AMOUNT",
+          "Negative allowance amount",
         );
         return;
       }

@@ -75,25 +75,25 @@ Each test within this specification will map to a property or behavior of `Ether
 | 11      | Create transaction with missing signature fields    | ethereumData without v,r,s                            | Fails with `INVALID_ETHEREUM_TRANSACTION`.                     | N                 |
 | 12      | Create transaction with missing value fields        | ethereumData without value                            | Fails with `INVALID_ETHEREUM_TRANSACTION`.                     | N                 |
 
-### **callDataFileId**
+### **Call Data File ID**
 
 - File ID of on‑chain file containing large call data payload when not embedding fully in `ethereumData`.
 
-| Test no | Name                                         | Input                                                            | Expected Response              | Implemented (Y/N) |
-| ------- | -------------------------------------------- | ---------------------------------------------------------------- | ------------------------------ | ----------------- |
-| 1       | Use file for large callData                  | ethereumData with empty callData, callDataFileId=<VALID_FILE_ID> | Transaction succeeds.          | N                 |
-| 2       | Non‑existent file ID                         | callDataFileId="0.0.9999999"                                     | Fails with `INVALID_FILE_ID`.  | N                 |
-| 3       | Deleted file ID                              | callDataFileId=<DELETED_FILE_ID>                                 | Fails with `FILE_DELETED`.     | N                 |
-| 4       | Invalid file ID format                       | callDataFileId="invalid"                                         | Fails with SDK internal error. | N                 |
-| 5       | Missing both ethereumData and callDataFileId | (no `ethereumData`, no `callDataFileId`)                         | Fails with SDK internal error. | N                 |
+| Test no | Name                                                        | Input                                                            | Expected Response              | Implemented (Y/N) |
+| ------- | ----------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------ | ----------------- |
+| 1       | Craete a transaction with callDataFileId for large callData | ethereumData with empty callData, callDataFileId=<VALID_FILE_ID> | Transaction succeeds.          | Y                 |
+| 2       | Craete a transaction with non‑existent file ID              | callDataFileId="0.0.9999999"                                     | Fails with `INVALID_FILE_ID`.  | Y                 |
+| 3       | Craete a transaction with deleted file ID                   | callDataFileId=<DELETED_FILE_ID>                                 | Fails with `FILE_DELETED`.     | Y                 |
+| 4       | Craete a transaction with invalid file ID format            | callDataFileId="invalid"                                         | Fails with SDK internal error. | Y                 |
 
 ### **Max Gas Allowance**
 
-- Maximum HBAR the payer will cover if the signer’s authorized gas is insufficient.
+- Maximum HBAR the payer will cover if the signer's authorized gas is insufficient.
 
-| Test no | Name                             | Input                                 | Expected Response                        | Implemented (Y/N) |
-| ------- | -------------------------------- | ------------------------------------- | ---------------------------------------- | ----------------- |
-| 1       | Sufficient allowance             | maxGasAllowance="100000000"           | Transaction succeeds.                    | N                 |
-| 2       | Zero allowance                   | maxGasAllowance="0"                   | Fails with `INSUFFICIENT_PAYER_BALANCE`. | N                 |
-| 3       | Negative allowance               | maxGasAllowance="-1"                  | Fails with SDK internal error.           | N                 |
-| 4       | Very large allowance (int64 max) | maxGasAllowance="9223372036854775807" | Fails with `INSUFFICIENT_PAYER_BALANCE`. | N                 |
+| Test no | Name                                                           | Input                                  | Expected Response                       | Implemented (Y/N) |
+| ------- | -------------------------------------------------------------- | -------------------------------------- | --------------------------------------- | ----------------- |
+| 1       | Create transaction with sufficient allowance                   | maxGasAllowance="100000000"            | Transaction succeeds.                   | Y                 |
+| 2       | Create transaction with zero allowance                         | maxGasAllowance="0"                    | Transaction succeeds.                   | Y                 |
+| 3       | Create transaction with negative allowance                     | maxGasAllowance="-1"                   | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | Y                 |
+| 4       | Create transaction with very small allowance (`int64` min)     | maxGasAllowance="-9223372036854775808" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | N                 |
+| 5       | Create transaction with very small allowance (`int64` min + 1) | maxGasAllowance="-9223372036854775807" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | N                 |
