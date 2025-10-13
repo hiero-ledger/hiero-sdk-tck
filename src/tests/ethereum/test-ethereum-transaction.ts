@@ -828,4 +828,6 @@ describe("EthereumTransaction", function () {
       assert.fail("Should throw an error");
     });
   });
+
+  return Promise.resolve();
 });
