@@ -212,7 +212,7 @@ describe("EthereumTransaction", function () {
 
   describe("Ethereum Data", function () {
     it("(#1) Creates an Ethereum transaction", async function () {
-      const { contractId, contractAddress } = await deployTestContract(this);
+      const { contractAddress } = await deployTestContract(this);
       const privateKey = PrivateKey.generateECDSA();
       await fundECDSAAlias(this, privateKey);
 
@@ -229,7 +229,7 @@ describe("EthereumTransaction", function () {
       });
 
       expect(response.status).to.equal("SUCCESS");
-      await validateMessage(contractId, "new message");
+      await validateMessage(response.contractId, "new message");
     });
 
     it("(#2) Create Ethereum transaction without data", async function () {
