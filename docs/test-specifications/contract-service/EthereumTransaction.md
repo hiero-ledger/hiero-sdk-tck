@@ -95,5 +95,7 @@ Each test within this specification will map to a property or behavior of `Ether
 | 1       | Create transaction with sufficient allowance                   | maxGasAllowance="100000000"            | Transaction succeeds.                   | Y                 |
 | 2       | Create transaction with zero allowance                         | maxGasAllowance="0"                    | Transaction succeeds.                   | Y                 |
 | 3       | Create transaction with negative allowance                     | maxGasAllowance="-1"                   | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | Y                 |
-| 4       | Create transaction with very small allowance (`int64` min)     | maxGasAllowance="-9223372036854775808" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | N                 |
-| 5       | Create transaction with very small allowance (`int64` min + 1) | maxGasAllowance="-9223372036854775807" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | N                 |
+| 4       | Create transaction with very small allowance (`int64` min)     | maxGasAllowance="-9223372036854775808" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | Y                 |
+| 5       | Create transaction with very small allowance (`int64` min + 1) | maxGasAllowance="-9223372036854775807" | Fails with `NEGATIVE_ALLOWANCE_AMOUNT`. | Y                 |
+| 6       | Create transaction with very large allowance (`int64` max)     | maxGasAllowance="9223372036854775807"  | Transaction succeeds.                   | N                 |
+| 7       | Create transaction with very large allowance (`int64` max - 1) | maxGasAllowance="9223372036854775806"  | Transaction succeeds.                   | N                 |

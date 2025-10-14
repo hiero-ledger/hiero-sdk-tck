@@ -133,7 +133,7 @@ describe("EthereumTransaction", function () {
       corruptSignature?: boolean;
       withFile?: boolean;
     },
-  ): Buffer => {
+  ): string => {
     const type = "02";
     const chainId = params.chainId ?? Buffer.from("012a", "hex");
     const nonce = params.nonce ?? new Uint8Array();
@@ -159,7 +159,7 @@ describe("EthereumTransaction", function () {
       .substring(2);
 
     if (options?.skipSignature) {
-      return Buffer.from(type + encoded, "hex");
+      return toHexString(Buffer.from(type + encoded, "hex"));
     }
 
     const message = Buffer.from(type + encoded, "hex");
@@ -201,7 +201,7 @@ describe("EthereumTransaction", function () {
       ])
       .substring(2);
 
-    return Buffer.from(type + data, "hex");
+    return toHexString(Buffer.from(type + data, "hex"));
   };
 
   const buildSetMessageCallData = (message: string): Uint8Array => {
@@ -537,7 +537,7 @@ describe("EthereumTransaction", function () {
         ])
         .substring(2);
 
-      const ethereumData = Buffer.from(type + data, "hex");
+      const ethereumData = toHexString(Buffer.from(type + data, "hex"));
 
       try {
         await JSONRPCRequest(this, "createEthereumTransaction", {
@@ -826,6 +826,50 @@ describe("EthereumTransaction", function () {
         return;
       }
       assert.fail("Should throw an error");
+    });
+
+    it("(#6) Create a contract with very large allowance (int64 max)", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createEthereumTransaction", {
+        ethereumData,
+        maxGasAllowance: "9223372036854775807",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(response.contractId, "new message");
+    });
+
+    it("(#7) Create a contract with very large allowance (int64 max - 1)", async function () {
+      const { contractAddress } = await deployTestContract(this);
+      const privateKey = PrivateKey.generateECDSA();
+      await fundECDSAAlias(this, privateKey);
+
+      const ethereumData = buildEIP1559Transaction(
+        {
+          to: Buffer.from(contractAddress, "hex"),
+          callData: buildSetMessageCallData("new message"),
+        },
+        privateKey,
+      );
+
+      const response = await JSONRPCRequest(this, "createEthereumTransaction", {
+        ethereumData,
+        maxGasAllowance: "9223372036854775806",
+      });
+
+      expect(response.status).to.equal("SUCCESS");
+      await validateMessage(response.contractId, "new message");
     });
   });
 
