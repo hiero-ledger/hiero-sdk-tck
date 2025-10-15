@@ -110,9 +110,10 @@ jobs:
         uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
         with:
           binaryCachePath: ${{ github.workspace }}/b/vcpkg_cache
+          vcpkgDirectory: ${{ github.workspace }}/sdk-server/vcpkg
 
       - name: Convert VCPkg to Full Clone
-        working-directory: vcpkg
+        working-directory: sdk-server/vcpkg
         run: |
           if [ -f .git/shallow ]; then
             echo "Repository is shallow, converting to full clone..."
@@ -122,6 +123,7 @@ jobs:
           fi
 
       - name: CMake Build (Debug)
+        working-directory: sdk-server
         env:
           VCPKG_BINARY_SOURCES: clear
         run: |
@@ -139,8 +141,8 @@ jobs:
       - name: Build and Start SDK Server
         id: start-sdk-server
         run: |
-            echo "something"
-        working-directory: sdk-server/tck
+            ./hiero-sdk-cpp-tck
+        working-directory: sdk-server/build/linux-x64-debug/src/tck/Debug
 
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
