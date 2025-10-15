@@ -113,7 +113,13 @@ jobs:
 
       - name: Convert VCPkg to Full Clone
         working-directory: vcpkg
-        run: git fetch --unshallow --prune
+        run: |
+          if [ -f .git/shallow ]; then
+            echo "Repository is shallow, converting to full clone..."
+            git fetch --unshallow --prune
+          else
+            echo "Repository is already a full clone, skipping unshallow."
+          fi
 
       - name: CMake Build (Debug)
         env:
