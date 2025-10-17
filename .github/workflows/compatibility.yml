@@ -23,7 +23,7 @@ on:
         required: false
         type: string
       solo-version:
-        description: "Solo version (defaults to 0.38.0)"
+        description: "Solo version (defaults to latest stable version)"
         required: false
         type: string
       consensus-node-version:
