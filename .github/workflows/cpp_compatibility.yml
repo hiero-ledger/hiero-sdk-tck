@@ -147,9 +147,18 @@ jobs:
       - name: Build and Start SDK Server
         id: start-sdk-server
         run: |
-            ./hiero-sdk-cpp-tck &
+            ./hiero-sdk-cpp-tck > server.log 2>&1 &
             server_pid=$!
             echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
+            echo "Waiting for server to start..."
+            sleep 5
+            if ps -p $server_pid > /dev/null; then
+              echo "Server started successfully with PID: $server_pid"
+            else
+              echo "Server failed to start. Log output:"
+              cat server.log
+              exit 1
+            fi
         working-directory: sdk-server/build/linux-x64-debug/src/tck/Debug
 
       # Get Latest Consensus Node Version
@@ -194,8 +203,15 @@ jobs:
         working-directory: tck
 
       # Stop the TCK server
+      - name: Show Server Logs
+        if: ${{ failure() }}
+        run: |
+          echo "Server logs:"
+          cat server.log || echo "No server logs found"
+        working-directory: sdk-server/build/linux-x64-debug/src/tck/Debug
+
       - name: Stop tck-server
         if: ${{ always() }}
         run: |
           echo ${{ steps.start-sdk-server.outputs.pid }}
-          kill -9 ${{ steps.start-sdk-server.outputs.pid }}
+          kill -9 ${{ steps.start-sdk-server.outputs.pid }} 2>/dev/null || echo "Server already stopped"
