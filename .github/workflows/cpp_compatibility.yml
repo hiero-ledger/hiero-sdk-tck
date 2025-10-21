@@ -129,6 +129,12 @@ jobs:
         run: |
           cmake --preset linux-x64-debug -DBUILD_TCK=ON
           cmake --build -j 6 --preset linux-x64-debug
+      
+      - name: Verify SDK Server Binary
+        working-directory: sdk-server/build/linux-x64-debug
+        run: |
+          echo "Listing TCK binaries:"
+          find . -type f -name "hiero-sdk-cpp-tck" -exec ls -lh {} \;
 
       # Set up the npm dependencies and cache on the tck-client
       - name: Set up the tck-client
