@@ -20,7 +20,7 @@ on:
         required: false
         type: string
       cpp-sdk-version:
-        description: "The version of the GO SDK to use (defaults to latest tag if not specified):"
+        description: "The version of the CPP SDK to use (defaults to latest tag if not specified):"
         required: false
         type: string
   workflow_call:
@@ -38,7 +38,7 @@ on:
         required: false
         type: string
       cpp-sdk-version:
-        description: "The version of the GO SDK to use"
+        description: "The version of the CPP SDK to use"
         required: false
         type: string
 

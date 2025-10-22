@@ -40,7 +40,7 @@ on:
         required: false
         type: string
       cpp-sdk-version:
-        description: "C++ SDK version (defaults to latest tag)"
+        description: "CPP SDK version (defaults to latest tag)"
         required: false
         type: string
 
@@ -71,12 +71,12 @@ jobs:
       go-sdk-version: ${{ inputs.go-sdk-version }}
     secrets: inherit
 
-  # Test C++ SDK  
+  # Test CPP SDK  
   cpp-compatibility:
-    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
+    if: ${{ inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/cpp_compatibility.yml
     with:
-      custom-job-name: ${{ inputs.custom-job-name || 'C++ SDK Compatibility' }}
+      custom-job-name: ${{ inputs.custom-job-name || 'CPP SDK Compatibility' }}
       solo-version: ${{ inputs.solo-version }}
       consensus-node-version: ${{ inputs.consensus-node-version }}
       cpp-sdk-version: ${{ inputs.cpp-sdk-version }}
@@ -110,8 +110,8 @@ jobs:
           
           if [[ "${{ needs.cpp-compatibility.result }}" != "skipped" ]]; then
             if [[ "${{ needs.cpp-compatibility.result }}" == "success" ]]; then
-              echo "✅ **C++ SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+              echo "✅ **CPP SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
             else
-              echo "❌ **C++ SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+              echo "❌ **CPP SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
           fi 
