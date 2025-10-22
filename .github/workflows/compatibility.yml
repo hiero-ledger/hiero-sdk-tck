@@ -16,6 +16,7 @@ on:
         options:
           - "js"
           - "go"
+          - "cpp"
           - "every"
         default: "every"
       custom-job-name:
@@ -36,6 +37,10 @@ on:
         type: string
       go-sdk-version:
         description: "Go SDK version (defaults to latest tag)"
+        required: false
+        type: string
+      cpp-sdk-version:
+        description: "CPP SDK version (defaults to latest tag)"
         required: false
         type: string
 
@@ -66,9 +71,20 @@ jobs:
       go-sdk-version: ${{ inputs.go-sdk-version }}
     secrets: inherit
 
+  # Test CPP SDK  
+  cpp-compatibility:
+    if: ${{ inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
+    uses: ./.github/workflows/cpp_compatibility.yml
+    with:
+      custom-job-name: ${{ inputs.custom-job-name || 'CPP SDK Compatibility' }}
+      solo-version: ${{ inputs.solo-version }}
+      consensus-node-version: ${{ inputs.consensus-node-version }}
+      cpp-sdk-version: ${{ inputs.cpp-sdk-version }}
+    secrets: inherit
+
   # Summary job
   summary:
-    needs: [js-compatibility, go-compatibility]
+    needs: [js-compatibility, go-compatibility, cpp-compatibility]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -89,5 +105,13 @@ jobs:
               echo "✅ **Go SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
             else
               echo "❌ **Go SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          if [[ "${{ needs.cpp-compatibility.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.cpp-compatibility.result }}" == "success" ]]; then
+              echo "✅ **CPP SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **CPP SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
           fi 
