@@ -150,16 +150,24 @@ jobs:
             ./hiero-sdk-cpp-tck > server.log 2>&1 &
             server_pid=$!
             echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
-            echo "Waiting for server to start..."
-            sleep 5
-            if ps -p $server_pid > /dev/null; then
-              echo "Server started successfully with PID: $server_pid"
-            else
-              echo "Server failed to start. Log output:"
-              cat server.log
-              exit 1
-            fi
+            echo "Server started with PID: $server_pid"
         working-directory: sdk-server/build/linux-x64-debug/src/tck/Debug
+
+      - name: Wait for TCK Server
+        run: |
+          echo "Waiting for TCK server on port 8544..."
+          for i in {1..30}; do
+            if bash -c 'exec 3>/dev/tcp/localhost/8544' 2>/dev/null; then
+              echo "TCK server is ready on port 8544!"
+              exit 0
+            fi
+            echo "Still waiting... ($i/30)"
+            sleep 2
+          done
+          echo "TCK server failed to become ready on port 8544"
+          echo "Server logs:"
+          cat sdk-server/build/linux-x64-debug/src/tck/Debug/server.log || echo "No server logs found"
+          exit 1
 
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
@@ -191,7 +199,7 @@ jobs:
         env:
           OPERATOR_ACCOUNT_ID: "0.0.2"
           OPERATOR_ACCOUNT_PRIVATE_KEY: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
-          JSON_RPC_SERVER_URL: "http://127.0.0.1:8544"
+          JSON_RPC_SERVER_URL: "http://localhost:8544"
           NODE_IP: "127.0.0.1:50211"
           MIRROR_NODE_REST_URL: "http://127.0.0.1:5551"
           MIRROR_NODE_REST_JAVA_URL: "http://127.0.0.1:8084"
