@@ -4,7 +4,10 @@ import { JSONRPCRequest } from "@services/Client";
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
-import { setOperator } from "@helpers/setup-tests";
+import {
+  setOperator,
+  setOperatorForExistingSession,
+} from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
 import {
   generateEd25519PrivateKey,
@@ -173,7 +176,7 @@ const createTopicWithCustomFees = async (context: any, customFees: any[]) => {
 describe("TopicMessageSubmitTransaction", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -181,8 +184,10 @@ describe("TopicMessageSubmitTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("TopicId", function () {
@@ -739,7 +744,11 @@ describe("TopicMessageSubmitTransaction", function () {
       );
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -749,6 +758,12 @@ describe("TopicMessageSubmitTransaction", function () {
           message,
           customFeeLimits,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -761,7 +776,11 @@ describe("TopicMessageSubmitTransaction", function () {
       const customFees = createCustomFees(customFeeAmountHbar);
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -770,6 +789,12 @@ describe("TopicMessageSubmitTransaction", function () {
           topicId,
           message,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -802,7 +827,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -812,6 +841,12 @@ describe("TopicMessageSubmitTransaction", function () {
           message,
           customFeeLimits,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -843,7 +878,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -852,6 +891,12 @@ describe("TopicMessageSubmitTransaction", function () {
           topicId,
           message,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -884,7 +929,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = createTopicResponse;
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -893,6 +942,12 @@ describe("TopicMessageSubmitTransaction", function () {
           topicId,
           message,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -936,7 +991,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = createTopicResponse;
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -945,6 +1004,12 @@ describe("TopicMessageSubmitTransaction", function () {
           topicId,
           message,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -962,7 +1027,11 @@ describe("TopicMessageSubmitTransaction", function () {
       const customFeeLimits = createCustomFeeLimits(payerAccountId, "1");
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "submitTopicMessage", {
@@ -973,7 +1042,14 @@ describe("TopicMessageSubmitTransaction", function () {
       } catch (err: any) {
         assert.equal(err.data.status, "MAX_CUSTOM_FEE_LIMIT_EXCEEDED");
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
+      assert.fail("Should throw an error");
     });
 
     it("(#8) Submits a message to a public topic with token custom fee and insufficient custom fee limit", async function () {
@@ -1003,7 +1079,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "submitTopicMessage", {
@@ -1014,7 +1094,14 @@ describe("TopicMessageSubmitTransaction", function () {
       } catch (err: any) {
         assert.equal(err.data.status, "MAX_CUSTOM_FEE_LIMIT_EXCEEDED");
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
+      assert.fail("Should throw an error");
     });
 
     it("(#9) Submits a message to a public topic with token custom fee and invalid token ID in custom fee limit", async function () {
@@ -1035,7 +1122,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "submitTopicMessage", {
@@ -1046,6 +1137,12 @@ describe("TopicMessageSubmitTransaction", function () {
       } catch (err: any) {
         assert.equal(err.data.status, "NO_VALID_MAX_CUSTOM_FEE");
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
 
       assert.fail("Should throw an error");
@@ -1087,7 +1184,11 @@ describe("TopicMessageSubmitTransaction", function () {
       ];
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "submitTopicMessage", {
@@ -1101,6 +1202,12 @@ describe("TopicMessageSubmitTransaction", function () {
           "DUPLICATE_DENOMINATION_IN_MAX_CUSTOM_FEE_LIST",
         );
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
 
       assert.fail("Should throw an error");
@@ -1155,7 +1262,11 @@ describe("TopicMessageSubmitTransaction", function () {
 
       const { topicId } = await createTopicWithCustomFees(this, customFees);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -1165,6 +1276,12 @@ describe("TopicMessageSubmitTransaction", function () {
           message,
           customFeeLimits,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
@@ -1182,7 +1299,11 @@ describe("TopicMessageSubmitTransaction", function () {
       const customFeeLimits: never[] = [];
       const { topicId } = await createTopicWithCustomFees(this, []);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       const topicSubmitResponse = await JSONRPCRequest(
         this,
@@ -1192,6 +1313,12 @@ describe("TopicMessageSubmitTransaction", function () {
           message,
           customFeeLimits,
         },
+      );
+
+      await setOperatorForExistingSession(
+        this,
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
       );
 
       expect(topicSubmitResponse.status).to.equal("SUCCESS");
