@@ -51,7 +51,7 @@ defaults:
 jobs:
   # Test JavaScript SDK
   js-compatibility:
-    if: ${{ inputs.sdk-type == 'js' || inputs.sdk-type == 'every' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'js' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/js_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'JS SDK Compatibility' }}
