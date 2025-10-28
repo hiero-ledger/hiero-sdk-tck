@@ -4,14 +4,13 @@ import { JSONRPCRequest } from "@services/Client";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
-import { createAccount } from "@helpers/account";
 import {
   generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
 } from "@helpers/key";
 import { retryOnError } from "@helpers/retry-on-error";
 import { setOperator } from "@helpers/setup-tests";
-import { verifyNftBalance, verifyHbarBalance } from "@helpers/transfer";
+import { verifyNftBalance } from "@helpers/transfer";
 import { createFtToken, createNftToken } from "@helpers/token";
 
 /**
@@ -22,7 +21,6 @@ describe("TransferTransaction - Approved NFT", function () {
 
   const amount = 10;
   const amountStr = String(amount);
-  const amountNegatedStr = String(-amount);
 
   let senderAccountId: string,
     senderPrivateKey: string,
@@ -453,7 +451,7 @@ describe("TransferTransaction - Approved NFT", function () {
     });
 
     it("(#11) Transfers an approved amount of fungible tokens from a sender account to a receiver account", async function () {
-      let tokenIdFt = await createFtToken(this, {
+      const tokenIdFt = await createFtToken(this, {
         initialSupply: "1000000",
         treasuryAccountId: senderAccountId,
         commonTransactionParams: {
