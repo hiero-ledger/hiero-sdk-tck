@@ -37,7 +37,7 @@ describe("TopicUpdateTransaction", function () {
   let topicId: string;
   let topicAdminKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -45,8 +45,10 @@ describe("TopicUpdateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("TopicId", function () {

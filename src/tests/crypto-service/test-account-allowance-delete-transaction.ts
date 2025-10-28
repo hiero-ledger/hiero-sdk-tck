@@ -34,13 +34,16 @@ describe("AccountAllowanceDeleteTransaction", function () {
     tokenId1SerialNumber: string,
     tokenId2SerialNumber: string,
     tokenId3SerialNumber: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     ownerPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
     spenderPrivateKey = await generateEd25519PrivateKey(this);
     supplyKey = await generateEd25519PrivateKey(this);
@@ -144,8 +147,11 @@ describe("AccountAllowanceDeleteTransaction", function () {
       },
     });
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("DeleteAllTokenNftAllowances", function () {

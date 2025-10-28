@@ -25,13 +25,16 @@ describe("TokenDissociateTransaction", function () {
     tokenKey: string,
     accountId: string,
     accountPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     tokenKey = await generateEd25519PrivateKey(this);
     tokenId = await createFtToken(this, {
       freezeKey: tokenKey,
@@ -53,8 +56,10 @@ describe("TokenDissociateTransaction", function () {
       },
     });
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   async function verifyTokenAssociation(accountId: string, tokenId: string) {

@@ -29,7 +29,9 @@ describe("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
-  beforeEach(async function () {
+  // Use before/after instead of beforeEach/afterEach to enable client reuse across tests
+  // This supports concurrent test execution with isolated client instances per suite
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -37,8 +39,10 @@ describe("AccountCreateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Key", function () {
