@@ -123,10 +123,27 @@ jobs:
       - name: Install and Start TCK Server
         id: start-sdk-server
         run: |
-          ./gradlew tck:bootRun &
+          ./gradlew tck:bootRun > tck-server.log 2>&1 &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
-        working-directory: sdk-server/tck
+          echo "Server started with PID: $server_pid"
+        working-directory: sdk-server
+
+      - name: Wait for TCK Server
+        run: |
+          echo "Waiting for TCK server on port 8544..."
+          for i in {1..30}; do
+            if bash -c 'exec 3>/dev/tcp/localhost/8544' 2>/dev/null; then
+              echo "TCK server is ready on port 8544!"
+              exit 0
+            fi
+            echo "Still waiting... ($i/30)"
+            sleep 2
+          done
+          echo "TCK server failed to become ready on port 8544"
+          echo "Server logs:"
+          cat sdk-server/tck-server.log || echo "No server logs found"
+          exit 1
 
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
@@ -169,8 +186,15 @@ jobs:
         working-directory: tck
 
       # Stop the TCK server
+      - name: Show Server Logs
+        if: ${{ failure() }}
+        run: |
+          echo "Server logs:"
+          cat tck-server.log || echo "No server logs found"
+        working-directory: sdk-server
+
       - name: Stop tck-server
         if: ${{ always() }}
         run: |
           echo ${{ steps.start-sdk-server.outputs.pid }}
-          kill -9 ${{ steps.start-sdk-server.outputs.pid }}
+          kill -9 ${{ steps.start-sdk-server.outputs.pid }} 2>/dev/null || echo "Server already stopped"
