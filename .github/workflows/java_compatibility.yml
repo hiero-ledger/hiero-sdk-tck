@@ -123,7 +123,7 @@ jobs:
       - name: Install and Start TCK Server
         id: start-sdk-server
         run: |
-          ./hiero-sdk-java-tck > server.log 2>&1 &
+          ./gradlew tck:bootRun &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
         working-directory: sdk-server/tck
