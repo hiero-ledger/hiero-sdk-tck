@@ -63,7 +63,7 @@ describe("NodeUpdateTransaction", function () {
     nodeId = responseCreateNode.nodeId;
   };
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -75,8 +75,10 @@ describe("NodeUpdateTransaction", function () {
     }
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("NodeId", function () {
