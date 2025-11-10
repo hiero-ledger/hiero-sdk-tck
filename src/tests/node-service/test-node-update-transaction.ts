@@ -1196,6 +1196,14 @@ describe("NodeUpdateTransaction", function () {
   });
 
   describe("DeclineReward", function () {
+    beforeEach(async function () {
+      await createNode(this);
+    });
+
+    afterEach(async function () {
+      nodeId = null as any;
+    });
+
     it("(#1) Updates a node that accepts rewards (default)", async function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
