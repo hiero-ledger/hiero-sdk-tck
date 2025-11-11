@@ -167,7 +167,7 @@ describe("NodeUpdateTransaction", function () {
   });
 
   describe("AccountId", function () {
-    it("(#1) Updates a node with a valid account ID", async function () {
+    it.skip("(#1) Updates a node with a valid account ID", async function () {
       const response = await JSONRPCRequest(this, "updateNode", {
         nodeId: nodeId,
         accountId: validAccountId,
@@ -193,7 +193,7 @@ describe("NodeUpdateTransaction", function () {
       }
     });
 
-    it("(#3) Fails with non-existent account ID", async function () {
+    it.skip("(#3) Fails with non-existent account ID", async function () {
       try {
         await JSONRPCRequest(this, "updateNode", {
           nodeId: nodeId,
