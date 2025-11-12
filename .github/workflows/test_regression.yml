@@ -44,7 +44,11 @@ jobs:
           - TokenUnpause
           - TokenUpdate
           - TokenWipe
-          - TransferCrypto
+          - TransferHbar
+          - TransferNft
+          - TransferNftApproved
+          - TransferToken
+          - TransferTokenApproved
           - TopicCreate
           - TopicDelete
           - TopicMessageSubmit

@@ -7,6 +7,9 @@ const createID: CreateID = () => nextID++;
 
 // Session management for concurrent test execution
 // Maps test context to session IDs to support parallel test suites
+// WeakMap is used to avoid memory leaks by not holding references to the test context objects.
+// WeakMap has Automatic Garbage Collection, so the test context objects can be garbage collected when the test is finished.
+// Which allows the sessionMap to be garbage collected when the test is finished.
 const sessionMap = new WeakMap<any, string>();
 
 /**
