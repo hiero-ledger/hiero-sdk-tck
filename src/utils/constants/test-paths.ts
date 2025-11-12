@@ -4,6 +4,8 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
     "src/tests/crypto-service/test-account-allowance-approve-transaction.ts",
   AccountAllowanceDelete:
     "src/tests/crypto-service/test-account-allowance-delete-transaction.ts",
+  AccountBalanceQuery:
+    "src/tests/crypto-service/test-account-balance-query-transaction.ts",
   AccountCreate: "src/tests/crypto-service/test-account-create-transaction.ts",
   AccountDelete: "src/tests/crypto-service/test-account-delete-transaction.ts",
   AccountUpdate: "src/tests/crypto-service/test-account-update-transaction.ts",
@@ -18,6 +20,7 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   // File Service Tests
   FileAppend: "src/tests/file-service/test-file-append-transaction.ts",
   FileCreate: "src/tests/file-service/test-file-create-transaction.ts",
+  FileDelete: "src/tests/file-service/test-file-delete-transaction.ts",
   FileUpdate: "src/tests/file-service/test-file-update-transaction.ts",
 
   // Topic Service Tests
@@ -40,6 +43,8 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   // Schedule Service Tests
   ScheduleCreate:
     "src/tests/schedule-service/test-schedule-create-transaction.ts",
+  ScheduleDelete:
+    "src/tests/schedule-service/test-schedule-delete-transaction.ts",
   ScheduleSign: "src/tests/schedule-service/test-schedule-sign-transaction.ts",
 
   // Node Service Tests
@@ -72,6 +77,9 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   TokenUnpause: "src/tests/token-service/test-token-unpause-transaction.ts",
   TokenUpdate: "src/tests/token-service/test-token-update-transaction.ts",
   TokenWipe: "src/tests/token-service/test-token-wipe-transaction.ts",
+
+  // Ethereum Tests
+  EthereumTransaction: "src/tests/ethereum/test-ethereum-transaction.ts",
 
   ALL: "src/tests/**/*.ts",
 };

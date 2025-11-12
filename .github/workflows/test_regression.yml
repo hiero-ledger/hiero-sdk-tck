@@ -19,11 +19,13 @@ jobs:
         suite:
           - AccountAllowanceApprove
           - AccountAllowanceDelete
+          - AccountBalanceQuery
           - AccountCreate
           - AccountDelete
           - AccountUpdate
           - FileAppend
           - FileCreate
+          - FileDelete
           - FileUpdate
           - TokenAirdropCancel
           - TokenAirdropClaim
@@ -58,10 +60,12 @@ jobs:
           - ContractDelete
           - ContractExecute
           - ScheduleCreate
+          - ScheduleDelete
           - ScheduleSign
           - NodeCreate
           - NodeUpdate
           - NodeDelete
+          - EthereumTransaction
       fail-fast: false
     steps:
       - name: Harden Runner
