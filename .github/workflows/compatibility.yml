@@ -60,7 +60,7 @@ jobs:
       js-sdk-version: ${{ inputs.js-sdk-version }}
     secrets: inherit
 
-  # Test Go SDK
+  # Test Go SDK  
   go-compatibility:
     if: ${{ inputs.sdk-type == 'go' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/go_compatibility.yml
@@ -71,7 +71,7 @@ jobs:
       go-sdk-version: ${{ inputs.go-sdk-version }}
     secrets: inherit
 
-  # Test CPP SDK
+  # Test CPP SDK  
   cpp-compatibility:
     if: ${{ inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/cpp_compatibility.yml
@@ -91,7 +91,7 @@ jobs:
       - name: Test Results Summary
         run: |
           echo "## Compatibility Test Results" >> $GITHUB_STEP_SUMMARY
-
+          
           if [[ "${{ needs.js-compatibility.result }}" != "skipped" ]]; then
             if [[ "${{ needs.js-compatibility.result }}" == "success" ]]; then
               echo "✅ **JS SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
@@ -99,7 +99,7 @@ jobs:
               echo "❌ **JS SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
           fi
-
+          
           if [[ "${{ needs.go-compatibility.result }}" != "skipped" ]]; then
             if [[ "${{ needs.go-compatibility.result }}" == "success" ]]; then
               echo "✅ **Go SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
@@ -107,11 +107,11 @@ jobs:
               echo "❌ **Go SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
           fi
-
+          
           if [[ "${{ needs.cpp-compatibility.result }}" != "skipped" ]]; then
             if [[ "${{ needs.cpp-compatibility.result }}" == "success" ]]; then
               echo "✅ **CPP SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
             else
               echo "❌ **CPP SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
-          fi
+          fi 
