@@ -19,15 +19,17 @@ describe("TokenDeleteTransaction", function () {
   this.timeout(30000);
 
   // Each test should first establish the network to use, and then teardown the network when complete.
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Token ID", () => {

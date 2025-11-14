@@ -21,13 +21,15 @@ describe("FileDeleteTransaction", function () {
   let fileCreateEd25519PrivateKey: string;
   let fileCreateEd25519PublicKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     // Create a file for testing deletion
     fileCreateEd25519PrivateKey = await generateEd25519PrivateKey(this);
     fileCreateEd25519PublicKey = await generateEd25519PublicKey(
@@ -46,8 +48,10 @@ describe("FileDeleteTransaction", function () {
     fileId = response.fileId;
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("File ID", function () {
@@ -227,6 +231,4 @@ describe("FileDeleteTransaction", function () {
       assert.fail("Should throw an error");
     });
   });
-
-  return Promise.resolve();
 });

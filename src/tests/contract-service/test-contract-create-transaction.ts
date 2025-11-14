@@ -4,7 +4,10 @@ import { JSONRPCRequest } from "@services/Client";
 import mirrorNodeClient from "@services/MirrorNodeClient";
 import consensusInfoClient from "@services/ConsensusInfoClient";
 
-import { setOperator } from "@helpers/setup-tests";
+import {
+  setOperatorForExistingSession,
+  setOperator,
+} from "@helpers/setup-tests";
 import { retryOnError } from "@helpers/retry-on-error";
 
 import { createAccount } from "@helpers/account";
@@ -35,7 +38,7 @@ export const smartContractBytecode =
 describe("ContractCreateTransaction", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -43,8 +46,10 @@ describe("ContractCreateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Bytecode File Id", function () {
@@ -416,7 +421,11 @@ describe("ContractCreateTransaction", function () {
       const payerPrivateKey = await generateEd25519PrivateKey(this);
       const payerAccountId = await createAccount(this, payerPrivateKey);
 
-      await setOperator(this, payerAccountId, payerPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "createContract", {
@@ -430,6 +439,12 @@ describe("ContractCreateTransaction", function () {
           "insufficient balance",
         );
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
       assert.fail("Should throw an error");
     });
@@ -781,7 +796,11 @@ describe("ContractCreateTransaction", function () {
       const payerAccountPrivateKey = await generateEd25519PrivateKey(this);
       const payerAccountId = await createAccount(this, payerAccountPrivateKey);
 
-      await setOperator(this, payerAccountId, payerAccountPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerAccountPrivateKey,
+      );
 
       const ed25519PrivateKey = await generateEd25519PrivateKey(this);
       const ed25519PublicKey = await generateEd25519PublicKey(
@@ -806,6 +825,12 @@ describe("ContractCreateTransaction", function () {
           "Insufficient payer balance error",
         );
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
       assert.fail("Should throw an error");
     });
@@ -814,7 +839,11 @@ describe("ContractCreateTransaction", function () {
       const payerAccountPrivateKey = await generateEd25519PrivateKey(this);
       const payerAccountId = await createAccount(this, payerAccountPrivateKey);
 
-      await setOperator(this, payerAccountId, payerAccountPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        payerAccountId,
+        payerAccountPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "createContract", {
@@ -829,6 +858,12 @@ describe("ContractCreateTransaction", function () {
           "Insufficient payer balance error",
         );
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
       assert.fail("Should throw an error");
     });
@@ -2957,7 +2992,6 @@ describe("ContractCreateTransaction", function () {
     });
 
     it("(#10) Create a contract that does have an admin key and that tries to set both stakedAccountId and stakedNodeId present", async function () {
-      const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
       const response = await JSONRPCRequest(this, "createContract", {
         ...commonContractParams,
         adminKey: ed25519PublicKey,

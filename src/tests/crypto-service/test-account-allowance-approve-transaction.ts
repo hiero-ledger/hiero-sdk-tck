@@ -41,25 +41,30 @@ describe("AccountAllowanceApproveTransaction", function () {
     ownerPrivateKey: string,
     spenderAccountId: string,
     spenderPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     ownerPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
     spenderPrivateKey = await generateEd25519PrivateKey(this);
 
     ownerAccountId = await createAccount(this, ownerPrivateKey);
     spenderAccountId = await createAccount(this, spenderPrivateKey);
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("ApproveHbarAllowance", function () {
-    // Create a pre-configured function that only needs overrides
     let createHbarAllowanceParams: HbarAllowanceParamsFactory;
 
     beforeEach(async function () {
