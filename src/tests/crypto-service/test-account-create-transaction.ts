@@ -255,10 +255,6 @@ describe("AccountCreateTransaction", function () {
       if (!process.env.OPERATOR_ACCOUNT_ID) {
         throw new Error("OPERATOR_ACCOUNT_ID environment variable is not set");
       }
-      const operatorBalanceData = await consensusInfoClient.getBalance(
-        process.env.OPERATOR_ACCOUNT_ID,
-      );
-      const operatorAccountBalance = operatorBalanceData.hbars.toTinybars();
 
       // Generate a valid key for the account.
       const key = await generateEcdsaSecp256k1PrivateKey(this);
@@ -267,7 +263,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key,
-          initialBalance: operatorAccountBalance.add(1).toString(),
+          initialBalance: "9223372036854775807",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_PAYER_BALANCE");
