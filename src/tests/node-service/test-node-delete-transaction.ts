@@ -3,7 +3,10 @@ import { assert, expect } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
 
-import { setOperator } from "@helpers/setup-tests";
+import {
+  setOperator,
+  setOperatorForExistingSession,
+} from "@helpers/setup-tests";
 import { generateEd25519PrivateKey } from "@helpers/key";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
@@ -17,7 +20,7 @@ describe("NodeDeleteTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -25,8 +28,10 @@ describe("NodeDeleteTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   const createTestAccount = async (context: any) => {
@@ -160,7 +165,11 @@ describe("NodeDeleteTransaction", function () {
       const newOperatorAccountId = newOperatorResponse.accountId;
 
       // Set the new account as operator
-      await setOperator(this, newOperatorAccountId, newOperatorKey);
+      await setOperatorForExistingSession(
+        this,
+        newOperatorAccountId,
+        newOperatorKey,
+      );
 
       try {
         await JSONRPCRequest(this, "deleteNode", {
@@ -172,6 +181,12 @@ describe("NodeDeleteTransaction", function () {
       } catch (err: any) {
         assert.equal(err.data.status, "INVALID_SIGNATURE", "INVALID_SIGNATURE");
         return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
 
       assert.fail("Should throw an error");

@@ -45,13 +45,15 @@ describe("TokenUpdateTransaction", function () {
   // Two tokens should be created. One immutable token (no admin key) and another mutable.
   let immutableTokenId: string, mutableTokenId: string, mutableTokenKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     mutableTokenKey = (
       await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
@@ -93,8 +95,10 @@ describe("TokenUpdateTransaction", function () {
     ).tokenId;
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Token ID", () => {

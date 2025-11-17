@@ -35,13 +35,15 @@ describe("ContractUpdateTransaction", function () {
   let contractId: string;
   let contractAdminKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     // Create a test contract for update operations
     contractAdminKey = await generateEd25519PrivateKey(this);
     const adminPublicKey = await generateEd25519PublicKey(
@@ -65,8 +67,10 @@ describe("ContractUpdateTransaction", function () {
     contractId = contractResponse.contractId;
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Contract ID", function () {

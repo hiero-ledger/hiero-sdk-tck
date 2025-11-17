@@ -12,7 +12,9 @@ describe("AccountBalanceQueryTransaction", function () {
   this.timeout(30000);
   const decimals = "2";
 
-  beforeEach(async function () {
+  // Use before/after instead of beforeEach/afterEach to enable client reuse across tests
+  // This supports concurrent test execution with isolated client instances per suite
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -20,8 +22,10 @@ describe("AccountBalanceQueryTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Account ID/Contract ID", function () {

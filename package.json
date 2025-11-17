@@ -18,11 +18,12 @@
     "unified": "11.0.5"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit",
+    "test": "mocha --parallel --node-option require=ts-node/register --node-option require=tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit",
     "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --reporter mochawesome --exit",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:serial": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit"
   },
   "devDependencies": {
     "@types/chai": "^5.2.2",
