@@ -9,12 +9,11 @@ import {
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
 import { createFtToken, createNftToken } from "@helpers/token";
-import ConsensusInfoClient from "@services/ConsensusInfoClient";
 
 /**
  * Tests for AccountInfoQuery
  */
-describe.only("AccountInfoQuery", function () {
+describe("AccountInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
@@ -162,7 +161,7 @@ describe.only("AccountInfoQuery", function () {
       });
 
       try {
-        const response = await JSONRPCRequest(this, "getAccountInfo", {
+        await JSONRPCRequest(this, "getAccountInfo", {
           accountId: deletedAccountId,
         });
       } catch (error: any) {
