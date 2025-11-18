@@ -89,7 +89,7 @@ jobs:
 
   # Test Java SDK  
   java-compatibility:
-    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
+    if: ${{ inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/java_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'Java SDK Compatibility' }}

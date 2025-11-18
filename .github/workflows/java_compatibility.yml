@@ -95,18 +95,20 @@ jobs:
         with:
           node-version: 22
 
- 
+      # Set up Java environment
       - name: Setup Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: temurin
           java-version: "21.0.6"
   
+      # Set up Gradle build tool
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           cache-read-only: false
 
+      # Build the Java SDK
       - name: Build SDK & Javadoc
         working-directory: sdk-server
         id: gradle-build
@@ -129,6 +131,7 @@ jobs:
           echo "Server started with PID: $server_pid"
         working-directory: sdk-server
 
+      # Wait for TCK server to be ready
       - name: Wait for TCK Server
         run: |
           echo "Waiting for TCK server on port 8544..."
@@ -193,6 +196,7 @@ jobs:
           cat tck-server.log || echo "No server logs found"
         working-directory: sdk-server
 
+      # Clean up: Stop the TCK server
       - name: Stop tck-server
         if: ${{ always() }}
         run: |
