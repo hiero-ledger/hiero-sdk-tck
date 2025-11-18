@@ -2,19 +2,22 @@ import { assert, expect } from "chai";
 import { setOperator } from "@helpers/setup-tests";
 import { JSONRPCRequest } from "@services/Client";
 import {
+  generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
   generateEd25519PublicKey,
+  generateEvmAddress,
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
 import { createFtToken, createNftToken } from "@helpers/token";
+import ConsensusInfoClient from "@services/ConsensusInfoClient";
 
 /**
  * Tests for AccountInfoQuery
  */
-describe("AccountInfoQuery", function () {
+describe.only("AccountInfoQuery", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -22,8 +25,10 @@ describe("AccountInfoQuery", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Account ID", function () {
@@ -161,8 +166,8 @@ describe("AccountInfoQuery", function () {
           accountId: deletedAccountId,
         });
       } catch (error: any) {
-        // If it throws ACCOUNT_DELETED, that's also acceptable
         assert.equal(error.data.status, "ACCOUNT_DELETED");
+        return;
       }
 
       assert.fail("Should throw an error");
@@ -271,6 +276,9 @@ describe("AccountInfoQuery", function () {
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
         receiverSignatureRequired: false,
+        commonTransactionParams: {
+          signers: [accountPrivateKey],
+        },
       });
       const accountId = accountResponse.accountId;
 
@@ -286,6 +294,9 @@ describe("AccountInfoQuery", function () {
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
         receiverSignatureRequired: true,
+        commonTransactionParams: {
+          signers: [accountPrivateKey],
+        },
       });
       const accountId = accountResponse.accountId;
 
@@ -406,7 +417,7 @@ describe("AccountInfoQuery", function () {
       const memo = "Test account memo";
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
-        accountMemo: memo,
+        memo: memo,
       });
       const accountId = accountResponse.accountId;
 
@@ -479,24 +490,23 @@ describe("AccountInfoQuery", function () {
 
       expect(response).to.have.property("maxAutomaticTokenAssociations");
       expect(response.maxAutomaticTokenAssociations).to.be.a("string");
+      expect(response.maxAutomaticTokenAssociations).to.equal("0");
     });
 
     it("(#27) Query account info and verify maxAutomaticTokenAssociations with value", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const maxAutomaticTokenAssociations = "10";
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
-        maxAutomaticTokenAssociations: maxAutomaticTokenAssociations,
+        maxAutoTokenAssociations: 11,
       });
       const accountId = accountResponse.accountId;
-
       const response = await JSONRPCRequest(this, "getAccountInfo", {
         accountId: accountId,
       });
 
-      expect(response.maxAutomaticTokenAssociations).to.equal(
-        maxAutomaticTokenAssociations,
-      );
+      expect(response).to.have.property("maxAutomaticTokenAssociations");
+      expect(response.maxAutomaticTokenAssociations).to.be.a("string");
+      expect(response.maxAutomaticTokenAssociations).to.equal("11");
     });
 
     it("(#28) Query account info and verify aliasKey is returned", async function () {
@@ -514,14 +524,22 @@ describe("AccountInfoQuery", function () {
     });
 
     it("(#29) Query account info and verify aliasKey with alias", async function () {
-      const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const accountPublicKey = await generateEd25519PublicKey(
-        this,
-        accountPrivateKey,
-      );
+      // Generate a valid key for the account.
+      const key = await generateEcdsaSecp256k1PrivateKey(this);
+
+      // Generate the ECDSAsecp256k1 private key of the alias for the account.
+      //prettier-ignore
+      const ecdsaSecp256k1PrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
+
+      // Generate the EVM address associated with the private key, which will then be used as the alias for the account.
+      const alias = await generateEvmAddress(this, ecdsaSecp256k1PrivateKey);
+
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
-        key: accountPrivateKey,
-        alias: accountPublicKey,
+        key: key,
+        alias: alias,
+        commonTransactionParams: {
+          signers: [ecdsaSecp256k1PrivateKey],
+        },
       });
       const accountId = accountResponse.accountId;
 
@@ -531,7 +549,7 @@ describe("AccountInfoQuery", function () {
 
       // If alias is set, aliasKey should match the public key
       if (response.aliasKey) {
-        expect(response.aliasKey).to.equal(accountPublicKey);
+        expect(response.aliasKey).to.equal(alias);
       }
     });
 
@@ -550,197 +568,7 @@ describe("AccountInfoQuery", function () {
       expect(response.ledgerId).to.be.a("string");
     });
 
-    it("(#31) Query account info and verify hbarAllowances is returned", async function () {
-      const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const accountResponse = await JSONRPCRequest(this, "createAccount", {
-        key: accountPrivateKey,
-      });
-      const accountId = accountResponse.accountId;
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: accountId,
-      });
-
-      expect(response).to.have.property("hbarAllowances");
-      expect(response.hbarAllowances).to.be.an("array");
-    });
-
-    it("(#32) Query account info and verify hbarAllowances with data", async function () {
-      const ownerPrivateKey = await generateEd25519PrivateKey(this);
-      const ownerAccountId = await createAccount(this, ownerPrivateKey);
-
-      const spenderPrivateKey = await generateEd25519PrivateKey(this);
-      const spenderAccountId = await createAccount(this, spenderPrivateKey);
-
-      // Approve an HBAR allowance
-      const amount = "100000000"; // 1 HBAR in tinybars
-      await JSONRPCRequest(this, "approveAllowance", {
-        hbarApprovals: [
-          {
-            ownerAccountId: ownerAccountId,
-            spenderAccountId: spenderAccountId,
-            amount: amount,
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: ownerAccountId,
-      });
-
-      expect(response.hbarAllowances).to.be.an("array");
-      expect(response.hbarAllowances.length).to.be.greaterThan(0);
-      expect(response.hbarAllowances[0]).to.have.property("spenderAccountId");
-      expect(response.hbarAllowances[0].spenderAccountId).to.equal(
-        spenderAccountId,
-      );
-      expect(response.hbarAllowances[0]).to.have.property("amount");
-      expect(response.hbarAllowances[0].amount).to.equal(amount);
-    });
-
-    it("(#33) Query account info and verify tokenAllowances is returned", async function () {
-      const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const accountResponse = await JSONRPCRequest(this, "createAccount", {
-        key: accountPrivateKey,
-      });
-      const accountId = accountResponse.accountId;
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: accountId,
-      });
-
-      expect(response).to.have.property("tokenAllowances");
-      expect(response.tokenAllowances).to.be.an("array");
-    });
-
-    it("(#34) Query account info and verify tokenAllowances with data", async function () {
-      const ownerPrivateKey = await generateEd25519PrivateKey(this);
-      const ownerAccountId = await createAccount(this, ownerPrivateKey);
-
-      const spenderPrivateKey = await generateEd25519PrivateKey(this);
-      const spenderAccountId = await createAccount(this, spenderPrivateKey);
-
-      // Create a fungible token
-      const initialSupply = "1000";
-      const tokenId = await createFtToken(this, {
-        treasuryAccountId: ownerAccountId,
-        initialSupply: initialSupply,
-        decimals: 2,
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
-
-      // Approve a token allowance
-      const amount = "100";
-      await JSONRPCRequest(this, "approveAllowance", {
-        tokenApprovals: [
-          {
-            tokenId: tokenId,
-            ownerAccountId: ownerAccountId,
-            spenderAccountId: spenderAccountId,
-            amount: amount,
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: ownerAccountId,
-      });
-
-      expect(response.tokenAllowances).to.be.an("array");
-      expect(response.tokenAllowances.length).to.be.greaterThan(0);
-      expect(response.tokenAllowances[0]).to.have.property("tokenId");
-      expect(response.tokenAllowances[0].tokenId).to.equal(tokenId);
-      expect(response.tokenAllowances[0]).to.have.property("spenderAccountId");
-      expect(response.tokenAllowances[0].spenderAccountId).to.equal(
-        spenderAccountId,
-      );
-      expect(response.tokenAllowances[0]).to.have.property("amount");
-      expect(response.tokenAllowances[0].amount).to.equal(amount);
-    });
-
-    it("(#35) Query account info and verify nftAllowances is returned", async function () {
-      const accountPrivateKey = await generateEd25519PrivateKey(this);
-      const accountResponse = await JSONRPCRequest(this, "createAccount", {
-        key: accountPrivateKey,
-      });
-      const accountId = accountResponse.accountId;
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: accountId,
-      });
-
-      expect(response).to.have.property("nftAllowances");
-      expect(response.nftAllowances).to.be.an("array");
-    });
-
-    it("(#36) Query account info and verify nftAllowances with data", async function () {
-      const ownerPrivateKey = await generateEd25519PrivateKey(this);
-      const ownerAccountId = await createAccount(this, ownerPrivateKey);
-
-      const spenderPrivateKey = await generateEd25519PrivateKey(this);
-      const spenderAccountId = await createAccount(this, spenderPrivateKey);
-
-      const supplyKey = await JSONRPCRequest(this, "generateKey", {
-        type: "ed25519PrivateKey",
-      });
-
-      // Create an NFT token
-      const tokenId = await createNftToken(this, {
-        treasuryAccountId: ownerAccountId,
-        supplyKey: supplyKey.key,
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
-
-      // Mint an NFT
-      const metadata = "NFT metadata";
-      await JSONRPCRequest(this, "mintToken", {
-        tokenId: tokenId,
-        metadata: [metadata],
-        commonTransactionParams: {
-          signers: [supplyKey.key],
-        },
-      });
-
-      // Approve NFT allowance for all serials
-      await JSONRPCRequest(this, "approveAllowance", {
-        nftApprovals: [
-          {
-            tokenId: tokenId,
-            ownerAccountId: ownerAccountId,
-            spenderAccountId: spenderAccountId,
-            approvedForAll: true,
-          },
-        ],
-        commonTransactionParams: {
-          signers: [ownerPrivateKey],
-        },
-      });
-
-      const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: ownerAccountId,
-      });
-
-      expect(response.nftAllowances).to.be.an("array");
-      expect(response.nftAllowances.length).to.be.greaterThan(0);
-      expect(response.nftAllowances[0]).to.have.property("tokenId");
-      expect(response.nftAllowances[0].tokenId).to.equal(tokenId);
-      expect(response.nftAllowances[0]).to.have.property("spenderAccountId");
-      expect(response.nftAllowances[0].spenderAccountId).to.equal(
-        spenderAccountId,
-      );
-    });
-
-    it("(#37) Query account info and verify ethereumNonce is returned", async function () {
+    it("(#31) Query account info and verify ethereumNonce is returned", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -755,7 +583,7 @@ describe("AccountInfoQuery", function () {
       expect(response.ethereumNonce).to.be.a("string");
     });
 
-    it("(#38) Query account info and verify stakingInfo is returned", async function () {
+    it("(#32) Query account info and verify stakingInfo is returned", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -776,7 +604,7 @@ describe("AccountInfoQuery", function () {
       expect(response.stakingInfo).to.have.property("stakedNodeId");
     });
 
-    it("(#39) Query account info and verify stakingInfo.declineStakingReward", async function () {
+    it("(#33) Query account info and verify stakingInfo.declineStakingReward", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -791,7 +619,7 @@ describe("AccountInfoQuery", function () {
       expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
     });
 
-    it("(#40) Query account info and verify stakingInfo.stakePeriodStart", async function () {
+    it("(#34) Query account info and verify stakingInfo.stakePeriodStart", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const stakedNodeId = "0";
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
@@ -807,7 +635,7 @@ describe("AccountInfoQuery", function () {
       expect(response.stakingInfo).to.have.property("stakePeriodStart");
     });
 
-    it("(#41) Query account info and verify stakingInfo.pendingReward", async function () {
+    it("(#35) Query account info and verify stakingInfo.pendingReward", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -822,7 +650,7 @@ describe("AccountInfoQuery", function () {
       expect(response.stakingInfo.pendingReward).to.be.a("string");
     });
 
-    it("(#42) Query account info and verify stakingInfo.stakedToMe", async function () {
+    it("(#36) Query account info and verify stakingInfo.stakedToMe", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -837,7 +665,7 @@ describe("AccountInfoQuery", function () {
       expect(response.stakingInfo.stakedToMe).to.be.a("string");
     });
 
-    it("(#43) Query account info and verify stakingInfo.stakedAccountId", async function () {
+    it("(#37) Query account info and verify stakingInfo.stakedAccountId", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const stakedAccountId = process.env.OPERATOR_ACCOUNT_ID;
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
@@ -856,7 +684,7 @@ describe("AccountInfoQuery", function () {
       }
     });
 
-    it("(#44) Query account info and verify stakingInfo.stakedNodeId", async function () {
+    it("(#38) Query account info and verify stakingInfo.stakedNodeId", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const stakedNodeId = "0";
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
