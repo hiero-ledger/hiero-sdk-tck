@@ -17,6 +17,7 @@ on:
           - "js"
           - "go"
           - "cpp"
+          - "java"
           - "every"
         default: "every"
       custom-job-name:
@@ -41,6 +42,10 @@ on:
         type: string
       cpp-sdk-version:
         description: "CPP SDK version (defaults to latest tag)"
+        required: false
+        type: string
+      java-sdk-version:
+        description: "Java SDK version (defaults to latest tag)"
         required: false
         type: string
 
@@ -82,9 +87,20 @@ jobs:
       cpp-sdk-version: ${{ inputs.cpp-sdk-version }}
     secrets: inherit
 
+  # Test Java SDK  
+  java-compatibility:
+    if: ${{ inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: ${{ inputs.custom-job-name || 'Java SDK Compatibility' }}
+      solo-version: ${{ inputs.solo-version }}
+      consensus-node-version: ${{ inputs.consensus-node-version }}
+      java-sdk-version: ${{ inputs.java-sdk-version }}
+    secrets: inherit
+
   # Summary job
   summary:
-    needs: [js-compatibility, go-compatibility, cpp-compatibility]
+    needs: [js-compatibility, go-compatibility, cpp-compatibility, java-compatibility]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -113,5 +129,13 @@ jobs:
               echo "✅ **CPP SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
             else
               echo "❌ **CPP SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          if [[ "${{ needs.java-compatibility.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.java-compatibility.result }}" == "success" ]]; then
+              echo "✅ **Java SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Java SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
           fi 
