@@ -40,8 +40,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name     | Type   | Required/Optional | Description/Notes                                                                        |
 |--------------------|--------|-------------------|------------------------------------------------------------------------------------------|
-| contractId         | string | required          | The ID of the contract to query.                                                         |
-| gas                | string | required          | The amount of gas to use for the query.                                                  |
+| contractId         | string | optional          | The ID of the contract to query.                                                         |
+| gas                | string | optional          | The amount of gas to use for the query.                                                  |
 | functionName       | string | optional          | The name of the function to call (used when no functionParameters provided).             |
 | functionParameters | string | optional          | The ABI-encoded function parameters (hex string).                                        |
 | maxQueryPayment    | string | optional          | The maximum payment amount in tinybars willing to be paid for this query.                |
