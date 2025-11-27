@@ -187,7 +187,7 @@ jobs:
         # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@be37932d21b1a1deaaca6ce8d7fc28a7251cfb56 # v0.13.0
+        uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # v0.16.0
         with:
           installMirrorNode: true
           soloVersion: ${{ inputs.solo-version || '0.38.0' }}
