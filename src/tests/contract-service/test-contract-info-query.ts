@@ -94,7 +94,7 @@ async function performContractInfoQuery(
 /**
  * Tests for ContractInfoQuery
  */
-describe.only("ContractInfoQuery", function () {
+describe("ContractInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
