@@ -9,7 +9,7 @@ import {
 /**
  * Tests for FileInfoQuery
  */
-describe.only("FileInfoQuery", function () {
+describe("FileInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
