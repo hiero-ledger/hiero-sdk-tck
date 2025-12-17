@@ -31,7 +31,7 @@ describe.only("TokenInfoQuery", function () {
     });
   });
 
-  describe("Basic Query Tests", function () {
+  describe("TokenInfoQuery", function () {
     it("(#1) Query for the info of a valid token", async function () {
       const tokenId = await createFtToken(this, {
         name: "testname",
@@ -135,9 +135,7 @@ describe.only("TokenInfoQuery", function () {
       expect(response).to.not.be.null;
       expect(response.tokenId).to.equal(tokenId);
     });
-  });
 
-  describe("Token Identity Fields", function () {
     it("(#7) Verify tokenId field is correctly returned", async function () {
       const tokenId = await createFtToken(this, {
         name: "testname",
@@ -255,9 +253,7 @@ describe.only("TokenInfoQuery", function () {
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
       expect(consensusInfo.tokenMemo).to.equal("");
     });
-  });
 
-  describe("Supply and Type Fields", function () {
     it("(#12) Verify decimals field for fungible token", async function () {
       const decimals = 2;
       const tokenId = await createFtToken(this, {
@@ -469,9 +465,7 @@ describe.only("TokenInfoQuery", function () {
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
       expect(consensusInfo.maxSupply?.toString()).to.equal("0");
     });
-  });
 
-  describe("Account and Expiration Fields", function () {
     it("(#20) Verify treasuryAccountId field", async function () {
       const treasuryKey = await generateEd25519PrivateKey(this);
       const treasuryAccountId = await createAccount(this, treasuryKey);
@@ -610,9 +604,7 @@ describe.only("TokenInfoQuery", function () {
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
       expect(consensusInfo.expirationTime).to.exist;
     });
-  });
 
-  describe("Key Fields", function () {
     it("(#25) Verify adminKey field when set", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const adminPublicKey = await generateEd25519PublicKey(this, adminKey);
@@ -962,9 +954,7 @@ describe.only("TokenInfoQuery", function () {
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
       expect(consensusInfo.metadataKey).to.be.null;
     });
-  });
 
-  describe("Status Fields", function () {
     it("(#41) Verify defaultFreezeStatus when freezeKey set", async function () {
       const freezeKey = await generateEd25519PrivateKey(this);
 
@@ -1142,9 +1132,7 @@ describe.only("TokenInfoQuery", function () {
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
       expect(consensusInfo.isDeleted).to.be.false;
     });
-  });
 
-  describe("Custom Fees and Metadata", function () {
     it("(#49) Verify customFees field with no fees", async function () {
       const tokenId = await createFtToken(this, {
         name: "TestToken",

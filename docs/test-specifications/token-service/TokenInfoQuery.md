@@ -89,34 +89,13 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 2       | Query for the info with no token ID               |                           | The token info query fails and returns error response `INVALID_TOKEN_ID`      | N                 |
 | 3       | Query for the info of a token that doesn't exist  | tokenId=1000000.0.0       | The token info query fails and returns error response `INVALID_TOKEN_ID`      | N                 |
 | 4       | Query for the info of a deleted token             | tokenId=\<DELETED_TOKEN_ID\>| The token info query fails and returns error response `TOKEN_WAS_DELETED`   | N                 |
-
-### **Query Parameters:**
-
-- Testing query payment and cost parameters
-
-| Test no | Name                                               | Input                                              | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 5       | Query with explicit maxQueryPayment                | tokenId, maxQueryPayment=100000000                 | The token info query succeeds with the specified max payment                  | N                 |
 | 6       | Query with explicit queryPayment                   | tokenId, queryPayment=100000000                    | The token info query succeeds with the specified exact payment                | N                 |
-
-### **Token Identity Fields:**
-
-- Basic token identification information
-
-| Test no | Name                                               | Input                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 7       | Verify tokenId field is correctly returned         | tokenId=\<VALID_TOKEN_ID\>  | Returns the correct tokenId matching the query input                          | N                 |
 | 8       | Verify name field with valid token name            | Token with name="TestToken"| Returns the correct token name                                                | N                 |
 | 9       | Verify symbol field with valid token symbol        | Token with symbol="TST"    | Returns the correct token symbol                                              | N                 |
 | 10      | Verify tokenMemo field with memo                   | Token with memo="Test memo"| Returns the correct token memo                                                | N                 |
 | 11      | Verify tokenMemo field with empty memo             | Token with memo=""         | Returns an empty string for tokenMemo                                         | N                 |
-
-### **Supply and Type Fields:**
-
-- Token supply, decimals, and type information
-
-| Test no | Name                                               | Input                                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 12      | Verify decimals field for fungible token           | Fungible token with decimals=2            | Returns the correct decimals value                                            | N                 |
 | 13      | Verify totalSupply field with initial supply       | Token with initialSupply=1000             | Returns the correct total supply                                              | N                 |
 | 14      | Verify totalSupply after minting                   | Token after minting additional supply     | Returns the updated total supply including minted tokens                      | N                 |
@@ -125,25 +104,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 17      | Verify supplyType field for finite supply          | Token with supplyType=FINITE              | Returns FINITE for supplyType                                                 | N                 |
 | 18      | Verify maxSupply field for finite supply token     | Finite token with maxSupply=5000          | Returns the correct maxSupply value                                           | N                 |
 | 19      | Verify maxSupply field for infinite supply token   | Infinite token                            | Returns 0 or null for maxSupply                                               | N                 |
-
-### **Account and Expiration Fields:**
-
-- Account ownership and expiration information
-
-| Test no | Name                                               | Input                                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 20      | Verify treasuryAccountId field                     | Token with specified treasury             | Returns the correct treasury account ID                                       | N                 |
 | 21      | Verify autoRenewAccountId with custom account      | Token with autoRenewAccountId set         | Returns the correct auto-renew account ID                                     | N                 |
 | 22      | Verify autoRenewAccountId with default             | Token without explicit autoRenewAccountId | Returns the default auto-renew account ID                                     | N                 |
 | 23      | Verify autoRenewPeriod field                       | Token with custom autoRenewPeriod         | Returns the correct auto-renew period in seconds                              | N                 |
 | 24      | Verify expirationTime field                        | Any valid token                           | Returns a valid future timestamp for expiration                               | N                 |
-
-### **Key Fields:**
-
-- Testing all 8 key types for token management
-
-| Test no | Name                                               | Input                                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 25      | Verify adminKey field when set                     | Token with adminKey                       | Returns the correct admin key                                                 | N                 |
 | 26      | Verify adminKey field when not set                 | Token without adminKey                    | Returns null or empty for adminKey                                            | N                 |
 | 27      | Verify kycKey field when set                       | Token with kycKey                         | Returns the correct KYC key                                                   | N                 |
@@ -160,13 +125,6 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 38      | Verify feeScheduleKey field when not set           | Token without feeScheduleKey              | Returns null or empty for feeScheduleKey                                      | N                 |
 | 39      | Verify metadataKey field when set                  | Token with metadataKey                    | Returns the correct metadata key                                              | N                 |
 | 40      | Verify metadataKey field when not set              | Token without metadataKey                 | Returns null or empty for metadataKey                                         | N                 |
-
-### **Status Fields:**
-
-- Token status information
-
-| Test no | Name                                               | Input                                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 41      | Verify defaultFreezeStatus when freezeKey set      | Token with freezeKey, defaultFreezeStatus=true | Returns the correct default freeze status                                | N                 |
 | 42      | Verify defaultFreezeStatus when no freezeKey       | Token without freezeKey                   | Returns null or false for defaultFreezeStatus                                 | N                 |
 | 43      | Verify defaultKycStatus when kycKey set            | Token with kycKey, defaultKycStatus=true  | Returns the correct default KYC status                                        | N                 |
@@ -175,13 +133,6 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 46      | Verify pauseStatus for unpaused token              | Token with pauseKey but not paused        | Returns UNPAUSED for pauseStatus                                              | N                 |
 | 47      | Verify pauseStatus when no pauseKey                | Token without pauseKey                    | Returns NOT_APPLICABLE or null for pauseStatus                                | N                 |
 | 48      | Verify isDeleted field for active token            | Active token                              | Returns false for isDeleted                                                   | N                 |
-
-### **Custom Fees and Metadata:**
-
-- Custom fee schedules and metadata
-
-| Test no | Name                                               | Input                                     | Expected response                                                             | Implemented (Y/N) |
-| ------- | -------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------- | ----------------- |
 | 49      | Verify customFees field with no fees               | Token without custom fees                 | Returns an empty array for customFees                                         | N                 |
 | 50      | Verify customFees field with fixed fee             | Token with fixed fee                      | Returns the correct fixed fee in customFees array                             | N                 |
 | 51      | Verify customFees field with fractional fee        | Token with fractional fee                 | Returns the correct fractional fee in customFees array                        | N                 |
