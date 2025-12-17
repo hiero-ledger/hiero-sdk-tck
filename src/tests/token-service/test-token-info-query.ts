@@ -14,7 +14,7 @@ import { retryOnError } from "@helpers/retry-on-error";
 /**
  * Tests for TokenInfoQuery
  */
-describe.only("TokenInfoQuery", function () {
+describe("TokenInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
