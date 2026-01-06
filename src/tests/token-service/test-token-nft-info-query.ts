@@ -13,7 +13,7 @@ import { createNftAllowanceParams } from "@helpers/allowances";
 /**
  * Tests for TokenNftInfoQuery
  */
-describe.only("TokenNftInfoQuery", function () {
+describe("TokenNftInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
