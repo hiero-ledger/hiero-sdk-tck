@@ -8,6 +8,7 @@ import {
   CryptoAllowancesResponse,
   NftAllowancesResponse,
   Nfts,
+  Nft,
   TokenInfo,
   TokenAirdropsResponse,
   Topic,
@@ -53,6 +54,11 @@ class MirrorNodeClient {
   async getAccountNfts(accountId: string): Promise<Nfts> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/nfts`;
 
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getNftInfo(tokenId: string, serialNumber: string): Promise<Nft> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}/nfts/${serialNumber}`;
     return retryOnError(async () => fetchData(url));
   }
 
