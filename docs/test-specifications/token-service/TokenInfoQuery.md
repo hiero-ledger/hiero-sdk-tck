@@ -40,7 +40,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name  | Type    | Required/Optional | Description/Notes                                          |
 | --------------- | ------- | ----------------- | ---------------------------------------------------------- |
-| tokenId         | string  | required          | The ID of the token to query.                              |
+| tokenId         | string  | optional          | The ID of the token to query.                              |
 | queryPayment    | string  | optional          | Explicit payment amount for the query in tinybars.         |
 | maxQueryPayment | string  | optional          | Maximum payment amount for the query in tinybars.          |
 
