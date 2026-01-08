@@ -13,7 +13,7 @@ import { retryOnError } from "@helpers/retry-on-error";
 /**
  * Tests for TopicInfoQuery
  */
-describe.only("TopicInfoQuery", function () {
+describe("TopicInfoQuery", function () {
   this.timeout(30000);
 
   before(async function () {
