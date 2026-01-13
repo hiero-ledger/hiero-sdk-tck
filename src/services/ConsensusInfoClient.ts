@@ -35,17 +35,24 @@ import {
 class ConsensusInfoClient {
   sdkClient;
   constructor() {
-    if (
-      process.env.NODE_IP &&
-      process.env.NODE_ACCOUNT_ID &&
-      process.env.MIRROR_NETWORK
-    ) {
+    if (process.env.NODE_IP && process.env.NODE_ACCOUNT_ID) {
       const node = {
         [process.env.NODE_IP]: AccountId.fromString(
           process.env.NODE_ACCOUNT_ID,
         ),
       };
       this.sdkClient = Client.forNetwork(node);
+      // Set mirror network for AddressBookQuery support
+      // AddressBookQuery requires mirror network to be configured
+      if (process.env.MIRROR_NETWORK) {
+        const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
+          (addr) => addr.trim(),
+        );
+        this.sdkClient.setMirrorNetwork(mirrorNetwork);
+      } else {
+        // Default mirror network for local development
+        this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      }
     } else {
       this.sdkClient = Client.forLocalNode();
       this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
@@ -185,6 +192,17 @@ class ConsensusInfoClient {
     }
 
     return node;
+  }
+
+  async getAddressBook(fileId?: string, limit?: number): Promise<any> {
+    const query = new AddressBookQuery();
+    if (fileId !== null && fileId !== undefined) {
+      query.setFileId(FileId.fromString(fileId));
+    }
+    if (limit !== null && limit !== undefined) {
+      query.setLimit(limit);
+    }
+    return query.execute(this.sdkClient);
   }
 }
 
