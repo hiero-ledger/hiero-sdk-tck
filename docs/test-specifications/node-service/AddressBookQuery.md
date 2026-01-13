@@ -76,10 +76,10 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 1       | Query with valid fileId                 | fileId="0.0.102"        | The address book query succeeds and returns node addresses                 | N                 |
-| 2       | Query without fileId                    |                          | The address book query succeeds and returns latest address book            | N                 |
-| 3       | Query with invalid fileId               | fileId="999.999.999"    | The address book query fails and returns error response `INVALID_FILE_ID`  | N                 |
-| 4       | Query with non-existent fileId           | fileId="0.0.999999"     | The address book query fails and returns error response `INVALID_FILE_ID`  | N                 |
+| 1       | Query with valid fileId                 | fileId="0.0.102"        | The address book query succeeds and returns node addresses                 |  Y                |
+| 2       | Query without fileId                    |                          | The address book query succeeds and returns latest address book            |  Y                |
+| 3       | Query with invalid fileId               | fileId="999.999.999"    | The address book query fails and returns error response `INVALID_FILE_ID`  |  Y                |
+| 4       | Query with non-existent fileId           | fileId="0.0.999999"     | The address book query fails and returns error response `INVALID_FILE_ID`  |  Y                |
 
 ### **Limit:**
 
@@ -87,11 +87,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 5       | Query with explicit limit                | limit=5                  | The address book query succeeds and returns at most 5 node addresses      | N                 |
-| 6       | Query with limit=1                       | limit=1                  | The address book query succeeds and returns exactly 1 node address         | N                 |
-| 7       | Query with limit=0                      | limit=0                  | The address book query fails or returns empty array                        | N                 |
-| 8       | Query with negative limit                 | limit=-1                 | The address book query fails and returns error response                   | N                 |
-| 9       | Query with very large limit              | limit=10000              | The address book query succeeds and returns available nodes up to limit    | N                 |
+| 5       | Query with explicit limit                | limit=5                  | The address book query succeeds and returns at most 5 node addresses      |  Y                |
+| 6       | Query with limit=1                       | limit=1                  | The address book query succeeds and returns exactly 1 node address         |  Y                |
+| 7       | Query with limit=0                      | limit=0                  | The address book query fails or returns empty array                        |  Y                |
+| 8       | Query with negative limit                 | limit=-1                 | The address book query fails and returns error response                   |  Y                |
+| 9       | Query with very large limit              | limit=10000              | The address book query succeeds and returns available nodes up to limit    |  Y                |
 
 ### **Response Structure:**
 
@@ -99,9 +99,9 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 10      | Verify nodeAddresses is an array        | Any valid query           | Returns an array of node addresses                                        | N                 |
-| 11      | Verify nodeAddresses contains nodes      | Any valid query           | Returns at least one node address in the array                             | N                 |
-| 12      | Verify each node has required fields     | Any valid query           | Each node address contains nodeId, accountId, and serviceEndpoints       | N                 |
+| 10      | Verify nodeAddresses is an array        | Any valid query           | Returns an array of node addresses                                        |  Y                |
+| 11      | Verify nodeAddresses contains nodes      | Any valid query           | Returns at least one node address in the array                             |  Y                |
+| 12      | Verify each node has required fields     | Any valid query           | Each node address contains nodeId, accountId, and serviceEndpoints       |  Y                |
 
 ### **Node ID:**
 
@@ -109,8 +109,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 13      | Verify nodeId field is correctly returned| Any valid query          | Returns valid numeric nodeId for each node                                 | N                 |
-| 14      | Verify nodeId is unique                 | Any valid query           | Each node in the response has a unique nodeId                             | N                 |
+| 13      | Verify nodeId field is correctly returned| Any valid query          | Returns valid numeric nodeId for each node                                 |  Y                |
+| 14      | Verify nodeId is unique                 | Any valid query           | Each node in the response has a unique nodeId                             |  Y                |
 
 ### **Account ID:**
 
@@ -118,8 +118,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 15      | Verify accountId field is correctly returned| Any valid query         | Returns valid accountId string (format: shard.realm.num) for each node      | N                 |
-| 16      | Verify accountId matches node            | Query specific node       | Returns accountId that matches the queried node                             | N                 |
+| 15      | Verify accountId field is correctly returned| Any valid query         | Returns valid accountId string (format: shard.realm.num) for each node      |  Y                |
+| 16      | Verify accountId matches node            | Query specific node       | Returns accountId that matches the queried node                             |  Y                |
 
 ### **Service Endpoints:**
 
@@ -127,11 +127,11 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 17      | Verify serviceEndpoints is an array      | Any valid query           | Returns an array of service endpoints for each node                       | N                 |
-| 18      | Verify serviceEndpoints contain valid data| Any valid query          | Each endpoint contains ipAddressV4 or domainName and port                  | N                 |
-| 19      | Verify serviceEndpoints ipAddressV4 format| Any valid query          | ipAddressV4 is in valid hex format when present                            | N                 |
-| 20      | Verify serviceEndpoints port is valid    | Any valid query          | Port is a valid number between 1 and 65535                                 | N                 |
-| 21      | Verify serviceEndpoints with domainName  | Query node with domain   | Returns endpoints with domainName when present                             | N                 |
+| 17      | Verify serviceEndpoints is an array      | Any valid query           | Returns an array of service endpoints for each node                       |  Y                |
+| 18      | Verify serviceEndpoints contain valid data| Any valid query          | Each endpoint contains ipAddressV4 or domainName and port                  |  Y                |
+| 19      | Verify serviceEndpoints ipAddressV4 format| Any valid query          | ipAddressV4 is in valid hex format when present                            |  Y                |
+| 20      | Verify serviceEndpoints port is valid    | Any valid query          | Port is a valid number between 1 and 65535                                 |  Y                |
+| 21      | Verify serviceEndpoints with domainName  | Query node with domain   | Returns endpoints with domainName when present                             |  Y                |
 
 ### **RSA Public Key:**
 
@@ -139,8 +139,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 22      | Verify rsaPublicKey when present        | Query node with RSA key  | Returns valid RSA public key string when set                               | N                 |
-| 23      | Verify rsaPublicKey when not set        | Query node without key    | Returns null, undefined, or empty string when not set                      | N                 |
+| 22      | Verify rsaPublicKey when present        | Query node with RSA key  | Returns valid RSA public key string when set                               |  Y                |
+| 23      | Verify rsaPublicKey when not set        | Query node without key    | Returns null, undefined, or empty string when not set                      |  Y                |
 
 ### **Node Certificate Hash:**
 
@@ -148,8 +148,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 24      | Verify nodeCertHash when present        | Query node with cert hash| Returns valid certificate hash string when set                             | N                 |
-| 25      | Verify nodeCertHash when not set        | Query node without hash  | Returns null, undefined, or empty string when not set                       | N                 |
+| 24      | Verify nodeCertHash when present        | Query node with cert hash| Returns valid certificate hash string when set                             |  Y                |
+| 25      | Verify nodeCertHash when not set        | Query node without hash  | Returns null, undefined, or empty string when not set                       |  Y                |
 
 ### **Description:**
 
@@ -157,6 +157,6 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 26      | Verify description when present          | Query node with description| Returns description string when set                                        | N                 |
-| 27      | Verify description when not set          | Query node without description| Returns null, undefined, or empty string when not set                     | N                 |
+| 26      | Verify description when present          | Query node with description| Returns description string when set                                        |  Y                |
+| 27      | Verify description when not set          | Query node without description| Returns null, undefined, or empty string when not set                     |  Y                |
 

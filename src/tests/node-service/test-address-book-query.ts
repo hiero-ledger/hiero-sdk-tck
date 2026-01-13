@@ -9,7 +9,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 /**
  * Tests for AddressBookQuery
  */
-describe.only("AddressBookQuery", function () {
+describe("AddressBookQuery", function () {
   this.timeout(30000);
 
   before(async function () {
