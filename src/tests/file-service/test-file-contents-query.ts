@@ -10,7 +10,7 @@ import consensusInfoClient from "@services/ConsensusInfoClient";
 /**
  * Tests for FileContentsQuery
  */
-describe.only("FileContentsQuery", function () {
+describe("FileContentsQuery", function () {
   this.timeout(30000);
 
   before(async function () {
