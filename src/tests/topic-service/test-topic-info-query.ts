@@ -266,7 +266,57 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.expirationTime).to.exist;
     });
 
-    it("(#13) Verify adminKey field when set", async function () {
+    // SDK bug, fails with "INVALID_EXPIRATION_TIME" error
+    it.skip("(#13) Verify expirationTime field with far future date (year 2150)", async function () {
+      // Create a topic with admin key so we can update it
+      const adminKey = await generateEd25519PrivateKey(this);
+      const adminPublicKey = await generateEd25519PublicKey(this, adminKey);
+
+      const createResponse = await JSONRPCRequest(this, "createTopic", {
+        memo: "Test topic",
+        adminKey: adminPublicKey,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
+      const topicId = createResponse.topicId;
+
+      // Set expiration time to year 2150 (approximately 7200000000 seconds since epoch)
+      // This tests JavaScript date handling with very large timestamps
+      const expirationTime = "7200000000"; // Year 2150
+
+      // Update the topic with the far future expiration time
+      await JSONRPCRequest(this, "updateTopic", {
+        topicId: topicId,
+        expirationTime: expirationTime,
+        commonTransactionParams: {
+          signers: [adminKey],
+        },
+      });
+
+      // Query the topic info and verify expirationTime is correctly returned
+      const response = await JSONRPCRequest(this, "getTopicInfo", {
+        topicId: topicId,
+      });
+
+      expect(response.expirationTime).to.exist;
+      expect(response.expirationTime).to.be.a("string");
+      expect(response.expirationTime).to.equal(expirationTime);
+
+      // Verify the timestamp can be parsed correctly (tests JavaScript date handling)
+      const expirationTimestamp = parseInt(response.expirationTime);
+      expect(expirationTimestamp).to.be.a("number");
+      expect(expirationTimestamp).to.equal(7200000000);
+
+      // Verify against consensus node
+      const consensusInfo = await consensusInfoClient.getTopicInfo(topicId);
+      expect(consensusInfo.expirationTime).to.exist;
+      expect(consensusInfo.expirationTime?.seconds?.toString()).to.equal(
+        expirationTime,
+      );
+    });
+
+    it("(#14) Verify adminKey field when set", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const adminPublicKey = await generateEd25519PublicKey(this, adminKey);
 
@@ -290,7 +340,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.adminKey).to.exist;
     });
 
-    it("(#14) Verify adminKey field when not set", async function () {
+    it("(#15) Verify adminKey field when not set", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -307,7 +357,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.adminKey).to.be.null;
     });
 
-    it("(#15) Verify submitKey field when set", async function () {
+    it("(#16) Verify submitKey field when set", async function () {
       const submitKey = await generateEd25519PrivateKey(this);
       const submitPublicKey = await generateEd25519PublicKey(this, submitKey);
 
@@ -331,7 +381,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.submitKey).to.exist;
     });
 
-    it("(#16) Verify submitKey field when not set", async function () {
+    it("(#17) Verify submitKey field when not set", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -348,7 +398,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.submitKey).to.be.null;
     });
 
-    it("(#17) Verify autoRenewAccountId with custom account", async function () {
+    it("(#18) Verify autoRenewAccountId with custom account", async function () {
       const autoRenewKey = await generateEd25519PrivateKey(this);
       const autoRenewAccountId = await createAccount(this, autoRenewKey);
 
@@ -380,7 +430,7 @@ describe("TopicInfoQuery", function () {
       });
     });
 
-    it("(#18) Verify autoRenewAccountId with default", async function () {
+    it("(#19) Verify autoRenewAccountId with default", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -398,7 +448,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.autoRenewAccountId).to.exist;
     });
 
-    it("(#19) Verify autoRenewPeriod field", async function () {
+    it("(#20) Verify autoRenewPeriod field", async function () {
       const autoRenewPeriod = "8000000"; // ~92 days in seconds
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
@@ -427,7 +477,7 @@ describe("TopicInfoQuery", function () {
       });
     });
 
-    it("(#20) Verify feeScheduleKey field when set", async function () {
+    it("(#21) Verify feeScheduleKey field when set", async function () {
       const feeScheduleKey = await generateEd25519PrivateKey(this);
       const feeSchedulePublicKey = await generateEd25519PublicKey(
         this,
@@ -454,7 +504,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.feeScheduleKey).to.exist;
     });
 
-    it("(#21) Verify feeScheduleKey field when not set", async function () {
+    it("(#22) Verify feeScheduleKey field when not set", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -471,7 +521,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.feeScheduleKey).to.be.null;
     });
 
-    it("(#22) Verify feeExemptKeys field when set", async function () {
+    it("(#23) Verify feeExemptKeys field when set", async function () {
       const feeExemptKey = await generateEd25519PrivateKey(this);
       const feeExemptPublicKey = await generateEd25519PublicKey(
         this,
@@ -505,7 +555,7 @@ describe("TopicInfoQuery", function () {
       });
     });
 
-    it("(#23) Verify feeExemptKeys field when not set", async function () {
+    it("(#24) Verify feeExemptKeys field when not set", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -528,7 +578,7 @@ describe("TopicInfoQuery", function () {
       ).to.be.true;
     });
 
-    it("(#24) Verify customFees field with no fees", async function () {
+    it("(#25) Verify customFees field with no fees", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
@@ -547,7 +597,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.customFees).to.have.lengthOf(0);
     });
 
-    it("(#25) Verify customFees field with fixed fee", async function () {
+    it("(#26) Verify customFees field with fixed fee", async function () {
       const feeCollectorKey = await generateEd25519PrivateKey(this);
       const feeCollectorAccountId = await createAccount(this, feeCollectorKey);
 
@@ -585,7 +635,7 @@ describe("TopicInfoQuery", function () {
       expect(consensusInfo.customFees).to.have.lengthOf(1);
     });
 
-    it("(#26) Verify ledgerId field", async function () {
+    it("(#27) Verify ledgerId field", async function () {
       const createResponse = await JSONRPCRequest(this, "createTopic", {
         memo: "Test topic",
       });
