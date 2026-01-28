@@ -443,7 +443,7 @@ describe("AccountInfoQuery", function () {
       expect(response.ownedNfts).to.equal("0");
     });
 
-    it("(#25) Query account info and verify ownedNfts with NFTs", async function () {
+    it.only("(#25) Query account info and verify ownedNfts with NFTs", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, accountPrivateKey);
       const supplyKey = await JSONRPCRequest(this, "generateKey", {
