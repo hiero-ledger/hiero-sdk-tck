@@ -443,7 +443,7 @@ describe("AccountInfoQuery", function () {
       expect(response.ownedNfts).to.equal("0");
     });
 
-    it.only("(#25) Query account info and verify ownedNfts with NFTs", async function () {
+    it("(#25) Query account info and verify ownedNfts with NFTs", async function () {
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountId = await createAccount(this, accountPrivateKey);
       const supplyKey = await JSONRPCRequest(this, "generateKey", {
@@ -460,10 +460,10 @@ describe("AccountInfoQuery", function () {
       });
 
       // Mint an NFT
-      const metadata = "NFT metadata";
+      const metadata = ["1234", "5678", "90ab"];
       await JSONRPCRequest(this, "mintToken", {
         tokenId: tokenId,
-        metadata: [metadata],
+        metadata: metadata,
         commonTransactionParams: {
           signers: [supplyKey.key],
         },
