@@ -133,7 +133,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Unpauses a token that is deleted", async function () {
+    it("(#6) Unpauses a token that is deleted", async function () {
       await JSONRPCRequest(this, "unpauseToken", {
         tokenId,
         commonTransactionParams: {

@@ -685,7 +685,7 @@ describe("ContractDeleteTransaction", function () {
       }
     });
 
-    it.skip("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
+    it("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,
