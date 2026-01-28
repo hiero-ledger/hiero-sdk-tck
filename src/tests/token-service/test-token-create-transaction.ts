@@ -3741,7 +3741,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#35) Creates a token with a royalty fee with a numerator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -3971,7 +3971,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#41) Creates a token with a royalty fee with a denominator of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4201,7 +4201,7 @@ describe("TokenCreateTransaction", function () {
       );
     });
 
-    it.skip("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
+    it("(#47) Creates a token with a royalty fee with a fallback fee with an amount of -9,223,372,036,854,775,808 (int64 min)", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ecdsaSecp256k1PrivateKey",
       });
@@ -4449,7 +4449,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#55) Creates a token with a fixed fee with a deleted fee collector account", async function () {
+    it("(#55) Creates a token with a fixed fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4496,7 +4496,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#56) Creates a token with a fractional fee with a deleted fee collector account", async function () {
+    it("(#56) Creates a token with a fractional fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4547,7 +4547,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#57) Creates a token with a royalty fee with a deleted fee collector account", async function () {
+    it("(#57) Creates a token with a royalty fee with a deleted fee collector account", async function () {
       let response = await JSONRPCRequest(this, "generateKey", {
         type: "ed25519PrivateKey",
       });
@@ -4679,7 +4679,7 @@ describe("TokenCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async function () {
+    it("(#61) Creates a token with a fixed fee that is assessed with a deleted token", async function () {
       let response = await JSONRPCRequest(this, "createToken", {
         name: "testname",
         symbol: "testsymbol",
