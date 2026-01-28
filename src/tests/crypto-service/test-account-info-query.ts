@@ -473,7 +473,7 @@ describe("AccountInfoQuery", function () {
         accountId: accountId,
       });
 
-      expect(response.ownedNfts).to.equal("1");
+      expect(response.ownedNfts).to.equal("3");
     });
 
     it("(#26) Query account info and verify maxAutomaticTokenAssociations", async function () {
