@@ -5,10 +5,6 @@ permissions:
   contents: read
 
 on:
-  # Added the PR trigger
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       custom-job-name:
