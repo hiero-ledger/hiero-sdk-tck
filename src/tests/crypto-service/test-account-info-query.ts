@@ -461,6 +461,7 @@ describe("AccountInfoQuery", function () {
 
       // Mint an NFT
       const metadata = ["1234", "5678", "90ab"];
+
       await JSONRPCRequest(this, "mintToken", {
         tokenId: tokenId,
         metadata: metadata,
