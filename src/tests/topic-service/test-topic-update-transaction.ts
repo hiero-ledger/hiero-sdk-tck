@@ -758,8 +758,7 @@ describe("TopicUpdateTransaction", function () {
       });
     });
 
-    //will be enabled in HIP-1139
-    it.skip("(#7) Updates a topic to remove submit key", async function () {
+    it("(#7) Updates a topic to remove submit key", async function () {
       // Create a topic first with a submit key
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);

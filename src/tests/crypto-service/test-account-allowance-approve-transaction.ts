@@ -2111,7 +2111,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
+    it("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 
