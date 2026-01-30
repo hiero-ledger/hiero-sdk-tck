@@ -460,10 +460,11 @@ describe("AccountInfoQuery", function () {
       });
 
       // Mint an NFT
-      const metadata = "NFT metadata";
+      const metadata = ["1234", "5678", "90ab"];
+
       await JSONRPCRequest(this, "mintToken", {
         tokenId: tokenId,
-        metadata: [metadata],
+        metadata: metadata,
         commonTransactionParams: {
           signers: [supplyKey.key],
         },
@@ -473,7 +474,7 @@ describe("AccountInfoQuery", function () {
         accountId: accountId,
       });
 
-      expect(response.ownedNfts).to.equal("1");
+      expect(response.ownedNfts).to.equal("3");
     });
 
     it("(#26) Query account info and verify maxAutomaticTokenAssociations", async function () {
