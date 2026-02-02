@@ -1582,7 +1582,7 @@ describe("TransferTransaction - HBAR", function () {
       );
     });
 
-    it.skip("(#9) Transfers an approved amount of hbar from a sender account to a receiver account without signing", async function () {
+    it("(#9) Transfers an approved amount of hbar from a sender account to a receiver account without signing", async function () {
       try {
         await JSONRPCRequest(this, "transferCrypto", {
           transfers: [
