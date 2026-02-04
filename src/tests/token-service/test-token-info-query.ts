@@ -630,7 +630,7 @@ describe("TokenInfoQuery", function () {
       expect(consensusInfo.adminKey).to.exist;
     });
 
-    it.only("(#26) Verify adminKey field when not set", async function () {
+    it("(#26) Verify adminKey field when not set", async function () {
       const tokenId = await createFtToken(this, {
         name: "TestToken",
         symbol: "TST",
