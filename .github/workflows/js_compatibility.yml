@@ -174,4 +174,7 @@ jobs:
         if: ${{ always() }}
         run: |
           echo ${{ steps.start-sdk-server.outputs.pid }}
-          kill -9 ${{ steps.start-sdk-server.outputs.pid }}
+          # Check if pid exists before killing (safest for PR automated runs)
+          if [ -n "${{ steps.start-sdk-server.outputs.pid }}" ]; then
+            kill -9 ${{ steps.start-sdk-server.outputs.pid }}
+          fi

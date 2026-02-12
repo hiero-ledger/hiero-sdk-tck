@@ -56,7 +56,7 @@ defaults:
 jobs:
   # Test JavaScript SDK
   js-compatibility:
-    if: ${{ inputs.sdk-type == 'js' || inputs.sdk-type == 'every' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'js' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/js_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'JS SDK Compatibility' }}
@@ -67,7 +67,7 @@ jobs:
 
   # Test Go SDK  
   go-compatibility:
-    if: ${{ inputs.sdk-type == 'go' || inputs.sdk-type == 'every' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'go' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/go_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'Go SDK Compatibility' }}
@@ -78,7 +78,7 @@ jobs:
 
   # Test CPP SDK  
   cpp-compatibility:
-    if: ${{ inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'cpp' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/cpp_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'CPP SDK Compatibility' }}
@@ -89,7 +89,7 @@ jobs:
 
   # Test Java SDK  
   java-compatibility:
-    if: ${{ inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/java_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'Java SDK Compatibility' }}
