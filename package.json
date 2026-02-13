@@ -2,7 +2,7 @@
   "version": "0.8.0",
   "dependencies": {
     "@hashgraph/sdk": "^2.73.1",
-    "axios": "^1.11.0",
+    "axios": "^1.13.5",
     "chai": "^4.5.0",
     "dotenv": "^16.4.5",
     "jsdom": "^24.1.0",
@@ -34,7 +34,7 @@
     "@types/node": "^22.15.26",
     "@typescript-eslint/parser": "^8.36.0",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
-    "eslint": "^9.17.0",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.0",
