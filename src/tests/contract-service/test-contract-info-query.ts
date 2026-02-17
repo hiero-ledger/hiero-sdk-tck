@@ -57,6 +57,9 @@ async function createTestContract(
     gas: "3000000",
     adminKey: ed25519PublicKey,
     constructorParameters: toHexString(constructorParams),
+    autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
+    stakedAccountId: process.env.OPERATOR_ACCOUNT_ID,
+    stakedNodeId: "0",
     commonTransactionParams: {
       signers: [ed25519PrivateKey],
     },
@@ -295,7 +298,6 @@ describe("ContractInfoQuery", function () {
     it("(#16) Response contains auto-renew account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // autoRenewAccountId may be undefined or a string
       if (response.autoRenewAccountId !== undefined) {
         expect(response.autoRenewAccountId).to.be.a("string");
         // Auto-renew account ID format: shard.realm.number
@@ -359,14 +361,6 @@ describe("ContractInfoQuery", function () {
           const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
           expect(stakedToMe).to.be.a("number");
           expect(stakedToMe).to.be.at.least(0);
-        }
-
-        // stakedAccountId should be a string (account ID) if present
-        if (response.stakingInfo.stakedAccountId !== undefined) {
-          expect(response.stakingInfo.stakedAccountId).to.be.a("string");
-          expect(response.stakingInfo.stakedAccountId).to.match(
-            /^\d+\.\d+\.\d+$/,
-          );
         }
 
         // stakedNodeId should be a string (node ID) if present

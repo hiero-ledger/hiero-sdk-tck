@@ -1181,9 +1181,9 @@ describe("TokenInfoQuery", function () {
       expect(response.customFees).to.be.an("array");
       expect(response.customFees).to.have.lengthOf(1);
       expect(response.customFees[0]).to.have.property("feeCollectorAccountId");
-      expect(`${response.customFees[0].feeCollectorAccountId.realm}.${response.customFees[0].feeCollectorAccountId.shard}.${response.customFees[0].feeCollectorAccountId.num}`).to.equal(
-        feeCollectorAccountId,
-      );
+      expect(
+        `${response.customFees[0].feeCollectorAccountId.realm}.${response.customFees[0].feeCollectorAccountId.shard}.${response.customFees[0].feeCollectorAccountId.num}`,
+      ).to.equal(feeCollectorAccountId);
 
       // Verify against consensus node
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
@@ -1224,9 +1224,9 @@ describe("TokenInfoQuery", function () {
       expect(response.customFees).to.be.an("array");
       expect(response.customFees).to.have.lengthOf(1);
       expect(response.customFees[0]).to.have.property("feeCollectorAccountId");
-      expect(`${response.customFees[0].feeCollectorAccountId.realm}.${response.customFees[0].feeCollectorAccountId.shard}.${response.customFees[0].feeCollectorAccountId.num}`).to.equal(
-        feeCollectorAccountId,
-      );
+      expect(
+        `${response.customFees[0].feeCollectorAccountId.realm}.${response.customFees[0].feeCollectorAccountId.shard}.${response.customFees[0].feeCollectorAccountId.num}`,
+      ).to.equal(feeCollectorAccountId);
 
       // Verify against consensus node
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
