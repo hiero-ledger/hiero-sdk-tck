@@ -436,9 +436,9 @@ describe("TopicMessageSubmitTransaction", function () {
         });
       } catch (err: any) {
         assert.equal(
-          err.code,
-          ErrorStatusCodes.INTERNAL_ERROR,
-          "Internal error",
+          err.data.status,
+          "INVALID_TOPIC_MESSAGE",
+          "Invalid topic message error",
         );
         return;
       }
