@@ -104,6 +104,11 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
       - name: Test Results Summary
         run: |
           echo "## Compatibility Test Results" >> $GITHUB_STEP_SUMMARY
