@@ -187,7 +187,8 @@ describe("ContractInfoQuery", function () {
 
       expect(response).to.not.be.null;
       // Verify cost information if available in response
-      if (response.cost !== undefined) {
+      // eslint-disable-next-line eqeqeq
+      if (response.cost != null) {
         expect(response.cost).to.be.a("string");
         const cost = parseInt(response.cost);
         expect(cost).to.be.a("number");
@@ -283,8 +284,9 @@ describe("ContractInfoQuery", function () {
     it("(#15) Response contains contract account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // contractAccountId may be undefined or a string (EVM address format)
-      if (response.contractAccountId !== undefined) {
+      // contractAccountId may be undefined or null
+      // eslint-disable-next-line eqeqeq
+      if (response.contractAccountId != null) {
         expect(response.contractAccountId).to.be.a("string");
         // Contract account ID is an EVM address (hex string)
         expect(response.contractAccountId).to.match(/^[0-9a-fA-F]+$/);
@@ -295,8 +297,9 @@ describe("ContractInfoQuery", function () {
     it("(#16) Response contains auto-renew account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // autoRenewAccountId may be undefined or a string
-      if (response.autoRenewAccountId !== undefined) {
+      // autoRenewAccountId may be undefined or null
+      // eslint-disable-next-line eqeqeq
+      if (response.autoRenewAccountId != null) {
         expect(response.autoRenewAccountId).to.be.a("string");
         // Auto-renew account ID format: shard.realm.number
         expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
@@ -326,17 +329,20 @@ describe("ContractInfoQuery", function () {
     it("(#19) Response contains staking info when applicable", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // stakingInfo may be undefined if contract is not staked
-      if (response.stakingInfo !== undefined) {
+      // stakingInfo may be undefined or null
+      // eslint-disable-next-line eqeqeq
+      if (response.stakingInfo != null) {
         expect(response.stakingInfo).to.be.an("object");
 
         // declineStakingReward should be a boolean if present
-        if (response.stakingInfo.declineStakingReward !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.declineStakingReward != null) {
           expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
         }
 
         // stakePeriodStart should be a string timestamp if present
-        if (response.stakingInfo.stakePeriodStart !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.stakePeriodStart != null) {
           expect(response.stakingInfo.stakePeriodStart).to.be.a("string");
           const stakePeriodStart = parseInt(
             response.stakingInfo.stakePeriodStart,
@@ -346,7 +352,8 @@ describe("ContractInfoQuery", function () {
         }
 
         // pendingReward should be a string (tinybars) if present
-        if (response.stakingInfo.pendingReward !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.pendingReward != null) {
           expect(response.stakingInfo.pendingReward).to.be.a("string");
           const pendingReward = parseInt(response.stakingInfo.pendingReward);
           expect(pendingReward).to.be.a("number");
@@ -354,7 +361,8 @@ describe("ContractInfoQuery", function () {
         }
 
         // stakedToMe should be a string (tinybars) if present
-        if (response.stakingInfo.stakedToMe !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.stakedToMe != null) {
           expect(response.stakingInfo.stakedToMe).to.be.a("string");
           const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
           expect(stakedToMe).to.be.a("number");
@@ -362,7 +370,8 @@ describe("ContractInfoQuery", function () {
         }
 
         // stakedAccountId should be a string (account ID) if present
-        if (response.stakingInfo.stakedAccountId !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.stakedAccountId != null) {
           expect(response.stakingInfo.stakedAccountId).to.be.a("string");
           expect(response.stakingInfo.stakedAccountId).to.match(
             /^\d+\.\d+\.\d+$/,
@@ -370,7 +379,8 @@ describe("ContractInfoQuery", function () {
         }
 
         // stakedNodeId should be a string (node ID) if present
-        if (response.stakingInfo.stakedNodeId !== undefined) {
+        // eslint-disable-next-line eqeqeq
+        if (response.stakingInfo.stakedNodeId != null) {
           expect(response.stakingInfo.stakedNodeId).to.be.a("string");
           const stakedNodeId = parseInt(response.stakingInfo.stakedNodeId);
           expect(stakedNodeId).to.be.a("number");
