@@ -40,14 +40,16 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name     | Type   | Required/Optional | Description/Notes                                                                        |
 |--------------------|--------|-------------------|------------------------------------------------------------------------------------------|
-| contractId         | string | optional          | The ID of the contract to query.                                                         |
-| queryPayment       | string | optional          | The exact payment amount in tinybars to be paid for this query. This sets a fixed payment amount. |
-| maxQueryPayment    | string | optional          | The maximum payment amount in tinybars willing to be paid for this query. The SDK will check the query cost first and only execute if the cost is within this maximum. This prevents overpayment. Examples: 1 (minimum), 100000000 (1 HBAR), 1000000000000 (large amount). |
+| contractId         | string  | optional          | The ID of the contract to query.                                                         |
+| queryPayment       | string  | optional          | The exact payment amount in tinybars to be paid for this query. This sets a fixed payment amount. |
+| maxQueryPayment    | string  | optional          | The maximum payment amount in tinybars willing to be paid for this query. The SDK will check the query cost first and only execute if the cost is within this maximum. This prevents overpayment. Examples: 1 (minimum), 100000000 (1 HBAR), 1000000000000 (large amount). |
+| getCost            | boolean | optional          | If true, returns only the cost of the query in tinybars without executing it.            |
 
 ### Output Parameters
 
 | Parameter Name                    | Type    | Description/Notes                                                                |
 |-----------------------------------|---------|----------------------------------------------------------------------------------|
+| cost                              | string  | The query cost in tinybars (only returned when getCost=true).                   |
 | contractId                        | string  | The smart contract instance ID.                                                 |
 | accountId                         | string  | The account ID associated with the contract.                                     |
 | contractAccountId                 | string  | The contract account ID (if applicable).                                         |
@@ -82,7 +84,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 3       | Fails to execute with non-existent contract ID                   | contractId=123.456.789   | The contract info query fails and returns INVALID_CONTRACT_ID                                 | Y                 |
 | 4       | Executes query with explicit maxQueryPayment amount              | maxQueryPayment=100000000| Query succeeds and returns contract info                                                       | Y                 |
 | 5       | Executes query with explicit queryPayment amount                 | queryPayment=100000000    | Query succeeds and returns contract info                                                       | Y                 |
-| 6       | Executes query and retrieves cost                                | contractId=<VALID_ID>    | Query succeeds and returns cost information                                                   | Y                 |
+| 6       | Executes query and retrieves cost                                | contractId=<VALID_ID>, getCost=true | Query succeeds and returns cost as a numeric string greater than 0                    | Y                 |
 | 7       | Response contains contract ID and account ID                     | contractId=<VALID_ID>    | Returns contractId matching input and accountId with correct format                          | Y                 |
 | 8       | Response contains admin key                                      | contractId=<VALID_ID>    | Returns adminKey (if set)                                                                     | Y                 |
 | 9       | Response contains expiration time                                | contractId=<VALID_ID>    | Returns expirationTime                                                                         | Y                 |

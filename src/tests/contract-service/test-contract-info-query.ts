@@ -21,6 +21,8 @@ async function createTestContract(
   constructorMessage: string,
   privateKey?: string,
   memo?: string,
+  autoRenewAccountId?: string,
+  stakedNodeId?: string,
 ): Promise<{ contractId: string; adminKey: string; memo?: string }> {
   const ed25519PrivateKey = privateKey
     ? privateKey
@@ -64,6 +66,14 @@ async function createTestContract(
 
   if (memo) {
     createParams.memo = memo;
+  }
+
+  if (autoRenewAccountId) {
+    createParams.autoRenewAccountId = autoRenewAccountId;
+  }
+
+  if (stakedNodeId) {
+    createParams.stakedNodeId = stakedNodeId;
   }
 
   const response = await JSONRPCRequest(
@@ -122,6 +132,8 @@ describe("ContractInfoQuery", function () {
         "Hello from Hedera",
         undefined,
         "Test Contract Memo",
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        "0",
       );
       contractId = contractData.contractId;
       adminKey = contractData.adminKey;
@@ -183,17 +195,16 @@ describe("ContractInfoQuery", function () {
     });
 
     it("(#6) Executes query and retrieves cost", async function () {
-      const response = await performContractInfoQuery(this, contractId);
+      const response = await JSONRPCRequest(this, "contractInfoQuery", {
+        contractId,
+        getCost: true,
+      });
 
       expect(response).to.not.be.null;
-      // Verify cost information if available in response
-      // eslint-disable-next-line eqeqeq
-      if (response.cost != null) {
-        expect(response.cost).to.be.a("string");
-        const cost = parseInt(response.cost);
-        expect(cost).to.be.a("number");
-        expect(cost).to.be.at.least(0);
-      }
+      expect(response.cost).to.be.a("string");
+      const cost = parseInt(response.cost);
+      expect(cost).to.be.a("number");
+      expect(cost).to.be.greaterThan(0);
     });
 
     it("(#7) Response contains contract ID and account ID", async function () {
@@ -284,26 +295,18 @@ describe("ContractInfoQuery", function () {
     it("(#15) Response contains contract account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // contractAccountId may be undefined or null
-      // eslint-disable-next-line eqeqeq
-      if (response.contractAccountId != null) {
-        expect(response.contractAccountId).to.be.a("string");
-        // Contract account ID is an EVM address (hex string)
-        expect(response.contractAccountId).to.match(/^[0-9a-fA-F]+$/);
-        expect(response.contractAccountId.length).to.be.greaterThan(0);
-      }
+      expect(response.contractAccountId).to.be.a("string");
+      // Contract account ID is an EVM address (hex string)
+      expect(response.contractAccountId).to.match(/^[0-9a-fA-F]+$/);
+      expect(response.contractAccountId.length).to.be.greaterThan(0);
     });
 
     it("(#16) Response contains auto-renew account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // autoRenewAccountId may be undefined or null
-      // eslint-disable-next-line eqeqeq
-      if (response.autoRenewAccountId != null) {
-        expect(response.autoRenewAccountId).to.be.a("string");
-        // Auto-renew account ID format: shard.realm.number
-        expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
-      }
+      expect(response.autoRenewAccountId).to.be.a("string");
+      // Auto-renew account ID format: shard.realm.number
+      expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
     });
 
     it("(#17) Response contains max automatic token associations", async function () {
@@ -329,64 +332,31 @@ describe("ContractInfoQuery", function () {
     it("(#19) Response contains staking info when applicable", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // stakingInfo may be undefined or null
-      // eslint-disable-next-line eqeqeq
-      if (response.stakingInfo != null) {
-        expect(response.stakingInfo).to.be.an("object");
+      expect(response.stakingInfo).to.be.an("object");
 
-        // declineStakingReward should be a boolean if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.declineStakingReward != null) {
-          expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
-        }
+      expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
 
-        // stakePeriodStart should be a string timestamp if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.stakePeriodStart != null) {
-          expect(response.stakingInfo.stakePeriodStart).to.be.a("string");
-          const stakePeriodStart = parseInt(
-            response.stakingInfo.stakePeriodStart,
-          );
-          expect(stakePeriodStart).to.be.a("number");
-          expect(stakePeriodStart).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.stakePeriodStart).to.be.a("string");
+      const stakePeriodStart = parseInt(response.stakingInfo.stakePeriodStart);
+      expect(stakePeriodStart).to.be.a("number");
+      expect(stakePeriodStart).to.be.at.least(0);
 
-        // pendingReward should be a string (tinybars) if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.pendingReward != null) {
-          expect(response.stakingInfo.pendingReward).to.be.a("string");
-          const pendingReward = parseInt(response.stakingInfo.pendingReward);
-          expect(pendingReward).to.be.a("number");
-          expect(pendingReward).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.pendingReward).to.be.a("string");
+      const pendingReward = parseInt(response.stakingInfo.pendingReward);
+      expect(pendingReward).to.be.a("number");
+      expect(pendingReward).to.be.at.least(0);
 
-        // stakedToMe should be a string (tinybars) if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.stakedToMe != null) {
-          expect(response.stakingInfo.stakedToMe).to.be.a("string");
-          const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
-          expect(stakedToMe).to.be.a("number");
-          expect(stakedToMe).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.stakedToMe).to.be.a("string");
+      const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
+      expect(stakedToMe).to.be.a("number");
+      expect(stakedToMe).to.be.at.least(0);
 
-        // stakedAccountId should be a string (account ID) if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.stakedAccountId != null) {
-          expect(response.stakingInfo.stakedAccountId).to.be.a("string");
-          expect(response.stakingInfo.stakedAccountId).to.match(
-            /^\d+\.\d+\.\d+$/,
-          );
-        }
-
-        // stakedNodeId should be a string (node ID) if present
-        // eslint-disable-next-line eqeqeq
-        if (response.stakingInfo.stakedNodeId != null) {
-          expect(response.stakingInfo.stakedNodeId).to.be.a("string");
-          const stakedNodeId = parseInt(response.stakingInfo.stakedNodeId);
-          expect(stakedNodeId).to.be.a("number");
-          expect(stakedNodeId).to.be.at.least(0);
-        }
-      }
+      // Contract is staked to a node, so stakedNodeId should be present
+      // and stakedAccountId should not (they are mutually exclusive)
+      expect(response.stakingInfo.stakedNodeId).to.be.a("string");
+      const stakedNodeId = parseInt(response.stakingInfo.stakedNodeId);
+      expect(stakedNodeId).to.be.a("number");
+      expect(stakedNodeId).to.be.at.least(0);
     });
   });
 });
