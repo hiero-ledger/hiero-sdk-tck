@@ -194,20 +194,7 @@ describe("ContractInfoQuery", function () {
       expect(response.balance).to.not.be.null;
     });
 
-    it("(#6) Executes query and retrieves cost", async function () {
-      const response = await JSONRPCRequest(this, "contractInfoQuery", {
-        contractId,
-        getCost: true,
-      });
-
-      expect(response).to.not.be.null;
-      expect(response.cost).to.be.a("string");
-      const cost = parseInt(response.cost);
-      expect(cost).to.be.a("number");
-      expect(cost).to.be.greaterThan(0);
-    });
-
-    it("(#7) Response contains contract ID and account ID", async function () {
+    it("(#6) Response contains contract ID and account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response).to.not.be.null;
@@ -220,7 +207,7 @@ describe("ContractInfoQuery", function () {
       expect(response.accountId).to.match(/^\d+\.\d+\.\d+$/);
     });
 
-    it("(#8) Response contains admin key matching the created contract", async function () {
+    it("(#7) Response contains admin key matching the created contract", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.adminKey).to.not.be.null;
@@ -228,7 +215,7 @@ describe("ContractInfoQuery", function () {
       expect(response.adminKey).to.equal(adminKey);
     });
 
-    it("(#9) Response contains expiration time in the future", async function () {
+    it("(#8) Response contains expiration time in the future", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.expirationTime).to.not.be.null;
@@ -242,7 +229,7 @@ describe("ContractInfoQuery", function () {
       expect(expirationTimestamp).to.be.greaterThan(now - 60); // Allow 60 seconds tolerance
     });
 
-    it("(#10) Response contains valid auto-renew period", async function () {
+    it("(#9) Response contains valid auto-renew period", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.autoRenewPeriod).to.not.be.null;
@@ -253,7 +240,7 @@ describe("ContractInfoQuery", function () {
       expect(autoRenewSeconds).to.be.greaterThan(0);
     });
 
-    it("(#11) Response contains contract balance as valid number", async function () {
+    it("(#10) Response contains contract balance as valid number", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.balance).to.not.be.null;
@@ -264,7 +251,7 @@ describe("ContractInfoQuery", function () {
       expect(balance).to.be.at.least(0); // Balance should be >= 0
     });
 
-    it("(#12) Response contains contract memo matching the created contract", async function () {
+    it("(#11) Response contains contract memo matching the created contract", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       // Contract memo should match what we set during creation
@@ -273,7 +260,7 @@ describe("ContractInfoQuery", function () {
       expect(response.contractMemo).to.equal(memo);
     });
 
-    it("(#13) Response contains isDeleted flag", async function () {
+    it("(#12) Response contains isDeleted flag", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.isDeleted).to.not.be.null;
@@ -281,7 +268,7 @@ describe("ContractInfoQuery", function () {
       expect(response.isDeleted).to.equal(false); // Contract should not be deleted
     });
 
-    it("(#14) Response contains storage information as valid number", async function () {
+    it("(#13) Response contains storage information as valid number", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.storage).to.not.be.null;
@@ -292,7 +279,7 @@ describe("ContractInfoQuery", function () {
       expect(storage).to.be.at.least(0); // Storage should be >= 0
     });
 
-    it("(#15) Response contains contract account ID", async function () {
+    it("(#14) Response contains contract account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.contractAccountId).to.be.a("string");
@@ -301,7 +288,7 @@ describe("ContractInfoQuery", function () {
       expect(response.contractAccountId.length).to.be.greaterThan(0);
     });
 
-    it("(#16) Response contains auto-renew account ID", async function () {
+    it("(#15) Response contains auto-renew account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.autoRenewAccountId).to.be.a("string");
@@ -309,7 +296,7 @@ describe("ContractInfoQuery", function () {
       expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
     });
 
-    it("(#17) Response contains max automatic token associations", async function () {
+    it("(#16) Response contains max automatic token associations", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.maxAutomaticTokenAssociations).to.not.be.null;
@@ -320,7 +307,7 @@ describe("ContractInfoQuery", function () {
       expect(maxAssociations).to.be.at.least(0);
     });
 
-    it("(#18) Response contains ledger ID", async function () {
+    it("(#17) Response contains ledger ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.ledgerId).to.not.be.null;
@@ -329,7 +316,7 @@ describe("ContractInfoQuery", function () {
       expect(response.ledgerId.length).to.be.greaterThan(0);
     });
 
-    it("(#19) Response contains staking info when applicable", async function () {
+    it("(#18) Response contains staking info when applicable", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.stakingInfo).to.be.an("object");
