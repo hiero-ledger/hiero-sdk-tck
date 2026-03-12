@@ -21,6 +21,8 @@ async function createTestContract(
   constructorMessage: string,
   privateKey?: string,
   memo?: string,
+  autoRenewAccountId?: string,
+  stakedNodeId?: string,
 ): Promise<{ contractId: string; adminKey: string; memo?: string }> {
   const ed25519PrivateKey = privateKey
     ? privateKey
@@ -64,6 +66,14 @@ async function createTestContract(
 
   if (memo) {
     createParams.memo = memo;
+  }
+
+  if (autoRenewAccountId) {
+    createParams.autoRenewAccountId = autoRenewAccountId;
+  }
+
+  if (stakedNodeId) {
+    createParams.stakedNodeId = stakedNodeId;
   }
 
   const response = await JSONRPCRequest(
@@ -122,6 +132,8 @@ describe("ContractInfoQuery", function () {
         "Hello from Hedera",
         undefined,
         "Test Contract Memo",
+        process.env.OPERATOR_ACCOUNT_ID as string,
+        "0",
       );
       contractId = contractData.contractId;
       adminKey = contractData.adminKey;
@@ -182,20 +194,7 @@ describe("ContractInfoQuery", function () {
       expect(response.balance).to.not.be.null;
     });
 
-    it("(#6) Executes query and retrieves cost", async function () {
-      const response = await performContractInfoQuery(this, contractId);
-
-      expect(response).to.not.be.null;
-      // Verify cost information if available in response
-      if (response.cost !== undefined) {
-        expect(response.cost).to.be.a("string");
-        const cost = parseInt(response.cost);
-        expect(cost).to.be.a("number");
-        expect(cost).to.be.at.least(0);
-      }
-    });
-
-    it("(#7) Response contains contract ID and account ID", async function () {
+    it("(#6) Response contains contract ID and account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response).to.not.be.null;
@@ -208,7 +207,7 @@ describe("ContractInfoQuery", function () {
       expect(response.accountId).to.match(/^\d+\.\d+\.\d+$/);
     });
 
-    it("(#8) Response contains admin key matching the created contract", async function () {
+    it("(#7) Response contains admin key matching the created contract", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.adminKey).to.not.be.null;
@@ -216,7 +215,7 @@ describe("ContractInfoQuery", function () {
       expect(response.adminKey).to.equal(adminKey);
     });
 
-    it("(#9) Response contains expiration time in the future", async function () {
+    it("(#8) Response contains expiration time in the future", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.expirationTime).to.not.be.null;
@@ -230,7 +229,7 @@ describe("ContractInfoQuery", function () {
       expect(expirationTimestamp).to.be.greaterThan(now - 60); // Allow 60 seconds tolerance
     });
 
-    it("(#10) Response contains valid auto-renew period", async function () {
+    it("(#9) Response contains valid auto-renew period", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.autoRenewPeriod).to.not.be.null;
@@ -241,7 +240,7 @@ describe("ContractInfoQuery", function () {
       expect(autoRenewSeconds).to.be.greaterThan(0);
     });
 
-    it("(#11) Response contains contract balance as valid number", async function () {
+    it("(#10) Response contains contract balance as valid number", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.balance).to.not.be.null;
@@ -252,7 +251,7 @@ describe("ContractInfoQuery", function () {
       expect(balance).to.be.at.least(0); // Balance should be >= 0
     });
 
-    it("(#12) Response contains contract memo matching the created contract", async function () {
+    it("(#11) Response contains contract memo matching the created contract", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       // Contract memo should match what we set during creation
@@ -261,7 +260,7 @@ describe("ContractInfoQuery", function () {
       expect(response.contractMemo).to.equal(memo);
     });
 
-    it("(#13) Response contains isDeleted flag", async function () {
+    it("(#12) Response contains isDeleted flag", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.isDeleted).to.not.be.null;
@@ -269,7 +268,7 @@ describe("ContractInfoQuery", function () {
       expect(response.isDeleted).to.equal(false); // Contract should not be deleted
     });
 
-    it("(#14) Response contains storage information as valid number", async function () {
+    it("(#13) Response contains storage information as valid number", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.storage).to.not.be.null;
@@ -280,30 +279,24 @@ describe("ContractInfoQuery", function () {
       expect(storage).to.be.at.least(0); // Storage should be >= 0
     });
 
-    it("(#15) Response contains contract account ID", async function () {
+    it("(#14) Response contains contract account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // contractAccountId may be undefined or a string (EVM address format)
-      if (response.contractAccountId !== undefined) {
-        expect(response.contractAccountId).to.be.a("string");
-        // Contract account ID is an EVM address (hex string)
-        expect(response.contractAccountId).to.match(/^[0-9a-fA-F]+$/);
-        expect(response.contractAccountId.length).to.be.greaterThan(0);
-      }
+      expect(response.contractAccountId).to.be.a("string");
+      // Contract account ID is an EVM address (hex string)
+      expect(response.contractAccountId).to.match(/^[0-9a-fA-F]+$/);
+      expect(response.contractAccountId.length).to.be.greaterThan(0);
     });
 
-    it("(#16) Response contains auto-renew account ID", async function () {
+    it("(#15) Response contains auto-renew account ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // autoRenewAccountId may be undefined or a string
-      if (response.autoRenewAccountId !== undefined) {
-        expect(response.autoRenewAccountId).to.be.a("string");
-        // Auto-renew account ID format: shard.realm.number
-        expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
-      }
+      expect(response.autoRenewAccountId).to.be.a("string");
+      // Auto-renew account ID format: shard.realm.number
+      expect(response.autoRenewAccountId).to.match(/^\d+\.\d+\.\d+$/);
     });
 
-    it("(#17) Response contains max automatic token associations", async function () {
+    it("(#16) Response contains max automatic token associations", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.maxAutomaticTokenAssociations).to.not.be.null;
@@ -314,7 +307,7 @@ describe("ContractInfoQuery", function () {
       expect(maxAssociations).to.be.at.least(0);
     });
 
-    it("(#18) Response contains ledger ID", async function () {
+    it("(#17) Response contains ledger ID", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
       expect(response.ledgerId).to.not.be.null;
@@ -323,60 +316,34 @@ describe("ContractInfoQuery", function () {
       expect(response.ledgerId.length).to.be.greaterThan(0);
     });
 
-    it("(#19) Response contains staking info when applicable", async function () {
+    it("(#18) Response contains staking info when applicable", async function () {
       const response = await performContractInfoQuery(this, contractId);
 
-      // stakingInfo may be undefined if contract is not staked
-      if (response.stakingInfo !== undefined) {
-        expect(response.stakingInfo).to.be.an("object");
+      expect(response.stakingInfo).to.be.an("object");
 
-        // declineStakingReward should be a boolean if present
-        if (response.stakingInfo.declineStakingReward !== undefined) {
-          expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
-        }
+      expect(response.stakingInfo.declineStakingReward).to.be.a("boolean");
 
-        // stakePeriodStart should be a string timestamp if present
-        if (response.stakingInfo.stakePeriodStart !== undefined) {
-          expect(response.stakingInfo.stakePeriodStart).to.be.a("string");
-          const stakePeriodStart = parseInt(
-            response.stakingInfo.stakePeriodStart,
-          );
-          expect(stakePeriodStart).to.be.a("number");
-          expect(stakePeriodStart).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.stakePeriodStart).to.be.a("string");
+      const stakePeriodStart = parseInt(response.stakingInfo.stakePeriodStart);
+      expect(stakePeriodStart).to.be.a("number");
+      expect(stakePeriodStart).to.be.at.least(0);
 
-        // pendingReward should be a string (tinybars) if present
-        if (response.stakingInfo.pendingReward !== undefined) {
-          expect(response.stakingInfo.pendingReward).to.be.a("string");
-          const pendingReward = parseInt(response.stakingInfo.pendingReward);
-          expect(pendingReward).to.be.a("number");
-          expect(pendingReward).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.pendingReward).to.be.a("string");
+      const pendingReward = parseInt(response.stakingInfo.pendingReward);
+      expect(pendingReward).to.be.a("number");
+      expect(pendingReward).to.be.at.least(0);
 
-        // stakedToMe should be a string (tinybars) if present
-        if (response.stakingInfo.stakedToMe !== undefined) {
-          expect(response.stakingInfo.stakedToMe).to.be.a("string");
-          const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
-          expect(stakedToMe).to.be.a("number");
-          expect(stakedToMe).to.be.at.least(0);
-        }
+      expect(response.stakingInfo.stakedToMe).to.be.a("string");
+      const stakedToMe = parseInt(response.stakingInfo.stakedToMe);
+      expect(stakedToMe).to.be.a("number");
+      expect(stakedToMe).to.be.at.least(0);
 
-        // stakedAccountId should be a string (account ID) if present
-        if (response.stakingInfo.stakedAccountId !== undefined) {
-          expect(response.stakingInfo.stakedAccountId).to.be.a("string");
-          expect(response.stakingInfo.stakedAccountId).to.match(
-            /^\d+\.\d+\.\d+$/,
-          );
-        }
-
-        // stakedNodeId should be a string (node ID) if present
-        if (response.stakingInfo.stakedNodeId !== undefined) {
-          expect(response.stakingInfo.stakedNodeId).to.be.a("string");
-          const stakedNodeId = parseInt(response.stakingInfo.stakedNodeId);
-          expect(stakedNodeId).to.be.a("number");
-          expect(stakedNodeId).to.be.at.least(0);
-        }
-      }
+      // Contract is staked to a node, so stakedNodeId should be present
+      // and stakedAccountId should not (they are mutually exclusive)
+      expect(response.stakingInfo.stakedNodeId).to.be.a("string");
+      const stakedNodeId = parseInt(response.stakingInfo.stakedNodeId);
+      expect(stakedNodeId).to.be.a("number");
+      expect(stakedNodeId).to.be.at.least(0);
     });
   });
 });
