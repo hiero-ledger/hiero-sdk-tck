@@ -51,28 +51,32 @@ jobs:
           echo "- Go SDK: \`$GO_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Java SDK: \`$JAVA_SHA\`" >> "$GITHUB_STEP_SUMMARY"
 
-  # TODO: Replace stubs with real sub-workflow calls after testing failure path
-  # Stub SDK jobs — JS fails intentionally to test failure Slack message
+  # Test JavaScript SDK
   js-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Simulate JS SDK failure
-        run: exit 1
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: "Daily JS SDK (main)"
+      js-sdk-version: main
+    secrets: inherit
 
+  # Test Go SDK
   go-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stub Go SDK compatibility test
-        run: echo "Stub - Go SDK pass"
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: "Daily Go SDK (main)"
+      go-sdk-version: main
+    secrets: inherit
 
+  # Test Java SDK
   java-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stub Java SDK compatibility test
-        run: echo "Stub - Java SDK pass"
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: "Daily Java SDK (main)"
+      java-sdk-version: main
+    secrets: inherit
 
   # Summary and Slack notification
   summary-and-notify:
