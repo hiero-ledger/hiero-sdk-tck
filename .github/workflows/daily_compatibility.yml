@@ -5,6 +5,7 @@ permissions:
   contents: read
 
 on:
+  # TODO: Remove pull_request trigger before merging — only used for testing
   pull_request:
     branches: [main]
     paths:
@@ -50,27 +51,32 @@ jobs:
           echo "- Go SDK: \`$GO_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Java SDK: \`$JAVA_SHA\`" >> "$GITHUB_STEP_SUMMARY"
 
-  # Stub SDK jobs (Phase A — replace with real sub-workflow calls in Phase B)
+  # Test JavaScript SDK
   js-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stub JS SDK compatibility test
-        run: echo "Stub - JS SDK compatibility test would run here against main"
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: "Daily JS SDK (main)"
+      js-sdk-version: main
+    secrets: inherit
 
+  # Test Go SDK
   go-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stub Go SDK compatibility test
-        run: echo "Stub - Go SDK compatibility test would run here against main"
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: "Daily Go SDK (main)"
+      go-sdk-version: main
+    secrets: inherit
 
+  # Test Java SDK
   java-compatibility:
     needs: resolve-refs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Stub Java SDK compatibility test
-        run: echo "Stub - Java SDK compatibility test would run here against main"
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: "Daily Java SDK (main)"
+      java-sdk-version: main
+    secrets: inherit
 
   # Summary and Slack notification
   summary-and-notify:
@@ -156,7 +162,7 @@ jobs:
                     "fields": [
                       {
                         "type": "mrkdwn",
-                        "text": "*JS SDK* (\`${{ needs.resolve-refs.outputs.js-sha }}\`)"
+                        "text": "*JS SDK* (<https://github.com/hiero-ledger/hiero-sdk-js/commit/${{ needs.resolve-refs.outputs.js-sha }}|${{ needs.resolve-refs.outputs.js-sha }}>)"
                       },
                       {
                         "type": "mrkdwn",
@@ -164,7 +170,7 @@ jobs:
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Go SDK* (\`${{ needs.resolve-refs.outputs.go-sha }}\`)"
+                        "text": "*Go SDK* (<https://github.com/hiero-ledger/hiero-sdk-go/commit/${{ needs.resolve-refs.outputs.go-sha }}|${{ needs.resolve-refs.outputs.go-sha }}>)"
                       },
                       {
                         "type": "mrkdwn",
@@ -172,7 +178,7 @@ jobs:
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "*Java SDK* (\`${{ needs.resolve-refs.outputs.java-sha }}\`)"
+                        "text": "*Java SDK* (<https://github.com/hiero-ledger/hiero-sdk-java/commit/${{ needs.resolve-refs.outputs.java-sha }}|${{ needs.resolve-refs.outputs.java-sha }}>)"
                       },
                       {
                         "type": "mrkdwn",
@@ -196,7 +202,7 @@ jobs:
                       },
                       {
                         "type": "mrkdwn",
-                        "text": "\`${{ needs.resolve-refs.outputs.tck-sha }}\`"
+                        "text": "<https://github.com/hiero-ledger/hiero-sdk-tck/commit/${{ needs.resolve-refs.outputs.tck-sha }}|${{ needs.resolve-refs.outputs.tck-sha }}>"
                       },
                       {
                         "type": "mrkdwn",
