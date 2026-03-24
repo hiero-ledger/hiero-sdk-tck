@@ -217,10 +217,10 @@ jobs:
       - name: Send Slack notification
         uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2.1.0
         with:
-          method: webhook
-          webhook-url: "https://hooks.slack.com/services/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"
-          errors: true
+          webhook: "https://hooks.slack.com/services/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"
+          webhook-type: incoming-webhook
           payload-file-path: slack_payload.json
+          errors: true
 
       - name: Write GitHub Step Summary
         run: |
