@@ -11,7 +11,7 @@ on:
     paths:
       - ".github/workflows/daily_compatibility.yml"
   schedule:
-    - cron: "0 10 * * 1-5" # 10:00 UTC weekdays
+    - cron: "0 6 * * 1-5" # 06:00 UTC weekdays
   workflow_dispatch:
 
 concurrency:
