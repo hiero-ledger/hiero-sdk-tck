@@ -9,6 +9,8 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   AccountCreate: "src/tests/crypto-service/test-account-create-transaction.ts",
   AccountDelete: "src/tests/crypto-service/test-account-delete-transaction.ts",
   AccountUpdate: "src/tests/crypto-service/test-account-update-transaction.ts",
+  TransactionReceiptQuery:
+    "src/tests/crypto-service/test-transaction-receipt-query.ts",
   TransferHbar: "src/tests/crypto-service/test-transfer-hbar-transaction.ts",
   TransferNft: "src/tests/crypto-service/test-transfer-nft-transaction.ts",
   TransferNftApproved:
