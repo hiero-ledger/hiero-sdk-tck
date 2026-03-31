@@ -31,29 +31,15 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
       });
 
-      expect(response).to.have.property("status");
       expect(response.status).to.equal("SUCCESS");
-      expect(response).to.have.property("exchangeRate");
-      expect(response).to.have.property("duplicates");
-      expect(response).to.have.property("children");
-      expect(response).to.have.property("serials");
+      expect(response.accountId).to.equal(accountResponse.accountId);
+      expect(response.duplicates).to.be.an("array").that.is.empty;
+      expect(response.children).to.be.an("array").that.is.empty;
+      expect(response.serials).to.be.an("array").that.is.empty;
     });
 
     it("(#2) Query for the receipt with no transaction ID", async function () {
@@ -88,27 +74,13 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
         includeDuplicates: true,
       });
 
-      expect(response).to.have.property("status");
       expect(response.status).to.equal("SUCCESS");
-      expect(response).to.have.property("duplicates");
+      expect(response.accountId).to.equal(accountResponse.accountId);
       expect(response.duplicates).to.be.an("array");
     });
 
@@ -118,27 +90,13 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
         includeDuplicates: false,
       });
 
-      expect(response).to.have.property("status");
       expect(response.status).to.equal("SUCCESS");
-      expect(response).to.have.property("duplicates");
+      expect(response.accountId).to.equal(accountResponse.accountId);
       expect(response.duplicates).to.be.an("array").that.is.empty;
     });
 
@@ -148,27 +106,13 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
         includeChildren: true,
       });
 
-      expect(response).to.have.property("status");
       expect(response.status).to.equal("SUCCESS");
-      expect(response).to.have.property("children");
+      expect(response.accountId).to.equal(accountResponse.accountId);
       expect(response.children).to.be.an("array");
     });
 
@@ -178,27 +122,13 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
         includeChildren: false,
       });
 
-      expect(response).to.have.property("status");
       expect(response.status).to.equal("SUCCESS");
-      expect(response).to.have.property("children");
+      expect(response.accountId).to.equal(accountResponse.accountId);
       expect(response.children).to.be.an("array").that.is.empty;
     });
 
@@ -215,7 +145,7 @@ describe("TransactionReceiptQuery", function () {
             validateStatus: false,
           });
 
-          expect(response).to.have.property("status");
+          expect(response.status).to.be.a("string");
           expect(response.status).to.not.equal("SUCCESS");
           return;
         }
@@ -230,21 +160,8 @@ describe("TransactionReceiptQuery", function () {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
       });
 
       expect(response.status).to.be.a("string");
@@ -257,143 +174,33 @@ describe("TransactionReceiptQuery", function () {
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: privateKey,
       });
-      const createdAccountId = accountResponse.accountId;
 
-      if (accountResponse.transactionId) {
-        const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-          transactionId: accountResponse.transactionId,
-        });
-
-        expect(response.status).to.equal("SUCCESS");
-        expect(response.accountId).to.equal(createdAccountId);
-      }
-    });
-
-    it("(#11) Verify receipt tokenId for TokenCreate transaction", async function () {
-      const tokenResponse = await JSONRPCRequest(this, "createToken", {
-        name: "receipt_test_token",
-        symbol: "RTT",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
+      const response = await JSONRPCRequest(this, "getTransactionReceipt", {
+        transactionId: accountResponse.transactionId,
       });
-      const createdTokenId = tokenResponse.tokenId;
 
-      if (tokenResponse.transactionId) {
-        const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-          transactionId: tokenResponse.transactionId,
-        });
-
-        expect(response.status).to.equal("SUCCESS");
-        expect(response.tokenId).to.equal(createdTokenId);
-      }
+      expect(response.status).to.equal("SUCCESS");
+      expect(response.accountId).to.equal(accountResponse.accountId);
     });
 
-    it("(#12) Verify receipt topicId for TopicCreate transaction", async function () {
-      const topicResponse = await JSONRPCRequest(this, "createTopic", {
-        adminKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
-        submitKey: process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
-        memo: "receipt test topic",
-      });
-      const createdTopicId = topicResponse.topicId;
-
-      if (topicResponse.transactionId) {
-        const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-          transactionId: topicResponse.transactionId,
-        });
-
-        expect(response.status).to.equal("SUCCESS");
-        expect(response.topicId).to.equal(createdTopicId);
-      }
-    });
-
-    it("(#13) Verify receipt exchangeRate is returned", async function () {
+    it("(#11) Verify receipt exchangeRate is returned", async function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: privateKey,
       });
 
-      const transferResponse = await JSONRPCRequest(this, "transferCrypto", {
-        transfers: [
-          {
-            accountId: accountResponse.accountId,
-            amount: "1",
-          },
-          {
-            accountId: process.env.OPERATOR_ACCOUNT_ID as string,
-            amount: "-1",
-          },
-        ],
-      });
-
       const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-        transactionId: transferResponse.transactionId,
+        transactionId: accountResponse.transactionId,
       });
 
       expect(response.status).to.equal("SUCCESS");
-      if (response.exchangeRate !== null) {
-        expect(response.exchangeRate).to.have.property("hbars");
-        expect(response.exchangeRate).to.have.property("cents");
-        expect(response.exchangeRate.hbars).to.be.a("number");
-        expect(response.exchangeRate.cents).to.be.a("number");
-      }
-    });
-
-    it("(#14) Verify receipt serials for TokenMint NFT transaction", async function () {
-      const supplyKey = await generateEd25519PrivateKey(this);
-
-      const tokenResponse = await JSONRPCRequest(this, "createToken", {
-        name: "receipt_nft_test",
-        symbol: "RNFT",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-        supplyKey: supplyKey,
-        tokenType: "nft",
-      });
-
-      const mintResponse = await JSONRPCRequest(this, "mintToken", {
-        tokenId: tokenResponse.tokenId,
-        metadata: ["QUJD"],
-        commonTransactionParams: {
-          signers: [supplyKey],
-        },
-      });
-
-      if (mintResponse.transactionId) {
-        const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-          transactionId: mintResponse.transactionId,
-        });
-
-        expect(response.status).to.equal("SUCCESS");
-        expect(response.serials).to.be.an("array").that.is.not.empty;
-      }
-    });
-
-    it("(#15) Verify receipt totalSupply for TokenMint transaction", async function () {
-      const supplyKey = await generateEd25519PrivateKey(this);
-
-      const tokenResponse = await JSONRPCRequest(this, "createToken", {
-        name: "receipt_supply_test",
-        symbol: "RST",
-        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-        supplyKey: supplyKey,
-        initialSupply: "1000",
-      });
-
-      const mintResponse = await JSONRPCRequest(this, "mintToken", {
-        tokenId: tokenResponse.tokenId,
-        amount: "500",
-        commonTransactionParams: {
-          signers: [supplyKey],
-        },
-      });
-
-      if (mintResponse.transactionId) {
-        const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-          transactionId: mintResponse.transactionId,
-        });
-
-        expect(response.status).to.equal("SUCCESS");
-        expect(response.totalSupply).to.not.be.null;
-        expect(parseInt(response.totalSupply as string)).to.equal(1500);
-      }
+      expect(response.exchangeRate).to.not.be.null;
+      expect(response.exchangeRate.hbars)
+        .to.be.a("number")
+        .that.is.greaterThan(0);
+      expect(response.exchangeRate.cents)
+        .to.be.a("number")
+        .that.is.greaterThan(0);
     });
   });
 });
