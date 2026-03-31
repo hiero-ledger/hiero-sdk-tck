@@ -20,13 +20,18 @@ defaults:
 jobs:
   # Resolve HEAD SHAs for main branches
   resolve-refs:
-    runs-on: ubuntu-latest
+    runs-on: hiero-client-sdk-linux-large
     outputs:
       tck-sha: ${{ steps.refs.outputs.tck-sha }}
       js-sha: ${{ steps.refs.outputs.js-sha }}
       go-sha: ${{ steps.refs.outputs.go-sha }}
       java-sha: ${{ steps.refs.outputs.java-sha }}
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
       - name: Resolve main branch SHAs
         id: refs
         run: |
@@ -78,8 +83,13 @@ jobs:
     needs:
       [resolve-refs, js-compatibility, go-compatibility, java-compatibility]
     if: ${{ always() }}
-    runs-on: ubuntu-latest
+    runs-on: hiero-client-sdk-linux-large
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
       - name: Determine results
         id: results
         run: |
