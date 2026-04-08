@@ -89,7 +89,7 @@ jobs:
 
       # Set up Swift toolchain
       - name: Setup Swift
-        uses: swift-actions/setup-swift@7591e4f04c00624cb043783da51a7fd6ee0a6bf6 # v2
+        uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2
         with:
           swift-version: "6.1"
 
@@ -108,14 +108,14 @@ jobs:
 
       # Build the Swift SDK
       - name: Build Swift SDK
-        run: swift build
+        run: swift build -c release
         working-directory: sdk-server
 
       # Start the TCK server
       - name: Start SDK Server
         id: start-sdk-server
         run: |
-          .build/debug/HieroTCK > tck-server.log 2>&1 &
+          .build/release/HieroTCK > tck-server.log 2>&1 &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
           echo "Server started with PID: $server_pid"
