@@ -89,7 +89,9 @@ jobs:
 
       # Install system dependencies required by setup-swift
       - name: Install system dependencies
-        run: sudo apt-get install -y --no-install-recommends file
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends file
 
       # Set up Swift toolchain
       - name: Setup Swift
