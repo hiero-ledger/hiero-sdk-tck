@@ -118,14 +118,14 @@ jobs:
 
       # Build the Swift SDK
       - name: Build Swift SDK
-        run: swift build -c release
+        run: swift build
         working-directory: sdk-server
 
       # Start the TCK server
       - name: Start SDK Server
         id: start-sdk-server
         run: |
-          .build/release/HieroTCK > tck-server.log 2>&1 &
+          .build/debug/HieroTCK > tck-server.log 2>&1 &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
           echo "Server started with PID: $server_pid"
