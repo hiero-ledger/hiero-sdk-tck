@@ -87,17 +87,21 @@ jobs:
             git checkout $LATEST_TAG
           fi
 
-      # Install system dependencies required by setup-swift
+      # Set up Swift toolchain (matches swift-actions/setup-swift used in hiero-sdk-swift CI)
+      - name: Setup Swift
+        uses: SwiftyLab/setup-swift@4bbb093f8c68d1dee1caa8b67c681a3f8fe70a91 # v1.12.0
+        with:
+          swift-version: "6.0"
+
+      # Install system dependencies required to build the Swift SDK (matches hiero-sdk-swift CI)
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends file
-
-      # Set up Swift toolchain
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2
-        with:
-          swift-version: "6.0"
+          sudo apt-get install -y \
+            git curl jq coreutils ca-certificates \
+            clang libicu-dev libxml2-dev libsqlite3-dev zlib1g-dev \
+            libcurl4-openssl-dev libssl-dev pkg-config \
+            protobuf-compiler
 
       # Set up the node environment
       - name: Setup NodeJS Environment
