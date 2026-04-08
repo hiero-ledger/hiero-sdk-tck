@@ -18,6 +18,7 @@ on:
           - "go"
           - "cpp"
           - "java"
+          - "swift"
           - "every"
         default: "every"
       custom-job-name:
@@ -46,6 +47,10 @@ on:
         type: string
       java-sdk-version:
         description: "Java SDK version (defaults to latest tag)"
+        required: false
+        type: string
+      swift-sdk-version:
+        description: "Swift SDK version (defaults to latest tag)"
         required: false
         type: string
 
@@ -87,7 +92,7 @@ jobs:
       cpp-sdk-version: ${{ inputs.cpp-sdk-version }}
     secrets: inherit
 
-  # Test Java SDK  
+  # Test Java SDK
   java-compatibility:
     if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'java' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/java_compatibility.yml
@@ -98,9 +103,20 @@ jobs:
       java-sdk-version: ${{ inputs.java-sdk-version }}
     secrets: inherit
 
+  # Test Swift SDK
+  swift-compatibility:
+    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'swift' || inputs.sdk-type == 'every' }}
+    uses: ./.github/workflows/swift_compatibility.yml
+    with:
+      custom-job-name: ${{ inputs.custom-job-name || 'Swift SDK Compatibility' }}
+      solo-version: ${{ inputs.solo-version }}
+      consensus-node-version: ${{ inputs.consensus-node-version }}
+      swift-sdk-version: ${{ inputs.swift-sdk-version }}
+    secrets: inherit
+
   # Summary job
   summary:
-    needs: [js-compatibility, go-compatibility, cpp-compatibility, java-compatibility]
+    needs: [js-compatibility, go-compatibility, cpp-compatibility, java-compatibility, swift-compatibility]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -138,4 +154,12 @@ jobs:
             else
               echo "❌ **Java SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
             fi
-          fi 
+          fi
+
+          if [[ "${{ needs.swift-compatibility.result }}" != "skipped" ]]; then
+            if [[ "${{ needs.swift-compatibility.result }}" == "success" ]]; then
+              echo "✅ **Swift SDK**: PASSED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Swift SDK**: FAILED" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
