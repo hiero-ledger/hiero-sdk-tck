@@ -114,7 +114,7 @@ const createContractWithInitialBalance = async (
 describe("ContractDeleteTransaction", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -122,8 +122,10 @@ describe("ContractDeleteTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Contract ID", function () {
@@ -683,7 +685,7 @@ describe("ContractDeleteTransaction", function () {
       }
     });
 
-    it.skip("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
+    it("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const contractId = await createContractWithAdminKey(
         this,

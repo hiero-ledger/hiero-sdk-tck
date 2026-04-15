@@ -8,10 +8,13 @@ import {
   CryptoAllowancesResponse,
   NftAllowancesResponse,
   Nfts,
+  Nft,
   TokenInfo,
   TokenAirdropsResponse,
   Topic,
   TopicMessagesResponse,
+  NetworkNodesResponse,
+  Schedule,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -43,9 +46,19 @@ class MirrorNodeClient {
     return retryOnError(async () => fetchData(url));
   }
 
+  async getScheduleData(scheduleId: string): Promise<Schedule> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/schedules/${scheduleId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
   async getAccountNfts(accountId: string): Promise<Nfts> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/accounts/${accountId}/nfts`;
 
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getNftInfo(tokenId: string, serialNumber: string): Promise<Nft> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/tokens/${tokenId}/nfts/${serialNumber}`;
     return retryOnError(async () => fetchData(url));
   }
 
@@ -92,6 +105,11 @@ class MirrorNodeClient {
 
   async getContractData(contractId: string): Promise<Contract> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/contracts/${contractId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getNodeData(nodeId: string): Promise<NetworkNodesResponse> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/network/nodes?node.id=${nodeId}`;
     return retryOnError(async () => fetchData(url));
   }
 }

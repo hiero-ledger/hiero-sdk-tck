@@ -23,13 +23,16 @@ describe("TokenUnpauseTransaction", function () {
 
   // All tests required a token to be created and paused.
   let tokenId: string, tokenAdminKey: string, tokenPauseKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     tokenPauseKey = await generateEd25519PrivateKey(this);
     tokenAdminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -48,8 +51,11 @@ describe("TokenUnpauseTransaction", function () {
       },
     });
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   async function verifyTokenUnpaused(tokenId: string) {
@@ -127,7 +133,7 @@ describe("TokenUnpauseTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#6) Unpauses a token that is deleted", async function () {
+    it("(#6) Unpauses a token that is deleted", async function () {
       await JSONRPCRequest(this, "unpauseToken", {
         tokenId,
         commonTransactionParams: {

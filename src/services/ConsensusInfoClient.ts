@@ -4,6 +4,7 @@ import {
   AccountId,
   AccountInfo,
   AccountInfoQuery,
+  AddressBookQuery,
   Client,
   ContractCallQuery,
   ContractFunctionParameters,
@@ -16,6 +17,9 @@ import {
   FileInfo,
   FileInfoQuery,
   NftId,
+  ScheduleId,
+  ScheduleInfo,
+  ScheduleInfoQuery,
   TokenInfo,
   TokenInfoQuery,
   TokenNftInfo,
@@ -23,24 +27,35 @@ import {
   TopicId,
   TopicInfo,
   TopicInfoQuery,
+  TransactionId,
+  TransactionReceipt,
+  TransactionReceiptQuery,
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
   sdkClient;
   constructor() {
-    if (
-      process.env.NODE_IP &&
-      process.env.NODE_ACCOUNT_ID &&
-      process.env.MIRROR_NETWORK
-    ) {
+    if (process.env.NODE_IP && process.env.NODE_ACCOUNT_ID) {
       const node = {
         [process.env.NODE_IP]: AccountId.fromString(
           process.env.NODE_ACCOUNT_ID,
         ),
       };
       this.sdkClient = Client.forNetwork(node);
+      // Set mirror network for AddressBookQuery support
+      // AddressBookQuery requires mirror network to be configured
+      if (process.env.MIRROR_NETWORK) {
+        const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
+          (addr) => addr.trim(),
+        );
+        this.sdkClient.setMirrorNetwork(mirrorNetwork);
+      } else {
+        // Default mirror network for local development
+        this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      }
     } else {
-      this.sdkClient = Client.forTestnet();
+      this.sdkClient = Client.forLocalNode();
+      this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
     }
 
     this.sdkClient.setOperator(
@@ -116,6 +131,22 @@ class ConsensusInfoClient {
     return query.execute(this.sdkClient);
   }
 
+  async getScheduleInfo(scheduleId: string): Promise<ScheduleInfo> {
+    const query = new ScheduleInfoQuery();
+    query.setScheduleId(ScheduleId.fromString(scheduleId));
+    return query.execute(this.sdkClient);
+  }
+
+  async getTransactionReceipt(
+    transactionId: string,
+  ): Promise<TransactionReceipt> {
+    const query = new TransactionReceiptQuery();
+    query
+      .setValidateStatus(false)
+      .setTransactionId(TransactionId.fromString(transactionId));
+    return query.execute(this.sdkClient);
+  }
+
   async getContractFunctionResult(
     contractId: string,
     functionName: string,
@@ -143,6 +174,34 @@ class ConsensusInfoClient {
     query.setFunctionParameters(functionParameters);
     query.setGas(100000);
 
+    return query.execute(this.sdkClient);
+  }
+
+  async getNodeInfo(nodeId: string): Promise<any> {
+    const query = new AddressBookQuery();
+    query.setFileId("0.0.102"); // Address book file ID is always 0.0.102
+    const addressBook = await query.execute(this.sdkClient);
+
+    // Find the node with the specified node ID
+    const node = addressBook.nodeAddresses.find(
+      (nodeAddress) => nodeAddress.nodeId?.toString() === nodeId,
+    );
+
+    if (!node) {
+      throw new Error(`Node with ID ${nodeId} not found in address book`);
+    }
+
+    return node;
+  }
+
+  async getAddressBook(fileId?: string, limit?: number): Promise<any> {
+    const query = new AddressBookQuery();
+    if (fileId !== null && fileId !== undefined) {
+      query.setFileId(FileId.fromString(fileId));
+    }
+    if (limit !== null && limit !== undefined) {
+      query.setLimit(limit);
+    }
     return query.execute(this.sdkClient);
   }
 }

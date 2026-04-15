@@ -37,7 +37,7 @@ describe("TopicUpdateTransaction", function () {
   let topicId: string;
   let topicAdminKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -45,8 +45,10 @@ describe("TopicUpdateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("TopicId", function () {
@@ -756,8 +758,7 @@ describe("TopicUpdateTransaction", function () {
       });
     });
 
-    //will be enabled in HIP-1139
-    it.skip("(#7) Updates a topic to remove submit key", async function () {
+    it("(#7) Updates a topic to remove submit key", async function () {
       // Create a topic first with a submit key
       const adminPrivateKey = await generateEd25519PrivateKey(this);
       const adminKey = await generateEd25519PublicKey(this, adminPrivateKey);

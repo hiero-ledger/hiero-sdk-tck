@@ -23,13 +23,16 @@ describe("TokenPauseTransaction", function () {
 
   // All tests required a token to be created.
   let tokenId: string, tokenAdminKey: string, tokenPauseKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     tokenPauseKey = await generateEd25519PrivateKey(this);
     tokenAdminKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -41,8 +44,11 @@ describe("TokenPauseTransaction", function () {
       },
     });
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Token IDs", function () {

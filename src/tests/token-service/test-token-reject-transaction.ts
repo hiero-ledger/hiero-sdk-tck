@@ -21,13 +21,16 @@ describe("TokenRejectTransaction", function () {
   const amountNegatedStr = String(-amount);
 
   let ownerId: string, ownerPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     ownerPrivateKey = await generateEd25519PrivateKey(this);
 
     ownerId = (
@@ -39,8 +42,10 @@ describe("TokenRejectTransaction", function () {
     ).accountId;
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("RejectFungibleToken", function () {

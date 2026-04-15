@@ -68,7 +68,7 @@ const verifyTopicIsDeleted = async (topicId: string) => {
 describe("TopicDeleteTransaction", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -76,8 +76,10 @@ describe("TopicDeleteTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Topic ID", function () {

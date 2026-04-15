@@ -32,13 +32,14 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     nonFungibleTokenId: string,
     nonFungibleTokenFeeScheduleKey: string;
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
-      process.env.OPERATOR_ACCOUNT_ID as string as string,
+      process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
-
+  });
+  beforeEach(async function () {
     // Generate an immutable fungible token.
     fungibleTokenFeeScheduleKey = await generateEcdsaSecp256k1PrivateKey(this);
 
@@ -70,8 +71,10 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
     nonFungibleTokenId = response;
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Token ID", function () {

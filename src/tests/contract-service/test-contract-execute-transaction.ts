@@ -5,7 +5,10 @@ import {
   generateEd25519PrivateKey,
   generateEd25519PublicKey,
 } from "@helpers/key";
-import { setOperator } from "@helpers/setup-tests";
+import {
+  setOperator,
+  setOperatorForExistingSession,
+} from "@helpers/setup-tests";
 import { toHexString } from "@helpers/verify-contract-tx";
 import { JSONRPCRequest } from "@services/Client";
 import consensusInfoClient from "@services/ConsensusInfoClient";
@@ -73,7 +76,7 @@ const validateBalance = async (contractId: string, amount: string) => {
 describe("ContractExecuteTransaction", function () {
   this.timeout(30000);
 
-  beforeEach(async function () {
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -81,8 +84,10 @@ describe("ContractExecuteTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Contract ID", function () {
@@ -426,7 +431,11 @@ describe("ContractExecuteTransaction", function () {
         initialBalance: amount,
       });
 
-      await setOperator(this, accountId.accountId, adminPrivateKey);
+      await setOperatorForExistingSession(
+        this,
+        accountId.accountId,
+        adminPrivateKey,
+      );
 
       try {
         await JSONRPCRequest(this, "executeContract", {
@@ -441,7 +450,15 @@ describe("ContractExecuteTransaction", function () {
           "INSUFFICIENT_PAYER_BALANCE",
           "Insufficient transaction fee error",
         );
+        return;
+      } finally {
+        await setOperatorForExistingSession(
+          this,
+          process.env.OPERATOR_ACCOUNT_ID as string,
+          process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
+        );
       }
+      assert.fail("Should throw an error");
     });
 
     // TODO: FAIL_INVALID in services

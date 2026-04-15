@@ -29,7 +29,9 @@ describe("AccountCreateTransaction", function () {
   // Tests should not take longer than 30 seconds to fully execute.
   this.timeout(30000);
 
-  beforeEach(async function () {
+  // Use before/after instead of beforeEach/afterEach to enable client reuse across tests
+  // This supports concurrent test execution with isolated client instances per suite
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -37,8 +39,10 @@ describe("AccountCreateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Key", function () {
@@ -251,10 +255,6 @@ describe("AccountCreateTransaction", function () {
       if (!process.env.OPERATOR_ACCOUNT_ID) {
         throw new Error("OPERATOR_ACCOUNT_ID environment variable is not set");
       }
-      const operatorBalanceData = await consensusInfoClient.getBalance(
-        process.env.OPERATOR_ACCOUNT_ID,
-      );
-      const operatorAccountBalance = operatorBalanceData.hbars.toTinybars();
 
       // Generate a valid key for the account.
       const key = await generateEcdsaSecp256k1PrivateKey(this);
@@ -263,7 +263,7 @@ describe("AccountCreateTransaction", function () {
         // Attempt to create an account with an initial balance of the operator account balance + 1. The network should respond with an INSUFFICIENT_PAYER_BALANCE status.
         await JSONRPCRequest(this, "createAccount", {
           key,
-          initialBalance: operatorAccountBalance.add(1).toString(),
+          initialBalance: "9223372036854775807",
         });
       } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_PAYER_BALANCE");

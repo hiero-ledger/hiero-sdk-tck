@@ -35,13 +35,16 @@ describe("TokenAirdropTransaction", function () {
     senderPrivateKey: string,
     receiverAccountId: string,
     receiverPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     senderPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
     receiverPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -60,8 +63,11 @@ describe("TokenAirdropTransaction", function () {
       })
     ).accountId;
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("AddTokenTransfer", function () {
@@ -403,7 +409,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
+    it("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
@@ -4675,7 +4681,7 @@ describe("TokenAirdropTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
+    it("(#10) Airdrops an amount of NFT from a sender account to a receiver account", async function () {
       const supplyKey = await generateEcdsaSecp256k1PrivateKey(this);
 
       tokenId = await createNftToken(this, {
@@ -4763,7 +4769,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it.skip("(#12) Airdrops an amount of fungible token from a sender account to a receiver account with the incorrect decimals", async function () {
+    it("(#12) Airdrops an amount of fungible token from a sender account to a receiver account with the incorrect decimals", async function () {
       try {
         await JSONRPCRequest(this, "airdropToken", {
           tokenTransfers: [
@@ -5197,7 +5203,7 @@ describe("TokenAirdropTransaction", function () {
       );
     });
 
-    it.skip("(#23) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
+    it("(#23) Airdrops an amount of fungible token from a sender account to an unassociated receiver account with no automatic token associations", async function () {
       await JSONRPCRequest(this, "updateAccount", {
         accountId: receiverAccountId,
         maxAutoTokenAssociations: 0,

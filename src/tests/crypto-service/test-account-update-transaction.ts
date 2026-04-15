@@ -32,14 +32,18 @@ describe("AccountUpdateTransaction", function () {
   // An account is created for each test. These hold the information for that account.
   let accountPrivateKey: string, accountId: string;
 
-  beforeEach(async function () {
+  // Use before/after instead of beforeEach/afterEach to enable client reuse across tests
+  // This supports concurrent test execution with isolated client instances per suite
+  before(async function () {
     // Initialize the network and operator.
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     // Generate a private key.
     accountPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -50,8 +54,11 @@ describe("AccountUpdateTransaction", function () {
 
     accountId = response.accountId;
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("AccountId", async function () {

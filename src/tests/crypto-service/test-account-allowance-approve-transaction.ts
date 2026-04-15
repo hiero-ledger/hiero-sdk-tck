@@ -41,25 +41,30 @@ describe("AccountAllowanceApproveTransaction", function () {
     ownerPrivateKey: string,
     spenderAccountId: string,
     spenderPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     ownerPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
     spenderPrivateKey = await generateEd25519PrivateKey(this);
 
     ownerAccountId = await createAccount(this, ownerPrivateKey);
     spenderAccountId = await createAccount(this, spenderPrivateKey);
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("ApproveHbarAllowance", function () {
-    // Create a pre-configured function that only needs overrides
     let createHbarAllowanceParams: HbarAllowanceParamsFactory;
 
     beforeEach(async function () {
@@ -2106,7 +2111,7 @@ describe("AccountAllowanceApproveTransaction", function () {
       assert.fail("Should throw an error");
     });
 
-    it.skip("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
+    it("(#10) Deletes an NFT allowance to a spender account from an owner account with a deleted token", async function () {
       const adminKey = await generateEd25519PrivateKey(this);
       const supplyKey = await generateEd25519PrivateKey(this);
 

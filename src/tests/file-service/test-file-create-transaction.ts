@@ -27,10 +27,7 @@ describe("FileCreateTransaction", function () {
   let ed25519PrivateKey: string;
   let ed25519PublicKey: string;
 
-  beforeEach(async function () {
-    ed25519PrivateKey = await generateEd25519PrivateKey(this);
-    ed25519PublicKey = await generateEd25519PublicKey(this, ed25519PrivateKey);
-
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -38,8 +35,15 @@ describe("FileCreateTransaction", function () {
     );
   });
 
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  beforeEach(async function () {
+    ed25519PrivateKey = await generateEd25519PrivateKey(this);
+    ed25519PublicKey = await generateEd25519PublicKey(this, ed25519PrivateKey);
+  });
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("Keys", function () {
@@ -684,6 +688,4 @@ describe("FileCreateTransaction", function () {
       assert.fail("Should throw an error");
     });
   });
-
-  return Promise.resolve();
 });

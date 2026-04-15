@@ -28,13 +28,16 @@ describe("TokenRevokeKycTransaction", function () {
     tokenKycKey: string,
     accountId: string,
     accountPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+  });
 
+  beforeEach(async function () {
     tokenFreezeKey = await generateEd25519PrivateKey(this);
     tokenAdminKey = await generateEd25519PrivateKey(this);
     tokenPauseKey = await generateEcdsaSecp256k1PrivateKey(this);
@@ -74,8 +77,11 @@ describe("TokenRevokeKycTransaction", function () {
       },
     });
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   async function verifyTokenNoKyc(accountId: string, tokenId: string) {

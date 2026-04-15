@@ -33,13 +33,15 @@ describe("TokenAirdropClaimTransaction", function () {
     senderPrivateKey: string,
     receiverAccountId: string,
     receiverPrivateKey: string;
-  beforeEach(async function () {
+
+  before(async function () {
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
-
+  });
+  beforeEach(async function () {
     senderPrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
     receiverPrivateKey = await generateEd25519PrivateKey(this);
 
@@ -57,8 +59,10 @@ describe("TokenAirdropClaimTransaction", function () {
       })
     ).accountId;
   });
-  afterEach(async function () {
-    await JSONRPCRequest(this, "reset");
+  after(async function () {
+    await JSONRPCRequest(this, "reset", {
+      sessionId: this.sessionId,
+    });
   });
 
   describe("ClaimFungibleToken", function () {

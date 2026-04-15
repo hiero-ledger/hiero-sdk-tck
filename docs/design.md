@@ -1,12 +1,13 @@
 ---
 title: Design
-nav_order: 8
+nav_order: 10
 ---
+
 # Client SDK TCK
 
 ## Requirements
 
-- A single TCK that can work with *any* client SDK
+- A single TCK that can work with _any_ client SDK
 - Test driver must be able to run all tests and verify all results
 - Minimal work on the client SDK
 
@@ -53,18 +54,18 @@ The network ideally would be a hedera-local-node, which would mean adding suppor
 #### Setup
 
 1. `setup`: includes configuration for the SDK client to use for the network:
-    1. IP of the nodes in the network
-    2. IP of the mirror node
-    3. Personas for operators, their accounts, and their private keys
+   1. IP of the nodes in the network
+   2. IP of the mirror node
+   3. Personas for operators, their accounts, and their private keys
 
 #### Account Management
 
 1. `getAccountInfo`: Supports getting account info for a specific account
-    1. Includes the account ID OR alias of the account to get information for,
-       and which operator to use
-    2. Returns the account Info as JSON (to be specified) or error code if it
-       doesn’t work
+   1. Includes the account ID OR alias of the account to get information for,
+      and which operator to use
+   2. Returns the account Info as JSON (to be specified) or error code if it
+      doesn’t work
 2. `createAccount`: Creates an account using the operator specified in the
    JSON-RPC call
-    1. Option alias included in the call
-    2. Returns the receipt, or error code
+   1. Option alias included in the call
+   2. Returns the receipt, or error code
