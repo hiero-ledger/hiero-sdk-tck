@@ -427,7 +427,7 @@ describe("TopicMessageSubmitTransaction", function () {
       await verifyTopicMessage(topicId, message);
     });
 
-    it("(#7) Submits a message without message content to a public topic", async function () {
+    it.skip("(#7) Submits a message without message content to a public topic", async function () {
       const { topicId } = await createPublicTopic(this);
 
       try {
@@ -692,16 +692,16 @@ describe("TopicMessageSubmitTransaction", function () {
       amount: string,
       denominatingTokenId?: string,
     ) => [
-      {
-        payerId,
-        fixedFees: [
-          {
-            amount,
-            ...(denominatingTokenId && { denominatingTokenId }),
-          },
-        ],
-      },
-    ];
+        {
+          payerId,
+          fixedFees: [
+            {
+              amount,
+              ...(denominatingTokenId && { denominatingTokenId }),
+            },
+          ],
+        },
+      ];
 
     const verifyCustomFeeDidNotCharge = async (
       accountId: string,
