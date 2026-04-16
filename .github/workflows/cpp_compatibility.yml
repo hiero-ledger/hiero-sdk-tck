@@ -73,6 +73,7 @@ jobs:
           fetch-tags: true
           submodules: true
 
+      #Test
       - name: Checkout CPP SDK Version
         run: |
           cd sdk-server
