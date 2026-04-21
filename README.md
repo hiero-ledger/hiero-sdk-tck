@@ -31,6 +31,35 @@ The TCK provides ready-to-use configurations to run tests against the [Hedera te
 - Start your [hiero-local-node](https://github.com/hiero-ledger/hiero-local-node)
 - Rename `.env.custom_node` to `.env`
 
+### Configure usage of BNCE (Block Node Compatibility Environment)
+
+BNCE is a hosted network that wires a Block Node between the Consensus
+Node and Mirror Node (`CN → BN → MN`). The TCK does not talk to the Block
+Node directly — BN is transparent, so only the CN / MN endpoints change.
+
+- The BNCE consensus and mirror endpoints are **public** — no VPN or
+  Teleport is required.
+- The `0.0.2` treasury on BNCE is keyed with a network-specific ED25519
+  key that is **not** the well-known hiero-local-node genesis key. Ask
+  the BNCE team (Rob Walworth / Nathan Klick) for either the BNCE
+  `0.0.2` private key or a dedicated funded operator account, and fill
+  in `OPERATOR_ACCOUNT_ID` / `OPERATOR_ACCOUNT_PRIVATE_KEY` in
+  `.env.bnce`.
+- Rename `.env.bnce` to `.env` once the operator fields are populated.
+- BNCE has 7 consensus nodes (`s01`–`s07`). Node account IDs follow the
+  standard convention on the `0x03` ledger: `s01=0.0.3 … s07=0.0.9`.
+- The Mirror Node Java REST endpoint is **not currently deployed on
+  BNCE**. Test suites that depend on it (topic service, NFT allowances,
+  token airdrops) will fail until the BNCE team adds it.
+- (Optional) Verify Block Node health before running tests using
+  [`bn-endpoint-checker.sh`](https://github.com/hiero-ledger/hiero-block-node/pull/2593):
+  ```
+  ./bn-endpoint-checker.sh --version 0.31.0 \
+    s01.blk.bnce.dal.lat.ope.eng.hashgraph.io:40840 \
+    s02.blk.bnce.dal.lat.ope.eng.hashgraph.io:40840 \
+    s03.blk.bnce.dal.lat.ope.eng.hashgraph.io:40840
+  ```
+
 ### Configure usage of a custom network
 
 - Change the content of `.env` to fit to your network
