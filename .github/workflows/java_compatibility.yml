@@ -12,15 +12,14 @@ on:
         required: false
         type: string
       solo-version:
-        description: "The version of the Solo to use (defaults to 0.46.1 if not specified):"
+        description: "The version of the Solo to use (defaults to 0.69.0 if not specified):"
         required: false
         type: string
-        default: "0.46.1"
+        default: "0.69.0"
       consensus-node-version:
-        description: "The version of the consensus node to use (defaults to v0.72.0 if not specified):"
+        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
         required: false
         type: string
-        default: "v0.72.0"
       java-sdk-version:
         description: "The version of the Java SDK to use (defaults to latest tag if not specified):"
         required: false
@@ -35,12 +34,11 @@ on:
         description: "The version of the Solo to use"
         required: false
         type: string
-        default: "0.46.1"
+        default: "0.69.0"
       consensus-node-version:
         description: "The version of the consensus node to use"
         required: false
         type: string
-        default: "v0.72.0"
       java-sdk-version:
         description: "The version of the Java SDK to use"
         required: false
@@ -153,15 +151,30 @@ jobs:
           cat sdk-server/tck-server.log || echo "No server logs found"
           exit 1
 
+      # Get Latest Consensus Node Version
+      - name: Get Latest Consensus Node Version
+        if: ${{ !inputs.consensus-node-version }}
+        id: get-consensus-version
+        run: |
+          # Fetch latest stable version (excludes RC, beta, alpha versions)
+          LATEST_TAG=$(git ls-remote --tags --refs https://github.com/hiero-ledger/hiero-consensus-node \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n1)
+          echo "Latest consensus node tag: $LATEST_TAG"
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
       # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # v0.16.0
+        uses: hiero-ledger/hiero-solo-action@328bc84c3b00a990a151418144fd682a4eb76ea6 # v0.19.0
         with:
           installMirrorNode: true
-          soloVersion: ${{ inputs.solo-version || '0.46.1' }}
+          soloVersion: ${{ inputs.solo-version || '0.69.0' }}
           mirrorNodeVersion: v0.138.0
-          hieroVersion: ${{ inputs.consensus-node-version || 'v0.72.0' }}
+          hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
 
        # Start the TCK client
       - name: Start tck-client
