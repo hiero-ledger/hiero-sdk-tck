@@ -53,9 +53,8 @@ class ConsensusInfoClient {
           process.env.NODE_ACCOUNT_ID,
         ),
       };
-
       this.sdkClient = Client.forNetwork(node);
-
+      // Set mirror network for AddressBookQuery support
       // AddressBookQuery requires mirror network to be configured
       if (process.env.MIRROR_NETWORK) {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
@@ -63,6 +62,7 @@ class ConsensusInfoClient {
         );
         this.sdkClient.setMirrorNetwork(mirrorNetwork);
       } else {
+        // Default mirror network for local development
         this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
       }
     } else if (network === "testnet") {
