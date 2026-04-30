@@ -33,7 +33,7 @@ import {
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
-  sdkClient;
+  sdkClient: Client;
   constructor() {
     const network = (process.env.NETWORK ?? "testnet").toLowerCase();
 
