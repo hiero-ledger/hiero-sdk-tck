@@ -37,10 +37,16 @@ class ConsensusInfoClient {
   constructor() {
     const network = (process.env.NETWORK ?? "testnet").toLowerCase();
 
+    const trySetMirrorNetwork = (client: unknown, mirror: string[]) => {
+      if (client && typeof (client as any).setMirrorNetwork === "function") {
+        ;(client as any).setMirrorNetwork(mirror);
+      }
+    };
+
     if (network === "local") {
       // Preserve local-node behavior for existing local workflows.
       this.sdkClient = HGraphClient.forLocalNode();
-      this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      trySetMirrorNetwork(this.sdkClient, ["127.0.0.1:5600"]);
     } else if (network === "custom") {
       if (!process.env.NODE_IP || !process.env.NODE_ACCOUNT_ID) {
         throw new Error(
@@ -60,10 +66,10 @@ class ConsensusInfoClient {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
           (addr) => addr.trim(),
         );
-        this.sdkClient.setMirrorNetwork(mirrorNetwork);
+        trySetMirrorNetwork(this.sdkClient, mirrorNetwork);
       } else {
         // Default mirror network for local development
-        this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+        trySetMirrorNetwork(this.sdkClient, ["127.0.0.1:5600"]);
       }
     } else if (network === "testnet") {
       this.sdkClient = HGraphClient.forTestnet();
