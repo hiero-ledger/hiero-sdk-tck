@@ -5,7 +5,7 @@ import {
   AccountInfo,
   AccountInfoQuery,
   AddressBookQuery,
-  Client,
+  Client as HGraphClient,
   ContractCallQuery,
   ContractFunctionParameters,
   ContractFunctionResult,
@@ -33,13 +33,13 @@ import {
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
-  sdkClient: Client;
+  sdkClient: HGraphClient;
   constructor() {
     const network = (process.env.NETWORK ?? "testnet").toLowerCase();
 
     if (network === "local") {
       // Preserve local-node behavior for existing local workflows.
-      this.sdkClient = Client.forLocalNode();
+      this.sdkClient = HGraphClient.forLocalNode();
       this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
     } else if (network === "custom") {
       if (!process.env.NODE_IP || !process.env.NODE_ACCOUNT_ID) {
@@ -53,7 +53,7 @@ class ConsensusInfoClient {
           process.env.NODE_ACCOUNT_ID,
         ),
       };
-      this.sdkClient = Client.forNetwork(node);
+      this.sdkClient = HGraphClient.forNetwork(node);
       // Set mirror network for AddressBookQuery support
       // AddressBookQuery requires mirror network to be configured
       if (process.env.MIRROR_NETWORK) {
@@ -66,7 +66,7 @@ class ConsensusInfoClient {
         this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
       }
     } else if (network === "testnet") {
-      this.sdkClient = Client.forTestnet();
+      this.sdkClient = HGraphClient.forTestnet();
     } else {
       throw new Error(
         `Unsupported NETWORK value '${network}'. Use testnet, local, or custom.`,
