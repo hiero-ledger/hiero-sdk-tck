@@ -5,7 +5,6 @@ using Hedera.Hashgraph.SDK.Contract;
 using Hedera.Hashgraph.SDK.Cryptocurrency;
 using Hedera.Hashgraph.SDK.File;
 using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.Queries;
 using Hedera.Hashgraph.SDK.Schedule;
 using Hedera.Hashgraph.SDK.Token;
 using Hedera.Hashgraph.TCK.Tests.ContractService.Params;
