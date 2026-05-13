@@ -1,0 +1,352 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "Daily TCK Compatibility Check"
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5" # 06:00 UTC weekdays
+  workflow_dispatch:
+
+concurrency:
+  group: daily-tck-compatibility
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Resolve HEAD SHAs for main branches
+  resolve-refs:
+    runs-on: hiero-client-sdk-linux-large
+    outputs:
+      tck-sha: ${{ steps.refs.outputs.tck-sha }}
+      js-sha: ${{ steps.refs.outputs.js-sha }}
+      go-sha: ${{ steps.refs.outputs.go-sha }}
+      java-sha: ${{ steps.refs.outputs.java-sha }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: Resolve main branch SHAs
+        id: refs
+        run: |
+          TCK_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-tck refs/heads/main | cut -c1-7)
+          JS_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-js refs/heads/main | cut -c1-7)
+          GO_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-go refs/heads/main | cut -c1-7)
+          JAVA_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-java refs/heads/main | cut -c1-7)
+
+          echo "tck-sha=$TCK_SHA" >> "$GITHUB_OUTPUT"
+          echo "js-sha=$JS_SHA" >> "$GITHUB_OUTPUT"
+          echo "go-sha=$GO_SHA" >> "$GITHUB_OUTPUT"
+          echo "java-sha=$JAVA_SHA" >> "$GITHUB_OUTPUT"
+
+          echo "### Resolved SHAs" >> "$GITHUB_STEP_SUMMARY"
+          echo "- TCK: \`$TCK_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- JS SDK: \`$JS_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Go SDK: \`$GO_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Java SDK: \`$JAVA_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ── JS SDK — up to 3 attempts ──────────────────────────────────────
+  js-compatibility-1:
+    needs: resolve-refs
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: "Daily JS SDK (main) — attempt 1"
+      js-sdk-version: main
+    secrets: inherit
+
+  js-compatibility-2:
+    needs: [resolve-refs, js-compatibility-1]
+    if: ${{ always() && needs.js-compatibility-1.result == 'failure' }}
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: "Daily JS SDK (main) — attempt 2"
+      js-sdk-version: main
+    secrets: inherit
+
+  js-compatibility-3:
+    needs: [resolve-refs, js-compatibility-2]
+    if: ${{ always() && needs.js-compatibility-2.result == 'failure' }}
+    uses: ./.github/workflows/js_compatibility.yml
+    with:
+      custom-job-name: "Daily JS SDK (main) — attempt 3"
+      js-sdk-version: main
+    secrets: inherit
+
+  # ── Go SDK — up to 3 attempts ──────────────────────────────────────
+  go-compatibility-1:
+    needs: resolve-refs
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: "Daily Go SDK (main) — attempt 1"
+      go-sdk-version: main
+    secrets: inherit
+
+  go-compatibility-2:
+    needs: [resolve-refs, go-compatibility-1]
+    if: ${{ always() && needs.go-compatibility-1.result == 'failure' }}
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: "Daily Go SDK (main) — attempt 2"
+      go-sdk-version: main
+    secrets: inherit
+
+  go-compatibility-3:
+    needs: [resolve-refs, go-compatibility-2]
+    if: ${{ always() && needs.go-compatibility-2.result == 'failure' }}
+    uses: ./.github/workflows/go_compatibility.yml
+    with:
+      custom-job-name: "Daily Go SDK (main) — attempt 3"
+      go-sdk-version: main
+    secrets: inherit
+
+  # ── Java SDK — up to 3 attempts ────────────────────────────────────
+  java-compatibility-1:
+    needs: resolve-refs
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: "Daily Java SDK (main) — attempt 1"
+      java-sdk-version: main
+    secrets: inherit
+
+  java-compatibility-2:
+    needs: [resolve-refs, java-compatibility-1]
+    if: ${{ always() && needs.java-compatibility-1.result == 'failure' }}
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: "Daily Java SDK (main) — attempt 2"
+      java-sdk-version: main
+    secrets: inherit
+
+  java-compatibility-3:
+    needs: [resolve-refs, java-compatibility-2]
+    if: ${{ always() && needs.java-compatibility-2.result == 'failure' }}
+    uses: ./.github/workflows/java_compatibility.yml
+    with:
+      custom-job-name: "Daily Java SDK (main) — attempt 3"
+      java-sdk-version: main
+    secrets: inherit
+
+  # Summary and Slack notification
+  summary-and-notify:
+    needs:
+      - resolve-refs
+      - js-compatibility-1
+      - js-compatibility-2
+      - js-compatibility-3
+      - go-compatibility-1
+      - go-compatibility-2
+      - go-compatibility-3
+      - java-compatibility-1
+      - java-compatibility-2
+      - java-compatibility-3
+    if: ${{ always() }}
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      - name: Determine results
+        id: results
+        run: |
+          # An SDK passes if ANY of its attempts succeeded
+          # Skipped attempts mean a prior attempt already succeeded
+          if [[ "${{ needs.js-compatibility-1.result }}" == "success" ]] || \
+             [[ "${{ needs.js-compatibility-2.result }}" == "success" ]] || \
+             [[ "${{ needs.js-compatibility-3.result }}" == "success" ]]; then
+            echo "js-status=:white_check_mark: PASSED" >> "$GITHUB_OUTPUT"
+            echo "js-result=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "js-status=:x: FAILED" >> "$GITHUB_OUTPUT"
+            echo "js-result=failure" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Count JS attempts
+          JS_ATTEMPTS=1
+          [[ "${{ needs.js-compatibility-2.result }}" != "skipped" ]] && JS_ATTEMPTS=2
+          [[ "${{ needs.js-compatibility-3.result }}" != "skipped" ]] && JS_ATTEMPTS=3
+          echo "js-attempts=$JS_ATTEMPTS" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ needs.go-compatibility-1.result }}" == "success" ]] || \
+             [[ "${{ needs.go-compatibility-2.result }}" == "success" ]] || \
+             [[ "${{ needs.go-compatibility-3.result }}" == "success" ]]; then
+            echo "go-status=:white_check_mark: PASSED" >> "$GITHUB_OUTPUT"
+            echo "go-result=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "go-status=:x: FAILED" >> "$GITHUB_OUTPUT"
+            echo "go-result=failure" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Count Go attempts
+          GO_ATTEMPTS=1
+          [[ "${{ needs.go-compatibility-2.result }}" != "skipped" ]] && GO_ATTEMPTS=2
+          [[ "${{ needs.go-compatibility-3.result }}" != "skipped" ]] && GO_ATTEMPTS=3
+          echo "go-attempts=$GO_ATTEMPTS" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ needs.java-compatibility-1.result }}" == "success" ]] || \
+             [[ "${{ needs.java-compatibility-2.result }}" == "success" ]] || \
+             [[ "${{ needs.java-compatibility-3.result }}" == "success" ]]; then
+            echo "java-status=:white_check_mark: PASSED" >> "$GITHUB_OUTPUT"
+            echo "java-result=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "java-status=:x: FAILED" >> "$GITHUB_OUTPUT"
+            echo "java-result=failure" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Count Java attempts
+          JAVA_ATTEMPTS=1
+          [[ "${{ needs.java-compatibility-2.result }}" != "skipped" ]] && JAVA_ATTEMPTS=2
+          [[ "${{ needs.java-compatibility-3.result }}" != "skipped" ]] && JAVA_ATTEMPTS=3
+          echo "java-attempts=$JAVA_ATTEMPTS" >> "$GITHUB_OUTPUT"
+
+          # Overall status — passes if all three SDKs eventually succeeded
+          JS_OK=false; GO_OK=false; JAVA_OK=false
+          [[ "${{ needs.js-compatibility-1.result }}" == "success" || "${{ needs.js-compatibility-2.result }}" == "success" || "${{ needs.js-compatibility-3.result }}" == "success" ]] && JS_OK=true
+          [[ "${{ needs.go-compatibility-1.result }}" == "success" || "${{ needs.go-compatibility-2.result }}" == "success" || "${{ needs.go-compatibility-3.result }}" == "success" ]] && GO_OK=true
+          [[ "${{ needs.java-compatibility-1.result }}" == "success" || "${{ needs.java-compatibility-2.result }}" == "success" || "${{ needs.java-compatibility-3.result }}" == "success" ]] && JAVA_OK=true
+
+          if $JS_OK && $GO_OK && $JAVA_OK; then
+            echo "overall=PASSED" >> "$GITHUB_OUTPUT"
+            echo "color=#36a64f" >> "$GITHUB_OUTPUT"
+            echo "emoji=:white_check_mark:" >> "$GITHUB_OUTPUT"
+          else
+            echo "overall=FAILED" >> "$GITHUB_OUTPUT"
+            echo "color=#FF0000" >> "$GITHUB_OUTPUT"
+            echo "emoji=:x:" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Slack payload
+        id: payload
+        run: |
+          cat <<EOF > slack_payload.json
+          {
+            "attachments": [
+              {
+                "color": "${{ steps.results.outputs.color }}",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": ":test_tube: TCK Daily Compatibility Report",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Overall: ${{ steps.results.outputs.emoji }} ${{ steps.results.outputs.overall }}*"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*SDK Compatibility Results*"
+                    },
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*JS SDK* (<https://github.com/hiero-ledger/hiero-sdk-js/commit/${{ needs.resolve-refs.outputs.js-sha }}|${{ needs.resolve-refs.outputs.js-sha }}>)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "${{ steps.results.outputs.js-status }} (${{ steps.results.outputs.js-attempts }}/3 attempts)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Go SDK* (<https://github.com/hiero-ledger/hiero-sdk-go/commit/${{ needs.resolve-refs.outputs.go-sha }}|${{ needs.resolve-refs.outputs.go-sha }}>)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "${{ steps.results.outputs.go-status }} (${{ steps.results.outputs.go-attempts }}/3 attempts)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Java SDK* (<https://github.com/hiero-ledger/hiero-sdk-java/commit/${{ needs.resolve-refs.outputs.java-sha }}|${{ needs.resolve-refs.outputs.java-sha }}>)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "${{ steps.results.outputs.java-status }} (${{ steps.results.outputs.java-attempts }}/3 attempts)"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Workflow & Commit Information*"
+                    },
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*TCK Commit*:"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "<https://github.com/hiero-ledger/hiero-sdk-tck/commit/${{ needs.resolve-refs.outputs.tck-sha }}|${{ needs.resolve-refs.outputs.tck-sha }}>"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Workflow Run*:"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2.1.0
+        with:
+          webhook: ${{ secrets.SLACK_TCK_DAILY_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload-file-path: slack_payload.json
+          errors: true
+
+      - name: Write GitHub Step Summary
+        run: |
+          echo "## Daily Compatibility Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "${{ steps.results.outputs.js-result }}" == "success" ]]; then
+            echo ":white_check_mark: **JS SDK**: PASSED (${{ steps.results.outputs.js-attempts }}/3 attempts)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo ":x: **JS SDK**: FAILED (after ${{ steps.results.outputs.js-attempts }} attempts)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [[ "${{ steps.results.outputs.go-result }}" == "success" ]]; then
+            echo ":white_check_mark: **Go SDK**: PASSED (${{ steps.results.outputs.go-attempts }}/3 attempts)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo ":x: **Go SDK**: FAILED (after ${{ steps.results.outputs.go-attempts }} attempts)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [[ "${{ steps.results.outputs.java-result }}" == "success" ]]; then
+            echo ":white_check_mark: **Java SDK**: PASSED (${{ steps.results.outputs.java-attempts }}/3 attempts)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo ":x: **Java SDK**: FAILED (after ${{ steps.results.outputs.java-attempts }} attempts)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Fail if any SDK failed
+        if: ${{ steps.results.outputs.overall == 'FAILED' }}
+        run: exit 1
