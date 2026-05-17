@@ -699,7 +699,7 @@ namespace Hedera.Hashgraph.TCK.Util
                 if (serialNumbers != null)
                 {
                     IList<long> tokenIdList = serialNumbers.Select(long.Parse).ToList();
-                    transaction.Serials.ClearAndSet(tokenIdList);
+                    transaction.Serials.Operate(_ => tokenIdList);
                 }
                 return transaction;
             }
@@ -745,7 +745,7 @@ namespace Hedera.Hashgraph.TCK.Util
                     {
                         serialNumbersList.Add(long.Parse(serialNumber));
                     }
-                    transaction.Serials.ClearAndSet(serialNumbersList);
+                    transaction.Serials.Operate(_ => serialNumbersList);
                 }
                 return transaction;
             }
@@ -1181,7 +1181,7 @@ namespace Hedera.Hashgraph.TCK.Util
                                 throw new ArgumentException("Invalid fee exempt key: " + keyStr, e);
                             }
                         }
-                        transaction.FeeExemptKeys.ClearAndSet(keys);
+                        transaction.FeeExemptKeys.Operate(_ => keys);
                     }
                 }
             }
@@ -1208,7 +1208,7 @@ namespace Hedera.Hashgraph.TCK.Util
                                 throw new ArgumentException("Invalid fee exempt key: " + keyStr, e);
                             }
                         }
-                        transaction.FeeExemptKeys.ClearAndSet(keys);
+                        transaction.FeeExemptKeys.Operate(_ => keys);
                     }
                 }
             }
@@ -1263,7 +1263,7 @@ namespace Hedera.Hashgraph.TCK.Util
 
                         if (topicCustomFees.Count > 0)
                         {
-                            transaction.CustomFees.ClearAndSet(topicCustomFees);
+                            transaction.CustomFees.Operate(_ => topicCustomFees);
                         }
                     }
                 }
@@ -1291,7 +1291,7 @@ namespace Hedera.Hashgraph.TCK.Util
 
                         if (topicCustomFees.Count > 0)
                         {
-                            transaction.CustomFees.ClearAndSet(topicCustomFees);
+                            transaction.CustomFees.Operate(_ => topicCustomFees);
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+using Hedera.Hashgraph.SDK.Core;
 using Hedera.Hashgraph.SDK.Schedule;
-using Hedera.Hashgraph.SDK.Transactions;
 using Hedera.Hashgraph.TCK.Tests.ScheduleService.Params;
 using Hedera.Hashgraph.TCK.Tests.ScheduleService.Responses;
 using Hedera.Hashgraph.TCK.Util;

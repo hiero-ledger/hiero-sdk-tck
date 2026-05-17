@@ -3,9 +3,9 @@ using Hedera.Hashgraph.TCK.Util;
 
 using Hedera.Hashgraph.SDK;
 using Hedera.Hashgraph.SDK.Consensus;
-using Hedera.Hashgraph.SDK.Transactions;
 using Hedera.Hashgraph.TCK.Tests.TopicService.Params;
 using Hedera.Hashgraph.TCK.Tests.TopicService.Responses;
+using Hedera.Hashgraph.SDK.Core;
 
 namespace Hedera.Hashgraph.TCK.Tests.TopicService
 {

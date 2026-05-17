@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 using Hedera.Hashgraph.SDK;
+using Hedera.Hashgraph.SDK.Core;
 using Hedera.Hashgraph.SDK.Cryptocurrency;
 using Hedera.Hashgraph.SDK.Cryptography;
 using Hedera.Hashgraph.SDK.Fee;
 using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.SDK.Transactions;
 using Hedera.Hashgraph.TCK.Util;
 using Org.BouncyCastle.Utilities;
 using System;

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using Hedera.Hashgraph.SDK;
+using Hedera.Hashgraph.SDK.Core;
 using Hedera.Hashgraph.SDK.Ethereum;
-using Hedera.Hashgraph.SDK.Transactions;
 using Hedera.Hashgraph.TCK.Tests.Ethereum.Params;
 using Hedera.Hashgraph.TCK.Tests.Ethereum.Responses;
 using Hedera.Hashgraph.TCK.Util;
