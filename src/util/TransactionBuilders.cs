@@ -698,8 +698,7 @@ namespace Hedera.Hashgraph.TCK.Util
                 var serialNumbers = @params.SerialNumbers;
                 if (serialNumbers != null)
                 {
-                    IList<long> tokenIdList = serialNumbers.Select(long.Parse).ToList();
-                    transaction.Serials.Operate(_ => tokenIdList);
+                    transaction.Serials.Operate(_ => _.AddRange(serialNumbers.Select(_ => long.Parse(_))));
                 }
                 return transaction;
             }
@@ -1035,13 +1034,13 @@ namespace Hedera.Hashgraph.TCK.Util
                             foreach (string serialNumber in serialNumbers)
                             {
                                 PendingAirdropId pendingAirdropId = new PendingAirdropId(AccountId.FromString(senderAccountId), AccountId.FromString(receiverAccountId), new NftId(TokenId.FromString(tokenId), long.Parse(serialNumber)));
-                                transaction.PendingAirdropIds.Add(pendingAirdropId);
+                                transaction.PendingAirdropIds.Operate(_ => _.Add(pendingAirdropId));
                             }
                         }
                         else
                         {
                             PendingAirdropId pendingAirdropId = new PendingAirdropId(AccountId.FromString(senderAccountId), AccountId.FromString(receiverAccountId), TokenId.FromString(tokenId));
-                            transaction.PendingAirdropIds.Add(pendingAirdropId);
+                            transaction.PendingAirdropIds.Operate(_ => _.Add(pendingAirdropId));
                         }
                     }
                 }
@@ -1072,13 +1071,13 @@ namespace Hedera.Hashgraph.TCK.Util
                     foreach (string serialNumber in serialNumbers)
                     {
                         PendingAirdropId pendingAirdropId = new PendingAirdropId(AccountId.FromString(senderAccountId), AccountId.FromString(receiverAccountId), new NftId(TokenId.FromString(tokenId), long.Parse(serialNumber)));
-                        transaction.PendingAirdropIds.Add(pendingAirdropId);
+                        transaction.PendingAirdropIds.Operate(_ => _.Add(pendingAirdropId));
                     }
                 }
                 else
                 {
                     PendingAirdropId pendingAirdropId = new PendingAirdropId(AccountId.FromString(senderAccountId), AccountId.FromString(receiverAccountId), TokenId.FromString(tokenId));
-                    transaction.PendingAirdropIds.Add(pendingAirdropId);
+                    transaction.PendingAirdropIds.Operate(_ => _.Add(pendingAirdropId));
                 }
 
                 return transaction;
@@ -1466,7 +1465,7 @@ namespace Hedera.Hashgraph.TCK.Util
                             }
                             sdkCustomFeeLimit.CustomFees = [.. sdkFixedFees];
                         }
-                        transaction.CustomFeeLimits.Add(sdkCustomFeeLimit);
+                        transaction.CustomFeeLimits.Operate(_ => _.Add(sdkCustomFeeLimit));
                     }
                 }
                 return transaction;

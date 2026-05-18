@@ -2,11 +2,19 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<LangVersion>14</LangVersion>
-		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
+		<LangVersion>14</LangVersion>
 		<Nullable>enable</Nullable>
+		<TargetFramework>net10.0</TargetFramework>
+		<RestoreAdditionalProjectSources>$(MSBuildProjectDirectory)\..\..\sdk-package</RestoreAdditionalProjectSources>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Hedera.Hashgraph" Version="*" />
+		<PackageReference Include="Hedera.Hashgraph.Proto" Version="*" />
+		<PackageReference Include="Hedera.Hashgraph.Reference" Version="*" />
+		<PackageReference Include="Hedera.Hashgraph.SDK" Version="*" />
+	</ItemGroup>
 
 	<ItemGroup>
 	  <Compile Remove="src\server\**" />
@@ -18,10 +26,6 @@
 	<ItemGroup>
 	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
 	  <PackageReference Include="StreamJsonRpc" Version="2.24.84" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\Hedera.Hashgraph.SDK\Hedera.Hashgraph.SDK.csproj" />
 	</ItemGroup>
 
 </Project>
