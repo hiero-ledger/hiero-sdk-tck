@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.TCK.Util;
-using Hedera.Hashgraph.TCK.Tests.TokenService.Params;
-using Hedera.Hashgraph.TCK.Tests.TokenService.Responses;
+using Hiero.SDK;
+using Hiero.SDK.Nfts;
+using Hiero.TCK.Util;
+using Hiero.TCK.Tests.TokenService.Params;
+using Hiero.TCK.Tests.TokenService.Responses;
 
 using System.Collections.Generic;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Hedera.Hashgraph.TCK.Tests.TokenService
+namespace Hiero.TCK.Tests.TokenService
 {
     public partial class TokenService 
     {

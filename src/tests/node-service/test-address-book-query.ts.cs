@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.File;
-using Hedera.Hashgraph.SDK.Networking;
-using Hedera.Hashgraph.TCK.Tests.NodeService.Params;
-using Hedera.Hashgraph.TCK.Tests.NodeService.Responses;
+using Hiero.SDK;
+using Hiero.SDK.File;
+using Hiero.SDK.Networking;
+using Hiero.TCK.Tests.NodeService.Params;
+using Hiero.TCK.Tests.NodeService.Responses;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService
+namespace Hiero.TCK.Tests.NodeService
 {
     public partial class TestAddress
     {

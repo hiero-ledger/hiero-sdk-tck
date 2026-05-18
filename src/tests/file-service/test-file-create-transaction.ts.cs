@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Tests.FileService.Params;
-using Hedera.Hashgraph.TCK.Tests.FileService.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Tests.FileService.Params;
+using Hiero.TCK.Tests.FileService.Responses;
+using Hiero.TCK.Util;
 
-namespace Hedera.Hashgraph.TCK.Tests.FileService
+namespace Hiero.TCK.Tests.FileService
 {
     public partial class TestFile 
     {

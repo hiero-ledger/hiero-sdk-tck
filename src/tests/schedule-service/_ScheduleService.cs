@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System;
 
-namespace Hedera.Hashgraph.TCK.Tests.ScheduleService
+namespace Hiero.TCK.Tests.ScheduleService
 {
     public class ScheduleService : Service
     {

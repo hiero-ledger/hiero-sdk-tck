@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.TCK.Tests.NodeService.Responses;
+using Hiero.SDK;
+using Hiero.TCK.Tests.NodeService.Responses;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService.Params
+namespace Hiero.TCK.Tests.NodeService.Params
 {
     public class ServiceEndpointParams : Parameters
     {

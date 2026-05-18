@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService.Responses
+namespace Hiero.TCK.Tests.CryptoService.Responses
 {
     public class GetAccountInfoResponse(
         string? accountId,

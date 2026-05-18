@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService.Responses
+namespace Hiero.TCK.Tests.NodeService.Responses
 {
     public class AddressBookResponse
     {

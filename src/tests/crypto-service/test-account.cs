@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.LiveHashes;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Responses;
+using Hiero.SDK;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Token;
+using Hiero.SDK.Nfts;
+using Hiero.SDK.LiveHashes;
+using Hiero.TCK.Tests.CryptoService.Responses;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService
+namespace Hiero.TCK.Tests.CryptoService
 {
     public partial class TestAccount(SdkService sdkService) : CryptoService(sdkService)
     {

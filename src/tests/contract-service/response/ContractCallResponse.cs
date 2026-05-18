@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Contract;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
+using Hiero.SDK;
+using Hiero.SDK.Contract;
+using Hiero.SDK.Cryptocurrency;
 
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.ContractService.Responses
+namespace Hiero.TCK.Tests.ContractService.Responses
 {
     public class ContractCallResponse(
         string? contractId,

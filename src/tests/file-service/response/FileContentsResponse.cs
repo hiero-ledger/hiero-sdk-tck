@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-namespace Hedera.Hashgraph.TCK.Tests.FileService.Responses
+namespace Hiero.TCK.Tests.FileService.Responses
 {
     public class FileContentsResponse(string? contents)
     {

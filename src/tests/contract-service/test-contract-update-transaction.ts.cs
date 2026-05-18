@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 using Google.Protobuf;
 
-using Hedera.Hashgraph.SDK.Contract;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.TCK.Tests.ContractService.Params;
-using Hedera.Hashgraph.TCK.Tests.ContractService.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK.Contract;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.TCK.Tests.ContractService.Params;
+using Hiero.TCK.Tests.ContractService.Responses;
+using Hiero.TCK.Util;
 
 using System;
 
-namespace Hedera.Hashgraph.TCK.Tests.ContractService
+namespace Hiero.TCK.Tests.ContractService
 {
     public partial class TestContract 
     {

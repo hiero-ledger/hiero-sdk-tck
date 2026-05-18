@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK.Consensus;
-using Hedera.Hashgraph.SDK.Fee;
-using Hedera.Hashgraph.TCK.Tests.TopicService.Responses;
+using Hiero.SDK.Consensus;
+using Hiero.SDK.Fee;
+using Hiero.TCK.Tests.TopicService.Responses;
 
 using System;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.TopicService
+namespace Hiero.TCK.Tests.TopicService
 {
     public class TopicService : Service
     {

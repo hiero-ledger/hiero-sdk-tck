@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK.Token;
+using Hiero.SDK.Token;
 
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService.Responses
+namespace Hiero.TCK.Tests.CryptoService.Responses
 {
     public class AccountBalanceResponse(
         string? hbars,

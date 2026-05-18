@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK.Core;
-using Hedera.Hashgraph.SDK.Schedule;
-using Hedera.Hashgraph.TCK.Tests.ScheduleService.Params;
-using Hedera.Hashgraph.TCK.Tests.ScheduleService.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK.Core;
+using Hiero.SDK.Schedule;
+using Hiero.TCK.Tests.ScheduleService.Params;
+using Hiero.TCK.Tests.ScheduleService.Responses;
+using Hiero.TCK.Util;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.ScheduleService
+namespace Hiero.TCK.Tests.ScheduleService
 {
     public partial class TestSchedule(SdkService sdkService) : ScheduleService(sdkService)
     {

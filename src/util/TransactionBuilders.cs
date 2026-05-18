@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 using Google.Protobuf;
 
-using Hedera.Hashgraph.Reference;
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Airdrops;
-using Hedera.Hashgraph.SDK.Consensus;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Cryptography;
-using Hedera.Hashgraph.SDK.Ethereum;
-using Hedera.Hashgraph.SDK.File;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.SDK.Transactions;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
-using Hedera.Hashgraph.TCK.Tests.Ethereum.Params;
-using Hedera.Hashgraph.TCK.Tests.FileService.Params;
-using Hedera.Hashgraph.TCK.Tests.TokenService.Params;
-using Hedera.Hashgraph.TCK.Tests.TopicService.Params;
+using Hiero.Reference;
+using Hiero.SDK;
+using Hiero.SDK.Airdrops;
+using Hiero.SDK.Consensus;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Cryptography;
+using Hiero.SDK.Ethereum;
+using Hiero.SDK.File;
+using Hiero.SDK.Nfts;
+using Hiero.SDK.Token;
+using Hiero.SDK.Transactions;
+using Hiero.TCK.Tests.CryptoService.Params;
+using Hiero.TCK.Tests.Ethereum.Params;
+using Hiero.TCK.Tests.FileService.Params;
+using Hiero.TCK.Tests.TokenService.Params;
+using Hiero.TCK.Tests.TopicService.Params;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     public class TransactionBuilders
     {

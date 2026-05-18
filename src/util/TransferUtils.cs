@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Ethereum;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.SDK.Transactions;
-using Hedera.Hashgraph.TCK.Exceptions;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
+using Hiero.SDK;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Ethereum;
+using Hiero.SDK.Nfts;
+using Hiero.SDK.Token;
+using Hiero.SDK.Transactions;
+using Hiero.TCK.Exceptions;
+using Hiero.TCK.Tests.CryptoService.Params;
 using System;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     public class TransferUtils
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService.Params
+namespace Hiero.TCK.Tests.CryptoService.Params
 {
     public class TransferCryptoParams : Parameters
     {

@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Builder;
 
 using StreamJsonRpc;
 
-using Hedera.Hashgraph.TCK.Config;
+using Hiero.TCK.Config;
 
-namespace Hedera.Hashgraph.TCK.Controller
+namespace Hiero.TCK.Controller
 {
     public class JsonRpcMiddleware
     {

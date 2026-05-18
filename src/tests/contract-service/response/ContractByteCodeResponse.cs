@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-namespace Hedera.Hashgraph.TCK.Tests.ContractService.Responses
+namespace Hiero.TCK.Tests.ContractService.Responses
 {
     public class ContractByteCodeResponse(string? contractId, string? bytecode)
     {                                             

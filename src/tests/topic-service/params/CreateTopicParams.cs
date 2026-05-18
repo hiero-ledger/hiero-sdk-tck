@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Util;
 
-using Hedera.Hashgraph.SDK.Fee;
+using Hiero.SDK.Fee;
 
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.TopicService.Params
+namespace Hiero.TCK.Tests.TopicService.Params
 {
     public class CreateTopicParams : Parameters
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService.Params
+namespace Hiero.TCK.Tests.NodeService.Params
 {
     public class NodeUpdateParams : Parameters
     {

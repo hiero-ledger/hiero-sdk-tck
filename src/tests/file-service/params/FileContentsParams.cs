@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.FileService.Params
+namespace Hiero.TCK.Tests.FileService.Params
 {
     public class FileContentsParams : Parameters
     {

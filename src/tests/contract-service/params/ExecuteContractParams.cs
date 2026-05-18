@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.ContractService.Params
+namespace Hiero.TCK.Tests.ContractService.Params
 {
     public class ExecuteContractParams : Parameters
     {

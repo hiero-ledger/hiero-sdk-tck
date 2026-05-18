@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Core;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Cryptography;
-using Hedera.Hashgraph.SDK.Fee;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK;
+using Hiero.SDK.Core;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Cryptography;
+using Hiero.SDK.Fee;
+using Hiero.SDK.Token;
+using Hiero.TCK.Util;
 using Org.BouncyCastle.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json.Nodes;
-using static Hedera.Hashgraph.TCK.Util.KeyUtils;
+using static Hiero.TCK.Util.KeyUtils;
 
-namespace Hedera.Hashgraph.TCK.Tests
+namespace Hiero.TCK.Tests
 {
     public abstract class Parameters(Dictionary<string, object> parameters)
     {

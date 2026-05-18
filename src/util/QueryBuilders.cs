@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Consensus;
-using Hedera.Hashgraph.SDK.Contract;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.File;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.Schedule;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.TCK.Tests.ContractService.Params;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
-using Hedera.Hashgraph.TCK.Tests.FileService.Params;
-using Hedera.Hashgraph.TCK.Tests.ScheduleService.Params;
-using Hedera.Hashgraph.TCK.Tests.TokenService.Params;
-using Hedera.Hashgraph.TCK.Tests.TopicService.Params;
+using Hiero.SDK;
+using Hiero.SDK.Consensus;
+using Hiero.SDK.Contract;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.File;
+using Hiero.SDK.Nfts;
+using Hiero.SDK.Schedule;
+using Hiero.SDK.Token;
+using Hiero.TCK.Tests.ContractService.Params;
+using Hiero.TCK.Tests.CryptoService.Params;
+using Hiero.TCK.Tests.FileService.Params;
+using Hiero.TCK.Tests.ScheduleService.Params;
+using Hiero.TCK.Tests.TokenService.Params;
+using Hiero.TCK.Tests.TopicService.Params;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
 using System;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     public class QueryBuilders
     {

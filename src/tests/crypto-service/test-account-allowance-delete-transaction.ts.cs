@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Core;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK;
+using Hiero.SDK.Core;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.TCK.Tests.CryptoService.Params;
+using Hiero.TCK.Tests.CryptoService.Responses;
+using Hiero.TCK.Util;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService
+namespace Hiero.TCK.Tests.CryptoService
 {
     public partial class TestAccount 
     {

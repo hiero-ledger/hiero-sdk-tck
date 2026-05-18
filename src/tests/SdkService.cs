@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.Reference.Core;
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Cryptography;
+using Hiero.Reference.Core;
+using Hiero.SDK;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Cryptography;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests
+namespace Hiero.TCK.Tests
 {
     /// <summary>
     /// SdkService for managing the {@link Client} setup and reset

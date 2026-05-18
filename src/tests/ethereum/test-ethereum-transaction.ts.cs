@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Core;
-using Hedera.Hashgraph.SDK.Ethereum;
-using Hedera.Hashgraph.TCK.Tests.Ethereum.Params;
-using Hedera.Hashgraph.TCK.Tests.Ethereum.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK;
+using Hiero.SDK.Core;
+using Hiero.SDK.Ethereum;
+using Hiero.TCK.Tests.Ethereum.Params;
+using Hiero.TCK.Tests.Ethereum.Responses;
+using Hiero.TCK.Util;
 
-namespace Hedera.Hashgraph.TCK.Tests.Ethereum
+namespace Hiero.TCK.Tests.Ethereum
 {
     public partial class TestEthereum 
     {

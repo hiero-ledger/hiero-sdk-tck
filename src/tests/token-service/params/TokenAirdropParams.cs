@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
+using Hiero.TCK.Tests.CryptoService.Params;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.TokenService.Params
+namespace Hiero.TCK.Tests.TokenService.Params
 {
     public class TokenAirdropParams : Parameters
     {

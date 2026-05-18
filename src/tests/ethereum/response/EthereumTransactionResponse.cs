@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-namespace Hedera.Hashgraph.TCK.Tests.Ethereum.Responses
+namespace Hiero.TCK.Tests.Ethereum.Responses
 {
     public class EthereumTransactionResponse(string? status, string? contractId)
     {

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Util;
 
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Consensus;
-using Hedera.Hashgraph.TCK.Tests.TopicService.Params;
-using Hedera.Hashgraph.TCK.Tests.TopicService.Responses;
-using Hedera.Hashgraph.SDK.Core;
+using Hiero.SDK;
+using Hiero.SDK.Consensus;
+using Hiero.TCK.Tests.TopicService.Params;
+using Hiero.TCK.Tests.TopicService.Responses;
+using Hiero.SDK.Core;
 
-namespace Hedera.Hashgraph.TCK.Tests.TopicService
+namespace Hiero.TCK.Tests.TopicService
 {
     public partial class TestTopic
     {

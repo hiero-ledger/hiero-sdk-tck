@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Util;
 
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.TokenService.Params
+namespace Hiero.TCK.Tests.TokenService.Params
 {
     public class AssociateDisassociateTokenParams : Parameters
     {

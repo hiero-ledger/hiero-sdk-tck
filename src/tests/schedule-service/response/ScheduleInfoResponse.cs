@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.ScheduleService.Responses
+namespace Hiero.TCK.Tests.ScheduleService.Responses
 {
     public class ScheduleInfoResponse
     {

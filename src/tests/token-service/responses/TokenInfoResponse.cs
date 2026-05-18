@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK.Fee;
-using Hedera.Hashgraph.SDK.Token;
+using Hiero.SDK.Fee;
+using Hiero.SDK.Token;
 
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.TokenService.Responses
+namespace Hiero.TCK.Tests.TokenService.Responses
 {
     public class TokenInfoResponse
     {

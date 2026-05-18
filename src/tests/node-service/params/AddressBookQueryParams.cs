@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService.Params
+namespace Hiero.TCK.Tests.NodeService.Params
 {
     public class AddressBookQueryParams : Parameters
     {

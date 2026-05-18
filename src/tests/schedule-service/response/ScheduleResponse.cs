@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
+using Hiero.SDK;
 
-namespace Hedera.Hashgraph.TCK.Tests.ScheduleService.Responses
+namespace Hiero.TCK.Tests.ScheduleService.Responses
 {
     public class ScheduleResponse(string scheduleId, string transactionId, ResponseStatus status)
     {

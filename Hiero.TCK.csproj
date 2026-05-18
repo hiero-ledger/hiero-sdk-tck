@@ -10,10 +10,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Hedera.Hashgraph" Version="*" />
-		<PackageReference Include="Hedera.Hashgraph.Proto" Version="*" />
-		<PackageReference Include="Hedera.Hashgraph.Reference" Version="*" />
-		<PackageReference Include="Hedera.Hashgraph.SDK" Version="*" />
+		<PackageReference Include="Hiero" Version="0.0.0" />
+		<PackageReference Include="Hiero.Proto" Version="0.0.0" />
+		<PackageReference Include="Hiero.Reference" Version="0.0.0" />
+		<PackageReference Include="Hiero.SDK" Version="0.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

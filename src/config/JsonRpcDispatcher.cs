@@ -10,16 +10,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 using StreamJsonRpc;
 
-using Hedera.Hashgraph.TCK.Tests;
-using Hedera.Hashgraph.TCK.Tests.CryptoService;
-using Hedera.Hashgraph.TCK.Tests.TokenService;
-using Hedera.Hashgraph.TCK.Tests.ContractService;
-using Hedera.Hashgraph.TCK.Tests.FileService;
-using Hedera.Hashgraph.TCK.Tests.TopicService;
-using Hedera.Hashgraph.TCK.Tests.ScheduleService;
-using Hedera.Hashgraph.TCK.Tests.NodeService;
+using Hiero.TCK.Tests;
+using Hiero.TCK.Tests.CryptoService;
+using Hiero.TCK.Tests.TokenService;
+using Hiero.TCK.Tests.ContractService;
+using Hiero.TCK.Tests.FileService;
+using Hiero.TCK.Tests.TopicService;
+using Hiero.TCK.Tests.ScheduleService;
+using Hiero.TCK.Tests.NodeService;
 
-namespace Hedera.Hashgraph.TCK.Config
+namespace Hiero.TCK.Config
 {
     public class JsonRpcServiceHandler
     {

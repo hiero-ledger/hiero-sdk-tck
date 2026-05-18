@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Hedera.Hashgraph.TCK.Exceptions;
+using Hiero.TCK.Exceptions;
 
-namespace Hedera.Hashgraph.TCK.Tests
+namespace Hiero.TCK.Tests
 {
     public abstract class Service  
     {

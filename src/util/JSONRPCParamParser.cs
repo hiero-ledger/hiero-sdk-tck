@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Tests;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
+using Hiero.TCK.Tests;
+using Hiero.TCK.Tests.CryptoService.Params;
 
 using System;
 using System.Collections.Generic;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     public class JSONRPCParamParser
     {

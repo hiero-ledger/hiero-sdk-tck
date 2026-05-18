@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Nfts;
-using Hedera.Hashgraph.SDK.Token;
-using Hedera.Hashgraph.TCK.Exceptions;
-using Hedera.Hashgraph.TCK.Tests.CryptoService.Params;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Nfts;
+using Hiero.SDK.Token;
+using Hiero.TCK.Exceptions;
+using Hiero.TCK.Tests.CryptoService.Params;
 using System;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     // Utility class for handling airdrop parameters
     public class AirdropUtils

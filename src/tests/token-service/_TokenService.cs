@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
+using Hiero.SDK;
 
-namespace Hedera.Hashgraph.TCK.Tests.TokenService
+namespace Hiero.TCK.Tests.TokenService
 {
     public partial class TokenService : Service
     {

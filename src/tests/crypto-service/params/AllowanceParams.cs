@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.CryptoService.Params
+namespace Hiero.TCK.Tests.CryptoService.Params
 {
     public class AllowanceParams : Parameters
     {

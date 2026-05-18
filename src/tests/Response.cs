@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-namespace Hedera.Hashgraph.TCK.Tests
+namespace Hiero.TCK.Tests
 {
     public class SetupResponse
     {

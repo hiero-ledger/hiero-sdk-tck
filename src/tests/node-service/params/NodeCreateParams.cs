@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.TCK.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService.Params
+namespace Hiero.TCK.Tests.NodeService.Params
 {
     public class NodeCreateParams : Parameters
     {

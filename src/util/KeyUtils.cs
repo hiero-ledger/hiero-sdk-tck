@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 using Google.Protobuf;
-using Hedera.Hashgraph.SDK.Cryptography;
+using Hiero.SDK.Cryptography;
 using System;
 
-namespace Hedera.Hashgraph.TCK.Util
+namespace Hiero.TCK.Util
 {
     public sealed class KeyUtils
     {

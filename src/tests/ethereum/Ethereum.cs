@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-namespace Hedera.Hashgraph.TCK.Tests.Ethereum
+namespace Hiero.TCK.Tests.Ethereum
 {
     public class Ethereum : Service
     {

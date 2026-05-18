@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 using System;
 
-namespace Hedera.Hashgraph.TCK.Tests.FileService
+namespace Hiero.TCK.Tests.FileService
 {
     public class FileService : Service
     {

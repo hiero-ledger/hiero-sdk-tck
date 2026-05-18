@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
-using Hedera.Hashgraph.SDK;
-using Hedera.Hashgraph.SDK.Core;
-using Hedera.Hashgraph.SDK.Cryptocurrency;
-using Hedera.Hashgraph.SDK.Networking;
-using Hedera.Hashgraph.TCK.Tests.NodeService.Params;
-using Hedera.Hashgraph.TCK.Tests.NodeService.Responses;
-using Hedera.Hashgraph.TCK.Util;
+using Hiero.SDK;
+using Hiero.SDK.Core;
+using Hiero.SDK.Cryptocurrency;
+using Hiero.SDK.Networking;
+using Hiero.TCK.Tests.NodeService.Params;
+using Hiero.TCK.Tests.NodeService.Responses;
+using Hiero.TCK.Util;
 
 using Org.BouncyCastle.Utilities.Encoders;
 
 using System.Linq;
 
-namespace Hedera.Hashgraph.TCK.Tests.NodeService
+namespace Hiero.TCK.Tests.NodeService
 {
     public partial class TestNode 
     {
