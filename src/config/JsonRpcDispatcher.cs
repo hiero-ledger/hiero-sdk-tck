@@ -6,10 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
-
-using StreamJsonRpc;
-
 using Hiero.TCK.Tests;
 using Hiero.TCK.Tests.CryptoService;
 using Hiero.TCK.Tests.TokenService;

@@ -25,7 +25,6 @@
 
 	<ItemGroup>
 	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
-	  <PackageReference Include="StreamJsonRpc" Version="2.24.84" />
 	</ItemGroup>
 
 </Project>

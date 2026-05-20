@@ -2,12 +2,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
-
-using StreamJsonRpc;
 
 using Hiero.TCK.Config;
 
@@ -41,7 +38,7 @@ namespace Hiero.TCK.Controller
                     await context.Response.WriteAsync(result);
                     return;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     context.Response.ContentType = "application/json";
                     context.Response.StatusCode = 200;
