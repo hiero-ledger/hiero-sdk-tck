@@ -992,5 +992,85 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
+  describe("High Volume (HIP-1313)", async function () {
+    const verifyAccountCreated = async (accountId: string) => {
+      expect((await consensusInfoClient.getAccountInfo(accountId)).isDeleted).to
+        .be.false;
+      expect((await mirrorNodeClient.getAccountData(accountId)).deleted).to.be
+        .false;
+    };
+
+    it("(#1) Creates an account with commonTransactionParams.highVolume=true", async function () {
+      const key = await generateEd25519PublicKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+        commonTransactionParams: {
+          highVolume: true,
+        },
+      });
+
+      await verifyAccountCreated(response.accountId);
+    });
+
+    it("(#2) Creates an account with commonTransactionParams.highVolume=false", async function () {
+      const key = await generateEd25519PublicKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+        commonTransactionParams: {
+          highVolume: false,
+        },
+      });
+
+      await verifyAccountCreated(response.accountId);
+    });
+
+    it("(#3) Omitting highVolume behaves identically to false", async function () {
+      const key = await generateEd25519PublicKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+      });
+
+      await verifyAccountCreated(response.accountId);
+    });
+
+    it("(#4) highVolume=true with a sufficient maxTransactionFee", async function () {
+      const key = await generateEd25519PublicKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+        commonTransactionParams: {
+          highVolume: true,
+          // 10 hbar in tinybars; comfortably above the standard or
+          // high-volume-multiplied AccountCreate fee on local + mainnet.
+          maxTransactionFee: 1000000000,
+        },
+      });
+
+      await verifyAccountCreated(response.accountId);
+    });
+
+    it("(#5) highVolume=true with an insufficient maxTransactionFee", async function () {
+      const key = await generateEd25519PublicKey(this);
+
+      try {
+        await JSONRPCRequest(this, "createAccount", {
+          key,
+          commonTransactionParams: {
+            highVolume: true,
+            maxTransactionFee: 1,
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INSUFFICIENT_TX_FEE");
+        return;
+      }
+
+      assert.fail("Should throw an INSUFFICIENT_TX_FEE error");
+    });
+  });
+
   return Promise.resolve();
 });
