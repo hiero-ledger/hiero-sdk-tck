@@ -1001,7 +1001,7 @@ describe("AccountCreateTransaction", function () {
     };
 
     it("(#1) Creates an account with commonTransactionParams.highVolume=true", async function () {
-      const key = await generateEd25519PublicKey(this);
+      const key = await generateEd25519PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createAccount", {
         key,
@@ -1014,7 +1014,7 @@ describe("AccountCreateTransaction", function () {
     });
 
     it("(#2) Creates an account with commonTransactionParams.highVolume=false", async function () {
-      const key = await generateEd25519PublicKey(this);
+      const key = await generateEd25519PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createAccount", {
         key,
@@ -1027,7 +1027,7 @@ describe("AccountCreateTransaction", function () {
     });
 
     it("(#3) Omitting highVolume behaves identically to false", async function () {
-      const key = await generateEd25519PublicKey(this);
+      const key = await generateEd25519PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createAccount", {
         key,
@@ -1037,7 +1037,7 @@ describe("AccountCreateTransaction", function () {
     });
 
     it("(#4) highVolume=true with a sufficient maxTransactionFee", async function () {
-      const key = await generateEd25519PublicKey(this);
+      const key = await generateEd25519PrivateKey(this);
 
       const response = await JSONRPCRequest(this, "createAccount", {
         key,
@@ -1053,7 +1053,20 @@ describe("AccountCreateTransaction", function () {
     });
 
     it("(#5) highVolume=true with an insufficient maxTransactionFee", async function () {
-      const key = await generateEd25519PublicKey(this);
+      // Use a freshly-created non-treasury payer so fee enforcement applies
+      // deterministically. Some CI workflows hardcode the operator to the
+      // genesis treasury (0.0.2), which is exempt from fee checks; that
+      // exemption would mask INSUFFICIENT_TX_FEE if we paid from the operator.
+      const payerKey = await generateEd25519PrivateKey(this);
+      const payerResponse = await JSONRPCRequest(this, "createAccount", {
+        key: payerKey,
+        // 10 hbar -- plenty for a base AccountCreate fee, but small enough
+        // that we don't tie up operator balance unnecessarily.
+        initialBalance: "1000000000",
+      });
+      const payerId = payerResponse.accountId;
+
+      const key = await generateEd25519PrivateKey(this);
 
       try {
         await JSONRPCRequest(this, "createAccount", {
@@ -1061,6 +1074,8 @@ describe("AccountCreateTransaction", function () {
           commonTransactionParams: {
             highVolume: true,
             maxTransactionFee: 1,
+            transactionId: payerId,
+            signers: [payerKey],
           },
         });
       } catch (err: any) {
