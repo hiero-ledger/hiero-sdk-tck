@@ -104,12 +104,12 @@ jobs:
         run: mkdir -p "${{ github.workspace }}/b/vcpkg_cache"
 
       - name: Install CMake & Ninja
-        uses: lukka/get-cmake@2ecc21724e5215b0e567bc399a2602d2ecb48541 # v4.02
+        uses: step-security/get-cmake@16c2bcb98b44e2c3a92d9474f8fd6f038d42de03 # v4.3.2
         with:
           useCloudCache: true
 
       - name: Setup VCPkg
-        uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
+        uses: step-security/run-vcpkg@f4f81d0f70f2e65432e7040c9677ce85e996d8b9 # v11.5.3
         with:
           binaryCachePath: ${{ github.workspace }}/b/vcpkg_cache
           vcpkgDirectory: ${{ github.workspace }}/sdk-server/vcpkg
