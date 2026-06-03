@@ -22,10 +22,10 @@
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--import=tsx mocha --parallel",
     "test:file": "cross-env NODE_OPTIONS=--import=tsx mocha --reporter mochawesome --exit",
+    "test:serial": "cross-env NODE_OPTIONS=--import=tsx mocha",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
-    "lint": "eslint .",
-    "test:serial": "cross-env NODE_OPTIONS=--import=tsx mocha"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/chai": "^5.2.2",
