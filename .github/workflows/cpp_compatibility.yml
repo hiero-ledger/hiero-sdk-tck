@@ -12,9 +12,10 @@ on:
         required: false
         type: string
       solo-version:
-        description: "The version of the Solo to use(defaults to 0.38.0 if not specified):"
+        description: "The version of the Solo to use (defaults to 0.69.0 if not specified):"
         required: false
         type: string
+        default: "0.69.0"
       consensus-node-version:
         description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
         required: false
@@ -33,6 +34,7 @@ on:
         description: "The version of the Solo to use"
         required: false
         type: string
+        default: "0.69.0"
       consensus-node-version:
         description: "The version of the consensus node to use"
         required: false
@@ -102,12 +104,12 @@ jobs:
         run: mkdir -p "${{ github.workspace }}/b/vcpkg_cache"
 
       - name: Install CMake & Ninja
-        uses: lukka/get-cmake@2ecc21724e5215b0e567bc399a2602d2ecb48541 # v4.02
+        uses: step-security/get-cmake@16c2bcb98b44e2c3a92d9474f8fd6f038d42de03 # v4.3.2
         with:
           useCloudCache: true
 
       - name: Setup VCPkg
-        uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
+        uses: step-security/run-vcpkg@f4f81d0f70f2e65432e7040c9677ce85e996d8b9 # v11.5.3
         with:
           binaryCachePath: ${{ github.workspace }}/b/vcpkg_cache
           vcpkgDirectory: ${{ github.workspace }}/sdk-server/vcpkg
@@ -184,13 +186,13 @@ jobs:
           echo "Latest consensus node tag: $LATEST_TAG"
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-        # Prepare Hiero Solo
+      # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # v0.16.0
+        uses: hiero-ledger/hiero-solo-action@328bc84c3b00a990a151418144fd682a4eb76ea6 # v0.19.0
         with:
           installMirrorNode: true
-          soloVersion: ${{ inputs.solo-version || '0.38.0' }}
+          soloVersion: ${{ inputs.solo-version || '0.69.0' }}
           mirrorNodeVersion: v0.138.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
 
