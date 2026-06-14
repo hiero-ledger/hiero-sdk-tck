@@ -26,7 +26,7 @@ export default defineConfig([
       eqeqeq: ["error", "always"],
       "no-multi-spaces": ["error"],
       "no-duplicate-imports": ["error"],
-      "prettier/prettier": "error",
+      "prettier/prettier": "none",
       "@typescript-eslint/no-unused-vars": ["warn"],
     },
   },

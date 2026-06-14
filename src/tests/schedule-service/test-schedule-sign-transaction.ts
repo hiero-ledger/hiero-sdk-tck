@@ -424,7 +424,7 @@ describe("ScheduleSignTransaction", function () {
     const transactionReceipt =
       await consensusInfoClient.getTransactionReceipt(transactionId);
     expect(transactionReceipt).to.not.be.null;
-    expect(transactionReceipt.status.toString()).to.equal(expectedStatus);
+    expect(transactionReceipt.Status.toString()).to.equal(expectedStatus);
   };
 
   describe("Schedule ID", function () {

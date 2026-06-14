@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "version": "0.11.0",
   "dependencies": {
     "@hashgraph/sdk": "^2.73.1",
@@ -23,8 +24,7 @@
     "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --reporter mochawesome --exit",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
-    "lint": "eslint .",
-    "test:serial": "mocha --require ts-node/register --require tsconfig-paths/register --recursive 'src/tests/**/*.ts' --reporter mochawesome --exit"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/chai": "^5.2.2",
@@ -35,6 +35,7 @@
     "@types/node": "^22.15.26",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.36.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-define-config": "^2.1.0",
@@ -45,6 +46,7 @@
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3"
   }
 }

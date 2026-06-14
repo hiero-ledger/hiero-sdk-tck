@@ -1,0 +1,9 @@
+{
+  "extensions": ["ts"],
+  "spec": ["src/tests/**/*.ts"],
+  "reporter": "mochawesome",
+  "exit": true,
+  "timeout": 30000
+}
+
+

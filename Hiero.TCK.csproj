@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<LangVersion>14</LangVersion>
+		<Nullable>enable</Nullable>
+		<TargetFramework>net10.0</TargetFramework>
+		<RestoreAdditionalProjectSources>$(MSBuildProjectDirectory)\..\..\sdk-package</RestoreAdditionalProjectSources>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Hiero" Version="0.0.0" />
+		<PackageReference Include="Hiero.Proto" Version="0.0.0" />
+		<PackageReference Include="Hiero.Reference" Version="0.0.0" />
+		<PackageReference Include="Hiero.SDK" Version="0.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="src\server\**" />
+	  <EmbeddedResource Remove="src\server\**" />
+	  <None Remove="src\server\**" />
+	  <None Remove="node_modules" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+</Project>

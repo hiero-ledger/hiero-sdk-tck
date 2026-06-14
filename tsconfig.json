@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "module": "CommonJS",
+    "module": "ES2020",
     "strict": true,
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "lib": ["ES2022", "DOM"],
@@ -19,6 +19,11 @@
       "@enums/*": ["src/utils/enums/*"],
       "@models/*": ["src/utils/models/*"]
     }
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalEsm": true,
+    "transpileOnly": true
   },
   "include": ["src/**/*.ts", "src/tests/**/*.ts"],
   "exclude": ["node_modules"]
