@@ -5,7 +5,7 @@ import {
   AccountInfo,
   AccountInfoQuery,
   AddressBookQuery,
-  Client,
+  Client as HGraphClient,
   ContractCallQuery,
   ContractFunctionParameters,
   ContractFunctionResult,
@@ -33,29 +33,50 @@ import {
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
-  sdkClient;
+  sdkClient: HGraphClient;
   constructor() {
-    if (process.env.NODE_IP && process.env.NODE_ACCOUNT_ID) {
+    const network = (process.env.NETWORK ?? "testnet").toLowerCase();
+
+    const trySetMirrorNetwork = (client: unknown, mirror: string[]) => {
+      if (client && typeof (client as any).setMirrorNetwork === "function") {
+        ;(client as any).setMirrorNetwork(mirror);
+      }
+    };
+
+    if (network === "local") {
+      // Preserve local-node behavior for existing local workflows.
+      this.sdkClient = HGraphClient.forLocalNode();
+      trySetMirrorNetwork(this.sdkClient, ["127.0.0.1:5600"]);
+    } else if (network === "custom") {
+      if (!process.env.NODE_IP || !process.env.NODE_ACCOUNT_ID) {
+        throw new Error(
+          "NETWORK=custom requires NODE_IP and NODE_ACCOUNT_ID to be set",
+        );
+      }
+
       const node = {
         [process.env.NODE_IP]: AccountId.fromString(
           process.env.NODE_ACCOUNT_ID,
         ),
       };
-      this.sdkClient = Client.forNetwork(node);
+      this.sdkClient = HGraphClient.forNetwork(node);
       // Set mirror network for AddressBookQuery support
       // AddressBookQuery requires mirror network to be configured
       if (process.env.MIRROR_NETWORK) {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
           (addr) => addr.trim(),
         );
-        this.sdkClient.setMirrorNetwork(mirrorNetwork);
+        trySetMirrorNetwork(this.sdkClient, mirrorNetwork);
       } else {
         // Default mirror network for local development
-        this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+        trySetMirrorNetwork(this.sdkClient, ["127.0.0.1:5600"]);
       }
+    } else if (network === "testnet") {
+      this.sdkClient = HGraphClient.forTestnet();
     } else {
-      this.sdkClient = Client.forLocalNode();
-      this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      throw new Error(
+        `Unsupported NETWORK value '${network}'. Use testnet, local, or custom.`,
+      );
     }
 
     this.sdkClient.setOperator(
