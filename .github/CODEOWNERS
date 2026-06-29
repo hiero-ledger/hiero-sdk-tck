@@ -1,0 +1,19 @@
+# Default code owners for entire repository
+*                                               @hiero-ledger/hiero-sdk-maintainers @hiero-ledger/hiero-sdk-committers
+
+#########################
+#####  Core Files  ######
+#########################
+
+# NOTE: Must be placed last to ensure enforcement over all other rules
+
+# Protection Rules for Github Configuration Files and Actions Workflows
+/.github/                                       @hiero-ledger/github-maintainers
+/.github/workflows/                             @hiero-ledger/github-maintainers
+
+# Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
+/CODEOWNERS                                     @hiero-ledger/github-maintainers
+
+# Protect the repository root files
+/README.md                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-maintainers @hiero-ledger/hiero-sdk-committers @hiero-ledger/tsc
+**/LICENSE                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-maintainers @hiero-ledger/tsc
