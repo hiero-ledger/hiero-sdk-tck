@@ -109,8 +109,14 @@ class MirrorNodeClient {
   }
 
   async getNodeData(nodeId: string): Promise<NetworkNodesResponse> {
+    // Current mirror node versions serve /api/v1/network/nodes from the rest-java
+    // module; older versions serve it from the rest module. Try rest-java first and
+    // fall back so the TCK works across mirror node versions.
     const url = `${this.mirrorNodeRestJavaUrl}/api/v1/network/nodes?node.id=${nodeId}`;
-    return retryOnError(async () => fetchData(url));
+    const legacyUrl = `${this.mirrorNodeRestUrl}/api/v1/network/nodes?node.id=${nodeId}`;
+    return retryOnError(async () =>
+      fetchData(url).catch(() => fetchData(legacyUrl)),
+    );
   }
 }
 
