@@ -109,7 +109,7 @@ class MirrorNodeClient {
   }
 
   async getNodeData(nodeId: string): Promise<NetworkNodesResponse> {
-    const url = `${this.mirrorNodeRestUrl}/api/v1/network/nodes?node.id=${nodeId}`;
+    const url = `${this.mirrorNodeRestJavaUrl}/api/v1/network/nodes?node.id=${nodeId}`;
     return retryOnError(async () => fetchData(url));
   }
 }

@@ -67,7 +67,7 @@ describe("NodeDeleteTransaction", function () {
       gossipCaCertificate: validGossipCertDER,
       adminKey: adminKey,
       commonTransactionParams: {
-        signers: [adminKey],
+        signers: [adminKey, accountKey],
       },
     };
 
