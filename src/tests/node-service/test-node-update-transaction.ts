@@ -60,7 +60,7 @@ describe("NodeUpdateTransaction", function () {
       gossipCaCertificate: validGossipCertDER,
       adminKey: adminKey,
       commonTransactionParams: {
-        signers: [adminKey],
+        signers: [adminKey, accountKey],
       },
     };
 
