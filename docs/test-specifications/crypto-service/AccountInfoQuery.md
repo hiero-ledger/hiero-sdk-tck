@@ -63,7 +63,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | ledgerId                      | string  | The ID of the ledger from which the response was returned.                                                                                                 |
 | hbarAllowances                | array   | List of hbar allowances approved by this account.                                                                                                          |
 | tokenAllowances               | array   | List of fungible token allowances approved by this account.                                                                                                |
-| YftAllowances                 | array   | List of non-fungible token allowances approved by this account.                                                                                            |
+| nftAllowances                 | array   | List of non-fungible token allowances approved by this account.                                                                                            |
 | ethereumNonce                 | string  | The ethereum transaction nonce associated with this account.                                                                                               |
 | stakingInfo                   | object  | Staking metadata for this account (includes declineStakingReward, stakePeriodStart, pendingReward, stakedToMe, stakedAccountId, stakedNodeId).            |
 
