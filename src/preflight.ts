@@ -12,6 +12,9 @@
  *    into the console output and mochawesome-report/run-info.json, so every
  *    run records what was under test. The same BNCE runs were unknowingly
  *    served by a stale leftover SDK server of unknown version.
+ * 3. Exports a root hook plugin (`mochaHooks`, runs inside each worker) that
+ *    closes the singleton Hashgraph SDK client after each test file, so gRPC
+ *    channels don't accumulate for the lifetime of the worker (#645).
  */
 import "dotenv/config";
 import { lookup } from "node:dns/promises";
@@ -19,6 +22,17 @@ import { Socket } from "node:net";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import axios from "axios";
+
+import consensusInfoClient from "./services/ConsensusInfoClient";
+
+// Root hook plugin: in parallel mode `afterAll` runs after each test file in
+// the worker that ran it; in serial mode it runs once at the end of the run.
+// The client lazily re-creates on next use, so closing between files is safe.
+export const mochaHooks = {
+  async afterAll(): Promise<void> {
+    await consensusInfoClient.close();
+  },
+};
 
 const TIMEOUT_MS = 5000;
 
