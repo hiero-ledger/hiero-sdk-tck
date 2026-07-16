@@ -22,6 +22,7 @@
     "test": "rm -rf mochawesome-report && mocha --parallel --jobs 7 --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "test:ci": "rm -rf mochawesome-report && mkdir -p heap-profiles && mocha --parallel --jobs 7 --node-option max-old-space-size=4096 --node-option heap-prof --node-option heap-prof-dir=heap-profiles --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --require src/preflight.ts --timeout 90000 --slow 30000 --reporter mochawesome --exit",
+    "test:no-node-service": "rm -rf mochawesome-report && mocha --parallel --jobs 7 --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --ignore 'src/tests/node-service/**' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
     "lint": "eslint .",

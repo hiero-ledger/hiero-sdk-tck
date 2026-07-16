@@ -4,6 +4,7 @@ import { assert, expect } from "chai";
 import { JSONRPCRequest } from "@services/Client";
 
 import { setOperator } from "@helpers/setup-tests";
+import { deleteTrackedNodes } from "@helpers/node-registry";
 import {
   generateEd25519PrivateKey,
   generateEcdsaSecp256k1PrivateKey,
@@ -38,6 +39,9 @@ describe("NodeCreateTransaction", function () {
   });
 
   after(async function () {
+    // Delete the real address-book entries this suite created (issue #667),
+    // while the session and its operator are still alive.
+    await deleteTrackedNodes(this);
     await JSONRPCRequest(this, "reset", {
       sessionId: this.sessionId,
     });
