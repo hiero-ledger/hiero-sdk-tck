@@ -984,8 +984,7 @@ describe("ContractCreateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+          "INSUFFICIENT_PAYER_BALANCE",
           "Insufficient payer balance error",
         );
         return;
@@ -1004,8 +1003,7 @@ describe("ContractCreateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          // TODO fail invalid
-          "FAIL_INVALID",
+          "INSUFFICIENT_PAYER_BALANCE",
           "Insufficient payer balance error",
         );
         return;
@@ -1032,8 +1030,7 @@ describe("ContractCreateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+          "INSUFFICIENT_PAYER_BALANCE",
           "Insufficient payer balance error",
         );
         return;
@@ -1052,8 +1049,7 @@ describe("ContractCreateTransaction", function () {
       } catch (err: any) {
         assert.equal(
           err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+          "INSUFFICIENT_PAYER_BALANCE",
           "Insufficient payer balance error",
         );
         return;
