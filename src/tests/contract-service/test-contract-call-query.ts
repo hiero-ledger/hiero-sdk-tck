@@ -183,17 +183,22 @@ describe("ContractCallQuery", function () {
       expect(parseInt(response.gasUsed)).to.be.lessThan(100000);
     });
 
-    it("(#2) Fails to execute contract call query without gas", async function () {
+    it("(#2) Executes contract call query without gas", async function () {
+      // An SDK may auto-estimate gas via the mirror node when it is omitted
+      // (e.g. JS SDK >= 2.86.0) and execute the query successfully; SDKs
+      // without gas estimation submit gas=0 and the network rejects the
+      // query with INSUFFICIENT_GAS.
       try {
-        await JSONRPCRequest(this, "contractCallQuery", {
+        const response = await JSONRPCRequest(this, "contractCallQuery", {
           contractId,
           functionName: "getMessage",
         });
+
+        expect(response).to.not.be.null;
+        expect(response.rawResult).to.not.be.null;
       } catch (err: any) {
         assert.equal(err.data.status, "INSUFFICIENT_GAS");
-        return;
       }
-      assert.fail("Should throw an error");
     });
 
     it("(#3) Fails to execute contract call query with insufficient gas", async function () {
