@@ -102,7 +102,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | Test no | Name                                                      | Input             | Expected response                                                                       | Implemented (Y/N) |
 |---------|-----------------------------------------------------------|-------------------|-----------------------------------------------------------------------------------------|-------------------|
 | 1       | Executes contract call query with valid gas amount       | gas=100000        | The contract call query succeeds and gasUsed < gas                                      | Y                 |
-| 2       | Executes contract call query without gas                  |                   | The query succeeds if the SDK auto-estimates gas (e.g. via the mirror node), otherwise it fails and returns INSUFFICIENT_GAS | Y                 |
+| 2       | Executes contract call query without gas                  |                   | The query succeeds if the SDK auto-estimates gas (e.g. via the mirror node); an auto-estimating SDK fails with an SDK-side "requires gas to be set" error when the estimation endpoint is unavailable; otherwise it fails and returns INSUFFICIENT_GAS | Y                 |
 | 3       | Fails to execute with insufficient gas                    | gas=100           | The contract call query fails and returns INSUFFICIENT_GAS                              | Y                 |
 | 4       | Executes contract call query with maximum gas             | gas=1000000       | The contract call query succeeds                                                        | Y                 |
 
