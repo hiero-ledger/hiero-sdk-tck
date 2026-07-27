@@ -185,9 +185,12 @@ describe("ContractCallQuery", function () {
 
     it("(#2) Executes contract call query without gas", async function () {
       // An SDK may auto-estimate gas via the mirror node when it is omitted
-      // (e.g. JS SDK >= 2.86.0) and execute the query successfully; SDKs
-      // without gas estimation submit gas=0 and the network rejects the
-      // query with INSUFFICIENT_GAS.
+      // (e.g. JS SDK >= 2.86.0) and execute the query successfully; when the
+      // mirror node estimation endpoint (/api/v1/contracts/call, served by
+      // the mirror web3 service) is unavailable, such an SDK fails with an
+      // SDK-side "requires gas to be set" error instead. SDKs without gas
+      // estimation submit gas=0 and the network rejects the query with
+      // INSUFFICIENT_GAS.
       try {
         const response = await JSONRPCRequest(this, "contractCallQuery", {
           contractId,
@@ -197,7 +200,14 @@ describe("ContractCallQuery", function () {
         expect(response).to.not.be.null;
         expect(response.rawResult).to.not.be.null;
       } catch (err: any) {
-        assert.equal(err.data.status, "INSUFFICIENT_GAS");
+        if (err.data?.status) {
+          assert.equal(err.data.status, "INSUFFICIENT_GAS");
+        } else {
+          assert.include(
+            err.data?.message ?? err.message ?? "",
+            "requires gas to be set",
+          );
+        }
       }
     });
 
