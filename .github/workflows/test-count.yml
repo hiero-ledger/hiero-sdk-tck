@@ -4,7 +4,8 @@ on:
   pull_request:
     paths:
       - "docs/test-specifications/**"
-      - "testCount.js"
+      - "testCount.ts"
+      - "hipReport.ts"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/test-count.yml"
@@ -14,7 +15,8 @@ on:
       - feat/**
     paths:
       - "docs/test-specifications/**"
-      - "testCount.js"
+      - "testCount.ts"
+      - "hipReport.ts"
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/test-count.yml"
@@ -53,3 +55,16 @@ jobs:
         run: |
           echo "Running testCount.js..."
           npx ts-node testCount.ts
+
+      - name: Run HIP report script
+        run: |
+          echo "Running hipReport.ts..."
+          npx ts-node hipReport.ts
+
+      - name: Upload HIP report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hip-report
+          path: hip-report.json
+          retention-days: 7
+        # The analytics dashboard consumes this artifact.

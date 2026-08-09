@@ -1,0 +1,668 @@
+{
+  "generatedAt": "2026-08-09T21:42:44.741Z",
+  "specs": [
+    {
+      "specPath": "docs/test-specifications/common/Allowances.md",
+      "title": "Allowances",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/CommonTransactionParameters.md",
+      "title": "Common Transaction Parameters",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/CustomFee.md",
+      "title": "Custom Fee",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/CustomFeeLimit.md",
+      "title": "Custom Fee Limit",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/ErrorCodes.md",
+      "title": "Error Codes",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/index.md",
+      "title": "Helpers",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/PendingAirdrop.md",
+      "title": "Pending Airdrop",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/ScheduledTransaction.md",
+      "title": "Scheduled Transaction",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/Transfers.md",
+      "title": "Transfers",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/common/Utility.md",
+      "title": "Utility",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractByteCodeQuery.md",
+      "title": "Contract Bytecode Query",
+      "hips": [],
+      "implementedCount": 6,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractCallQuery.md",
+      "title": "Contract Call Query",
+      "hips": [],
+      "implementedCount": 58,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractCreateTransaction.md",
+      "title": "Contract Create Transaction",
+      "hips": [
+        "HIP-904"
+      ],
+      "implementedCount": 123,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractDeleteTransaction.md",
+      "title": "Contract Delete Transaction",
+      "hips": [],
+      "implementedCount": 21,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractExecuteTransaction.md",
+      "title": "Contract Execute Transaction",
+      "hips": [],
+      "implementedCount": 42,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractInfoQuery.md",
+      "title": "Contract Info Query",
+      "hips": [],
+      "implementedCount": 18,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/ContractUpdateTransaction.md",
+      "title": "Contract Update Transaction",
+      "hips": [
+        "HIP-904"
+      ],
+      "implementedCount": 57,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/EthereumTransaction.md",
+      "title": "Ethereum Transaction",
+      "hips": [],
+      "implementedCount": 10,
+      "notImplementedCount": 13,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/contract-service/index.md",
+      "title": "Smart Contract Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountAllowanceApproveTransaction.md",
+      "title": "Account Allowance Approve Transaction",
+      "hips": [],
+      "implementedCount": 93,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountAllowanceDeleteTransaction.md",
+      "title": "Account Allowance Delete Transaction",
+      "hips": [],
+      "implementedCount": 12,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountBalanceQuery.md",
+      "title": "Account Balance Query",
+      "hips": [],
+      "implementedCount": 10,
+      "notImplementedCount": 3,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountCreateTransaction.md",
+      "title": "Account Create Transaction",
+      "hips": [],
+      "implementedCount": 42,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountDeleteTransaction.md",
+      "title": "Account Delete Transaction",
+      "hips": [],
+      "implementedCount": 13,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountInfoQuery.md",
+      "title": "Account Info Query",
+      "hips": [],
+      "implementedCount": 38,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/AccountUpdateTransaction.md",
+      "title": "Account Update Transaction",
+      "hips": [],
+      "implementedCount": 45,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/ClientPing.md",
+      "title": "Client Ping",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 6,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/index.md",
+      "title": "Crypto Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/TransactionReceiptQuery.md",
+      "title": "Transaction Receipt Query",
+      "hips": [],
+      "implementedCount": 11,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/crypto-service/TransferTransaction.md",
+      "title": "Transfer Transaction",
+      "hips": [],
+      "implementedCount": 279,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/DevelopmentProcess.md",
+      "title": "Development Process",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileAppendTransaction.md",
+      "title": "File Append Transaction",
+      "hips": [],
+      "implementedCount": 21,
+      "notImplementedCount": 2,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileContentsQuery.md",
+      "title": "File Contents Query",
+      "hips": [],
+      "implementedCount": 20,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileCreateTransaction.md",
+      "title": "File Create Transaction",
+      "hips": [],
+      "implementedCount": 33,
+      "notImplementedCount": 3,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileDeleteTransaction.md",
+      "title": "File Delete Transaction",
+      "hips": [],
+      "implementedCount": 9,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileInfoQuery.md",
+      "title": "File Info Query",
+      "hips": [],
+      "implementedCount": 15,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/FileUpdateTransaction.md",
+      "title": "File Update Transaction",
+      "hips": [],
+      "implementedCount": 36,
+      "notImplementedCount": 3,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/file-service/index.md",
+      "title": "File Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/AddressBookQuery.md",
+      "title": "Address Book Query",
+      "hips": [],
+      "implementedCount": 27,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/index.md",
+      "title": "Node Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/NodeCreateTransaction.md",
+      "title": "Node Create Transaction",
+      "hips": [],
+      "implementedCount": 61,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/NodeDeleteTransaction.md",
+      "title": "Node Delete Transaction",
+      "hips": [],
+      "implementedCount": 6,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/NodeUpdateTransaction.md",
+      "title": "Node Update Transaction",
+      "hips": [],
+      "implementedCount": 62,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/node-service/ServiceEndpoint.md",
+      "title": "ServiceEndpoint Structure",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/schedule-service/index.md",
+      "title": "Schedule Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/schedule-service/ScheduleCreateTransaction.md",
+      "title": "Schedule Create Transaction",
+      "hips": [],
+      "implementedCount": 43,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/schedule-service/ScheduleDeleteTransaction.md",
+      "title": "Schedule Delete Transaction",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 9,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/schedule-service/ScheduleInfoQuery.md",
+      "title": "Schedule Info Query",
+      "hips": [],
+      "implementedCount": 20,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/schedule-service/ScheduleSignTransaction.md",
+      "title": "Schedule Sign Transaction",
+      "hips": [],
+      "implementedCount": 13,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/TestSpecificationsTemplate.md",
+      "title": "Test Specifications Template",
+      "hips": [
+        "HIP-XXXX"
+      ],
+      "implementedCount": 0,
+      "notImplementedCount": 6,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/index.md",
+      "title": "Token Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenAirdropCancelTransaction.md",
+      "title": "Token Airdrop Cancel Transaction",
+      "hips": [],
+      "implementedCount": 20,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenAirdropClaimTransaction.md",
+      "title": "Token Airdrop Claim Transaction",
+      "hips": [],
+      "implementedCount": 33,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenAirdropTransaction.md",
+      "title": "Token Airdrop Transaction",
+      "hips": [],
+      "implementedCount": 235,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenAssociateTransaction.md",
+      "title": "Token Associate Transaction",
+      "hips": [],
+      "implementedCount": 14,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenBurnTransaction.md",
+      "title": "Token Burn Transaction",
+      "hips": [],
+      "implementedCount": 31,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenCreateTransaction.md",
+      "title": "Token Create Transaction",
+      "hips": [],
+      "implementedCount": 212,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenDeleteTransaction.md",
+      "title": "Token Delete Transaction",
+      "hips": [],
+      "implementedCount": 7,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenDissociateTransaction.md",
+      "title": "Token Dissociate Transaction",
+      "hips": [],
+      "implementedCount": 16,
+      "notImplementedCount": 1,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenFeeScheduleUpdateTransaction.md",
+      "title": "Token Fee Schedule Update Transaction",
+      "hips": [],
+      "implementedCount": 70,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenFreezeTransaction.md",
+      "title": "Token Freeze Transaction",
+      "hips": [],
+      "implementedCount": 16,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenGrantKycTransaction.md",
+      "title": "Token Grant Kyc Transaction",
+      "hips": [],
+      "implementedCount": 17,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenInfoQuery.md",
+      "title": "Token Info Query",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 55,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenMintTransaction.md",
+      "title": "Token Mint Transaction",
+      "hips": [],
+      "implementedCount": 32,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenNftInfoQuery.md",
+      "title": "Token NFT Info Query",
+      "hips": [],
+      "implementedCount": 14,
+      "notImplementedCount": 1,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenPauseTransaction.md",
+      "title": "Token Pause Transaction",
+      "hips": [],
+      "implementedCount": 8,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenRejectTransaction.md",
+      "title": "Token Reject Transaction",
+      "hips": [],
+      "implementedCount": 27,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenRevokeKycTransaction.md",
+      "title": "Token Revoke Kyc Transaction",
+      "hips": [],
+      "implementedCount": 17,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenUnfreezeTransaction.md",
+      "title": "Token Unfreeze Transaction",
+      "hips": [],
+      "implementedCount": 16,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenUnpauseTransaction.md",
+      "title": "Token Unpause Transaction",
+      "hips": [],
+      "implementedCount": 8,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenUpdateTransaction.md",
+      "title": "Token Update Transaction",
+      "hips": [],
+      "implementedCount": 146,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/token-service/TokenWipeTransaction.md",
+      "title": "Token Wipe Transaction",
+      "hips": [],
+      "implementedCount": 33,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/index.md",
+      "title": "Consensus Service",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 0,
+      "completionState": "empty"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/TopicCreateTransaction.md",
+      "title": "Topic Create Transaction",
+      "hips": [],
+      "implementedCount": 69,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/TopicDeleteTransaction.md",
+      "title": "Topic Delete Transaction",
+      "hips": [],
+      "implementedCount": 7,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/TopicInfoQuery.md",
+      "title": "Topic Info Query",
+      "hips": [],
+      "implementedCount": 0,
+      "notImplementedCount": 27,
+      "completionState": "incomplete"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/TopicMessageSubmitTransaction.md",
+      "title": "Topic Message Submit Transaction",
+      "hips": [],
+      "implementedCount": 42,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    },
+    {
+      "specPath": "docs/test-specifications/topic-service/TopicUpdateTransaction.md",
+      "title": "Topic Update Transaction",
+      "hips": [],
+      "implementedCount": 90,
+      "notImplementedCount": 0,
+      "completionState": "complete"
+    }
+  ],
+  "hips": [
+    {
+      "hip": "HIP-904",
+      "specs": [
+        {
+          "specPath": "docs/test-specifications/contract-service/ContractCreateTransaction.md",
+          "title": "Contract Create Transaction",
+          "implementedCount": 123,
+          "notImplementedCount": 0,
+          "completionState": "complete"
+        },
+        {
+          "specPath": "docs/test-specifications/contract-service/ContractUpdateTransaction.md",
+          "title": "Contract Update Transaction",
+          "implementedCount": 57,
+          "notImplementedCount": 0,
+          "completionState": "complete"
+        }
+      ]
+    },
+    {
+      "hip": "HIP-XXXX",
+      "specs": [
+        {
+          "specPath": "docs/test-specifications/TestSpecificationsTemplate.md",
+          "title": "Test Specifications Template",
+          "implementedCount": 0,
+          "notImplementedCount": 6,
+          "completionState": "incomplete"
+        }
+      ]
+    }
+  ]
+}

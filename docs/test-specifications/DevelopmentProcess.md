@@ -32,6 +32,7 @@ The items that should be included in a request's test documentation can be seen 
 
 - Description: A description of the test specification. This, for the most part, should be copy-paste between test files with slight changes for names, links, etc.
 - Design: A brief rundown of what is being tested, how it's being tested, and how the test results can be verified.
+- HIP linkage: Add a `hip:` frontmatter field to the spec to link the test specification to the associated HIP. Accepted values are a single HIP string or a YAML list of HIP strings. If the request has no associated HIP, omit the field.
 - Request properties: A link to the documentation for the request.
 - Request protobuf: A link to the protobuf file located in the [hedera-protobufs](https://github.com/hashgraph/hedera-protobufs) repository for the request type being tested.
 - Response codes: A link to the protobuf file that contains the response codes for gRPC requests sent to a network.
