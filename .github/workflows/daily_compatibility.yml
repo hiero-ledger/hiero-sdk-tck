@@ -26,6 +26,7 @@ jobs:
       js-sha: ${{ steps.refs.outputs.js-sha }}
       go-sha: ${{ steps.refs.outputs.go-sha }}
       java-sha: ${{ steps.refs.outputs.java-sha }}
+      swift-sha: ${{ steps.refs.outputs.swift-sha }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -39,17 +40,20 @@ jobs:
           JS_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-js refs/heads/main | cut -c1-7)
           GO_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-go refs/heads/main | cut -c1-7)
           JAVA_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-java refs/heads/main | cut -c1-7)
+          SWIFT_SHA=$(git ls-remote https://github.com/hiero-ledger/hiero-sdk-swift refs/heads/main | cut -c1-7)
 
           echo "tck-sha=$TCK_SHA" >> "$GITHUB_OUTPUT"
           echo "js-sha=$JS_SHA" >> "$GITHUB_OUTPUT"
           echo "go-sha=$GO_SHA" >> "$GITHUB_OUTPUT"
           echo "java-sha=$JAVA_SHA" >> "$GITHUB_OUTPUT"
+          echo "swift-sha=$SWIFT_SHA" >> "$GITHUB_OUTPUT"
 
           echo "### Resolved SHAs" >> "$GITHUB_STEP_SUMMARY"
           echo "- TCK: \`$TCK_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- JS SDK: \`$JS_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Go SDK: \`$GO_SHA\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Java SDK: \`$JAVA_SHA\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Swift SDK: \`$SWIFT_SHA\`" >> "$GITHUB_STEP_SUMMARY"
 
   # ── JS SDK — up to 3 attempts ──────────────────────────────────────
   js-compatibility-1:
@@ -132,6 +136,33 @@ jobs:
       java-sdk-version: main
     secrets: inherit
 
+  # ── Swift SDK — up to 3 attempts ───────────────────────────────────
+  swift-compatibility-1:
+    needs: resolve-refs
+    uses: ./.github/workflows/swift_compatibility.yml
+    with:
+      custom-job-name: "Daily Swift SDK (main) - attempt 1"
+      swift-sdk-version: main
+    secrets: inherit
+
+  swift-compatibility-2:
+    needs: [resolve-refs, swift-compatibility-1]
+    if: ${{ always() && needs.swift-compatibility-1.result == 'failure' }}
+    uses: ./.github/workflows/swift_compatibility.yml
+    with:
+      custom-job-name: "Daily Swift SDK (main) - attempt 2"
+      swift-sdk-version: main
+    secrets: inherit
+
+  swift-compatibility-3:
+    needs: [resolve-refs, swift-compatibility-2]
+    if: ${{ always() && needs.swift-compatibility-2.result == 'failure' }}
+    uses: ./.github/workflows/swift_compatibility.yml
+    with:
+      custom-job-name: "Daily Swift SDK (main) - attempt 3"
+      swift-sdk-version: main
+    secrets: inherit
+
   # Summary and Slack notification
   summary-and-notify:
     needs:
@@ -145,6 +176,9 @@ jobs:
       - java-compatibility-1
       - java-compatibility-2
       - java-compatibility-3
+      - swift-compatibility-1
+      - swift-compatibility-2
+      - swift-compatibility-3
     if: ${{ always() }}
     runs-on: hiero-client-sdk-linux-large
     steps:
@@ -206,13 +240,30 @@ jobs:
           [[ "${{ needs.java-compatibility-3.result }}" != "skipped" ]] && JAVA_ATTEMPTS=3
           echo "java-attempts=$JAVA_ATTEMPTS" >> "$GITHUB_OUTPUT"
 
+          if [[ "${{ needs.swift-compatibility-1.result }}" == "success" ]] || \
+             [[ "${{ needs.swift-compatibility-2.result }}" == "success" ]] || \
+             [[ "${{ needs.swift-compatibility-3.result }}" == "success" ]]; then
+            echo "swift-status=:white_check_mark: PASSED" >> "$GITHUB_OUTPUT"
+            echo "swift-result=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "swift-status=:x: FAILED" >> "$GITHUB_OUTPUT"
+            echo "swift-result=failure" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Count Swift attempts
+          SWIFT_ATTEMPTS=1
+          [[ "${{ needs.swift-compatibility-2.result }}" != "skipped" ]] && SWIFT_ATTEMPTS=2
+          [[ "${{ needs.swift-compatibility-3.result }}" != "skipped" ]] && SWIFT_ATTEMPTS=3
+          echo "swift-attempts=$SWIFT_ATTEMPTS" >> "$GITHUB_OUTPUT"
+
           # Overall status — passes if all three SDKs eventually succeeded
-          JS_OK=false; GO_OK=false; JAVA_OK=false
+          JS_OK=false; GO_OK=false; JAVA_OK=false; SWIFT_OK=false;
           [[ "${{ needs.js-compatibility-1.result }}" == "success" || "${{ needs.js-compatibility-2.result }}" == "success" || "${{ needs.js-compatibility-3.result }}" == "success" ]] && JS_OK=true
           [[ "${{ needs.go-compatibility-1.result }}" == "success" || "${{ needs.go-compatibility-2.result }}" == "success" || "${{ needs.go-compatibility-3.result }}" == "success" ]] && GO_OK=true
           [[ "${{ needs.java-compatibility-1.result }}" == "success" || "${{ needs.java-compatibility-2.result }}" == "success" || "${{ needs.java-compatibility-3.result }}" == "success" ]] && JAVA_OK=true
+          [[ "${{ needs.swift-compatibility-1.result }}" == "success" || "${{ needs.swift-compatibility-2.result }}" == "success" || "${{ needs.swift-compatibility-3.result }}" == "success" ]] && SWIFT_OK=true
 
-          if $JS_OK && $GO_OK && $JAVA_OK; then
+          if $JS_OK && $GO_OK && $JAVA_OK && $SWIFT_OK; then
             echo "overall=PASSED" >> "$GITHUB_OUTPUT"
             echo "color=#36a64f" >> "$GITHUB_OUTPUT"
             echo "emoji=:white_check_mark:" >> "$GITHUB_OUTPUT"
@@ -280,6 +331,14 @@ jobs:
                         "type": "mrkdwn",
                         "text": "${{ steps.results.outputs.java-status }} (${{ steps.results.outputs.java-attempts }}/3 attempts)"
                       }
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Swift SDK* (<https://github.com/hiero-ledger/hiero-sdk-swift/commit/${{ needs.resolve-refs.outputs.swift-sha }}|${{ needs.resolve-refs.outputs.swift-sha }}>)"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "${{ steps.results.outputs.swift-status }} (${{ steps.results.outputs.swift-attempts }}/3 attempts)"
+                      }
                     ]
                   },
                   {
@@ -345,6 +404,12 @@ jobs:
             echo ":white_check_mark: **Java SDK**: PASSED (${{ steps.results.outputs.java-attempts }}/3 attempts)" >> "$GITHUB_STEP_SUMMARY"
           else
             echo ":x: **Java SDK**: FAILED (after ${{ steps.results.outputs.java-attempts }} attempts)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [[ "${{ steps.results.outputs.swift-result }}" == "success" ]]; then
+            echo ":white_check_mark: **Swift SDK**: PASSED (${{ steps.results.outputs.swift-attempts }}/3 attempts)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo ":x: **Swift SDK**: FAILED (after ${{ steps.results.outputs.swift-attempts }} attempts)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Fail if any SDK failed
