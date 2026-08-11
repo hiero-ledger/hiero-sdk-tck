@@ -17,6 +17,7 @@ There are common parameters that can be set for all Hiero transaction types. Thi
 | memo                     | string       | optional          |                                                                                                                                    |
 | regenerateTransactionId  | bool         | optional          |                                                                                                                                    |
 | signers                  | list<string> | optional          | List of DER-encoded hex strings of all additional private keys required to sign.                                                   |
+| highVolume               | bool         | optional          | HIP-1313 opt-in: route the transaction through the high-volume entity creation throttle bucket and variable-rate pricing. Default: unset (standard throttles). |
 
 ## Example Usage
 
