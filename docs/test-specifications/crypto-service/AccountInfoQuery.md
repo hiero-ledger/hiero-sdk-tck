@@ -54,7 +54,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | isReceiverSignatureRequired   | boolean | If true, no transaction can transfer to this account unless signed by this account's key.                                                                  |
 | expirationTime                | string  | The time at which this account is set to expire.                                                                                                           |
 | autoRenewPeriod               | string  | The duration for expiration time will extend every this many seconds.                                                                                      |
-| liveHashes                    | array   | All of the livehashes attached to the account (each livehash contains accountId, hash, keys, duration).                                                    |
+| liveHashes                    | array   | All of the livehashes attached to the account (each livehash contains accountId, hash, keys, duration). Live hashes are a retired network feature; SDKs that removed the deprecated API omit this field. |
 | tokenRelationships            | map     | All tokens related to this account (map of token IDs to token relationship info including balance, KYC status, freeze status, etc.).                       |
 | accountMemo                   | string  | The memo associated with the account.                                                                                                                      |
 | ownedNfts                     | string  | The number of NFTs owned by this account.                                                                                                                  |
@@ -63,7 +63,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | ledgerId                      | string  | The ID of the ledger from which the response was returned.                                                                                                 |
 | hbarAllowances                | array   | List of hbar allowances approved by this account.                                                                                                          |
 | tokenAllowances               | array   | List of fungible token allowances approved by this account.                                                                                                |
-| YftAllowances                 | array   | List of non-fungible token allowances approved by this account.                                                                                            |
+| nftAllowances                 | array   | List of non-fungible token allowances approved by this account.                                                                                            |
 | ethereumNonce                 | string  | The ethereum transaction nonce associated with this account.                                                                                               |
 | stakingInfo                   | object  | Staking metadata for this account (includes declineStakingReward, stakePeriodStart, pendingReward, stakedToMe, stakedAccountId, stakedNodeId).            |
 
@@ -93,7 +93,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 16      | Query account info and verify isReceiverSignatureRequired is true     | accountId=<ACCOUNT_WITH_RECEIVER_SIG_REQ>     | The account info query succeeds and returns isReceiverSignatureRequired=true               | Y                 |
 | 17      | Query account info and verify expirationTime is returned              | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds and returns the account expiration timestamp               | Y                 |
 | 18      | Query account info and verify autoRenewPeriod is returned             | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds and returns the account autoRenewPeriod in seconds         | Y                 |
-| 19      | Query account info and verify liveHashes is returned                  | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds and returns liveHashes array (empty if none)               | Y                 |
+| 19      | Query account info and verify liveHashes is returned                  | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds; SDKs still exposing the retired live hash API return a liveHashes array (empty if none), other SDKs omit the field | Y                 |
 | 20      | Query account info and verify tokenRelationships is returned          | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds and returns tokenRelationships map (empty if none)         | Y                 |
 | 21      | Query account info and verify tokenRelationships with tokens          | accountId=<ACCOUNT_WITH_TOKENS>               | The account info query succeeds and returns tokenRelationships with token data             | Y                 |
 | 22      | Query account info and verify accountMemo is returned                 | accountId=<VALID_ACCOUNT_ID>                  | The account info query succeeds and returns accountMemo (empty if not set)                 | Y                 |

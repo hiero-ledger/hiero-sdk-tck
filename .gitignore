@@ -114,3 +114,7 @@ mochawesome-report/
 # Cursor files
 .cursorignore
 .cursorrules
+
+# Node heap profiles from npm run test:ci
+heap-profiles/
+

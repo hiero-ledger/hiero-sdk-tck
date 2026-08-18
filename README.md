@@ -61,6 +61,58 @@ Run all tests
 npm run test
 ```
 
+### Node-service tests and network pollution
+
+The node-service suites submit real `NodeCreate` transactions, which add
+entries to the network's address book. The suites delete every node they
+create when they finish (even after failed assertions), but a run that is
+killed mid-suite leaves phantom nodes behind — on persistent shared
+environments these have hit the `nodes.maxNumber` cap and broken
+consensus-node upgrades.
+
+Three controls exist (see issue #667):
+
+- **Exclude the node-service suites entirely** — the safe default for shared
+  environments:
+
+  ```
+  npm run test:no-node-service
+  ```
+
+- **Sweep leftovers from previous crashed runs** before the suite starts.
+  Off by default; requires both variables, and refuses to run otherwise:
+
+  ```
+  TCK_NODE_SWEEP=true TCK_PROTECTED_NODE_IDS=0,1,2,3 npm run test
+  ```
+
+  `TCK_PROTECTED_NODE_IDS` lists the node IDs of the environment's *real*
+  consensus nodes; every other node is deleted. The sweep walks the node id
+  space on the consensus network itself (node IDs are sequential), because
+  the mirror's `/network/nodes` roster reflects the address book *file*,
+  which regenerates only on upgrades — freshly leaked phantom nodes are
+  invisible there. The sweep (and node cleanup in general, once a leftover
+  node's admin key is lost) requires a **privileged operator** such as the
+  treasury account, since only privileged accounts can delete nodes without
+  their admin keys. Never enable the sweep on a network where non-TCK actors
+  legitimately create nodes.
+
+  > **Note:** deleting nodes does *not* free `nodes.maxNumber` capacity — the
+  > consensus cap counts tombstoned (deleted) nodes until they are purged, so
+  > each full node-service run permanently burns ~46 of the (default 100)
+  > node-id budget between purges. Cleanup prevents roster/upgrade pollution;
+  > it cannot prevent cap exhaustion on a network that never purges. Plan
+  > shared-environment capacity accordingly.
+
+- **Post-run verification** runs automatically whenever a Mirror Node REST
+  URL is configured: the run's successful `NODECREATE` transactions are
+  counted against its successful `NODEDELETE` transactions via the mirror's
+  transaction stream (prompt, unlike the address-book roster). Results are
+  reported in the console and in `mochawesome-report/run-info.json` under
+  `nodes` (`baselineCount`, `createdCount`, `deletedCount`,
+  `mirrorCreatedCount`, `mirrorDeletedCount`, `leakedCount`,
+  `leakedNodeIds`), so CI can gate on `leakedCount == 0`.
+
 ### Reports
 
 After running `npm run test` the generated HTML and JSON reports can be found in the `mochawesome-report` folder
