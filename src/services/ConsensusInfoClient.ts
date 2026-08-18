@@ -42,30 +42,48 @@ class ConsensusInfoClient {
     this._sdkClient ??= this.createClient();
     return this._sdkClient;
   }
-
+  
   private createClient(): Client {
-    let sdkClient;
-    if (process.env.NODE_IP && process.env.NODE_ACCOUNT_ID) {
+    let sdkClient: Client;
+    const network = (process.env.NETWORK ?? "testnet").toLowerCase();
+
+    const trySetMirrorNetwork = (client: Client, mirror: string[]) => {
+      if (client && typeof (client as any).setMirrorNetwork === "function") {
+        (client as any).setMirrorNetwork(mirror);
+      }
+    };
+
+    if (network === "local") {
+      sdkClient = Client.forLocalNode();
+      trySetMirrorNetwork(sdkClient, ["127.0.0.1:5600"]);
+    } else if (network === "custom") {
+      if (!process.env.NODE_IP || !process.env.NODE_ACCOUNT_ID) {
+        throw new Error(
+          "NETWORK=custom requires NODE_IP and NODE_ACCOUNT_ID to be set",
+        );
+      }
+
       const node = {
         [process.env.NODE_IP]: AccountId.fromString(
           process.env.NODE_ACCOUNT_ID,
         ),
       };
       sdkClient = Client.forNetwork(node);
-      // Set mirror network for AddressBookQuery support
-      // AddressBookQuery requires mirror network to be configured
+
       if (process.env.MIRROR_NETWORK) {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
           (addr) => addr.trim(),
         );
-        sdkClient.setMirrorNetwork(mirrorNetwork);
+        trySetMirrorNetwork(sdkClient, mirrorNetwork);
       } else {
-        // Default mirror network for local development
-        sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+        trySetMirrorNetwork(sdkClient, ["127.0.0.1:5600"]);
       }
+    } else if (network === "testnet") {
+      sdkClient = Client.forTestnet();
     } else {
-      sdkClient = Client.forLocalNode();
-      sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      throw new Error(
+        `Unsupported NETWORK value '${network}'. Use testnet, local, or custom.`,
+      );
     }
 
     sdkClient.setOperator(
