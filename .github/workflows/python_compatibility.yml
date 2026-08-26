@@ -75,11 +75,13 @@ jobs:
           fetch-tags: true
 
       - name: Checkout Python SDK Version
+        env:
+          PYTHON_SDK_VERSION: ${{ inputs.python-sdk-version }}
         run: |
           cd sdk-server
-          if [ -n "${{ inputs.python-sdk-version }}" ]; then
-            echo "Using specified Python SDK version: ${{ inputs.python-sdk-version }}"
-            git checkout ${{ inputs.python-sdk-version }}
+          if [ -n "$PYTHON_SDK_VERSION" ]; then
+            echo "Using specified Python SDK version: $PYTHON_SDK_VERSION"
+            git checkout "$PYTHON_SDK_VERSION"
           else
             echo "Using latest Python SDK tag"
             git fetch --tags
