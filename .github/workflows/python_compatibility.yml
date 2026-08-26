@@ -1,0 +1,208 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "System Compatibility (Python SDK)"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job(could include the version of the SDK, Solo, and consensus node):"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use (defaults to 0.82.1 if not specified):"
+        required: false
+        type: string
+        default: "0.82.1"
+      consensus-node-version:
+        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
+        required: false
+        type: string
+      python-sdk-version:
+        description: "The version of the Python SDK to use (defaults to latest tag if not specified):"
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use"
+        required: false
+        type: string
+        default: "0.82.1"
+      consensus-node-version:
+        description: "The version of the consensus node to use"
+        required: false
+        type: string
+      python-sdk-version:
+        description: "The version of the Python SDK to use"
+        required: false
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Execute TCK Regression Tests using specified version of hiero-consensus-node
+  tck-regression:
+    name: ${{ inputs.custom-job-name || 'System Compatibility' }}
+    runs-on: hiero-client-sdk-linux-large
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      # Checkout the current TCK repository
+      - name: Checkout TCK Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: tck
+
+      # Checkout the Python SDK server
+      - name: Checkout Python SDK Server
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sdk-server
+          repository: hiero-ledger/hiero-sdk-python
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Checkout Python SDK Version
+        run: |
+          cd sdk-server
+          if [ -n "${{ inputs.python-sdk-version }}" ]; then
+            echo "Using specified Python SDK version: ${{ inputs.python-sdk-version }}"
+            git checkout ${{ inputs.python-sdk-version }}
+          else
+            echo "Using latest Python SDK tag"
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+            echo "Latest Python SDK tag: $LATEST_TAG"
+            git checkout $LATEST_TAG
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      # Install dependencies and generate the protobuf modules. The generated
+      # hapi/ package is gitignored in the SDK repository, so a fresh checkout
+      # cannot import the SDK (or start the TCK server) without this step.
+      - name: Install SDK dependencies and generate protos
+        run: |
+          uv sync --frozen --all-groups --all-extras
+          uv run generate_proto.py
+        working-directory: sdk-server
+
+      - name: Setup NodeJS Environment
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+            node-version: 22
+
+      # Set up the npm dependencies and cache on the tck-client
+      - name: Set up the tck-client
+        run: |
+            npm cache clean --force
+            npm install
+        working-directory: tck
+
+      # Start the TCK server (binds localhost:8544, the tck-client's default)
+      - name: Start SDK Server
+        id: start-sdk-server
+        run: |
+          uv run python -m tck &
+          server_pid=$!
+          echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
+        working-directory: sdk-server
+
+      # Get Latest Consensus Node Version
+      - name: Get Latest Consensus Node Version
+        if: ${{ !inputs.consensus-node-version }}
+        id: get-consensus-version
+        run: |
+          # Fetch latest stable version (excludes RC, beta, alpha versions)
+          LATEST_TAG=$(git ls-remote --tags --refs https://github.com/hiero-ledger/hiero-consensus-node \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n1)
+          echo "Latest consensus node tag: $LATEST_TAG"
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      # Prepare Hiero Solo
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@bdae0a37df52190b6b3801c1c981c0ed37f4616e # v0.23.0
+        with:
+          installMirrorNode: true
+          soloVersion: ${{ inputs.solo-version || '0.82.1' }}
+          hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          # v0.23.0 moved these defaults (consensus gRPC 50211 -> 35211, mirror
+          # REST 5551 -> 38081); pin them back so the tck-client env below (and
+          # the sibling js/go workflows' port scheme) stays valid.
+          haproxyPort: "50211"
+          mirrorNodePortRest: "5551"
+
+      # Confirm the SDK server answers JSON-RPC before driving tests at it.
+      # Solo setup above gives the server minutes of warm-up, so this is
+      # normally instant; it exists to fail fast with a clear message if the
+      # server died on startup.
+      - name: Wait for SDK Server readiness
+        run: |
+          for i in $(seq 1 15); do
+            if curl -s -o /dev/null -X POST -H "Content-Type: application/json" \
+              -d '{"jsonrpc":"2.0","id":1,"method":"healthCheck","params":{}}' \
+              http://127.0.0.1:8544; then
+              echo "SDK server is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SDK server did not become ready on 127.0.0.1:8544"
+          exit 1
+
+       # Start the TCK client
+      - name: Start tck-client
+        env:
+          OPERATOR_ACCOUNT_ID: "0.0.2"
+          OPERATOR_ACCOUNT_PRIVATE_KEY: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+          JSON_RPC_SERVER_URL: "http://127.0.0.1:8544"
+          NODE_IP: "127.0.0.1:50211"
+          MIRROR_NODE_REST_URL: "http://127.0.0.1:5551"
+          MIRROR_NODE_REST_JAVA_URL: "http://127.0.0.1:8084"
+          NODE_TIMEOUT: "30000"
+          MIRROR_NETWORK: "127.0.0.1:5600"
+          NODE_ACCOUNT_ID: "0.0.3"
+        run: |
+          npm run test
+        working-directory: tck
+
+      # Upload the test report so the run's pass/fail/pending breakdown (the
+      # SDK's measured not-implemented surface) is retrievable from the run page
+      - name: Upload test report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: python-tck-mochawesome-report
+          path: tck/mochawesome-report
+
+      # Stop the TCK server
+      - name: Stop tck-server
+        if: ${{ always() }}
+        run: |
+          echo ${{ steps.start-sdk-server.outputs.pid }}
+          kill -9 ${{ steps.start-sdk-server.outputs.pid }}
