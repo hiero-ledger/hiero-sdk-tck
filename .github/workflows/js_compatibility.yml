@@ -119,7 +119,7 @@ jobs:
       - name: Set up the tck-client
         run: |
           npm cache clean --force
-          npm install
+          npm ci
         working-directory: tck
 
       # Set up and start the TCK server

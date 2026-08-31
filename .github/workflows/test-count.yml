@@ -42,10 +42,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
-      
-      - name: Ensure TS types for libs
-        run: npm i -D @types/markdown-it @types/jsdom
+        run: npm ci
 
       - name: Run test count script
         env:
