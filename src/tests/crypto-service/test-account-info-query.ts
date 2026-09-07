@@ -339,6 +339,9 @@ describe("AccountInfoQuery", function () {
     });
 
     it("(#19) Query account info and verify liveHashes is returned", async function () {
+      // Live hashes are a retired network feature. SDKs that removed the
+      // deprecated live hash API (e.g. JS SDK >= 2.87.0) omit the field from
+      // the response; SDKs that still expose it must return an array.
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -349,8 +352,9 @@ describe("AccountInfoQuery", function () {
         accountId: accountId,
       });
 
-      expect(response).to.have.property("liveHashes");
-      expect(response.liveHashes).to.be.an("array");
+      if ("liveHashes" in response) {
+        expect(response.liveHashes).to.be.an("array");
+      }
     });
 
     it("(#20) Query account info and verify tokenRelationships is returned", async function () {

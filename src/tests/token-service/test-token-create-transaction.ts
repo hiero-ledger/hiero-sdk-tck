@@ -5300,5 +5300,533 @@ describe("TokenCreateTransaction", function () {
     });
   });
 
+  describe("Complex Token Creation", function () {
+    // Complex tests generate multiple keys and perform extensive verification.
+    this.timeout(60000);
+
+    it("(#1) Creates a complex fungible token with all keys, finite supply, fixed fee, and metadata", async function () {
+      // Generate admin key pair
+      let response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const adminPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: adminPrivateKey,
+      });
+      const adminPublicKey = response.key;
+
+      // Generate supply key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const supplyPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: supplyPrivateKey,
+      });
+      const supplyPublicKey = response.key;
+
+      // Generate freeze key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const freezePrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: freezePrivateKey,
+      });
+      const freezePublicKey = response.key;
+
+      // Generate wipe key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const wipePrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: wipePrivateKey,
+      });
+      const wipePublicKey = response.key;
+
+      // Generate fee schedule key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const feeSchedulePrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: feeSchedulePrivateKey,
+      });
+      const feeSchedulePublicKey = response.key;
+
+      // Generate metadata key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const metadataPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: metadataPrivateKey,
+      });
+      const metadataPublicKey = response.key;
+
+      const name = "ComplexFungibleToken";
+      const symbol = "CFT";
+      const decimals = 2;
+      const decimalMultiplier = Math.pow(10, decimals);
+      const initialSupply = (1000 * decimalMultiplier).toString();
+      const maxSupply = (10000 * decimalMultiplier).toString();
+      const memo = "complex fungible token memo";
+      const metadataValue = "complex token metadata";
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 5184000
+      ).toString();
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const feeCollectorsExempt = false;
+      const fixedFeeAmount = "100";
+
+      response = await JSONRPCRequest(this, "createToken", {
+        name: name,
+        symbol: symbol,
+        decimals: decimals,
+        initialSupply: initialSupply,
+        maxSupply: maxSupply,
+        supplyType: "finite",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: adminPrivateKey,
+        supplyKey: supplyPrivateKey,
+        freezeKey: freezePrivateKey,
+        wipeKey: wipePrivateKey,
+        feeScheduleKey: feeSchedulePrivateKey,
+        metadataKey: metadataPrivateKey,
+        freezeDefault: false,
+        expirationTime: expirationTime,
+        autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        memo: memo,
+        metadata: metadataValue,
+        customFees: [
+          {
+            feeCollectorAccountId: feeCollectorAccountId,
+            feeCollectorsExempt: feeCollectorsExempt,
+            fixedFee: {
+              amount: fixedFeeAmount,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+
+      const tokenId = response.tokenId;
+
+      // Verify token info from consensus node
+      const consensusTokenInfo =
+        await consensusInfoClient.getTokenInfo(tokenId);
+      expect(consensusTokenInfo.name).to.equal(name);
+      expect(consensusTokenInfo.symbol).to.equal(symbol);
+      expect(consensusTokenInfo.decimals.toString()).to.equal(
+        decimals.toString(),
+      );
+      expect(consensusTokenInfo.totalSupply.toString()).to.equal(initialSupply);
+      expect(consensusTokenInfo.maxSupply?.toString()).to.equal(maxSupply);
+      expect(consensusTokenInfo.tokenMemo).to.equal(memo);
+      expect(consensusTokenInfo.metadata?.toString()).to.equal(metadataValue);
+
+      // Verify token info from mirror node
+      const mirrorTokenInfo = await mirrorNodeClient.getTokenData(tokenId);
+      expect(mirrorTokenInfo.name).to.equal(name);
+      expect(mirrorTokenInfo.symbol).to.equal(symbol);
+      expect(mirrorTokenInfo.decimals).to.equal(decimals.toString());
+      expect(mirrorTokenInfo.total_supply).to.equal(initialSupply);
+      expect(mirrorTokenInfo.max_supply).to.equal(maxSupply);
+      expect(mirrorTokenInfo.memo).to.equal(memo);
+      expect(
+        Buffer.from(mirrorTokenInfo.metadata!, "base64").toString("utf8"),
+      ).to.equal(metadataValue);
+      expect(mirrorTokenInfo.type).to.equal("FUNGIBLE_COMMON");
+      expect(mirrorTokenInfo.supply_type).to.equal("FINITE");
+
+      // Verify keys using public keys
+      await retryOnError(async () => {
+        await verifyTokenKey(tokenId, adminPublicKey, "adminKey");
+        await verifyTokenKey(tokenId, supplyPublicKey, "supplyKey");
+        await verifyTokenKey(tokenId, freezePublicKey, "freezeKey");
+        await verifyTokenKey(tokenId, wipePublicKey, "wipeKey");
+        await verifyTokenKey(tokenId, feeSchedulePublicKey, "feeScheduleKey");
+        await verifyTokenKey(tokenId, metadataPublicKey, "metadataKey");
+      });
+
+      // Verify custom fee
+      await verifyTokenCreationWithFixedFee(
+        tokenId,
+        feeCollectorAccountId,
+        feeCollectorsExempt,
+        fixedFeeAmount,
+      );
+    });
+
+    it("(#2) Creates a complex non-fungible token with royalty fee and fallback", async function () {
+      // Generate admin key pair
+      let response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const adminPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: adminPrivateKey,
+      });
+      const adminPublicKey = response.key;
+
+      // Generate supply key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const supplyPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: supplyPrivateKey,
+      });
+      const supplyPublicKey = response.key;
+
+      const name = "ComplexNFT";
+      const symbol = "CNFT";
+      const memo = "complex NFT memo";
+      const metadataValue = "complex NFT metadata";
+      const maxSupply = "1000";
+      const expirationTime = (
+        Math.floor(Date.now() / 1000) + 5184000
+      ).toString();
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const feeCollectorsExempt = false;
+      const numerator = "5";
+      const denominator = "100";
+      const fallbackFeeAmount = "10";
+
+      response = await JSONRPCRequest(this, "createToken", {
+        name: name,
+        symbol: symbol,
+        tokenType: "nft",
+        supplyType: "finite",
+        maxSupply: maxSupply,
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: adminPrivateKey,
+        supplyKey: supplyPrivateKey,
+        expirationTime: expirationTime,
+        autoRenewAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        memo: memo,
+        metadata: metadataValue,
+        customFees: [
+          {
+            feeCollectorAccountId: feeCollectorAccountId,
+            feeCollectorsExempt: feeCollectorsExempt,
+            royaltyFee: {
+              numerator: numerator,
+              denominator: denominator,
+              fallbackFee: {
+                amount: fallbackFeeAmount,
+              },
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+
+      const tokenId = response.tokenId;
+
+      // Verify token info from consensus node
+      const consensusTokenInfo =
+        await consensusInfoClient.getTokenInfo(tokenId);
+      expect(consensusTokenInfo.name).to.equal(name);
+      expect(consensusTokenInfo.symbol).to.equal(symbol);
+      expect(consensusTokenInfo.maxSupply?.toString()).to.equal(maxSupply);
+      expect(consensusTokenInfo.tokenMemo).to.equal(memo);
+      expect(consensusTokenInfo.metadata?.toString()).to.equal(metadataValue);
+
+      // Verify token info from mirror node
+      const mirrorTokenInfo = await mirrorNodeClient.getTokenData(tokenId);
+      expect(mirrorTokenInfo.name).to.equal(name);
+      expect(mirrorTokenInfo.symbol).to.equal(symbol);
+      expect(mirrorTokenInfo.max_supply).to.equal(maxSupply);
+      expect(mirrorTokenInfo.memo).to.equal(memo);
+      expect(
+        Buffer.from(mirrorTokenInfo.metadata!, "base64").toString("utf8"),
+      ).to.equal(metadataValue);
+      expect(mirrorTokenInfo.type).to.equal("NON_FUNGIBLE_UNIQUE");
+      expect(mirrorTokenInfo.supply_type).to.equal("FINITE");
+
+      // Verify keys using public keys
+      await retryOnError(async () => {
+        await verifyTokenKey(tokenId, adminPublicKey, "adminKey");
+        await verifyTokenKey(tokenId, supplyPublicKey, "supplyKey");
+      });
+
+      // Verify royalty fee
+      await verifyTokenCreationWithRoyaltyFee(
+        tokenId,
+        feeCollectorAccountId,
+        feeCollectorsExempt,
+        numerator,
+        denominator,
+        fallbackFeeAmount,
+      );
+    });
+
+    it("(#3) Creates a complex fungible token with fractional fee", async function () {
+      // Generate admin key pair
+      let response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const adminPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: adminPrivateKey,
+      });
+      const adminPublicKey = response.key;
+
+      // Generate supply key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const supplyPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: supplyPrivateKey,
+      });
+      const supplyPublicKey = response.key;
+
+      // Generate fee schedule key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const feeSchedulePrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: feeSchedulePrivateKey,
+      });
+      const feeSchedulePublicKey = response.key;
+
+      const name = "FractionalFeeToken";
+      const symbol = "FFT";
+      const decimals = 4;
+      const decimalMultiplier = Math.pow(10, decimals);
+      const initialSupply = (500 * decimalMultiplier).toString();
+      const maxSupply = (5000 * decimalMultiplier).toString();
+      const memo = "fractional fee token memo";
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const feeCollectorsExempt = false;
+      const numerator = "1";
+      const denominator = "10";
+      const minAmount = "1";
+      const maxAmount = "100";
+      const assessmentMethod = "inclusive";
+
+      response = await JSONRPCRequest(this, "createToken", {
+        name: name,
+        symbol: symbol,
+        decimals: decimals,
+        initialSupply: initialSupply,
+        maxSupply: maxSupply,
+        supplyType: "finite",
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: adminPrivateKey,
+        supplyKey: supplyPrivateKey,
+        feeScheduleKey: feeSchedulePrivateKey,
+        memo: memo,
+        customFees: [
+          {
+            feeCollectorAccountId: feeCollectorAccountId,
+            feeCollectorsExempt: feeCollectorsExempt,
+            fractionalFee: {
+              numerator: numerator,
+              denominator: denominator,
+              minimumAmount: minAmount,
+              maximumAmount: maxAmount,
+              assessmentMethod: assessmentMethod,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+
+      const tokenId = response.tokenId;
+
+      // Verify token info from consensus node
+      const consensusTokenInfo =
+        await consensusInfoClient.getTokenInfo(tokenId);
+      expect(consensusTokenInfo.name).to.equal(name);
+      expect(consensusTokenInfo.symbol).to.equal(symbol);
+      expect(consensusTokenInfo.decimals.toString()).to.equal(
+        decimals.toString(),
+      );
+      expect(consensusTokenInfo.totalSupply.toString()).to.equal(initialSupply);
+      expect(consensusTokenInfo.maxSupply?.toString()).to.equal(maxSupply);
+      expect(consensusTokenInfo.tokenMemo).to.equal(memo);
+
+      // Verify token info from mirror node
+      const mirrorTokenInfo = await mirrorNodeClient.getTokenData(tokenId);
+      expect(mirrorTokenInfo.name).to.equal(name);
+      expect(mirrorTokenInfo.symbol).to.equal(symbol);
+      expect(mirrorTokenInfo.decimals).to.equal(decimals.toString());
+      expect(mirrorTokenInfo.total_supply).to.equal(initialSupply);
+      expect(mirrorTokenInfo.max_supply).to.equal(maxSupply);
+      expect(mirrorTokenInfo.memo).to.equal(memo);
+      expect(mirrorTokenInfo.type).to.equal("FUNGIBLE_COMMON");
+      expect(mirrorTokenInfo.supply_type).to.equal("FINITE");
+
+      // Verify keys using public keys
+      await retryOnError(async () => {
+        await verifyTokenKey(tokenId, adminPublicKey, "adminKey");
+        await verifyTokenKey(tokenId, supplyPublicKey, "supplyKey");
+        await verifyTokenKey(tokenId, feeSchedulePublicKey, "feeScheduleKey");
+      });
+
+      // Verify fractional fee
+      await verifyTokenCreationWithFractionalFee(
+        tokenId,
+        feeCollectorAccountId,
+        feeCollectorsExempt,
+        numerator,
+        denominator,
+        minAmount,
+        maxAmount,
+        assessmentMethod,
+      );
+    });
+
+    it("(#4) Creates a complex non-fungible token with multiple custom fees", async function () {
+      // Generate admin key pair
+      let response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const adminPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: adminPrivateKey,
+      });
+      const adminPublicKey = response.key;
+
+      // Generate supply key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const supplyPrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: supplyPrivateKey,
+      });
+      const supplyPublicKey = response.key;
+
+      // Generate fee schedule key pair
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PrivateKey",
+      });
+      const feeSchedulePrivateKey = response.key;
+      response = await JSONRPCRequest(this, "generateKey", {
+        type: "ed25519PublicKey",
+        fromKey: feeSchedulePrivateKey,
+      });
+      const feeSchedulePublicKey = response.key;
+
+      const name = "MultiFeeNFT";
+      const symbol = "MFNFT";
+      const maxSupply = "5000";
+      const metadataValue = "multi-fee NFT metadata";
+      const feeCollectorAccountId = process.env.OPERATOR_ACCOUNT_ID as string;
+      const feeCollectorsExempt = false;
+      const royaltyNumerator = "10";
+      const royaltyDenominator = "100";
+      const royaltyFallbackFeeAmount = "5";
+      const fixedFeeAmount = "50";
+
+      response = await JSONRPCRequest(this, "createToken", {
+        name: name,
+        symbol: symbol,
+        tokenType: "nft",
+        supplyType: "finite",
+        maxSupply: maxSupply,
+        treasuryAccountId: process.env.OPERATOR_ACCOUNT_ID,
+        adminKey: adminPrivateKey,
+        supplyKey: supplyPrivateKey,
+        feeScheduleKey: feeSchedulePrivateKey,
+        metadata: metadataValue,
+        customFees: [
+          {
+            feeCollectorAccountId: feeCollectorAccountId,
+            feeCollectorsExempt: feeCollectorsExempt,
+            royaltyFee: {
+              numerator: royaltyNumerator,
+              denominator: royaltyDenominator,
+              fallbackFee: {
+                amount: royaltyFallbackFeeAmount,
+              },
+            },
+          },
+          {
+            feeCollectorAccountId: feeCollectorAccountId,
+            feeCollectorsExempt: feeCollectorsExempt,
+            fixedFee: {
+              amount: fixedFeeAmount,
+            },
+          },
+        ],
+        commonTransactionParams: {
+          signers: [adminPrivateKey],
+        },
+      });
+
+      const tokenId = response.tokenId;
+
+      // Verify token info from consensus node
+      const consensusTokenInfo =
+        await consensusInfoClient.getTokenInfo(tokenId);
+      expect(consensusTokenInfo.name).to.equal(name);
+      expect(consensusTokenInfo.symbol).to.equal(symbol);
+      expect(consensusTokenInfo.maxSupply?.toString()).to.equal(maxSupply);
+      expect(consensusTokenInfo.metadata?.toString()).to.equal(metadataValue);
+
+      // Verify token info from mirror node
+      const mirrorTokenInfo = await mirrorNodeClient.getTokenData(tokenId);
+      expect(mirrorTokenInfo.name).to.equal(name);
+      expect(mirrorTokenInfo.symbol).to.equal(symbol);
+      expect(mirrorTokenInfo.max_supply).to.equal(maxSupply);
+      expect(
+        Buffer.from(mirrorTokenInfo.metadata!, "base64").toString("utf8"),
+      ).to.equal(metadataValue);
+      expect(mirrorTokenInfo.type).to.equal("NON_FUNGIBLE_UNIQUE");
+      expect(mirrorTokenInfo.supply_type).to.equal("FINITE");
+
+      // Verify keys using public keys
+      await retryOnError(async () => {
+        await verifyTokenKey(tokenId, adminPublicKey, "adminKey");
+        await verifyTokenKey(tokenId, supplyPublicKey, "supplyKey");
+        await verifyTokenKey(tokenId, feeSchedulePublicKey, "feeScheduleKey");
+      });
+
+      // Verify royalty fee
+      await verifyTokenCreationWithRoyaltyFee(
+        tokenId,
+        feeCollectorAccountId,
+        feeCollectorsExempt,
+        royaltyNumerator,
+        royaltyDenominator,
+        royaltyFallbackFeeAmount,
+      );
+
+      // Verify fixed fee
+      await verifyTokenCreationWithFixedFee(
+        tokenId,
+        feeCollectorAccountId,
+        feeCollectorsExempt,
+        fixedFeeAmount,
+      );
+    });
+  });
+
   return Promise.resolve();
 });

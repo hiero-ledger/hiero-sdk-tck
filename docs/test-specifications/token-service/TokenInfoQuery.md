@@ -64,7 +64,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | metadataKey          | string  | The metadata key of the token (if set).                                 |
 | defaultFreezeStatus  | boolean | The default freeze status for token accounts (if freeze key is set).    |
 | defaultKycStatus     | boolean | The default KYC status for token accounts (if KYC key is set).          |
-| pauseStatus          | string  | The pause status of the token (PAUSED/UNPAUSED/NOT_APPLICABLE).        |
+| pauseStatus          | boolean | The pause status of the token (true/false, null if no pause key).       |
 | isDeleted            | boolean | Whether the token has been deleted.                                     |
 | autoRenewAccountId   | string  | The account ID that pays for auto-renewal.                              |
 | autoRenewPeriod      | string  | The auto-renewal period in seconds.                                     |
@@ -129,9 +129,9 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | 42      | Verify defaultFreezeStatus when no freezeKey       | Token without freezeKey                   | Returns null or false for defaultFreezeStatus                                 | N                 |
 | 43      | Verify defaultKycStatus when kycKey set            | Token with kycKey, defaultKycStatus=true  | Returns the correct default KYC status                                        | N                 |
 | 44      | Verify defaultKycStatus when no kycKey             | Token without kycKey                      | Returns null or false for defaultKycStatus                                    | N                 |
-| 45      | Verify pauseStatus for paused token                | Token that has been paused                | Returns PAUSED for pauseStatus                                                | N                 |
-| 46      | Verify pauseStatus for unpaused token              | Token with pauseKey but not paused        | Returns UNPAUSED for pauseStatus                                              | N                 |
-| 47      | Verify pauseStatus when no pauseKey                | Token without pauseKey                    | Returns NOT_APPLICABLE or null for pauseStatus                                | N                 |
+| 45      | Verify pauseStatus for paused token                | Token that has been paused                | Returns true for pauseStatus                                                  | N                 |
+| 46      | Verify pauseStatus for unpaused token              | Token with pauseKey but not paused        | Returns false for pauseStatus                                                 | N                 |
+| 47      | Verify pauseStatus when no pauseKey                | Token without pauseKey                    | Returns null for pauseStatus                                                  | N                 |
 | 48      | Verify isDeleted field for active token            | Active token                              | Returns false for isDeleted                                                   | N                 |
 | 49      | Verify customFees field with no fees               | Token without custom fees                 | Returns an empty array for customFees                                         | N                 |
 | 50      | Verify customFees field with fixed fee             | Token with fixed fee                      | Returns the correct fixed fee in customFees array                             | N                 |
