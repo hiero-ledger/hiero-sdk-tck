@@ -14,7 +14,7 @@ The query deliberately returns **only** the HBAR balance. Token balances are out
 
 Two behaviours differ from the consensus-node query and shape the tests:
 
-- **Not-found is not an error.** The balances endpoint returns an empty array — not a 404 — for an entity that does not exist, so the query reports a zero balance rather than failing.
+- **Not-found is the SDK's mapping, not the mirror node's.** The balances endpoint returns an empty array — not a 404 — for an entity that does not exist. The SDK maps that empty result to the `INVALID_ACCOUNT_ID` status the consensus-node query reported, so callers keep the same error contract; an existing account holding nothing returns a populated entry with a zero balance, so a real zero is never mistaken for a missing account. Because the mirror node also lags on an account's *existence*, a freshly created account can transiently fail with `INVALID_ACCOUNT_ID` until ingested.
 - **Eventual consistency.** The mirror node ingests consensus state asynchronously and typically lags the network by a few seconds. A balance read immediately after a transfer may still show the pre-transfer value, so the test driver polls the mirror node until it reflects the setup transactions before asserting.
 
 Out of scope: retry of transient mirror-node failures (HTTP 5xx, network errors). The SDK server derives its mirror REST URL from the client's mirror network internally, so the TCK cannot interpose a fault-injecting proxy through the existing `setup` contract; retry/backoff behaviour is covered by SDK-level tests. The test environment must expose the mirror node REST API wherever the SDK under test expects it relative to the configured mirror network (for a local network this is conventionally `http://127.0.0.1:5551`).
@@ -43,7 +43,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api/balances
 
 | Parameter Name | Type   | Description/Notes                                                                              |
 | -------------- | ------ | ----------------------------------------------------------------------------------------------- |
-| hbars          | string | The hbar balance of the account/contract in tinybars. `"0"` if the entity does not exist.       |
+| hbars          | string | The hbar balance of the account/contract in tinybars.                                          |
 
 ### JSON Request/Response Examples
 
@@ -70,12 +70,29 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api/balances
 }
 ```
 
-*Malformed account ID*
+*Account the mirror node does not know*
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 9121,
+  "error": {
+    "code": -32001,
+    "message": "Hiero error",
+    "data": {
+      "status": "INVALID_ACCOUNT_ID",
+      "message": "mirror node has no balance entry for account 123.456.789"
+    }
+  }
+}
+```
+
+*Malformed account ID*
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 9122,
   "error": {
     "code": -32603,
     "message": "Internal error",
@@ -99,8 +116,8 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api/balances
 | 3       | Query the balance by EVM address                      | accountId=<EVM_ADDRESS_OF_CREATED_ACCOUNT>                     | The query resolves the EVM address and returns `hbars` equal to the account's balance                                          | N                 |
 | 4       | Query the balance by public key alias                 | accountId=<ALIAS_OF_AUTO_CREATED_ACCOUNT>                      | The query resolves the alias and returns `hbars` equal to the account's balance                                                | N                 |
 | 5       | Query the balance of a contract                       | accountId=<CREATED_CONTRACT_ID>                                | The query returns `hbars` equal to the contract's balance                                                                      | N                 |
-| 6       | Query the balance of an account that doesn't exist    | accountId=123.456.789                                          | The query succeeds and returns `hbars` `"0"` — the balances endpoint reports no entry, not an error                            | N                 |
+| 6       | Query the balance of an account that doesn't exist    | accountId=123.456.789                                          | The query fails with a JSON-RPC error response of code `-32001` (`Hiero error`) with `data.status` `INVALID_ACCOUNT_ID`        | N                 |
 | 7       | Query the balance with a malformed account ID         | accountId="not-an-id"                                          | The query fails with a JSON-RPC error response of code `-32603` (`INTERNAL_ERROR`) before any network call                     | N                 |
 | 8       | Query the balance with no account ID                  |                                                                | The query fails with a JSON-RPC error response of code `-32603` (`INTERNAL_ERROR`) before any network call                     | N                 |
 
-Tests 3 and 4 cover the capabilities the consensus-node query never had — resolving an EVM address and a public key alias directly. For test 4 the driver passes the alias account ID in the DER-hex form every SDK parses (`0.0.<hex-encoded DER public key>`); the SDK is responsible for querying the mirror node with the base32 alias form it accepts (the DER-hex form is rejected with a 400). For test 6, note the inversion from the consensus-node query, which fails with `INVALID_ACCOUNT_ID` for a non-existent account; the mirror-node query reports `"0"` instead.
+Tests 3 and 4 cover the capabilities the consensus-node query never had — resolving an EVM address and a public key alias directly. For test 4 the driver passes the alias account ID in the DER-hex form every SDK parses (`0.0.<hex-encoded DER public key>`); the SDK is responsible for querying the mirror node with the base32 alias form it accepts (the DER-hex form is rejected with a 400). For test 6, the mirror node itself reports no entry rather than an error; the SDK under test is expected to map that empty result to `INVALID_ACCOUNT_ID`, preserving the error contract of the consensus-node query it replaces.
