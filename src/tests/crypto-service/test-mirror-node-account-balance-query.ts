@@ -184,6 +184,7 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         accountId: "123.456.789",
       });
     } catch (error: any) {
+      assert.equal(error.code, ErrorStatusCodes.HIERO_ERROR, "Hiero error");
       assert.equal(error.data.status, "INVALID_ACCOUNT_ID");
       return;
     }
