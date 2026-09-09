@@ -28,6 +28,7 @@
  */
 import "dotenv/config";
 import { lookup } from "node:dns/promises";
+import { Agent } from "node:http";
 import { Socket } from "node:net";
 import {
   existsSync,
@@ -54,6 +55,14 @@ export const mochaHooks = {
 
 const TIMEOUT_MS = 5000;
 
+// The checks below set an axios `timeout`, which arms an idle timer on the
+// underlying socket. With Node's keep-alive global agent that socket goes
+// back into the pool still armed, and the first later JSON-RPC call that
+// takes longer than TIMEOUT_MS to answer (e.g. an SDK request timing out)
+// dies with "socket hang up". Give the checks their own non-pooling agent so
+// nothing they touch is reused by the tests.
+const preflightAgent = new Agent({ keepAlive: false });
+
 // What the endpoint's hostname actually resolves to on this machine — the
 // BNCE failure mode was /etc/hosts mapping the FQDN to 127.0.2.1.
 const resolvedAddress = async (host: string): Promise<string> => {
@@ -69,7 +78,11 @@ const resolvedAddress = async (host: string): Promise<string> => {
 const checkHttp = async (name: string, url: string): Promise<string | null> => {
   const { hostname } = new URL(url);
   try {
-    await axios.get(url, { timeout: TIMEOUT_MS, validateStatus: () => true });
+    await axios.get(url, {
+      timeout: TIMEOUT_MS,
+      validateStatus: () => true,
+      httpAgent: preflightAgent,
+    });
     return null;
   } catch (error: any) {
     return `${name} unreachable: ${url} (${hostname} resolved to ${await resolvedAddress(
@@ -119,7 +132,11 @@ const checkJsonRpcServer = async (
     const response = await axios.post(
       url,
       { jsonrpc: "2.0", id: "preflight-version", method: "version" },
-      { timeout: TIMEOUT_MS, validateStatus: () => true },
+      {
+        timeout: TIMEOUT_MS,
+        validateStatus: () => true,
+        httpAgent: preflightAgent,
+      },
     );
     const result = response.data?.result;
     const version =
