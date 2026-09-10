@@ -1,5 +1,6 @@
 ---
 title: Test Specifications Template
+hip: [HIP-XXXX] # HIP number or YAML list of HIP numbers
 nav_exclude: true
 ---
 # RequestName - Test specification
