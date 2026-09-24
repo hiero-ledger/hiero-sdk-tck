@@ -274,5 +274,25 @@ describe("MirrorNodeAccountBalanceQuery", function () {
     expect(response).to.deep.equal({ hbars: "100" });
   });
 
+  it("(#11) Queries a balance above 2^53", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    // 2^53 + 1 tinybars: the first integer a JSON number (IEEE 754 double)
+    // cannot hold.
+    const initialBalance = "9007199254740993";
+    const accountId = (
+      await JSONRPCRequest(this, "createAccount", {
+        key: privateKey,
+        initialBalance,
+      })
+    ).accountId;
+
+    await expectBalance(this, accountId, initialBalance);
+
+    const response = await JSONRPCRequest(this, "getMirrorNodeAccountBalance", {
+      accountId,
+    });
+    expect(response).to.deep.equal({ hbars: initialBalance });
+  });
+
   return Promise.resolve();
 });
