@@ -1,6 +1,4 @@
 import {
-  AccountBalance,
-  AccountBalanceQuery,
   AccountId,
   AccountInfo,
   AccountInfoQuery,
@@ -86,13 +84,6 @@ class ConsensusInfoClient {
     }
   }
 
-  async getBalance(accountId: string): Promise<AccountBalance> {
-    return this.executeAccountMethod(
-      accountId,
-      new AccountBalanceQuery(),
-    ) as Promise<AccountBalance>;
-  }
-
   async getAccountInfo(accountId: string): Promise<AccountInfo> {
     return this.executeAccountMethod(
       accountId,
@@ -125,10 +116,7 @@ class ConsensusInfoClient {
     return query.execute(this.sdkClient);
   }
 
-  async executeAccountMethod(
-    accountId: string,
-    method: AccountInfoQuery | AccountBalanceQuery,
-  ) {
+  async executeAccountMethod(accountId: string, method: AccountInfoQuery) {
     method.setAccountId(accountId);
     return method.execute(this.sdkClient);
   }
