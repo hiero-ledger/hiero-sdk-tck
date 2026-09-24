@@ -9,7 +9,7 @@ nav_order: 3
 > **Retired:** the `getAccountBalance` JSON-RPC method and its success tests are retired as part of the `AccountBalanceQuery` deprecation (consensus node v0.77 removes `CryptoService/cryptoGetBalance`). SDK servers no longer implement `getAccountBalance`.
 >
 > - HBAR balances: see [MirrorNodeAccountBalanceQuery](MirrorNodeAccountBalanceQuery.md).
-> - Token balances: see [MirrorNodeTokenBalanceQuery](MirrorNodeTokenBalanceQuery.md).
+> - Token balances: see [MirrorNodeTokenBalanceQuery](../token-service/MirrorNodeTokenBalanceQuery.md).
 
 ## Description:
 
@@ -39,12 +39,12 @@ Every SDK server must implement the method as follows:
 1. The SDK server must construct the real SDK `AccountBalanceQuery` using the session's client. It must not substitute another query, call the mirror node REST API, or hardcode or synthesise either returned string.
 2. The SDK server must capture the construction warning from the SDK's own channel (JS `console.warn`, the Java SLF4J logger, the Go SDK logger, the Rust `log` crate, the C++ `Hiero::Logger`, and the Swift SDK's Stage 2 warning channel). It must capture only for the duration of the construction and restore the channel afterwards.
 3. The SDK server must set `accountId` on the query, then run the requested operation (`execute` or `getCost`, in the SDK's normal blocking or awaited form) against the session client. It must catch the SDK error and return the error's message in `executionError`. If the SDK returns a value instead of raising an error, the SDK server must return `executionError: null`, and the test fails.
-4. The SDK server must return a JSON-RPC error response only for invalid parameters (a missing `accountId` or an unknown `operation`). Every other call returns a result.
-5. The SDK must emit the warning on every construction, not only on the first one.
+4. The SDK server must return a JSON-RPC error response only for invalid parameters: a missing or malformed `accountId`, or an unknown `operation`. Every other call returns a result. The TCK does not assert the error code, because SDK servers differ.
+5. The SDK must emit the warning on every construction, not only on the first one. Every test below asserts the warning, so an SDK that warns only once fails from test 2 on.
 
 ### Zero network requests
 
-The tests observe "no request sent to the network" with the gRPC proxy described in the [Proxy contract](ClientPing.md#proxy-contract) of the ClientPing specification. The test driver starts one proxy listener in front of the consensus node and passes the listener's address as `nodeIp` in `setup`. The proxy listens on `127.0.0.1`, so the SDK server must run on the same host as the test driver. The driver clears the proxy captures immediately before the call under test. After the JSON-RPC response returns, the driver waits 1 second so that any request the SDK sent late can arrive, and then asserts that the proxy captured no request.
+The tests observe "no request sent to the network" with the gRPC proxy described in the [Proxy contract](ClientPing.md#proxy-contract) of the ClientPing specification. The test driver starts one proxy listener in front of the consensus node and passes the listener's address as `nodeIp` in `setup`. As a positive control, the driver asserts that the proxy captured the gate's `ping` probe, which proves that the SDK server routes its requests through the proxy. The proxy listens on `127.0.0.1`, so the SDK server must run on the same host as the test driver. The driver clears the proxy captures immediately before the call under test. After the JSON-RPC response returns, the driver waits 1 second so that any request the SDK sent late can arrive, and then asserts that the proxy captured no request.
 
 ### Stage 1 gate
 
@@ -107,12 +107,12 @@ https://github.com/hiero-ledger/sdk-collaboration-hub/blob/main/proposals/accoun
 
 - Constructs the deprecated query and runs one operation on it
 
-| Test no | Name                                                    | Input                                                   | Expected response                                                                                     | Implemented (Y/N) |
-| ------- | ------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------- |
-| 1       | Constructing the query emits the deprecation warning    | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute"   | `constructionWarning` contains `AccountBalanceQuery is no longer supported`                           | Y                 |
-| 2       | Executing the query fails with the deprecation error    | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute"   | `executionError` contains `AccountBalanceQuery is no longer supported`                                | Y                 |
-| 3       | Executing the query sends no network request            | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute"   | The proxy captures no request during the call and the 1 second settle that follows it                | Y                 |
-| 4       | Requesting the query's cost fails with the deprecation error | accountId=<OPERATOR_ACCOUNT_ID>, operation="getCost" | `executionError` contains `AccountBalanceQuery is no longer supported`                                | Y                 |
-| 5       | Requesting the query's cost sends no network request    | accountId=<OPERATOR_ACCOUNT_ID>, operation="getCost"   | The proxy captures no request during the call and the 1 second settle that follows it                | Y                 |
+| Test no | Name                                                         | Input                                                | Expected response                                                                                                                                                      | Implemented (Y/N) |
+| ------- | ------------------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1       | Constructing the query emits the deprecation warning         | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute" | `constructionWarning` contains `AccountBalanceQuery is no longer supported`                                                                                            | Y                 |
+| 2       | Executing the query fails with the deprecation error         | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute" | `executionError` and `constructionWarning` both contain `AccountBalanceQuery is no longer supported`                                                                   | Y                 |
+| 3       | Executing the query sends no network request                 | accountId=<OPERATOR_ACCOUNT_ID>, operation="execute" | `constructionWarning` contains `AccountBalanceQuery is no longer supported`, and the proxy captures no request during the call and the 1 second settle that follows it | Y                 |
+| 4       | Requesting the query's cost fails with the deprecation error | accountId=<OPERATOR_ACCOUNT_ID>, operation="getCost" | `executionError` and `constructionWarning` both contain `AccountBalanceQuery is no longer supported`                                                                   | Y                 |
+| 5       | Requesting the query's cost sends no network request         | accountId=<OPERATOR_ACCOUNT_ID>, operation="getCost" | `constructionWarning` contains `AccountBalanceQuery is no longer supported`, and the proxy captures no request during the call and the 1 second settle that follows it | Y                 |
 
 Tests 3 and 5 prove that the SDK raises the error before any network request, rather than relaying a failure from a consensus node that no longer serves `CryptoService/cryptoGetBalance`.

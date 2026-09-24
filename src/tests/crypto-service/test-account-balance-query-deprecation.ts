@@ -32,11 +32,17 @@ describe("AccountBalanceQuery", function () {
     await JSONRPCRequest(this, "ping", {
       nodeAccountId: process.env.NODE_ACCOUNT_ID,
     });
+    // Positive control for the zero-request tests: the probe must have gone
+    // through the proxy, or an empty capture would prove nothing.
+    expect(proxy.captures, "ping must go through the proxy").to.not.be.empty;
   });
 
   after(async function () {
-    await JSONRPCRequest(this, "reset", {});
-    await proxy.stop();
+    try {
+      await JSONRPCRequest(this, "reset", {});
+    } finally {
+      await proxy.stop();
+    }
   });
 
   beforeEach(function () {
@@ -49,6 +55,10 @@ describe("AccountBalanceQuery", function () {
       operation,
     });
 
+  // Every construction must warn (rule 5), so every test checks the warning.
+  const expectDeprecationMessage = (value: unknown) =>
+    expect(value).to.be.a("string").that.includes(DEPRECATION_MESSAGE);
+
   // The captures were cleared right before the call; the settle lets a late
   // request reach the proxy before asserting that none was sent.
   const assertNoNetworkRequest = async () => {
@@ -60,36 +70,34 @@ describe("AccountBalanceQuery", function () {
     it("(#1) Constructing the query emits the deprecation warning", async function () {
       const response = await executeDeprecatedQuery(this, "execute");
 
-      expect(response.constructionWarning)
-        .to.be.a("string")
-        .that.includes(DEPRECATION_MESSAGE);
+      expectDeprecationMessage(response.constructionWarning);
     });
 
     it("(#2) Executing the query fails with the deprecation error", async function () {
       const response = await executeDeprecatedQuery(this, "execute");
 
-      expect(response.executionError)
-        .to.be.a("string")
-        .that.includes(DEPRECATION_MESSAGE);
+      expectDeprecationMessage(response.constructionWarning);
+      expectDeprecationMessage(response.executionError);
     });
 
     it("(#3) Executing the query sends no network request", async function () {
-      await executeDeprecatedQuery(this, "execute");
+      const response = await executeDeprecatedQuery(this, "execute");
 
+      expectDeprecationMessage(response.constructionWarning);
       await assertNoNetworkRequest();
     });
 
     it("(#4) Requesting the query's cost fails with the deprecation error", async function () {
       const response = await executeDeprecatedQuery(this, "getCost");
 
-      expect(response.executionError)
-        .to.be.a("string")
-        .that.includes(DEPRECATION_MESSAGE);
+      expectDeprecationMessage(response.constructionWarning);
+      expectDeprecationMessage(response.executionError);
     });
 
     it("(#5) Requesting the query's cost sends no network request", async function () {
-      await executeDeprecatedQuery(this, "getCost");
+      const response = await executeDeprecatedQuery(this, "getCost");
 
+      expectDeprecationMessage(response.constructionWarning);
       await assertNoNetworkRequest();
     });
   });
