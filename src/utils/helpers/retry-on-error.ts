@@ -21,8 +21,10 @@ export const retryOnError = async (
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (error) {
-      if (attempt === maxRetries) {
+    } catch (error: any) {
+      // mocha's skip signal (JSONRPCRequest skips on a missing or
+      // NOT_IMPLEMENTED method) fails the same way on every attempt.
+      if (attempt === maxRetries || error?.constructor?.name === "Pending") {
         throw error; // Throw the last error if retries are exhausted
       }
 

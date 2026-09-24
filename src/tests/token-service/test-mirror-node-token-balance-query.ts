@@ -1,4 +1,5 @@
 import { assert, expect } from "chai";
+import { PublicKey } from "@hashgraph/sdk";
 
 import { setOperator } from "@helpers/setup-tests";
 import { JSONRPCRequest } from "@services/Client";
@@ -6,6 +7,7 @@ import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { retryOnError } from "@helpers/retry-on-error";
 import {
   generateEd25519PrivateKey,
+  generateEd25519PublicKey,
   generateEcdsaSecp256k1PrivateKey,
   generateEvmAddress,
 } from "@helpers/key";
@@ -14,7 +16,7 @@ import { mintToken } from "@helpers/mint";
 import { createFtToken, createNftToken } from "@helpers/token";
 
 /**
- * Tests for MirrorNodeTokenBalanceQuery — the mirror-node REST query for one
+ * Tests for MirrorNodeTokenBalanceQuery, the mirror-node REST query for one
  * account's balance of one token, replacing the token balances of the
  * deprecated AccountBalanceQuery. The mirror node ingests consensus state with
  * a few seconds of lag, so balance assertions poll the query until it reflects
@@ -295,6 +297,57 @@ describe("MirrorNodeTokenBalanceQuery", function () {
 
     await expectTokenBalance(this, accountId, tokenA, "30", 2);
     await expectTokenBalance(this, accountId, tokenB, "70", 4);
+  });
+
+  it("(#13) Queries a balance above 2^53", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    const accountId = await createAccount(this, privateKey);
+    // 2^53 + 1: the first integer a JSON number (IEEE 754 double) cannot hold.
+    const initialSupply = "9007199254740993";
+    const tokenId = await createFtToken(this, {
+      treasuryAccountId: accountId,
+      supplyType: "infinite",
+      initialSupply,
+      decimals: 0,
+      commonTransactionParams: {
+        signers: [privateKey],
+      },
+    });
+
+    await expectTokenBalance(this, accountId, tokenId, initialSupply, 0);
+  });
+
+  it("(#14) Queries the balance by public key alias", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    const publicKey = await generateEd25519PublicKey(this, privateKey);
+    // The DER-hex alias account ID form every SDK parses; the SDK under test
+    // converts it to the base32 form the mirror node accepts.
+    const aliasAccountId = PublicKey.fromString(publicKey)
+      .toAccountId(0, 0)
+      .toString();
+
+    // Auto-create the alias account by transferring hbar to it.
+    await JSONRPCRequest(this, "transferCrypto", {
+      transfers: [
+        {
+          hbar: {
+            accountId: process.env.OPERATOR_ACCOUNT_ID,
+            amount: "-100",
+          },
+        },
+        {
+          hbar: {
+            accountId: aliasAccountId,
+            amount: "100",
+          },
+        },
+      ],
+    });
+    const tokenId = await createFtToken(this, { decimals: 2 });
+
+    await transferFromOperator(this, aliasAccountId, tokenId, 60);
+
+    await expectTokenBalance(this, aliasAccountId, tokenId, "60", 2);
   });
 
   return Promise.resolve();
