@@ -12,7 +12,7 @@ This test specification for the AccountInfoQuery is to be one of many for testin
 
 ## Design:
 
-Each test within the test specification is linked to one of the properties within AccountInfoQuery. Each property is tested with a mix of boundaries. The inputs for each test are a range of valid, minimum, maximum, negative and invalid values for the method. The expected response of a passed test can be a correct error or a results of node queries. Success on the consensus node can be obtained by a queries such as AccountInfoQuery or AccountBalanceQuery, and on the mirror node through the rest API. Error codes are obtained from the response code proto files.
+Each test within the test specification is linked to one of the properties within AccountInfoQuery. Each property is tested with a mix of boundaries. The inputs for each test are a range of valid, minimum, maximum, negative and invalid values for the method. The expected response of a passed test can be a correct error or a results of node queries. Success on the consensus node can be obtained by a queries such as AccountInfoQuery, and on the mirror node through MirrorNodeAccountBalanceQuery or the rest API. Error codes are obtained from the response code proto files.
 
 **Query properties:**
 

@@ -44,7 +44,7 @@ Every SDK server must implement the method as follows:
 
 ### Zero network requests
 
-The tests observe "no request sent to the network" with the gRPC proxy described in the [Proxy contract](ClientPing.md#proxy-contract) of the ClientPing specification. The test driver starts one proxy listener in front of the consensus node and passes the listener's address as `nodeIp` in `setup`. The driver clears the proxy captures immediately before the call under test. After the JSON-RPC response returns, the driver waits 1 second so that any request the SDK sent late can arrive, and then asserts that the proxy captured no request.
+The tests observe "no request sent to the network" with the gRPC proxy described in the [Proxy contract](ClientPing.md#proxy-contract) of the ClientPing specification. The test driver starts one proxy listener in front of the consensus node and passes the listener's address as `nodeIp` in `setup`. The proxy listens on `127.0.0.1`, so the SDK server must run on the same host as the test driver. The driver clears the proxy captures immediately before the call under test. After the JSON-RPC response returns, the driver waits 1 second so that any request the SDK sent late can arrive, and then asserts that the proxy captured no request.
 
 ### Stage 1 gate
 
