@@ -298,8 +298,9 @@ describe("ContractDeleteTransaction", function () {
       const transferAccount = await createAccountWithOptions(this);
 
       // Get initial balance of transfer account
-      const initialTransferAccountBalance =
-        await consensusInfoClient.getBalance(transferAccount.accountId);
+      const initialTransferAccountBalance = (
+        await consensusInfoClient.getAccountInfo(transferAccount.accountId)
+      ).balance;
 
       await JSONRPCRequest(this, "deleteContract", {
         contractId,
@@ -310,13 +311,13 @@ describe("ContractDeleteTransaction", function () {
       });
 
       // Verify the transfer account received the contract's balance
-      const finalTransferAccountBalance = await consensusInfoClient.getBalance(
-        transferAccount.accountId,
-      );
+      const finalTransferAccountBalance = (
+        await consensusInfoClient.getAccountInfo(transferAccount.accountId)
+      ).balance;
 
       const balanceIncrease =
-        finalTransferAccountBalance.hbars.toTinybars().toNumber() -
-        initialTransferAccountBalance.hbars.toTinybars().toNumber();
+        finalTransferAccountBalance.toTinybars().toNumber() -
+        initialTransferAccountBalance.toTinybars().toNumber();
 
       // The transfer account should have received the contract's initial balance
       expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
@@ -336,8 +337,9 @@ describe("ContractDeleteTransaction", function () {
         await createContractWithInitialBalance(this, initialContractBalance);
       const transferContractId = await createImmutableContract(this);
 
-      const initialTransferContractBalance =
-        await consensusInfoClient.getBalance(transferContractId);
+      const initialTransferContractBalance = (
+        await consensusInfoClient.getContractInfo(transferContractId)
+      ).balance;
 
       await JSONRPCRequest(this, "deleteContract", {
         contractId,
@@ -347,12 +349,13 @@ describe("ContractDeleteTransaction", function () {
         },
       });
 
-      const finalTransferContractBalance =
-        await consensusInfoClient.getBalance(transferContractId);
+      const finalTransferContractBalance = (
+        await consensusInfoClient.getContractInfo(transferContractId)
+      ).balance;
 
       const balanceIncrease =
-        finalTransferContractBalance.hbars.toTinybars().toNumber() -
-        initialTransferContractBalance.hbars.toTinybars().toNumber();
+        finalTransferContractBalance.toTinybars().toNumber() -
+        initialTransferContractBalance.toTinybars().toNumber();
 
       expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
 
@@ -575,8 +578,9 @@ describe("ContractDeleteTransaction", function () {
       const transferAccount = await createAccountWithOptions(this);
       const transferContractId = await createImmutableContract(this);
 
-      const initialTransferAccountBalance =
-        await consensusInfoClient.getBalance(transferAccount.accountId);
+      const initialTransferAccountBalance = (
+        await consensusInfoClient.getAccountInfo(transferAccount.accountId)
+      ).balance;
 
       await JSONRPCRequest(this, "deleteContract", {
         contractId,
@@ -587,13 +591,13 @@ describe("ContractDeleteTransaction", function () {
         },
       });
 
-      const finalTransferAccountBalance = await consensusInfoClient.getBalance(
-        transferAccount.accountId,
-      );
+      const finalTransferAccountBalance = (
+        await consensusInfoClient.getAccountInfo(transferAccount.accountId)
+      ).balance;
 
       const balanceIncrease =
-        finalTransferAccountBalance.hbars.toTinybars().toNumber() -
-        initialTransferAccountBalance.hbars.toTinybars().toNumber();
+        finalTransferAccountBalance.toTinybars().toNumber() -
+        initialTransferAccountBalance.toTinybars().toNumber();
 
       expect(balanceIncrease).to.equal(parseInt(initialContractBalance));
 
