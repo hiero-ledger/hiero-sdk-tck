@@ -1,6 +1,4 @@
 import {
-  AccountBalance,
-  AccountBalanceQuery,
   AccountId,
   AccountInfo,
   AccountInfoQuery,
@@ -86,18 +84,10 @@ class ConsensusInfoClient {
     }
   }
 
-  async getBalance(accountId: string): Promise<AccountBalance> {
-    return this.executeAccountMethod(
-      accountId,
-      new AccountBalanceQuery(),
-    ) as Promise<AccountBalance>;
-  }
-
   async getAccountInfo(accountId: string): Promise<AccountInfo> {
-    return this.executeAccountMethod(
-      accountId,
-      new AccountInfoQuery(),
-    ) as Promise<AccountInfo>;
+    const query = new AccountInfoQuery();
+    query.setAccountId(accountId);
+    return query.execute(this.sdkClient);
   }
 
   async getTokenInfo(tokenId: string): Promise<TokenInfo> {
@@ -123,14 +113,6 @@ class ConsensusInfoClient {
     const query = new FileContentsQuery();
     query.setFileId(FileId.fromString(fileId));
     return query.execute(this.sdkClient);
-  }
-
-  async executeAccountMethod(
-    accountId: string,
-    method: AccountInfoQuery | AccountBalanceQuery,
-  ) {
-    method.setAccountId(accountId);
-    return method.execute(this.sdkClient);
   }
 
   async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {

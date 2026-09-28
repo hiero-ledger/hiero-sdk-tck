@@ -5,7 +5,7 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   AccountAllowanceDelete:
     "src/tests/crypto-service/test-account-allowance-delete-transaction.ts",
   AccountBalanceQuery:
-    "src/tests/crypto-service/test-account-balance-query-transaction.ts",
+    "src/tests/crypto-service/test-account-balance-query-deprecation.ts",
   AccountCreate: "src/tests/crypto-service/test-account-create-transaction.ts",
   AccountDelete: "src/tests/crypto-service/test-account-delete-transaction.ts",
   AccountUpdate: "src/tests/crypto-service/test-account-update-transaction.ts",

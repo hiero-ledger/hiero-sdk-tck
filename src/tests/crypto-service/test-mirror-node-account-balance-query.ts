@@ -3,6 +3,7 @@ import { PublicKey } from "@hashgraph/sdk";
 
 import { setOperator } from "@helpers/setup-tests";
 import { JSONRPCRequest } from "@services/Client";
+import mirrorNodeClient from "@services/MirrorNodeClient";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { retryOnError } from "@helpers/retry-on-error";
 import {
@@ -12,6 +13,7 @@ import {
   generateEvmAddress,
 } from "@helpers/key";
 import { createFtToken } from "@helpers/token";
+import { createAccount } from "@helpers/account";
 
 /**
  * Tests for MirrorNodeAccountBalanceQuery — the mirror-node REST replacement
@@ -211,6 +213,85 @@ describe("MirrorNodeAccountBalanceQuery", function () {
       return;
     }
     assert.fail("Should throw an error");
+  });
+
+  it("(#9) Queries the balance of an account with a zero balance", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    const accountId = await createAccount(this, privateKey);
+
+    // A real zero reads as "0", never as INVALID_ACCOUNT_ID once the mirror
+    // node has ingested the account (earlier reads of that status are retried).
+    await expectBalance(this, accountId, "0");
+  });
+
+  it("(#10) Queries the balance of an account that received fungible tokens", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    const accountId = (
+      await JSONRPCRequest(this, "createAccount", {
+        key: privateKey,
+        initialBalance: "100",
+        maxAutoTokenAssociations: 1,
+      })
+    ).accountId;
+    const tokenId = await createFtToken(this);
+
+    await JSONRPCRequest(this, "transferCrypto", {
+      transfers: [
+        {
+          token: {
+            accountId: process.env.OPERATOR_ACCOUNT_ID,
+            tokenId,
+            amount: "-10",
+          },
+        },
+        {
+          token: {
+            accountId,
+            tokenId,
+            amount: "10",
+          },
+        },
+      ],
+    });
+
+    // Wait until the mirror node itself shows the account holding the token.
+    await retryOnError(
+      async () => {
+        const { tokens } = await mirrorNodeClient.getTokenRelationships(
+          accountId,
+          tokenId,
+        );
+        expect(String(tokens?.[0]?.balance)).to.equal("10");
+      },
+      60,
+      500,
+    );
+    await expectBalance(this, accountId, "100");
+
+    const response = await JSONRPCRequest(this, "getMirrorNodeAccountBalance", {
+      accountId,
+    });
+    expect(response).to.deep.equal({ hbars: "100" });
+  });
+
+  it("(#11) Queries a balance above 2^53", async function () {
+    const privateKey = await generateEd25519PrivateKey(this);
+    // 2^53 + 1 tinybars: the first integer a JSON number (IEEE 754 double)
+    // cannot hold.
+    const initialBalance = "9007199254740993";
+    const accountId = (
+      await JSONRPCRequest(this, "createAccount", {
+        key: privateKey,
+        initialBalance,
+      })
+    ).accountId;
+
+    await expectBalance(this, accountId, initialBalance);
+
+    const response = await JSONRPCRequest(this, "getMirrorNodeAccountBalance", {
+      accountId,
+    });
+    expect(response).to.deep.equal({ hbars: initialBalance });
   });
 
   return Promise.resolve();
