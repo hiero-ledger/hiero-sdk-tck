@@ -9,6 +9,9 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   AccountCreate: "src/tests/crypto-service/test-account-create-transaction.ts",
   AccountDelete: "src/tests/crypto-service/test-account-delete-transaction.ts",
   AccountUpdate: "src/tests/crypto-service/test-account-update-transaction.ts",
+  ClientPing: "src/tests/crypto-service/test-client-ping.ts",
+  MirrorNodeAccountBalanceQuery:
+    "src/tests/crypto-service/test-mirror-node-account-balance-query.ts",
   TransactionReceiptQuery:
     "src/tests/crypto-service/test-transaction-receipt-query.ts",
   TransferHbar: "src/tests/crypto-service/test-transfer-hbar-transaction.ts",
@@ -55,6 +58,8 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   NodeDelete: "src/tests/node-service/test-node-delete-transaction.ts",
 
   // Token Service Tests
+  MirrorNodeTokenBalanceQuery:
+    "src/tests/token-service/test-mirror-node-token-balance-query.ts",
   TokenAirdropCancel:
     "src/tests/token-service/test-token-airdrop-cancel-transaction.ts",
   TokenAirdropClaim:
