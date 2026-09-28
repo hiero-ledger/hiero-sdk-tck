@@ -126,7 +126,14 @@ jobs:
       - name: Install and Start TCK Server
         id: start-sdk-server
         run: |
-          npm install
+          # Use the SDK built above, including its local workspace dependencies.
+          npm install --no-save ..
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const sdk = require.resolve('@hiero-ledger/sdk');
+          assert.equal(sdk, require.resolve('..'), 'TCK must load the built SDK checkout');
+          console.log(`TCK SDK: ${sdk}`);
+          NODE
           nohup npm run start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
