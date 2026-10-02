@@ -107,12 +107,14 @@ export async function verifyFungibleTokenMint(
   decimals: string | null = null,
 ) {
   const consensusNodeInfo =
-    await consensusInfoClient.getBalance(treasuryAccountId);
-  expect(amount).to.equal(consensusNodeInfo.tokens?.get(tokenId)?.toString());
+    await consensusInfoClient.getAccountInfo(treasuryAccountId);
+  expect(amount).to.equal(
+    consensusNodeInfo.tokenRelationships.get(tokenId)?.balance.toString(),
+  );
 
   if (decimals) {
     expect(decimals).to.equal(
-      consensusNodeInfo.tokenDecimals?.get(tokenId)?.toString(),
+      (await consensusInfoClient.getTokenInfo(tokenId)).decimals.toString(),
     );
   }
 
@@ -235,10 +237,10 @@ export async function verifyFungibleTokenBurn(
   amount: string,
 ) {
   const consensusNodeInfo =
-    await consensusInfoClient.getBalance(treasuryAccountId);
-  expect(consensusNodeInfo.tokens?.get(tokenId)?.toString()).to.equal(
-    (BigInt(initialSupply) - BigInt(amount)).toString(),
-  );
+    await consensusInfoClient.getAccountInfo(treasuryAccountId);
+  expect(
+    consensusNodeInfo.tokenRelationships.get(tokenId)?.balance.toString(),
+  ).to.equal((BigInt(initialSupply) - BigInt(amount)).toString());
 
   await retryOnError(async () => {
     const mirrorNodeInfo = await mirrorNodeClient.getTokenRelationships(
@@ -334,13 +336,13 @@ export async function verifyFungibleTokenWipe(
 
   // Fetch both consensus balances in parallel
   const [consensusAccountInfo, consensusTokenInfo] = await Promise.all([
-    consensusInfoClient.getBalance(accountId),
+    consensusInfoClient.getAccountInfo(accountId),
     consensusInfoClient.getTokenInfo(tokenId),
   ]);
 
-  expect(consensusAccountInfo.tokens?.get(tokenId)?.toString()).to.equal(
-    expectedAccountBalance,
-  );
+  expect(
+    consensusAccountInfo.tokenRelationships.get(tokenId)?.balance.toString(),
+  ).to.equal(expectedAccountBalance);
   expect(consensusTokenInfo.totalSupply.toString()).to.equal(
     expectedTotalSupply,
   );
