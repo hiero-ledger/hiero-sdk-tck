@@ -1,5 +1,6 @@
 ---
 title: Contract Create Transaction
+hip: HIP-904
 parent: Smart Contract Service
 nav_order: 1
 ---
