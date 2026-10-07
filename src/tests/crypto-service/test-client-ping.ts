@@ -109,7 +109,7 @@ describe("ClientPing", function () {
     });
 
     it("(#4) Ping an unreachable node", async function () {
-      await proxy.block();
+      proxy.block();
 
       try {
         await JSONRPCRequest(this, "ping", {
@@ -123,13 +123,12 @@ describe("ClientPing", function () {
     });
 
     it("(#5) Successful ping resets the node's backoff", async function () {
-      await proxy.unblock();
+      proxy.unblock();
 
-      // The failed probes in test 4 opened a backoff window on the node (and
-      // a reconnect backoff inside the SDK's gRPC channel), so recovery is
-      // polled: the probe must land again once the endpoint is back. Each
-      // failed attempt can burn the SDK server's full 30s request timeout, so
-      // the window leaves room for a few of them.
+      // The failed probes in test 4 opened a backoff window on the node, so
+      // recovery is polled: the probe must land again once that window ends.
+      // Each failed attempt can burn the SDK server's full 30s request
+      // timeout, so the window leaves room for a few of them.
       const deadline = Date.now() + 90000;
       let recovered = false;
       let lastError: any;

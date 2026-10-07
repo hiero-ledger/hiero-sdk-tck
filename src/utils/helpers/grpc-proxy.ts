@@ -3,6 +3,8 @@ import type { AddressInfo } from "node:net";
 
 import { proto } from "@hashgraph/proto";
 
+const GRPC_STATUS_UNAVAILABLE = 14;
+
 export interface GrpcCapture {
   /** gRPC method path, e.g. "/proto.CryptoService/getAccountInfo". */
   path: string;
@@ -20,10 +22,10 @@ export interface GrpcCapture {
 export class GrpcProxy {
   readonly captures: GrpcCapture[] = [];
 
-  private server: http2.Http2Server;
+  private readonly server: http2.Http2Server;
   private readonly sessions = new Set<http2.ServerHttp2Session>();
   private port = 0;
-  private listening = false;
+  private blocked = false;
 
   private constructor(private readonly upstream: string) {
     this.server = this.createServer();
@@ -50,15 +52,23 @@ export class GrpcProxy {
   }
 
   /**
-   * Makes the node unreachable: the listener refuses new connections and
-   * severs the ones already established.
+   * Makes the node unreachable: every new call fails with gRPC status
+   * UNAVAILABLE instead of being forwarded. The listener and the SDK's
+   * connection stay up on purpose. Refusing connections would put the SDK's
+   * gRPC channel into its reconnect backoff, and then that backoff, not the
+   * SDK's node backoff, would decide when the node works again after
+   * `unblock()`.
    */
-  async block(): Promise<void> {
-    if (!this.listening) {
-      return;
-    }
-    this.listening = false;
+  block(): void {
+    this.blocked = true;
+  }
 
+  /** Forwards calls to the upstream node again. */
+  unblock(): void {
+    this.blocked = false;
+  }
+
+  async stop(): Promise<void> {
     for (const session of this.sessions) {
       session.destroy();
     }
@@ -69,19 +79,6 @@ export class GrpcProxy {
     });
   }
 
-  /** Reopens the listener on the same port. */
-  async unblock(): Promise<void> {
-    if (this.listening) {
-      return;
-    }
-    this.server = this.createServer();
-    await this.listen();
-  }
-
-  async stop(): Promise<void> {
-    await this.block();
-  }
-
   private createServer(): http2.Http2Server {
     const server = http2.createServer();
 
@@ -90,7 +87,11 @@ export class GrpcProxy {
       session.on("close", () => this.sessions.delete(session));
     });
 
-    server.on("stream", (stream, headers) => this.forward(stream, headers));
+    server.on("stream", (stream, headers) =>
+      this.blocked
+        ? this.failUnavailable(stream)
+        : this.forward(stream, headers),
+    );
 
     return server;
   }
@@ -100,10 +101,28 @@ export class GrpcProxy {
       this.server.once("error", reject);
       this.server.listen({ host: "127.0.0.1", port: this.port }, () => {
         this.port = (this.server.address() as AddressInfo).port;
-        this.listening = true;
         resolve();
       });
     });
+  }
+
+  /**
+   * Answers the call the way an unreachable node does for the SDK: a
+   * trailers-only gRPC response with status UNAVAILABLE.
+   */
+  private failUnavailable(stream: http2.ServerHttp2Stream): void {
+    // The call is already answered, so a late reset from the client is fine.
+    stream.on("error", () => {});
+    stream.resume();
+    stream.respond(
+      {
+        ":status": 200,
+        "content-type": "application/grpc",
+        "grpc-status": String(GRPC_STATUS_UNAVAILABLE),
+        "grpc-message": "node blocked by the TCK proxy",
+      },
+      { endStream: true },
+    );
   }
 
   private forward(
