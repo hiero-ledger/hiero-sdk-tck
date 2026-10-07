@@ -126,7 +126,16 @@ jobs:
       - name: Install and Start TCK Server
         id: start-sdk-server
         run: |
-          npm install
+          # Share Long with the built SDK: its instanceof checks require one constructor.
+          npm install --no-save .. ../node_modules/long
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { createRequire } = require('node:module');
+          const sdk = require.resolve('@hiero-ledger/sdk');
+          assert.equal(sdk, require.resolve('..'), 'TCK must load the built SDK checkout');
+          assert.equal(require('long'), createRequire(sdk)('long'), 'TCK and SDK must share Long');
+          console.log(`TCK SDK: ${sdk}`);
+          NODE
           nohup npm run start &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
