@@ -45,12 +45,6 @@ class ConsensusInfoClient {
     let sdkClient: Client;
     const network = (process.env.NETWORK ?? "").toLowerCase();
 
-    const trySetMirrorNetwork = (client: Client, mirror: string[]) => {
-      if (client && typeof (client as any).setMirrorNetwork === "function") {
-        (client as any).setMirrorNetwork(mirror);
-      }
-    };
-
     if (
       (network === "" || network === "custom") &&
       process.env.NODE_IP &&
@@ -67,9 +61,9 @@ class ConsensusInfoClient {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
           (addr) => addr.trim(),
         );
-        trySetMirrorNetwork(sdkClient, mirrorNetwork);
+        sdkClient.setMirrorNetwork(mirrorNetwork);
       } else {
-        trySetMirrorNetwork(sdkClient, ["127.0.0.1:5600"]);
+        sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
       }
     } else if (network === "custom") {
       throw new Error(
@@ -77,7 +71,7 @@ class ConsensusInfoClient {
       );
     } else if (network === "local" || network === "") {
       sdkClient = Client.forLocalNode();
-      trySetMirrorNetwork(sdkClient, ["127.0.0.1:5600"]);
+      sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
     } else if (network === "testnet") {
       sdkClient = Client.forTestnet();
     } else {

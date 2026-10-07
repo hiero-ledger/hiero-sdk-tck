@@ -215,6 +215,36 @@ To run tests against any other custom local network, you need to set the followi
 
 For a complete list of configurable environment variables, refer to the `.env.custom_node` file. This file contains default values and descriptions for each variable, which can be adjusted to fit your custom network setup.
 
+By default (`NETWORK` unset or `NETWORK=local`) those values are loaded from
+`.env.custom_node`, so only the variables above need to be overridden. If you
+want to describe the network purely through environment variables instead, set
+`NETWORK=custom`; in that case no `.env.custom_node` defaults are loaded and
+all of the following must be provided:
+
+| Environment Variable           | Description                                  |
+| ------------------------------ | -------------------------------------------- |
+| `NODE_IP`                      | The IP address and port of the consensus node |
+| `NODE_ACCOUNT_ID`              | The account ID of the consensus node         |
+| `MIRROR_NETWORK`               | The IP address and port of the mirror node   |
+| `MIRROR_NODE_REST_URL`         | The REST API URL of the mirror node          |
+| `MIRROR_NODE_REST_JAVA_URL`    | The Java REST API URL of the mirror node     |
+| `OPERATOR_ACCOUNT_ID`          | The account ID of the operator               |
+| `OPERATOR_ACCOUNT_PRIVATE_KEY` | The private key of the operator account      |
+
+```bash
+docker run --network host \
+  -e NETWORK=custom \
+  -e NODE_IP=127.0.0.1:50211 \
+  -e NODE_ACCOUNT_ID=0.0.3 \
+  -e MIRROR_NETWORK=127.0.0.1:5600 \
+  -e MIRROR_NODE_REST_URL=http://127.0.0.1:5551 \
+  -e MIRROR_NODE_REST_JAVA_URL=http://127.0.0.1:8084 \
+  -e OPERATOR_ACCOUNT_ID=0.0.1022 \
+  -e OPERATOR_ACCOUNT_PRIVATE_KEY=your-operator-private-key \
+  -e JSON_RPC_SERVER_URL=http://host.docker.internal:${YOUR_SERVER_PORT} \
+  ivaylogarnev/hiero-tck-client
+```
+
 #### Testnet
 
 To run tests against Hedera Testnet:
