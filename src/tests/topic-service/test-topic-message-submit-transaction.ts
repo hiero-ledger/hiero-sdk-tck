@@ -708,12 +708,13 @@ describe("TopicMessageSubmitTransaction", function () {
       expectedAmount: string,
       tokenId?: string,
     ) => {
-      const accountBalance = await consensusInfoClient.getBalance(accountId);
+      const accountInfo = await consensusInfoClient.getAccountInfo(accountId);
       if (tokenId) {
-        const tokenBalance = accountBalance.tokens?.get(tokenId);
+        const tokenBalance =
+          accountInfo.tokenRelationships.get(tokenId)?.balance;
         expect(tokenBalance?.eq(expectedAmount)).to.be.true;
       } else {
-        expect(accountBalance.hbars.toTinybars().greaterThan(expectedAmount)).to
+        expect(accountInfo.balance.toTinybars().greaterThan(expectedAmount)).to
           .be.true;
       }
     };
@@ -723,13 +724,14 @@ describe("TopicMessageSubmitTransaction", function () {
       expectedAmount: string,
       tokenId?: string,
     ) => {
-      const accountBalance = await consensusInfoClient.getBalance(accountId);
+      const accountInfo = await consensusInfoClient.getAccountInfo(accountId);
 
       if (tokenId) {
-        const tokenBalance = accountBalance.tokens?.get(tokenId);
+        const tokenBalance =
+          accountInfo.tokenRelationships.get(tokenId)?.balance;
         expect(tokenBalance?.eq(0)).to.be.true;
       } else {
-        expect(accountBalance.hbars.toTinybars().lessThan(expectedAmount)).to.be
+        expect(accountInfo.balance.toTinybars().lessThan(expectedAmount)).to.be
           .true;
       }
     };
