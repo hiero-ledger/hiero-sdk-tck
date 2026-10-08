@@ -24,6 +24,15 @@ on:
         description: "The version of the JS SDK to use (defaults to latest tag if not specified):"
         required: false
         type: string
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-js"
   workflow_call:
     inputs:
       custom-job-name:
@@ -43,6 +52,15 @@ on:
         description: "The version of the JS SDK to use"
         required: false
         type: string
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-js"
 
 defaults:
   run:
@@ -115,13 +133,6 @@ jobs:
           task -v build
         working-directory: sdk-server
 
-      # Set up the npm dependencies and cache on the tck-client
-      - name: Set up the tck-client
-        run: |
-          npm cache clean --force
-          npm ci
-        working-directory: tck
-
       # Set up and start the TCK server
       - name: Install and Start TCK Server
         id: start-sdk-server
@@ -157,21 +168,15 @@ jobs:
           mirrorNodeVersion: v0.138.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
 
-       # Start the TCK client
-      - name: Start tck-client
-        env:
-          OPERATOR_ACCOUNT_ID: "0.0.2"
-          OPERATOR_ACCOUNT_PRIVATE_KEY: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
-          JSON_RPC_SERVER_URL: "http://127.0.0.1:8544"
-          NODE_IP: "127.0.0.1:50211"
-          MIRROR_NODE_REST_URL: "http://127.0.0.1:5551"
-          MIRROR_NODE_REST_JAVA_URL: "http://127.0.0.1:8084"
-          NODE_TIMEOUT: "30000"
-          MIRROR_NETWORK: "127.0.0.1:5600"
-          NODE_ACCOUNT_ID: "0.0.3"
-        run: |
-          npm run test
-        working-directory: tck
+      # Run the TCK through the action in this repository; `tck` is the path
+      # the TCK checkout above uses. The action installs the client, waits for
+      # the JSON-RPC server, runs the suite, writes the job summary and
+      # uploads the report.
+      - name: Run the TCK
+        uses: ./tck
+        with:
+          test-matrix: ${{ inputs.test-matrix }}
+          artifact-name: ${{ inputs.artifact-name || 'tck-report-js' }}
 
       # Stop the TCK server
       - name: Stop tck-server

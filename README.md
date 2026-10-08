@@ -293,6 +293,92 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 
 `RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
 
+## Run the TCK from an SDK repository's CI
+
+This repository is also a composite GitHub Action. An SDK workflow builds its
+JSON-RPC server, starts it and a network, and then runs the whole suite with
+one step:
+
+```yaml
+jobs:
+  tck:
+    name: TCK Compatibility
+    runs-on: ubuntu-latest
+    # Run the suite only once the repository's required checks have passed.
+    needs: [build, test]
+    steps:
+      - uses: actions/checkout@<sha> # v4
+      - name: Build and start the JSON-RPC server
+        run: |
+          npm ci && npm run build
+          (cd tck && npm install && nohup npm run start &)
+      - name: Prepare Hiero Solo
+        uses: hiero-ledger/hiero-solo-action@<sha> # v0.22.0
+        with:
+          installMirrorNode: true
+          haproxyPort: 50211
+          mirrorNodePortRest: 5551
+      - name: Run the TCK
+        uses: hiero-ledger/hiero-sdk-tck@<sha> # v0.14.0
+```
+
+Pin the action to a release tag's commit. The tag versions the suite and the
+action together, so a pin says which tests ran. Bump it on purpose; a new test
+for a feature the SDK does not have yet would otherwise turn the check red.
+
+The action never builds or starts the SDK server and never starts a network.
+It installs the suite, waits for the server to accept connections, runs the
+suite, writes the counts to the job summary, uploads the mochawesome report as
+an artifact and fails the job last, so the report exists for every run. The
+outcome is read from the report, not from mocha's exit code: a failed test, a
+failed hook or a registered test that never ran fails the job.
+
+### Inputs
+
+| Input                       | Default                                      | Description                                                                               |
+| --------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `json-rpc-server-url`       | `http://127.0.0.1:8544`                      | The SDK's JSON-RPC server, started by the workflow                                        |
+| `server-timeout`            | `120`                                        | Seconds to wait for the server to accept connections                                      |
+| `node-ip`                   | `127.0.0.1:50211`                            | Consensus node gRPC address                                                               |
+| `node-account-id`           | `0.0.3`                                      | Consensus node account                                                                    |
+| `operator-account-id`       | `0.0.2`                                      | Operator account                                                                          |
+| `operator-private-key`      | the Solo genesis key                         | Operator private key, pass a secret for any other network                                 |
+| `mirror-network`            | `127.0.0.1:5600`                             | Mirror node gRPC address                                                                  |
+| `mirror-node-rest-url`      | `http://127.0.0.1:5551`                      | Mirror node REST API                                                                      |
+| `mirror-node-rest-java-url` | `http://127.0.0.1:8084`                      | Mirror node REST Java API                                                                 |
+| `node-timeout`              | `30000`                                      | Consensus node request timeout in milliseconds                                            |
+| `test-matrix`               | empty                                        | Files or globs to run instead of the whole suite, one per line, mocha options allowed     |
+| `test-script`               | `test`                                       | npm script for a whole-suite run                                                          |
+| `node-version`              | `22`                                         | Node.js version that runs the suite                                                       |
+| `artifact-name`             | `tck-report`                                 | Name of the report artifact, unique within a workflow run                                 |
+| `upload-report`             | `true`                                       | Upload the report                                                                         |
+
+The network defaults are the Solo values the compatibility workflows in this
+repository use (`haproxyPort: 50211`, `mirrorNodePortRest: 5551`); pass the
+inputs that differ for another network.
+
+### Outputs
+
+`outcome` (`success` or `failure`) and `reason`, the counts `total`, `passed`,
+`failed`, `pending`, `hook-failures`, `skipped` (registered tests that never
+ran) and `registered`, `duration-ms`, `tck-version` and `sdk-server-version`
+(from the run info the preflight writes), `leaked-nodes`, `report-path` and
+the test command's `exit-code`.
+
+### Run a subset
+
+```yaml
+- uses: hiero-ledger/hiero-sdk-tck@<sha>
+  with:
+    test-matrix: |
+      src/tests/token-service/*.ts
+      src/tests/crypto-service/test-account-create-transaction.ts --grep 'Creates an account'
+```
+
+The compatibility workflows in `.github/workflows` use the action from the
+checkout (`uses: ./tck`), so every pull request here exercises it. The helper
+scripts live in `scripts/action/`; `npm run test:action` runs their tests.
+
 ## TCK Release Process
 
 To release a new version of the TCK, follow these steps:
@@ -328,6 +414,8 @@ To release a new version of the TCK, follow these steps:
 > **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
 
 **Note:** Ensure all tests pass before creating a new release.
+
+**Note:** The tag also versions the GitHub Action (`uses: hiero-ledger/hiero-sdk-tck@<sha>`). After tagging, update the pinned commit in the example under "Run the TCK from an SDK repository's CI".
 
 ## Contributing
 
