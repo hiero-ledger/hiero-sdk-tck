@@ -21,6 +21,10 @@
  *   TCK_EXIT_CODE   exit code of the test command, informational
  *   ARTIFACT_NAME   name of the uploaded report artifact, empty when none
  *   REPORT_DIR      default mochawesome-report
+ *
+ * Besides the action outputs it writes `upload-path`, the report directory
+ * as an absolute normalized path for the upload step: the checkout path of a
+ * local action (`uses: ./tck`) contains "./", which upload-artifact rejects.
  */
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -245,6 +249,11 @@ export function toOutputs({
   };
 }
 
+/** The report directory for the upload step: absolute and normalized, empty when it does not exist. */
+export function uploadPath(dir = DEFAULT_REPORT_DIR, exists = existsSync) {
+  return exists(dir) ? resolve(dir) : "";
+}
+
 function writeOutputs(outputs) {
   if (!process.env.GITHUB_OUTPUT) {
     return;
@@ -272,7 +281,10 @@ function main() {
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
   }
-  writeOutputs(toOutputs({ report, runInfo, outcome, reason, reportDir }));
+  writeOutputs({
+    ...toOutputs({ report, runInfo, outcome, reason, reportDir }),
+    "upload-path": uploadPath(reportDir),
+  });
   console.log(summary);
   console.log(
     outcome === "success"

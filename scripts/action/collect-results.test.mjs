@@ -11,6 +11,7 @@ import {
   readRunInfo,
   renderSummary,
   toOutputs,
+  uploadPath,
 } from "./collect-results.mjs";
 
 const stats = (overrides = {}) => ({
@@ -232,4 +233,19 @@ test("toOutputs maps the report and run info to action outputs", () => {
   assert.equal(none.total, "0");
   assert.equal(none["report-path"], "");
   assert.equal(none["leaked-nodes"], "");
+});
+
+test("uploadPath normalizes the directory and is empty when it does not exist", () => {
+  assert.equal(
+    uploadPath("/w/hiero-sdk-tck/./tck/mochawesome-report", () => true),
+    "/w/hiero-sdk-tck/tck/mochawesome-report",
+  );
+  assert.equal(
+    uploadPath("mochawesome-report", () => true),
+    resolve("mochawesome-report"),
+  );
+  assert.equal(
+    uploadPath("mochawesome-report", () => false),
+    "",
+  );
 });

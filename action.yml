@@ -179,12 +179,16 @@ runs:
         ARTIFACT_NAME: ${{ inputs.upload-report == 'true' && inputs.artifact-name || '' }}
       run: node scripts/action/collect-results.mjs
 
+    # The path comes from the collect step, normalized: for a local action
+    # (`uses: ./tck`) github.action_path contains "./", which upload-artifact
+    # rejects. A failed upload is a warning; the outcome is the TCK's.
     - name: Upload the report
-      if: ${{ inputs.upload-report == 'true' }}
+      if: ${{ inputs.upload-report == 'true' && steps.collect.outputs.upload-path != '' }}
+      continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.artifact-name }}
-        path: ${{ github.action_path }}/mochawesome-report
+        path: ${{ steps.collect.outputs.upload-path }}
         if-no-files-found: ignore
 
     - name: Report the outcome
