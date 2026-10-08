@@ -139,6 +139,17 @@ runs:
         SERVER_TIMEOUT: ${{ inputs.server-timeout }}
       run: node scripts/action/wait-for-server.mjs
 
+    # A key passed from a secret is masked by GitHub already; this covers a key
+    # given in plain text. The scripts never print it.
+    - name: Mask the operator key
+      shell: bash
+      env:
+        OPERATOR_ACCOUNT_PRIVATE_KEY: ${{ inputs.operator-private-key }}
+      run: |
+        if [ -n "${OPERATOR_ACCOUNT_PRIVATE_KEY}" ]; then
+          echo "::add-mask::${OPERATOR_ACCOUNT_PRIVATE_KEY}"
+        fi
+
     # Never fails: the exit code becomes an output and "Report the outcome"
     # fails the job after the report was collected and uploaded.
     - name: Run the TCK

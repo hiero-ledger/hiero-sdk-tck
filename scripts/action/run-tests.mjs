@@ -11,8 +11,8 @@
  *   TEST_MATRIX   test files or globs, one per line, each line may carry mocha
  *                 options, e.g. `src/tests/crypto-service/*.ts --grep 'Creates'`
  *   TEST_SCRIPT   npm script for a whole-suite run, default `test`
- *   OPERATOR_ACCOUNT_PRIVATE_KEY is masked in the log before anything runs.
- *   Everything else is passed through to the suite unchanged.
+ *   Everything else is passed through to the suite unchanged. The operator
+ *   key is masked by action.yml before this script runs; nothing here logs it.
  */
 import { spawn } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
@@ -100,10 +100,6 @@ function writeOutput(name, value) {
 }
 
 async function main() {
-  const key = process.env.OPERATOR_ACCOUNT_PRIVATE_KEY;
-  if (key) {
-    console.log(`::add-mask::${key}`);
-  }
   const scripts =
     JSON.parse(readFileSync("package.json", "utf8")).scripts ?? {};
   const { args, warning } = buildCommand({
