@@ -15,7 +15,7 @@
  *   key is masked by action.yml before this script runs; nothing here logs it.
  */
 import { spawn } from "node:child_process";
-import { appendFileSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const DEFAULT_SCRIPT = "test";
@@ -110,6 +110,9 @@ async function main() {
   if (warning) {
     console.log(`::warning::${warning}`);
   }
+  // A report left by an earlier call in the same job must not be collected
+  // as this run's. The test script clears it too; test:file does not.
+  rmSync("mochawesome-report", { recursive: true, force: true });
   console.log(`Running: npm ${args.join(" ")}`);
   const npm = process.platform === "win32" ? "npm.cmd" : "npm";
   const exitCode = await new Promise((resolve) => {

@@ -4,8 +4,9 @@
 #
 # The action never builds or starts the SDK server and never starts a network.
 # Network inputs default to the Solo values the compatibility workflows in
-# this repository use. The job fails in the last step, after the report was
-# collected and uploaded, so results are available for every run.
+# this repository use. The job fails in the last step, after the results were
+# collected and the report uploaded, also when an earlier step failed, so the
+# job summary always says what happened.
 name: "Hiero SDK TCK"
 description: "Runs the Hiero SDK TCK suite against a running JSON-RPC server and reports the results"
 
@@ -170,8 +171,11 @@ runs:
         TEST_SCRIPT: ${{ inputs.test-script }}
       run: node scripts/action/run-tests.mjs
 
+    # Collect, upload and report run after a failed earlier step too (not
+    # after a cancellation), so the job summary always says what happened.
     - name: Collect the results
       id: collect
+      if: ${{ !cancelled() }}
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
@@ -183,7 +187,7 @@ runs:
     # (`uses: ./tck`) github.action_path contains "./", which upload-artifact
     # rejects. A failed upload is a warning; the outcome is the TCK's.
     - name: Upload the report
-      if: ${{ inputs.upload-report == 'true' && steps.collect.outputs.upload-path != '' }}
+      if: ${{ !cancelled() && inputs.upload-report == 'true' && steps.collect.outputs.upload-path != '' }}
       continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -192,12 +196,13 @@ runs:
         if-no-files-found: ignore
 
     - name: Report the outcome
+      if: ${{ !cancelled() }}
       shell: bash
       env:
         OUTCOME: ${{ steps.collect.outputs.outcome }}
         REASON: ${{ steps.collect.outputs.reason }}
       run: |
         if [ "${OUTCOME}" != "success" ]; then
-          echo "::error::${REASON}"
+          echo "::error::${REASON:-The TCK results were not collected. See the steps above.}"
           exit 1
         fi

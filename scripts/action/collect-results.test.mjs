@@ -249,3 +249,15 @@ test("uploadPath normalizes the directory and is empty when it does not exist", 
     "",
   );
 });
+
+test("decide and renderSummary report a run that never started", () => {
+  const verdict = decide({ report: null, exitCode: "", ran: false });
+  assert.equal(verdict.outcome, "failure");
+  assert.match(verdict.reason, /did not run because an earlier step/);
+  const summary = renderSummary({ report: null, ...verdict, exitCode: "" });
+  assert.match(
+    summary,
+    /^### Hiero SDK TCK: no report\n\nThe suite did not run/,
+  );
+  assert.doesNotMatch(summary, /Test command exit code/);
+});

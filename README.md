@@ -329,8 +329,9 @@ for a feature the SDK does not have yet would otherwise turn the check red.
 The action never builds or starts the SDK server and never starts a network.
 It installs the suite, waits for the server to accept connections, runs the
 suite, writes the counts to the job summary, uploads the mochawesome report as
-an artifact and fails the job last, so the report exists for every run (a
-failed upload is a warning and does not change the outcome). The
+an artifact and fails the job last. Results are collected also when an earlier
+step failed, so the job summary always says what happened, and a failed upload
+is a warning that does not change the outcome. The
 outcome is read from the report, not from mocha's exit code: a failed test, a
 failed hook or a registered test that never ran fails the job.
 

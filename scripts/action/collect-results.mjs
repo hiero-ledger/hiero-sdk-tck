@@ -18,7 +18,10 @@
  * output, after the report was uploaded.
  *
  * Environment:
- *   TCK_EXIT_CODE   exit code of the test command, informational
+ *   TCK_EXIT_CODE   exit code of the test command, informational. Empty when
+ *                   the run step did not execute (an earlier step failed);
+ *                   any report on disk then belongs to another run and is
+ *                   ignored.
  *   ARTIFACT_NAME   name of the uploaded report artifact, empty when none
  *   REPORT_DIR      default mochawesome-report
  *
@@ -96,8 +99,16 @@ export function summarizeStats(stats) {
   };
 }
 
-/** The verdict and its reason. */
-export function decide({ report, exitCode }) {
+/** The verdict and its reason. `ran` is false when the run step did not execute. */
+export function decide({ report, exitCode, ran = true }) {
+  if (!ran) {
+    return {
+      outcome: "failure",
+      reason:
+        "The suite did not run because an earlier step of the action failed. " +
+        "See that step's log.",
+    };
+  }
   if (!report) {
     return {
       outcome: "failure",
@@ -267,9 +278,10 @@ function writeOutputs(outputs) {
 function main() {
   const reportDir = process.env.REPORT_DIR || DEFAULT_REPORT_DIR;
   const exitCode = process.env.TCK_EXIT_CODE ?? "";
-  const report = existsSync(reportDir) ? readReport(reportDir) : null;
-  const runInfo = readRunInfo(reportDir);
-  const { outcome, reason } = decide({ report, exitCode });
+  const ran = exitCode !== "";
+  const report = ran && existsSync(reportDir) ? readReport(reportDir) : null;
+  const runInfo = ran ? readRunInfo(reportDir) : {};
+  const { outcome, reason } = decide({ report, exitCode, ran });
   const summary = renderSummary({
     report,
     runInfo,
@@ -283,7 +295,7 @@ function main() {
   }
   writeOutputs({
     ...toOutputs({ report, runInfo, outcome, reason, reportDir }),
-    "upload-path": uploadPath(reportDir),
+    "upload-path": ran ? uploadPath(reportDir) : "",
   });
   console.log(summary);
   console.log(
