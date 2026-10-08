@@ -120,10 +120,27 @@ jobs:
         run: |
           go mod tidy
           go build -v ./...
-          go run cmd/server.go &
+          go run cmd/server.go > tck-server.log 2>&1 &
           server_pid=$!
           echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
         working-directory: sdk-server/tck
+
+      # Wait for TCK server to be ready
+      - name: Wait for TCK Server
+        run: |
+          echo "Waiting for TCK server on port 8544..."
+          for i in {1..30}; do
+            if bash -c 'exec 3>/dev/tcp/127.0.0.1/8544' 2>/dev/null; then
+              echo "TCK server is ready on port 8544!"
+              exit 0
+            fi
+            echo "Still waiting... ($i/30)"
+            sleep 2
+          done
+          echo "TCK server failed to become ready on port 8544"
+          echo "Server logs:"
+          cat sdk-server/tck/tck-server.log || echo "No server logs found"
+          exit 1
 
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
