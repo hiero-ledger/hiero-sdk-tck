@@ -1,0 +1,208 @@
+# Runs the Hiero SDK Technology Compatibility Kit against a JSON-RPC server
+# the calling workflow has already built and started. See the README section
+# "Run the TCK from an SDK repository's CI" for the inputs and an example.
+#
+# The action never builds or starts the SDK server and never starts a network.
+# Network inputs default to the Solo values the compatibility workflows in
+# this repository use. The job fails in the last step, after the results were
+# collected and the report uploaded, also when an earlier step failed, so the
+# job summary always says what happened.
+name: "Hiero SDK TCK"
+description: "Runs the Hiero SDK TCK suite against a running JSON-RPC server and reports the results"
+
+inputs:
+  json-rpc-server-url:
+    description: "URL of the SDK's JSON-RPC server, started by the workflow before this action"
+    required: false
+    default: "http://127.0.0.1:8544"
+  server-timeout:
+    description: "Seconds to wait for the JSON-RPC server to accept connections"
+    required: false
+    default: "120"
+  node-ip:
+    description: "Consensus node gRPC address"
+    required: false
+    default: "127.0.0.1:50211"
+  node-account-id:
+    description: "Account ID of the consensus node"
+    required: false
+    default: "0.0.3"
+  operator-account-id:
+    description: "Operator account ID used to sign transactions"
+    required: false
+    default: "0.0.2"
+  operator-private-key:
+    description: "Private key of the operator account. The default is the well-known Solo genesis key; pass a secret for any other network"
+    required: false
+    default: "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137"
+  mirror-network:
+    description: "Mirror node gRPC address"
+    required: false
+    default: "127.0.0.1:5600"
+  mirror-node-rest-url:
+    description: "Mirror node REST API URL"
+    required: false
+    default: "http://127.0.0.1:5551"
+  mirror-node-rest-java-url:
+    description: "Mirror node REST Java API URL"
+    required: false
+    default: "http://127.0.0.1:8084"
+  node-timeout:
+    description: "Consensus node request timeout in milliseconds"
+    required: false
+    default: "30000"
+  test-matrix:
+    description: "Test files or globs to run instead of the whole suite, one per line, each line may carry mocha options such as --grep. Runs through the test:file script"
+    required: false
+    default: ""
+  test-script:
+    description: "npm script that runs the whole suite when test-matrix is empty"
+    required: false
+    default: "test"
+  node-version:
+    description: "Node.js version used to run the suite"
+    required: false
+    default: "22"
+  artifact-name:
+    description: "Name of the uploaded report artifact. Must be unique within a workflow run"
+    required: false
+    default: "tck-report"
+  upload-report:
+    description: "Upload the mochawesome report as a workflow artifact"
+    required: false
+    default: "true"
+
+outputs:
+  outcome:
+    description: "success or failure"
+    value: ${{ steps.collect.outputs.outcome }}
+  reason:
+    description: "Why the outcome is a failure, empty on success"
+    value: ${{ steps.collect.outputs.reason }}
+  total:
+    description: "Number of tests the suite ran"
+    value: ${{ steps.collect.outputs.total }}
+  passed:
+    description: "Number of passed tests"
+    value: ${{ steps.collect.outputs.passed }}
+  failed:
+    description: "Number of failed tests"
+    value: ${{ steps.collect.outputs.failed }}
+  pending:
+    description: "Number of pending tests"
+    value: ${{ steps.collect.outputs.pending }}
+  hook-failures:
+    description: "Number of failed before/after hooks"
+    value: ${{ steps.collect.outputs.hook-failures }}
+  skipped:
+    description: "Number of registered tests that never ran, usually because a hook failed"
+    value: ${{ steps.collect.outputs.skipped }}
+  registered:
+    description: "Number of tests the suite registered"
+    value: ${{ steps.collect.outputs.registered }}
+  duration-ms:
+    description: "Duration the report records, in milliseconds"
+    value: ${{ steps.collect.outputs.duration-ms }}
+  tck-version:
+    description: "Version of the TCK that ran, from run-info.json"
+    value: ${{ steps.collect.outputs.tck-version }}
+  sdk-server-version:
+    description: "Version the SDK's JSON-RPC server reported, from run-info.json"
+    value: ${{ steps.collect.outputs.sdk-server-version }}
+  leaked-nodes:
+    description: "Consensus nodes the run created and did not delete, from run-info.json; empty when unknown"
+    value: ${{ steps.collect.outputs.leaked-nodes }}
+  report-path:
+    description: "Directory holding the mochawesome report, empty when no report was produced"
+    value: ${{ steps.collect.outputs.report-path }}
+  exit-code:
+    description: "Exit code of the test command"
+    value: ${{ steps.run.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install the TCK
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund
+
+    - name: Wait for the JSON-RPC server
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        JSON_RPC_SERVER_URL: ${{ inputs.json-rpc-server-url }}
+        SERVER_TIMEOUT: ${{ inputs.server-timeout }}
+      run: node scripts/action/wait-for-server.mjs
+
+    # A key passed from a secret is masked by GitHub already; this covers a key
+    # given in plain text. The scripts never print it.
+    - name: Mask the operator key
+      shell: bash
+      env:
+        OPERATOR_ACCOUNT_PRIVATE_KEY: ${{ inputs.operator-private-key }}
+      run: |
+        if [ -n "${OPERATOR_ACCOUNT_PRIVATE_KEY}" ]; then
+          echo "::add-mask::${OPERATOR_ACCOUNT_PRIVATE_KEY}"
+        fi
+
+    # Never fails: the exit code becomes an output and "Report the outcome"
+    # fails the job after the report was collected and uploaded.
+    - name: Run the TCK
+      id: run
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        JSON_RPC_SERVER_URL: ${{ inputs.json-rpc-server-url }}
+        NODE_IP: ${{ inputs.node-ip }}
+        NODE_ACCOUNT_ID: ${{ inputs.node-account-id }}
+        OPERATOR_ACCOUNT_ID: ${{ inputs.operator-account-id }}
+        OPERATOR_ACCOUNT_PRIVATE_KEY: ${{ inputs.operator-private-key }}
+        MIRROR_NETWORK: ${{ inputs.mirror-network }}
+        MIRROR_NODE_REST_URL: ${{ inputs.mirror-node-rest-url }}
+        MIRROR_NODE_REST_JAVA_URL: ${{ inputs.mirror-node-rest-java-url }}
+        NODE_TIMEOUT: ${{ inputs.node-timeout }}
+        TEST_MATRIX: ${{ inputs.test-matrix }}
+        TEST_SCRIPT: ${{ inputs.test-script }}
+      run: node scripts/action/run-tests.mjs
+
+    # Collect, upload and report run after a failed earlier step too (not
+    # after a cancellation), so the job summary always says what happened.
+    - name: Collect the results
+      id: collect
+      if: ${{ !cancelled() }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        TCK_EXIT_CODE: ${{ steps.run.outputs.exit-code }}
+        ARTIFACT_NAME: ${{ inputs.upload-report == 'true' && inputs.artifact-name || '' }}
+      run: node scripts/action/collect-results.mjs
+
+    # The path comes from the collect step, normalized: for a local action
+    # (`uses: ./tck`) github.action_path contains "./", which upload-artifact
+    # rejects. A failed upload is a warning; the outcome is the TCK's.
+    - name: Upload the report
+      if: ${{ !cancelled() && inputs.upload-report == 'true' && steps.collect.outputs.upload-path != '' }}
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.collect.outputs.upload-path }}
+        if-no-files-found: ignore
+
+    - name: Report the outcome
+      if: ${{ !cancelled() }}
+      shell: bash
+      env:
+        OUTCOME: ${{ steps.collect.outputs.outcome }}
+        REASON: ${{ steps.collect.outputs.reason }}
+      run: |
+        if [ "${OUTCOME}" != "success" ]; then
+          echo "::error::${REASON:-The TCK results were not collected. See the steps above.}"
+          exit 1
+        fi

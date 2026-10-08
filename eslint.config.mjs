@@ -5,7 +5,7 @@ import prettierPlugin from "eslint-plugin-prettier";
 
 export default defineConfig([
   {
-    files: ["**/*.js", "**/*.ts", "**/*.tsx"],
+    files: ["**/*.js", "**/*.mjs", "**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: typescriptEslintParser,
       parserOptions: {
