@@ -64,3 +64,46 @@ test("tryConnect reports a listening socket and a closed port", async () => {
   await new Promise((resolve) => server.close(resolve));
   assert.equal(await tryConnect({ host: "127.0.0.1", port }), false);
 });
+
+test("parseTarget strips the brackets of an IPv6 host", () => {
+  assert.deepEqual(parseTarget("http://[::1]:8544"), {
+    host: "::1",
+    port: 8544,
+  });
+  assert.deepEqual(parseTarget("http://[2001:db8::1]"), {
+    host: "2001:db8::1",
+    port: 80,
+  });
+});
+
+test("waitForServer names an IPv6 server in brackets", async () => {
+  await assert.rejects(
+    waitForServer({
+      host: "::1",
+      port: 9,
+      timeoutMs: 0,
+      connect: async () => false,
+      sleep: async () => {},
+    }),
+    /\[::1\]:9 did not accept a connection/,
+  );
+});
+
+test("tryConnect reaches an IPv6 server given by a bracketed URL", async (t) => {
+  const server = createServer();
+  try {
+    await new Promise((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(0, "::1", resolve);
+    });
+  } catch (error) {
+    t.skip(`no IPv6 loopback on this host (${error.code})`);
+    return;
+  }
+  const { port } = server.address();
+  try {
+    assert.equal(await tryConnect(parseTarget(`http://[::1]:${port}`)), true);
+  } finally {
+    server.close();
+  }
+});

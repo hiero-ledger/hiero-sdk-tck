@@ -20,7 +20,14 @@ const INTERVAL_MS = 1000;
 export function parseTarget(url = DEFAULT_URL) {
   const parsed = new URL(url);
   const port = Number(parsed.port || (parsed.protocol === "https:" ? 443 : 80));
-  return { host: parsed.hostname, port };
+  // URL keeps the brackets of an IPv6 host ("[::1]"); a socket needs "::1".
+  const host = parsed.hostname.replace(/^\[(.*)\]$/, "$1");
+  return { host, port };
+}
+
+/** host:port for messages, with an IPv6 host in brackets as in a URL. */
+function formatTarget(host, port) {
+  return host.includes(":") ? `[${host}]:${port}` : `${host}:${port}`;
 }
 
 export function tryConnect({ host, port, timeoutMs = ATTEMPT_TIMEOUT_MS }) {
@@ -55,7 +62,7 @@ export async function waitForServer({
     }
     if (now() >= deadline) {
       throw new Error(
-        `The JSON-RPC server at ${host}:${port} did not accept a connection within ` +
+        `The JSON-RPC server at ${formatTarget(host, port)} did not accept a connection within ` +
           `${Math.round(timeoutMs / 1000)} s (${attempts} attempts). Start it before this action, ` +
           `or raise server-timeout.`,
       );
@@ -79,7 +86,7 @@ async function main() {
     timeoutMs: seconds * 1000,
   });
   console.log(
-    `JSON-RPC server at ${host}:${port} accepts connections (attempt ${attempts}).`,
+    `JSON-RPC server at ${formatTarget(host, port)} accepts connections (attempt ${attempts}).`,
   );
 }
 
