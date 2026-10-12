@@ -325,9 +325,8 @@ jobs:
 Pin the action to the full commit SHA of a release tag and name the tag in the
 comment. The tag versions the suite and the action together, so a pin says
 which tests ran. Bump it on purpose; a new test for a feature the SDK does not
-have yet would otherwise turn the check red. No release includes the action
-yet: `v0.14.0` stands for the first tag that will, and until it exists pin a
-commit on `main` that has `action.yml`.
+have yet would otherwise turn the check red. `v0.14.0` is the first release
+that includes the action.
 
 The action never builds or starts the SDK server and never starts a network.
 It installs the suite, waits for the server to accept connections, runs the
