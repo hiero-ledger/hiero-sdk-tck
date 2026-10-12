@@ -22,8 +22,14 @@ import { pathToFileURL } from "node:url";
 
 const DEFAULT_SCRIPT = "test";
 const FILE_SCRIPT = "test:file";
+// What a backslash escapes inside double quotes in a POSIX shell.
+const DOUBLE_QUOTE_ESCAPES = '$`"\\';
 
-/** Splits one line into arguments the way a POSIX shell would, without running one. */
+/**
+ * Splits one line into arguments the way a POSIX shell would, without running
+ * one. Inside double quotes a backslash escapes only $, `, " and \ and is kept
+ * before any other character, so "\bCreates\b" stays a regular expression.
+ */
 export function tokenize(line) {
   const args = [];
   let current = "";
@@ -34,7 +40,12 @@ export function tokenize(line) {
     if (quote) {
       if (char === quote) {
         quote = null;
-      } else if (char === "\\" && quote === '"' && i + 1 < line.length) {
+      } else if (
+        char === "\\" &&
+        quote === '"' &&
+        i + 1 < line.length &&
+        DOUBLE_QUOTE_ESCAPES.includes(line[i + 1])
+      ) {
         i += 1;
         current += line[i];
       } else {

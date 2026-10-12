@@ -10,6 +10,16 @@ test("tokenize splits on whitespace and honours quotes", () => {
     ["src/tests/crypto-service/*.ts", "--grep", "Creates an account"],
   );
   assert.deepEqual(tokenize('--grep "say \\"hi\\""'), ["--grep", 'say "hi"']);
+  // Inside double quotes a backslash escapes only $ ` " \, as in a shell, so a
+  // regular expression keeps its backslashes.
+  assert.deepEqual(tokenize('--grep "\\bCreates\\b"'), [
+    "--grep",
+    "\\bCreates\\b",
+  ]);
+  assert.deepEqual(tokenize('"a\\\\b \\$x \\`y\\` \\"z\\""'), [
+    'a\\b $x `y` "z"',
+  ]);
+  assert.deepEqual(tokenize("'\\bCreates\\b'"), ["\\bCreates\\b"]);
   assert.deepEqual(tokenize("it\\'s fine"), ["it's", "fine"]);
   assert.deepEqual(tokenize("''"), [""]);
   assert.deepEqual(tokenize("   "), []);
