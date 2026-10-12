@@ -106,6 +106,10 @@ function writeOutput(name, value) {
 }
 
 async function main() {
+  // A report left by an earlier call in the same job must not be collected
+  // as this run's, also when the command cannot be built. The test script
+  // clears it too; test:file does not.
+  rmSync("mochawesome-report", { recursive: true, force: true });
   const scripts =
     JSON.parse(readFileSync("package.json", "utf8")).scripts ?? {};
   const { args, warning } = buildCommand({
@@ -116,9 +120,6 @@ async function main() {
   if (warning) {
     console.log(`::warning::${warning}`);
   }
-  // A report left by an earlier call in the same job must not be collected
-  // as this run's. The test script clears it too; test:file does not.
-  rmSync("mochawesome-report", { recursive: true, force: true });
   console.log(`Running: npm ${args.join(" ")}`);
   const npm = process.platform === "win32" ? "npm.cmd" : "npm";
   const exitCode = await new Promise((resolve) => {
