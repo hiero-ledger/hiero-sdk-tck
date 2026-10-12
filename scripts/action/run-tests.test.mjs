@@ -28,6 +28,10 @@ test("parseTestMatrix flattens lines and skips blanks and comments", () => {
       "Creates",
     ],
   );
+  assert.deepEqual(
+    parseTestMatrix("src/tests/file-service/*.ts\n--grep 'x y'"),
+    ["src/tests/file-service/*.ts", "--grep", "x y"],
+  );
   assert.deepEqual(parseTestMatrix(""), []);
   assert.deepEqual(parseTestMatrix(undefined), []);
 });
@@ -51,7 +55,7 @@ test("buildCommand falls back to test with a warning when the script is missing"
   assert.match(command.warning, /"test:nope" does not exist/);
 });
 
-test("buildCommand runs a test matrix through test:file", () => {
+test("buildCommand runs the whole matrix through one test:file call, so an option applies to every file", () => {
   assert.deepEqual(
     buildCommand({
       testMatrix:

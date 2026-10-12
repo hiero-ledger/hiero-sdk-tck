@@ -52,7 +52,7 @@ inputs:
     required: false
     default: "30000"
   test-matrix:
-    description: "Test files or globs to run instead of the whole suite, one per line, each line may carry mocha options such as --grep. Runs through the test:file script"
+    description: "Test files or globs to run instead of the whole suite, one per line. Mocha options such as --grep may be added on any line and apply to the whole run, not only to their line. Runs through the test:file script"
     required: false
     default: ""
   test-script:

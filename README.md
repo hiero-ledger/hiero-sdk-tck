@@ -322,9 +322,12 @@ jobs:
         uses: hiero-ledger/hiero-sdk-tck@<sha> # v0.14.0
 ```
 
-Pin the action to a release tag's commit. The tag versions the suite and the
-action together, so a pin says which tests ran. Bump it on purpose; a new test
-for a feature the SDK does not have yet would otherwise turn the check red.
+Pin the action to the full commit SHA of a release tag and name the tag in the
+comment. The tag versions the suite and the action together, so a pin says
+which tests ran. Bump it on purpose; a new test for a feature the SDK does not
+have yet would otherwise turn the check red. No release includes the action
+yet: `v0.14.0` stands for the first tag that will, and until it exists pin a
+commit on `main` that has `action.yml`.
 
 The action never builds or starts the SDK server and never starts a network.
 It installs the suite, waits for the server to accept connections, runs the
@@ -334,6 +337,11 @@ step failed, so the job summary always says what happened, and a failed upload
 is a warning that does not change the outcome. The
 outcome is read from the report, not from mocha's exit code: a failed test, a
 failed hook or a registered test that never ran fails the job.
+
+The action sets up Node.js `node-version` with `actions/setup-node`, and a
+composite action cannot undo that: the steps that follow it in the same job run
+on that Node.js version too. Put the action last in the job, or set up the
+version those steps need after it.
 
 ### Inputs
 
@@ -349,7 +357,7 @@ failed hook or a registered test that never ran fails the job.
 | `mirror-node-rest-url`      | `http://127.0.0.1:5551`                      | Mirror node REST API                                                                      |
 | `mirror-node-rest-java-url` | `http://127.0.0.1:8084`                      | Mirror node REST Java API                                                                 |
 | `node-timeout`              | `30000`                                      | Consensus node request timeout in milliseconds                                            |
-| `test-matrix`               | empty                                        | Files or globs to run instead of the whole suite, one per line, mocha options allowed     |
+| `test-matrix`               | empty                                        | Files or globs to run instead of the whole suite, one per line (see Run a subset)         |
 | `test-script`               | `test`                                       | npm script for a whole-suite run                                                          |
 | `node-version`              | `22`                                         | Node.js version that runs the suite                                                       |
 | `artifact-name`             | `tck-report`                                 | Name of the report artifact, unique within a workflow run                                 |
@@ -374,7 +382,19 @@ the test command's `exit-code`.
   with:
     test-matrix: |
       src/tests/token-service/*.ts
-      src/tests/crypto-service/test-account-create-transaction.ts --grep 'Creates an account'
+      src/tests/crypto-service/test-account-create-transaction.ts
+```
+
+Every line goes into one mocha call, so a mocha option applies to the whole
+run, not only to the file on its line. This runs the tests of one file whose
+names match the pattern:
+
+```yaml
+- uses: hiero-ledger/hiero-sdk-tck@<sha>
+  with:
+    test-matrix: |
+      src/tests/crypto-service/test-account-create-transaction.ts
+      --grep 'Creates an account'
 ```
 
 The compatibility workflows in `.github/workflows` use the action from the

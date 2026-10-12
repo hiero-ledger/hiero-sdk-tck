@@ -8,8 +8,10 @@
  * and uploaded.
  *
  * Environment:
- *   TEST_MATRIX   test files or globs, one per line, each line may carry mocha
- *                 options, e.g. `src/tests/crypto-service/*.ts --grep 'Creates'`
+ *   TEST_MATRIX   test files or globs, one per line. A line may also carry
+ *                 mocha options, e.g. `--grep 'Creates'`; every line goes into
+ *                 one mocha call, so an option applies to the whole run, not
+ *                 only to the file on its line.
  *   TEST_SCRIPT   npm script for a whole-suite run, default `test`
  *   Everything else is passed through to the suite unchanged. The operator
  *   key is masked by action.yml before this script runs; nothing here logs it.
@@ -65,7 +67,11 @@ export function tokenize(line) {
   return args;
 }
 
-/** Turns the test-matrix input into the arguments appended to `npm run test:file --`. */
+/**
+ * Turns the test-matrix input into the arguments appended to
+ * `npm run test:file --`. All lines end up in one mocha call, so an option such
+ * as `--grep` applies to every file listed, not only to the one on its line.
+ */
 export function parseTestMatrix(text = "") {
   return text
     .split(/\r?\n/)

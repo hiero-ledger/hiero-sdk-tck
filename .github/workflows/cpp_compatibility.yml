@@ -198,6 +198,10 @@ jobs:
       - name: Run the TCK
         uses: ./tck
         with:
+          # The C++ server listens on "localhost", which can resolve to one
+          # address family only. The steps this replaced reached it through
+          # localhost too, so keep that instead of the action's 127.0.0.1.
+          json-rpc-server-url: http://localhost:8544
           test-matrix: ${{ inputs.test-matrix }}
           artifact-name: ${{ inputs.artifact-name || 'tck-report-cpp' }}
 
