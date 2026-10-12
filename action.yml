@@ -95,8 +95,11 @@ outputs:
     description: "Number of failed before/after hooks"
     value: ${{ steps.collect.outputs.hook-failures }}
   skipped:
-    description: "Number of registered tests that never ran, usually because a hook failed"
+    description: "Number of registered tests that never ran, usually because a failed hook stopped their suite. Tests the run's options left out, such as --grep, are counted in not-selected"
     value: ${{ steps.collect.outputs.skipped }}
+  not-selected:
+    description: "Number of registered tests the run's options left out, such as --grep. They do not fail the run"
+    value: ${{ steps.collect.outputs.not-selected }}
   registered:
     description: "Number of tests the suite registered"
     value: ${{ steps.collect.outputs.registered }}

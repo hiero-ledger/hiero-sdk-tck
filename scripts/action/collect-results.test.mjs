@@ -6,6 +6,7 @@ import { test } from "node:test";
 
 import {
   collectFailures,
+  countNotSelected,
   decide,
   readReport,
   readRunInfo,
@@ -76,6 +77,89 @@ const failingReport = {
   ],
 };
 
+const suite = (
+  title,
+  { beforeHooks = [], afterHooks = [], tests = [], suites = [] } = {},
+) => ({
+  title,
+  beforeHooks,
+  afterHooks,
+  tests,
+  suites,
+});
+const passedTest = (title) => ({
+  title,
+  pass: true,
+  fail: false,
+  skipped: false,
+});
+const skippedTest = (title) => ({
+  title,
+  pass: false,
+  fail: false,
+  skipped: true,
+});
+const failedHook = (title) => ({
+  title,
+  fail: true,
+  isHook: true,
+  err: { message: "exploded" },
+});
+
+// Shaped like the reports mocha 11 and mochawesome 7 write for `--grep
+// selected` over two tests, and for a failing before each hook next to a
+// failing after all hook under `--invert --grep filtered`.
+const filteredReport = {
+  stats: stats({
+    tests: 1,
+    passes: 1,
+    pending: 0,
+    testsRegistered: 2,
+    skipped: 1,
+  }),
+  results: [
+    suite("", {
+      suites: [
+        suite("Suite", {
+          tests: [passedTest("selected passes"), skippedTest("excluded")],
+        }),
+      ],
+    }),
+  ],
+};
+const stoppedReport = {
+  stats: stats({
+    tests: 2,
+    passes: 2,
+    pending: 0,
+    other: 2,
+    testsRegistered: 7,
+    skipped: 5,
+  }),
+  results: [
+    suite("", {
+      suites: [
+        suite("Outer", {
+          suites: [
+            suite("Blocked", {
+              beforeHooks: [failedHook('"before each" hook for "first"')],
+              tests: [skippedTest("first"), skippedTest("second")],
+              suites: [suite("Nested", { tests: [skippedTest("nested")] })],
+            }),
+            suite("AfterAll", {
+              afterHooks: [failedHook('"after all" hook for "filtered out"')],
+              tests: [passedTest("runs"), skippedTest("filtered out")],
+            }),
+            suite("Clean", {
+              tests: [passedTest("passes"), skippedTest("filtered too")],
+            }),
+          ],
+        }),
+      ],
+    }),
+  ],
+};
+
 test("readReport and readRunInfo read the files, tolerating absence", () => {
   const dir = mkdtempSync(join(tmpdir(), "tck-report-"));
   assert.equal(readReport(dir), null);
@@ -128,6 +212,8 @@ test("decide is success only for a clean report", () => {
     decide({ report: { stats: stats({ other: 2 }) } }).outcome,
     "failure",
   );
+  // Without per-test detail a skipped test cannot be told apart from one a
+  // failed hook stopped, so it still counts as never ran.
   assert.equal(
     decide({ report: { stats: stats({ skipped: 5 }) } }).outcome,
     "failure",
@@ -217,6 +303,7 @@ test("toOutputs maps the report and run info to action outputs", () => {
     pending: "233",
     "hook-failures": "0",
     skipped: "0",
+    "not-selected": "0",
     registered: "2422",
     "duration-ms": "420000",
     "tck-version": "0.13.0",
@@ -260,4 +347,42 @@ test("decide and renderSummary report a run that never started", () => {
     /^### Hiero SDK TCK: no report\n\nThe suite did not run/,
   );
   assert.doesNotMatch(summary, /Test command exit code/);
+});
+
+test("countNotSelected tells tests a filter left out from tests a failed hook stopped", () => {
+  assert.equal(countNotSelected(filteredReport.results), 1);
+  // "first", "second" and "nested" sit behind the failed before each hook; a
+  // failed after all hook stops nothing, so "filtered out" was not selected.
+  assert.equal(countNotSelected(stoppedReport.results), 2);
+  assert.equal(countNotSelected(undefined), 0);
+});
+
+test("decide does not fail the tests the run's options left out", () => {
+  // mocha exits 0 for `--grep selected` over two tests, and so does the action.
+  assert.deepEqual(decide({ report: filteredReport, exitCode: "0" }), {
+    outcome: "success",
+    reason: "",
+  });
+  assert.equal(
+    decide({ report: stoppedReport, exitCode: "1" }).reason,
+    "TCK: 2 hook failure(s), 3 registered test(s) never ran (2 passed, 0 pending).",
+  );
+  const outputs = toOutputs({
+    report: stoppedReport,
+    outcome: "failure",
+    reason: "x",
+    reportDir: "r",
+  });
+  assert.equal(outputs.skipped, "3");
+  assert.equal(outputs["not-selected"], "2");
+  assert.equal(outputs.registered, "7");
+  const summary = renderSummary({
+    report: filteredReport,
+    ...decide({ report: filteredReport }),
+  });
+  assert.match(summary, /\| 1 \| 1 \| 0 \| 0 \| 0 \| 0 \| 7\.0 min \|/);
+  assert.match(
+    summary,
+    /1 registered test\(s\) were not selected by the run's options, such as `--grep`/,
+  );
 });

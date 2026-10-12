@@ -8,10 +8,11 @@
  *
  *   failure  when no report exists (the run crashed before writing one),
  *            when a test failed, when a hook failed (stats.other) or when
- *            registered tests never ran (stats.skipped, the tests behind a
- *            failed hook). mocha's own exit code is not trusted: under
- *            --parallel a worker killed by an uncaught exception can make
- *            mocha exit 0 with no report.
+ *            registered tests never ran because a failed hook stopped their
+ *            suite. Tests the run's options left out, such as --grep, are
+ *            counted apart as not selected and do not fail the run. mocha's
+ *            own exit code is not trusted: under --parallel a worker killed
+ *            by an uncaught exception can make mocha exit 0 with no report.
  *   success  otherwise.
  *
  * Always exits 0. The action's last step fails the job from the `outcome`
@@ -86,14 +87,56 @@ export function collectFailures(results = []) {
   return failures;
 }
 
-export function summarizeStats(stats) {
+/**
+ * Counts the registered tests the run's options left out, such as --grep.
+ * mochawesome marks them skipped, like the tests a failed hook kept from
+ * running. A failed before all, before each or after each hook stops the rest
+ * of its suite, nested suites included; a failed after all hook runs last and
+ * stops nothing. A skipped test outside a stopped suite was not selected.
+ */
+export function countNotSelected(results) {
+  const stopsSuite = (hook) =>
+    Boolean(hook.fail) &&
+    !String(hook.title ?? "").startsWith('"after all" hook');
+  let notSelected = 0;
+  const visit = (suite, stopped) => {
+    const inStoppedSuite =
+      stopped ||
+      [...(suite.beforeHooks ?? []), ...(suite.afterHooks ?? [])].some(
+        stopsSuite,
+      );
+    for (const test of suite.tests ?? []) {
+      if (test.skipped && !inStoppedSuite) {
+        notSelected += 1;
+      }
+    }
+    for (const child of suite.suites ?? []) {
+      visit(child, inStoppedSuite);
+    }
+  };
+  for (const root of results ?? []) {
+    visit(root, false);
+  }
+  return notSelected;
+}
+
+/**
+ * The report's counts. mochawesome's `skipped` holds every registered test
+ * that did not run; here `skipped` keeps the ones that should have run and
+ * `notSelected` the ones the run's options left out. Without per-test detail
+ * nothing can be told apart, so every skipped test stays in `skipped`.
+ */
+export function summarizeStats(stats, results) {
+  const skipped = Math.max(0, Number(stats.skipped ?? 0));
+  const notSelected = Math.min(countNotSelected(results), skipped);
   return {
     total: Number(stats.tests ?? 0),
     passed: Number(stats.passes ?? 0),
     failed: Number(stats.failures ?? 0),
     pending: Number(stats.pending ?? 0),
     hookFailures: Number(stats.other ?? 0),
-    skipped: Number(stats.skipped ?? 0),
+    skipped: skipped - notSelected,
+    notSelected,
     registered: Number(stats.testsRegistered ?? stats.tests ?? 0),
     durationMs: Number(stats.duration ?? 0),
   };
@@ -117,7 +160,7 @@ export function decide({ report, exitCode, ran = true }) {
         `(test command exit code ${exitCode ?? "unknown"}). See the job log.`,
     };
   }
-  const s = summarizeStats(report.stats);
+  const s = summarizeStats(report.stats, report.results);
   const problems = [];
   if (s.failed > 0) {
     problems.push(`${s.failed} failed`);
@@ -154,7 +197,7 @@ export function renderSummary({
   if (!report) {
     lines.push("### Hiero SDK TCK: no report", "", reason, "");
   } else {
-    const s = summarizeStats(report.stats);
+    const s = summarizeStats(report.stats, report.results);
     const icon = outcome === "success" ? "✅" : "❌";
     lines.push(
       `### Hiero SDK TCK ${icon} ${s.passed} passed, ${s.failed} failed, ${s.pending} pending`,
@@ -166,6 +209,12 @@ export function renderSummary({
     );
     if (outcome !== "success") {
       lines.push(reason, "");
+    }
+    if (s.notSelected > 0) {
+      lines.push(
+        `${s.notSelected} registered test(s) were not selected by the run's options, such as \`--grep\`, and are not counted above.`,
+        "",
+      );
     }
     const failures = collectFailures(report.results);
     if (failures.length > 0) {
@@ -230,7 +279,7 @@ export function toOutputs({
   reportDir,
 }) {
   const s = report
-    ? summarizeStats(report.stats)
+    ? summarizeStats(report.stats, report.results)
     : {
         total: 0,
         passed: 0,
@@ -238,6 +287,7 @@ export function toOutputs({
         pending: 0,
         hookFailures: 0,
         skipped: 0,
+        notSelected: 0,
         registered: 0,
         durationMs: 0,
       };
@@ -251,6 +301,7 @@ export function toOutputs({
     pending: String(s.pending),
     "hook-failures": String(s.hookFailures),
     skipped: String(s.skipped),
+    "not-selected": String(s.notSelected),
     registered: String(s.registered),
     "duration-ms": String(s.durationMs),
     "tck-version": String(runInfo.tckVersion ?? ""),

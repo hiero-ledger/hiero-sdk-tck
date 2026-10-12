@@ -336,7 +336,9 @@ an artifact and fails the job last. Results are collected also when an earlier
 step failed, so the job summary always says what happened, and a failed upload
 is a warning that does not change the outcome. The
 outcome is read from the report, not from mocha's exit code: a failed test, a
-failed hook or a registered test that never ran fails the job.
+failed hook or a registered test that never ran fails the job. Tests the run's
+options leave out, such as `--grep` in `test-matrix`, are counted apart and do
+not fail it.
 
 The action sets up Node.js `node-version` with `actions/setup-node`, and a
 composite action cannot undo that: the steps that follow it in the same job run
@@ -371,7 +373,9 @@ inputs that differ for another network.
 
 `outcome` (`success` or `failure`) and `reason`, the counts `total`, `passed`,
 `failed`, `pending`, `hook-failures`, `skipped` (registered tests that never
-ran) and `registered`, `duration-ms`, `tck-version` and `sdk-server-version`
+ran, usually behind a failed hook), `not-selected` (registered tests the run's
+options left out, such as `--grep`) and `registered`, `duration-ms`,
+`tck-version` and `sdk-server-version`
 (from the run info the preflight writes), `leaked-nodes`, `report-path` and
 the test command's `exit-code`.
 
@@ -396,6 +400,9 @@ names match the pattern:
       src/tests/crypto-service/test-account-create-transaction.ts
       --grep 'Creates an account'
 ```
+
+The tests the pattern leaves out are reported as `not-selected` and do not fail
+the job.
 
 The compatibility workflows in `.github/workflows` use the action from the
 checkout (`uses: ./tck`), so every pull request here exercises it. The helper
