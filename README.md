@@ -319,7 +319,7 @@ jobs:
           haproxyPort: 50211
           mirrorNodePortRest: 5551
       - name: Run the TCK
-        uses: hiero-ledger/hiero-sdk-tck@<sha> # v0.14.0
+        uses: hiero-ledger/hiero-sdk-tck@c9e7169888d86be4793cde5932ce57d9450a9761 # v0.14.0
 ```
 
 Pin the action to the full commit SHA of a release tag and name the tag in the
@@ -381,7 +381,7 @@ the test command's `exit-code`.
 ### Run a subset
 
 ```yaml
-- uses: hiero-ledger/hiero-sdk-tck@<sha>
+- uses: hiero-ledger/hiero-sdk-tck@c9e7169888d86be4793cde5932ce57d9450a9761 # v0.14.0
   with:
     test-matrix: |
       src/tests/token-service/*.ts
@@ -393,7 +393,7 @@ run, not only to the file on its line. This runs the tests of one file whose
 names match the pattern:
 
 ```yaml
-- uses: hiero-ledger/hiero-sdk-tck@<sha>
+- uses: hiero-ledger/hiero-sdk-tck@c9e7169888d86be4793cde5932ce57d9450a9761 # v0.14.0
   with:
     test-matrix: |
       src/tests/crypto-service/test-account-create-transaction.ts
