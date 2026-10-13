@@ -440,3 +440,45 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 }
 ```
 
+### **High Volume (HIP-1313):**
+
+- Opt-in flag (`commonTransactionParams.highVolume`) that routes the transaction through the high-volume entity creation throttle bucket and variable-rate pricing (HIP-1313). When omitted or `false`, the transaction uses the standard throttles and pricing.
+
+| Test no | Name                                                                            | Input                                                                          | Expected response                                                                                                  | Implemented (Y/N) |
+| ------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| 1       | Creates an account with `commonTransactionParams.highVolume=true`               | key=<VALID_KEY>, commonTransactionParams.highVolume=true                       | The account creation succeeds and the account is created via the high-volume throttle bucket.                       | Y                 |
+| 2       | Creates an account with `commonTransactionParams.highVolume=false`              | key=<VALID_KEY>, commonTransactionParams.highVolume=false                      | The account creation succeeds via the standard throttle bucket (default behaviour, regression guard).               | Y                 |
+| 3       | Omitting `highVolume` behaves identically to `false`                            | key=<VALID_KEY>, no `highVolume` field                                          | The account creation succeeds with the same throttle/fee treatment as `highVolume=false`.                            | Y                 |
+| 4       | `highVolume=true` with a sufficient `maxTransactionFee`                          | key=<VALID_KEY>, commonTransactionParams.highVolume=true, maxTransactionFee=10 hbar | The account creation succeeds and the actual transaction fee charged is `<= maxTransactionFee`.                      | Y                 |
+| 5       | `highVolume=true` with an insufficient `maxTransactionFee`                      | key=<VALID_KEY>, commonTransactionParams.highVolume=true, maxTransactionFee=1 tinybar | The account creation fails with `INSUFFICIENT_TX_FEE`.                                                              | Y                 |
+| 6       | Fee with `highVolume=true` differs from fee with `highVolume=false`             | Same account params executed twice, once per `highVolume` value                | The two transaction fees differ (high-volume pricing curve applied).                                                | N                 |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "method": "createAccount",
+  "params": {
+    "key": "302a300506032b6570032100e9a0f9c81b3a2bb81a4af5fe05657aa849a3b9b0705da1fb52f331f42cf4b496",
+    "commonTransactionParams": {
+      "highVolume": true
+    }
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "result": {
+    "accountId": "0.0.12345",
+    "status": "SUCCESS"
+  }
+}
+```
+
