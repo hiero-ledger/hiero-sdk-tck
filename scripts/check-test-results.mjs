@@ -2,22 +2,32 @@
 // instead of trusting mocha's own exit code. Under --parallel, workers killed by
 // uncaught async exceptions can make mocha exit 0 with no epilogue and no report
 // (observed in the BNCE runs on 2026-07-14), which turns CI green on failures.
-import { readFileSync } from "node:fs";
+//
+// The verdict is the action's (scripts/action/collect-results.mjs): failed
+// tests, failed hooks and registered tests that never ran fail the run; tests
+// left out by --grep do not. Exit codes: 2 = report missing or unreadable,
+// 1 = any other failure, 0 = success.
+import {
+  decide,
+  readReport,
+  summarizeStats,
+} from "./action/collect-results.mjs";
 
-let stats;
-try {
-  stats = JSON.parse(
-    readFileSync("mochawesome-report/mochawesome.json", "utf8"),
-  ).stats;
-} catch {
-  console.error(
-    "check-test-results: mochawesome-report/mochawesome.json is missing or unreadable — " +
-      "the test run crashed before the report was written. Treating as failure.",
-  );
+const report = readReport();
+const { outcome, reason } = decide({ report });
+
+if (!report) {
+  console.error(`check-test-results: ${reason}`);
   process.exit(2);
 }
 
+const s = summarizeStats(report.stats, report.results);
 console.log(
-  `check-test-results: ${stats.tests} tests — ${stats.passes} passed, ${stats.failures} failed, ${stats.pending} pending`,
+  `check-test-results: ${s.total} tests - ${s.passed} passed, ${s.failed} failed, ` +
+    `${s.pending} pending, ${s.hookFailures} hook failure(s), ${s.skipped} never ran, ` +
+    `${s.notSelected} not selected`,
 );
-process.exit(stats.failures > 0 ? 1 : 0);
+if (outcome !== "success") {
+  console.error(`check-test-results: ${reason}`);
+  process.exit(1);
+}
