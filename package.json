@@ -39,7 +39,7 @@
     "@typescript-eslint/eslint-plugin": "^8.71.0",
     "@typescript-eslint/parser": "^8.36.0",
     "eslint": "^9.17.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.0",
     "mochawesome": "^7.1.3",
