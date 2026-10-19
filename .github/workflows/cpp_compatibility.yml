@@ -79,13 +79,13 @@ jobs:
 
       # Checkout the current TCK repository
       - name: Checkout TCK Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: tck
 
       # Checkout the CPP SDK server
       - name: Checkout CPP SDK Server
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: sdk-server
           repository: hiero-ledger/hiero-sdk-cpp
@@ -122,7 +122,7 @@ jobs:
         run: mkdir -p "${{ github.workspace }}/b/vcpkg_cache"
 
       - name: Install CMake & Ninja
-        uses: step-security/get-cmake@16c2bcb98b44e2c3a92d9474f8fd6f038d42de03 # v4.3.2
+        uses: step-security/get-cmake@4bba5789a4c8075d846ebea45fc0c42516607c1f # v4.4.2
         with:
           useCloudCache: true
 
