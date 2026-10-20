@@ -150,8 +150,9 @@ jobs:
     needs: resolve-refs
     uses: ./.github/workflows/swift_compatibility.yml
     with:
-      custom-job-name: "Daily Swift SDK (main) - attempt 1"
+      custom-job-name: "Daily Swift SDK (main) — attempt 1"
       swift-sdk-version: main
+      artifact-name: "tck-report-swift-attempt-1"
     secrets: inherit
 
   swift-compatibility-2:
@@ -159,8 +160,9 @@ jobs:
     if: ${{ always() && needs.swift-compatibility-1.result == 'failure' }}
     uses: ./.github/workflows/swift_compatibility.yml
     with:
-      custom-job-name: "Daily Swift SDK (main) - attempt 2"
+      custom-job-name: "Daily Swift SDK (main) — attempt 2"
       swift-sdk-version: main
+      artifact-name: "tck-report-swift-attempt-2"
     secrets: inherit
 
   swift-compatibility-3:
@@ -168,8 +170,9 @@ jobs:
     if: ${{ always() && needs.swift-compatibility-2.result == 'failure' }}
     uses: ./.github/workflows/swift_compatibility.yml
     with:
-      custom-job-name: "Daily Swift SDK (main) - attempt 3"
+      custom-job-name: "Daily Swift SDK (main) — attempt 3"
       swift-sdk-version: main
+      artifact-name: "tck-report-swift-attempt-3"
     secrets: inherit
 
   # Summary and Slack notification
@@ -265,8 +268,8 @@ jobs:
           [[ "${{ needs.swift-compatibility-3.result }}" != "skipped" ]] && SWIFT_ATTEMPTS=3
           echo "swift-attempts=$SWIFT_ATTEMPTS" >> "$GITHUB_OUTPUT"
 
-          # Overall status — passes if all three SDKs eventually succeeded
-          JS_OK=false; GO_OK=false; JAVA_OK=false; SWIFT_OK=false;
+          # Overall status — passes if all four SDKs eventually succeeded
+          JS_OK=false; GO_OK=false; JAVA_OK=false; SWIFT_OK=false
           [[ "${{ needs.js-compatibility-1.result }}" == "success" || "${{ needs.js-compatibility-2.result }}" == "success" || "${{ needs.js-compatibility-3.result }}" == "success" ]] && JS_OK=true
           [[ "${{ needs.go-compatibility-1.result }}" == "success" || "${{ needs.go-compatibility-2.result }}" == "success" || "${{ needs.go-compatibility-3.result }}" == "success" ]] && GO_OK=true
           [[ "${{ needs.java-compatibility-1.result }}" == "success" || "${{ needs.java-compatibility-2.result }}" == "success" || "${{ needs.java-compatibility-3.result }}" == "success" ]] && JAVA_OK=true
@@ -339,7 +342,7 @@ jobs:
                       {
                         "type": "mrkdwn",
                         "text": "${{ steps.results.outputs.java-status }} (${{ steps.results.outputs.java-attempts }}/3 attempts)"
-                      }
+                      },
                       {
                         "type": "mrkdwn",
                         "text": "*Swift SDK* (<https://github.com/hiero-ledger/hiero-sdk-swift/commit/${{ needs.resolve-refs.outputs.swift-sha }}|${{ needs.resolve-refs.outputs.swift-sha }}>)"
