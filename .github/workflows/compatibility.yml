@@ -104,8 +104,13 @@ jobs:
     secrets: inherit
 
   # Test Swift SDK
+  # Runs on manual dispatch only, not on pull requests or in the daily check.
+  # The Swift TCK server keeps a single client and ignores the sessionId the
+  # TCK sends, so test files running in parallel reset each other's client and
+  # most tests fail. Run it on pull requests once the server keeps a client
+  # per session, like the JS, Go and Java servers do.
   swift-compatibility:
-    if: ${{ github.event_name == 'pull_request' || inputs.sdk-type == 'swift' || inputs.sdk-type == 'every' }}
+    if: ${{ inputs.sdk-type == 'swift' || inputs.sdk-type == 'every' }}
     uses: ./.github/workflows/swift_compatibility.yml
     with:
       custom-job-name: ${{ inputs.custom-job-name || 'Swift SDK Compatibility' }}
