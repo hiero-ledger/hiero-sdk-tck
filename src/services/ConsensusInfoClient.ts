@@ -1,6 +1,4 @@
 import {
-  AccountBalance,
-  AccountBalanceQuery,
   AccountId,
   AccountInfo,
   AccountInfoQuery,
@@ -33,49 +31,63 @@ import {
 } from "@hashgraph/sdk";
 
 class ConsensusInfoClient {
-  sdkClient;
-  constructor() {
+  // Lazily created so the client (and its gRPC channels) only exists while
+  // tests need it, and can be closed and re-created between test files.
+  // See https://github.com/hiero-ledger/hiero-sdk-tck/issues/645.
+  private _sdkClient: Client | null = null;
+
+  get sdkClient(): Client {
+    this._sdkClient ??= this.createClient();
+    return this._sdkClient;
+  }
+
+  private createClient(): Client {
+    let sdkClient;
     if (process.env.NODE_IP && process.env.NODE_ACCOUNT_ID) {
       const node = {
         [process.env.NODE_IP]: AccountId.fromString(
           process.env.NODE_ACCOUNT_ID,
         ),
       };
-      this.sdkClient = Client.forNetwork(node);
+      sdkClient = Client.forNetwork(node);
       // Set mirror network for AddressBookQuery support
       // AddressBookQuery requires mirror network to be configured
       if (process.env.MIRROR_NETWORK) {
         const mirrorNetwork = process.env.MIRROR_NETWORK.split(",").map(
           (addr) => addr.trim(),
         );
-        this.sdkClient.setMirrorNetwork(mirrorNetwork);
+        sdkClient.setMirrorNetwork(mirrorNetwork);
       } else {
         // Default mirror network for local development
-        this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+        sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
       }
     } else {
-      this.sdkClient = Client.forLocalNode();
-      this.sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
+      sdkClient = Client.forLocalNode();
+      sdkClient.setMirrorNetwork(["127.0.0.1:5600"]);
     }
 
-    this.sdkClient.setOperator(
+    sdkClient.setOperator(
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+
+    return sdkClient;
   }
 
-  async getBalance(accountId: string): Promise<AccountBalance> {
-    return this.executeAccountMethod(
-      accountId,
-      new AccountBalanceQuery(),
-    ) as Promise<AccountBalance>;
+  // Closes the underlying SDK client and its network channels. The next
+  // sdkClient access transparently creates a fresh client.
+  async close(): Promise<void> {
+    if (this._sdkClient !== null) {
+      const client = this._sdkClient;
+      this._sdkClient = null;
+      await client.close();
+    }
   }
 
   async getAccountInfo(accountId: string): Promise<AccountInfo> {
-    return this.executeAccountMethod(
-      accountId,
-      new AccountInfoQuery(),
-    ) as Promise<AccountInfo>;
+    const query = new AccountInfoQuery();
+    query.setAccountId(accountId);
+    return query.execute(this.sdkClient);
   }
 
   async getTokenInfo(tokenId: string): Promise<TokenInfo> {
@@ -101,14 +113,6 @@ class ConsensusInfoClient {
     const query = new FileContentsQuery();
     query.setFileId(FileId.fromString(fileId));
     return query.execute(this.sdkClient);
-  }
-
-  async executeAccountMethod(
-    accountId: string,
-    method: AccountInfoQuery | AccountBalanceQuery,
-  ) {
-    method.setAccountId(accountId);
-    return method.execute(this.sdkClient);
   }
 
   async executeTokenMethod(tokenId: string, method: TokenInfoQuery) {
