@@ -191,7 +191,8 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: ${{ inputs.solo-version || '0.91.0' }}
-          mirrorNodeVersion: v0.138.0
+          # v0.148.0+ returns high_volume (HIP-1313) on /api/v1/transactions
+          mirrorNodeVersion: v0.153.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
 
       # Run the TCK through the action in this repository; `tck` is the path
