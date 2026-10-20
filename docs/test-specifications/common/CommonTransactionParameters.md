@@ -17,7 +17,7 @@ There are common parameters that can be set for all Hiero transaction types. Thi
 | memo                     | string       | optional          |                                                                                                                                    |
 | regenerateTransactionId  | bool         | optional          |                                                                                                                                    |
 | signers                  | list<string> | optional          | List of DER-encoded hex strings of all additional private keys required to sign.                                                   |
-| highVolume               | bool         | optional          | HIP-1313 opt-in: route the transaction through the high-volume entity creation throttle bucket and variable-rate pricing. Default: unset (standard throttles). |
+| highVolume               | bool         | optional          | HIP-1313 opt-in for the high-volume entity creation throttles and variable-rate pricing. It only affects the entity creation transaction types listed in [HIP-1313](https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-1313.md) (for example AccountCreate, TokenCreate or TopicCreate); other transaction types ignore it. Default: unset (standard throttles). |
 
 ## Example Usage
 
