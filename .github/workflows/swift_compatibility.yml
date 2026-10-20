@@ -95,11 +95,13 @@ jobs:
           submodules: true
 
       - name: Checkout Swift SDK Version
+        env:
+          SWIFT_SDK_VERSION: ${{ inputs.swift-sdk-version }}
         run: |
           cd sdk-server
-          if [ -n "${{ inputs.swift-sdk-version }}" ]; then
-            echo "Using specified Swift SDK version: ${{ inputs.swift-sdk-version }}"
-            git checkout ${{ inputs.swift-sdk-version }}
+          if [ -n "$SWIFT_SDK_VERSION" ]; then
+            echo "Using specified Swift SDK version: $SWIFT_SDK_VERSION"
+            git checkout "$SWIFT_SDK_VERSION"
           else
             echo "Using latest Swift SDK tag"
             git fetch --tags
