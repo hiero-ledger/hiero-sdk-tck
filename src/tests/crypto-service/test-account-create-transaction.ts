@@ -1009,7 +1009,7 @@ describe("AccountCreateTransaction", function () {
         await mirrorNodeClient.getTransactionsByTimestamp(
           mirrorAccount.created_timestamp as string,
         )
-      ).transactions?.[0];
+      ).transactions?.find(({ entity_id }) => entity_id === accountId);
       expect(transaction?.high_volume).to.equal(highVolume);
 
       return transaction;
