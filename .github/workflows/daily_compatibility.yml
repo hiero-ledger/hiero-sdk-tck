@@ -62,6 +62,7 @@ jobs:
     with:
       custom-job-name: "Daily JS SDK (main) — attempt 1"
       js-sdk-version: main
+      artifact-name: "tck-report-js-attempt-1"
     secrets: inherit
 
   js-compatibility-2:
@@ -71,6 +72,7 @@ jobs:
     with:
       custom-job-name: "Daily JS SDK (main) — attempt 2"
       js-sdk-version: main
+      artifact-name: "tck-report-js-attempt-2"
     secrets: inherit
 
   js-compatibility-3:
@@ -80,6 +82,7 @@ jobs:
     with:
       custom-job-name: "Daily JS SDK (main) — attempt 3"
       js-sdk-version: main
+      artifact-name: "tck-report-js-attempt-3"
     secrets: inherit
 
   # ── Go SDK — up to 3 attempts ──────────────────────────────────────
@@ -89,6 +92,7 @@ jobs:
     with:
       custom-job-name: "Daily Go SDK (main) — attempt 1"
       go-sdk-version: main
+      artifact-name: "tck-report-go-attempt-1"
     secrets: inherit
 
   go-compatibility-2:
@@ -98,6 +102,7 @@ jobs:
     with:
       custom-job-name: "Daily Go SDK (main) — attempt 2"
       go-sdk-version: main
+      artifact-name: "tck-report-go-attempt-2"
     secrets: inherit
 
   go-compatibility-3:
@@ -107,6 +112,7 @@ jobs:
     with:
       custom-job-name: "Daily Go SDK (main) — attempt 3"
       go-sdk-version: main
+      artifact-name: "tck-report-go-attempt-3"
     secrets: inherit
 
   # ── Java SDK — up to 3 attempts ────────────────────────────────────
@@ -116,6 +122,7 @@ jobs:
     with:
       custom-job-name: "Daily Java SDK (main) — attempt 1"
       java-sdk-version: main
+      artifact-name: "tck-report-java-attempt-1"
     secrets: inherit
 
   java-compatibility-2:
@@ -125,6 +132,7 @@ jobs:
     with:
       custom-job-name: "Daily Java SDK (main) — attempt 2"
       java-sdk-version: main
+      artifact-name: "tck-report-java-attempt-2"
     secrets: inherit
 
   java-compatibility-3:
@@ -134,6 +142,7 @@ jobs:
     with:
       custom-job-name: "Daily Java SDK (main) — attempt 3"
       java-sdk-version: main
+      artifact-name: "tck-report-java-attempt-3"
     secrets: inherit
 
   # ── Swift SDK — up to 3 attempts ───────────────────────────────────

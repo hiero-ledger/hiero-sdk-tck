@@ -819,9 +819,10 @@ describe("ContractCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          "INSUFFICIENT_PAYER_BALANCE",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;
@@ -852,9 +853,10 @@ describe("ContractCreateTransaction", function () {
           initialBalance: "1000",
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          "INSUFFICIENT_PAYER_BALANCE",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;
@@ -982,10 +984,10 @@ describe("ContractCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;
@@ -1002,10 +1004,10 @@ describe("ContractCreateTransaction", function () {
           initialBalance: "9223372036854775806",
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          // TODO fail invalid
-          "FAIL_INVALID",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;
@@ -1030,10 +1032,10 @@ describe("ContractCreateTransaction", function () {
           },
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;
@@ -1050,10 +1052,10 @@ describe("ContractCreateTransaction", function () {
           initialBalance: "9223372036854775807",
         });
       } catch (err: any) {
-        assert.equal(
-          err.data.status,
-          // TODO: fail invalid
-          "FAIL_INVALID",
+        // FAIL_INVALID on consensus node < 0.77, INSUFFICIENT_PAYER_BALANCE after
+        // https://github.com/hiero-ledger/hiero-consensus-node/pull/26404
+        expect(err.data.status).to.be.oneOf(
+          ["INSUFFICIENT_PAYER_BALANCE", "FAIL_INVALID"],
           "Insufficient payer balance error",
         );
         return;

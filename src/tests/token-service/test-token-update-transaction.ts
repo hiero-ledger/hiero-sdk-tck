@@ -382,24 +382,22 @@ describe("TokenUpdateTransaction", function () {
       expect(accountId).to.equal(tokenInfo.treasuryAccountId?.toString());
 
       // Make sure the tokens were transferred from the initial treasury account to the new treasury account.
-      const initialTreasuryAccountBalance =
-        await consensusInfoClient.getBalance(
+      const initialTreasuryTokenRelationship = (
+        await consensusInfoClient.getAccountInfo(
           process.env.OPERATOR_ACCOUNT_ID as string,
-        );
-      const newTreasuryAccountBalance =
-        await consensusInfoClient.getBalance(accountId);
+        )
+      ).tokenRelationships.get(mutableTokenId);
+      const newTreasuryTokenRelationship = (
+        await consensusInfoClient.getAccountInfo(accountId)
+      ).tokenRelationships.get(mutableTokenId);
 
-      assert(initialTreasuryAccountBalance.tokens?._map.has(mutableTokenId));
-      assert(newTreasuryAccountBalance.tokens?._map.has(mutableTokenId));
+      assert(initialTreasuryTokenRelationship);
+      assert(newTreasuryTokenRelationship);
 
-      expect(
-        initialTreasuryAccountBalance.tokens?._map
-          .get(mutableTokenId)
-          ?.toString(),
-      ).to.equal("0");
-      expect(
-        newTreasuryAccountBalance.tokens?._map.get(mutableTokenId)?.toString(),
-      ).to.equal(initialSupply.toString());
+      expect(initialTreasuryTokenRelationship.balance.toString()).to.equal("0");
+      expect(newTreasuryTokenRelationship.balance.toString()).to.equal(
+        initialSupply.toString(),
+      );
     });
 
     it("(#3) Updates a mutable token with a treasury account without signing with the account's private key", async function () {

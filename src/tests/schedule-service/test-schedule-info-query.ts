@@ -192,9 +192,9 @@ describe("ScheduleInfoQuery", function () {
         scheduleId,
       });
 
-      expect(response).to.have.property("deleted");
-      expect(response.deleted).to.exist;
-      expect(response.deleted).to.not.be.empty;
+      expect(response).to.have.property("deletedAt");
+      expect(response.deletedAt).to.exist;
+      expect(response.deletedAt).to.not.be.empty;
     });
 
     it("(#5) Query schedule info and verify scheduleId is returned", async function () {
