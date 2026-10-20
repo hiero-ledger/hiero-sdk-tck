@@ -993,11 +993,26 @@ describe("AccountCreateTransaction", function () {
   });
 
   describe("High Volume (HIP-1313)", async function () {
-    const verifyAccountCreated = async (accountId: string) => {
+    const verifyAccountCreationWithHighVolume = async (
+      accountId: string,
+      highVolume: boolean,
+    ) => {
       expect((await consensusInfoClient.getAccountInfo(accountId)).isDeleted).to
         .be.false;
-      expect((await mirrorNodeClient.getAccountData(accountId)).deleted).to.be
-        .false;
+
+      const mirrorAccount = await mirrorNodeClient.getAccountData(accountId);
+      expect(mirrorAccount.deleted).to.be.false;
+
+      // The mirror node reads high_volume from the signed transaction body, so
+      // it shows whether the SDK actually set the flag.
+      const transaction = (
+        await mirrorNodeClient.getTransactionsByTimestamp(
+          mirrorAccount.created_timestamp as string,
+        )
+      ).transactions?.[0];
+      expect(transaction?.high_volume).to.equal(highVolume);
+
+      return transaction;
     };
 
     it("(#1) Creates an account with commonTransactionParams.highVolume=true", async function () {
@@ -1010,7 +1025,7 @@ describe("AccountCreateTransaction", function () {
         },
       });
 
-      await verifyAccountCreated(response.accountId);
+      await verifyAccountCreationWithHighVolume(response.accountId, true);
     });
 
     it("(#2) Creates an account with commonTransactionParams.highVolume=false", async function () {
@@ -1023,7 +1038,7 @@ describe("AccountCreateTransaction", function () {
         },
       });
 
-      await verifyAccountCreated(response.accountId);
+      await verifyAccountCreationWithHighVolume(response.accountId, false);
     });
 
     it("(#3) Omitting highVolume behaves identically to false", async function () {
@@ -1033,23 +1048,29 @@ describe("AccountCreateTransaction", function () {
         key,
       });
 
-      await verifyAccountCreated(response.accountId);
+      await verifyAccountCreationWithHighVolume(response.accountId, false);
     });
 
     it("(#4) highVolume=true with a sufficient maxTransactionFee", async function () {
       const key = await generateEd25519PrivateKey(this);
 
+      // 10 hbar in tinybars; comfortably above the standard or
+      // high-volume-multiplied AccountCreate fee on local + mainnet.
+      const maxTransactionFee = 1000000000;
+
       const response = await JSONRPCRequest(this, "createAccount", {
         key,
         commonTransactionParams: {
           highVolume: true,
-          // 10 hbar in tinybars; comfortably above the standard or
-          // high-volume-multiplied AccountCreate fee on local + mainnet.
-          maxTransactionFee: 1000000000,
+          maxTransactionFee,
         },
       });
 
-      await verifyAccountCreated(response.accountId);
+      const transaction = await verifyAccountCreationWithHighVolume(
+        response.accountId,
+        true,
+      );
+      expect(transaction?.charged_tx_fee).to.be.at.most(maxTransactionFee);
     });
 
     it("(#5) highVolume=true with an insufficient maxTransactionFee", async function () {
