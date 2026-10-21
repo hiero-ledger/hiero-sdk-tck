@@ -1,0 +1,207 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "System Compatibility (Python SDK)"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job(could include the version of the Python SDK, Solo, and consensus node):"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use (defaults to 0.91.0 if not specified):"
+        required: false
+        type: string
+        default: "0.91.0"
+      consensus-node-version:
+        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
+        required: false
+        type: string
+      python-sdk-version:
+        description: "The version of the Python SDK to use (defaults to latest tag if not specified):"
+        required: false
+        type: string
+      python-version:
+        description: "Python interpreter version used to run the SDK server (defaults to 3.12):"
+        required: false
+        type: string
+        default: "3.12"
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-python"
+  workflow_call:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use"
+        required: false
+        type: string
+        default: "0.91.0"
+      consensus-node-version:
+        description: "The version of the consensus node to use"
+        required: false
+        type: string
+      python-sdk-version:
+        description: "The version of the Python SDK to use"
+        required: false
+        type: string
+      python-version:
+        description: "Python interpreter version used to run the SDK server"
+        required: false
+        type: string
+        default: "3.12"
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-python"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Execute TCK Regression Tests using specified version of hiero-consensus-node
+  tck-regression:
+    name: ${{ inputs.custom-job-name || 'System Compatibility' }}
+    runs-on: hiero-client-sdk-linux-large
+    timeout-minutes: 60
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
+
+      # Checkout the current TCK repository
+      - name: Checkout TCK Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: tck
+          persist-credentials: false
+
+      # Checkout the Python SDK server
+      - name: Checkout Python SDK Server
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sdk-server
+          repository: hiero-ledger/hiero-sdk-python
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Checkout Python SDK Version
+        env:
+          PYTHON_SDK_VERSION: ${{ inputs.python-sdk-version }}
+        run: |
+          cd sdk-server
+          if [ -n "$PYTHON_SDK_VERSION" ]; then
+            echo "Using specified Python SDK version: $PYTHON_SDK_VERSION"
+            git checkout "$PYTHON_SDK_VERSION"
+          else
+            echo "Using latest Python SDK tag"
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+            echo "Latest Python SDK tag: $LATEST_TAG"
+            git checkout $LATEST_TAG
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ inputs.python-version || '3.12' }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      # Install dependencies and generate the protobuf modules. The generated
+      # hapi/ package is gitignored in the SDK repository, so a fresh checkout
+      # cannot import the SDK (or start the TCK server) without this step.
+      # --no-sync keeps uv from re-syncing the environment installed above.
+      - name: Install SDK dependencies and generate protos
+        run: |
+          uv sync --frozen --all-groups --all-extras
+          uv run --no-sync generate_proto.py
+        working-directory: sdk-server
+
+      # Start the TCK server (binds 127.0.0.1:8544, the TCK action's default).
+      # setsid gives the server its own process group, so the stop step below
+      # kills the Python process and not only the uv wrapper.
+      - name: Start SDK Server
+        id: start-sdk-server
+        env:
+          TCK_HOST: "127.0.0.1"
+          TCK_PORT: "8544"
+        run: |
+          setsid uv run --no-sync python -m tck &
+          server_pid=$!
+          echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
+        working-directory: sdk-server
+
+      # Get Latest Consensus Node Version
+      - name: Get Latest Consensus Node Version
+        if: ${{ !inputs.consensus-node-version }}
+        id: get-consensus-version
+        run: |
+          # Fetch latest stable version (excludes RC, beta, alpha versions)
+          LATEST_TAG=$(git ls-remote --tags --refs https://github.com/hiero-ledger/hiero-consensus-node \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n1)
+          echo "Latest consensus node tag: $LATEST_TAG"
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      # Prepare Hiero Solo
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@bdae0a37df52190b6b3801c1c981c0ed37f4616e # v0.23.0
+        with:
+          installMirrorNode: true
+          soloVersion: ${{ inputs.solo-version || '0.91.0' }}
+          mirrorNodeVersion: v0.153.0
+          hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          # v0.23.0 moved these defaults (consensus gRPC 50211 -> 35211, mirror
+          # REST 5551 -> 38081); pin them back so the TCK action's network
+          # defaults (and the sibling workflows' port scheme) stay valid.
+          haproxyPort: "50211"
+          mirrorNodePortRest: "5551"
+
+      # Run the TCK through the action in this repository; `tck` is the path
+      # the TCK checkout above uses. The action installs the client, waits for
+      # the JSON-RPC server, runs the suite, writes the job summary and
+      # uploads the report.
+      - name: Run the TCK
+        uses: ./tck
+        with:
+          test-matrix: ${{ inputs.test-matrix }}
+          artifact-name: ${{ inputs.artifact-name || 'tck-report-python' }}
+
+      # Stop the TCK server (the whole process group started with setsid)
+      - name: Stop tck-server
+        if: ${{ always() }}
+        env:
+          SERVER_PID: ${{ steps.start-sdk-server.outputs.pid }}
+        run: |
+          echo "Stopping SDK server process group ${SERVER_PID}"
+          if [ -n "${SERVER_PID}" ]; then
+            kill -9 -- "-${SERVER_PID}" 2>/dev/null || echo "Server already stopped"
+          fi
