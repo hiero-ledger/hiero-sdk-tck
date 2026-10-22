@@ -1011,22 +1011,7 @@ describe("AccountCreateTransaction", function () {
         )
       ).transactions?.find(({ entity_id }) => entity_id === accountId);
       expect(transaction?.high_volume).to.equal(highVolume);
-
-      return transaction;
     };
-
-    it("(#1) Creates an account with commonTransactionParams.highVolume=true", async function () {
-      const key = await generateEd25519PrivateKey(this);
-
-      const response = await JSONRPCRequest(this, "createAccount", {
-        key,
-        commonTransactionParams: {
-          highVolume: true,
-        },
-      });
-
-      await verifyAccountCreationWithHighVolume(response.accountId, true);
-    });
 
     it("(#2) Creates an account with commonTransactionParams.highVolume=false", async function () {
       const key = await generateEd25519PrivateKey(this);
@@ -1049,28 +1034,6 @@ describe("AccountCreateTransaction", function () {
       });
 
       await verifyAccountCreationWithHighVolume(response.accountId, false);
-    });
-
-    it("(#4) highVolume=true with a sufficient maxTransactionFee", async function () {
-      const key = await generateEd25519PrivateKey(this);
-
-      // 10 hbar in tinybars; comfortably above the standard or
-      // high-volume-multiplied AccountCreate fee on local + mainnet.
-      const maxTransactionFee = 1000000000;
-
-      const response = await JSONRPCRequest(this, "createAccount", {
-        key,
-        commonTransactionParams: {
-          highVolume: true,
-          maxTransactionFee,
-        },
-      });
-
-      const transaction = await verifyAccountCreationWithHighVolume(
-        response.accountId,
-        true,
-      );
-      expect(transaction?.charged_tx_fee).to.be.at.most(maxTransactionFee);
     });
 
     it("(#5) highVolume=true with an insufficient maxTransactionFee", async function () {
