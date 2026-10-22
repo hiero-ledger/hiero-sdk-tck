@@ -46,7 +46,7 @@ class ConsensusInfoClient {
     const network = (process.env.NETWORK ?? "").toLowerCase();
 
     if (
-      (network === "" || network === "custom") &&
+      (network === "" || network === "local" || network === "custom") &&
       process.env.NODE_IP &&
       process.env.NODE_ACCOUNT_ID
     ) {
