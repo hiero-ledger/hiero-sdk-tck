@@ -1,0 +1,218 @@
+# SPDX-License-Identifier: Apache-2.0
+name: "System Compatibility (Swift SDK)"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job(could include the version of the SDK, Solo, and consensus node):"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use (defaults to 0.91.0 if not specified):"
+        required: false
+        type: string
+        default: "0.91.0"
+      consensus-node-version:
+        description: "The version of the consensus node to use (defaults to latest stable version tag if not specified):"
+        required: false
+        type: string
+      swift-sdk-version:
+        description: "The version of the Swift SDK to use (defaults to latest tag if not specified):"
+        required: false
+        type: string
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-swift"
+  workflow_call:
+    inputs:
+      custom-job-name:
+        description: "The custom job name to use for the job"
+        required: false
+        type: string
+      solo-version:
+        description: "The version of the Solo to use"
+        required: false
+        type: string
+        default: "0.91.0"
+      consensus-node-version:
+        description: "The version of the consensus node to use"
+        required: false
+        type: string
+      swift-sdk-version:
+        description: "The version of the Swift SDK to use"
+        required: false
+        type: string
+      test-matrix:
+        description: "TCK test files or globs to run instead of the whole suite, one per line"
+        required: false
+        type: string
+      artifact-name:
+        description: "Name of the uploaded TCK report artifact, unique within a workflow run"
+        required: false
+        type: string
+        default: "tck-report-swift"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Execute TCK Regression Tests using specified version of hiero-consensus-node
+  tck-regression:
+    name: ${{ inputs.custom-job-name || 'System Compatibility' }}
+    runs-on: hiero-client-sdk-linux-large
+    timeout-minutes: 60
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        with:
+          egress-policy: audit
+
+      # Checkout the current TCK repository
+      - name: Checkout TCK Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: tck
+
+      # Checkout the Swift SDK server
+      - name: Checkout Swift SDK Server
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: sdk-server
+          repository: hiero-ledger/hiero-sdk-swift
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: true
+
+      - name: Checkout Swift SDK Version
+        env:
+          SWIFT_SDK_VERSION: ${{ inputs.swift-sdk-version }}
+        run: |
+          cd sdk-server
+          if [ -n "$SWIFT_SDK_VERSION" ]; then
+            echo "Using specified Swift SDK version: $SWIFT_SDK_VERSION"
+            git checkout "$SWIFT_SDK_VERSION"
+          else
+            echo "Using latest Swift SDK tag"
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+            echo "Latest Swift SDK tag: $LATEST_TAG"
+            git checkout $LATEST_TAG
+          fi
+
+      # Restore SPM build artifacts to avoid cold builds on every run. Saving
+      # is a separate step right after the build, so a failing TCK run still
+      # keeps the cache.
+      - name: Restore SPM build directory
+        id: spm-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: sdk-server/.build
+          key: ${{ runner.os }}-6.0-spm-tck-${{ hashFiles('sdk-server/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-6.0-spm-tck-
+
+      # Set up Swift toolchain (matches SwiftyLab/setup-swift used in hiero-sdk-swift CI)
+      - name: Setup Swift
+        uses: SwiftyLab/setup-swift@38f54a76b70d989321de9dc7c840618c08cf56e9 # v1.14.0
+        with:
+          swift-version: "6.0"
+
+      # Install system dependencies required to build the Swift SDK (matches hiero-sdk-swift CI)
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git curl jq coreutils ca-certificates \
+            clang libicu-dev libxml2-dev libsqlite3-dev zlib1g-dev \
+            libcurl4-openssl-dev libssl-dev pkg-config \
+            protobuf-compiler
+
+      # Set up the node environment
+      - name: Setup NodeJS Environment
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      # Build the TCK server before starting it, so it answers within the
+      # TCK action's default server-timeout
+      - name: Build SDK Server
+        run: swift build --product HieroTCK
+        working-directory: sdk-server
+
+      - name: Save SPM build directory
+        if: ${{ steps.spm-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: sdk-server/.build
+          key: ${{ steps.spm-cache.outputs.cache-primary-key }}
+
+      # Start the TCK server
+      - name: Start SDK Server
+        id: start-sdk-server
+        run: |
+          swift run --skip-build HieroTCK > tck-server.log 2>&1 &
+          server_pid=$!
+          echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
+          echo "Server started with PID: $server_pid"
+        working-directory: sdk-server
+
+      # Get Latest Consensus Node Version
+      - name: Get Latest Consensus Node Version
+        if: ${{ !inputs.consensus-node-version }}
+        id: get-consensus-version
+        run: |
+          # Fetch latest stable version (excludes RC, beta, alpha versions)
+          LATEST_TAG=$(git ls-remote --tags --refs https://github.com/hiero-ledger/hiero-consensus-node \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V \
+            | tail -n1)
+          echo "Latest consensus node tag: $LATEST_TAG"
+          echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      # Prepare Hiero Solo
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@328bc84c3b00a990a151418144fd682a4eb76ea6 # v0.19.0
+        with:
+          installMirrorNode: true
+          soloVersion: ${{ inputs.solo-version || '0.91.0' }}
+          mirrorNodeVersion: v0.138.0
+          hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+
+      # Run the TCK through the action in this repository; `tck` is the path
+      # the TCK checkout above uses. The action installs the client, waits for
+      # the JSON-RPC server, runs the suite, writes the job summary and
+      # uploads the report.
+      - name: Run the TCK
+        uses: ./tck
+        with:
+          test-matrix: ${{ inputs.test-matrix }}
+          artifact-name: ${{ inputs.artifact-name || 'tck-report-swift' }}
+
+      # Show server logs on failure
+      - name: Show Server Logs
+        if: ${{ failure() }}
+        run: |
+          echo "Server logs:"
+          cat tck-server.log || echo "No server logs found"
+        working-directory: sdk-server
+
+      # Clean up: Stop the TCK server
+      - name: Stop tck-server
+        if: ${{ always() }}
+        run: |
+          echo ${{ steps.start-sdk-server.outputs.pid }}
+          kill -9 ${{ steps.start-sdk-server.outputs.pid }} 2>/dev/null || echo "Server already stopped"
