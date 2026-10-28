@@ -163,12 +163,15 @@ jobs:
       # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@328bc84c3b00a990a151418144fd682a4eb76ea6 # v0.19.0
+        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # v0.26.0
         with:
           installMirrorNode: true
           soloVersion: ${{ inputs.solo-version || '0.91.0' }}
           mirrorNodeVersion: v0.138.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          # Since 0.20.0 the action defaults to 38081 and 35211; the TCK expects 5551 and 50211
+          mirrorNodePortRest: "5551"
+          haproxyPort: "50211"
 
       # The Java SDK maps local mirror port 5600 to REST port 38081 (MirrorNode.java); the Solo action only forwards 5551
       - name: Forward mirror REST to 38081
