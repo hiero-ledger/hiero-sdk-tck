@@ -36,7 +36,7 @@
     "@types/markdown-it": "^14.2.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.26",
-    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.71.2",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^10.1.8",
