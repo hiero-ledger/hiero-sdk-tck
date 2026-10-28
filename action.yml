@@ -1,8 +1,8 @@
 # Runs the Hiero SDK Technology Compatibility Kit against a JSON-RPC server
-# the calling workflow has already built and started. See the README section
+# the calling workflow builds. See the README section
 # "Run the TCK from an SDK repository's CI" for the inputs and an example.
 #
-# The action never builds or starts the SDK server and never starts a network.
+# Server startup and Solo provisioning are opt-in; existing callers manage both.
 # Network inputs default to the Solo values the compatibility workflows in
 # this repository use. The job fails in the last step, after the results were
 # collected and the report uploaded, also when an earlier step failed, so the
@@ -11,8 +11,32 @@ name: "Hiero SDK TCK"
 description: "Runs the Hiero SDK TCK suite against a running JSON-RPC server and reports the results"
 
 inputs:
+  server-command:
+    description: "Optional foreground shell command to start the SDK server; the caller builds the SDK and owns this command"
+    required: false
+    default: ""
+  server-working-directory:
+    description: "Directory inside the workflow workspace for server-command"
+    required: false
+    default: "."
+  start-solo:
+    description: "Provision and clean up a Solo network at the default TCK endpoints; requires an isolated Linux Docker runner"
+    required: false
+    default: "false"
+  solo-version:
+    description: "Solo CLI version when start-solo is true"
+    required: false
+    default: "0.91.0"
+  consensus-node-version:
+    description: "Consensus version when start-solo is true; empty uses the selected Solo release's default"
+    required: false
+    default: ""
+  mirror-node-version:
+    description: "Mirror node version when start-solo is true"
+    required: false
+    default: "v0.138.0"
   json-rpc-server-url:
-    description: "URL of the SDK's JSON-RPC server, started by the workflow before this action"
+    description: "URL of the SDK's JSON-RPC server, started by the workflow or server-command"
     required: false
     default: "http://127.0.0.1:8544"
   server-timeout:
@@ -130,19 +154,6 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
 
-    - name: Install the TCK
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      run: npm ci --no-audit --no-fund
-
-    - name: Wait for the JSON-RPC server
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      env:
-        JSON_RPC_SERVER_URL: ${{ inputs.json-rpc-server-url }}
-        SERVER_TIMEOUT: ${{ inputs.server-timeout }}
-      run: node scripts/action/wait-for-server.mjs
-
     # A key passed from a secret is masked by GitHub already; this covers a key
     # given in plain text. The scripts never print it.
     - name: Mask the operator key
@@ -153,6 +164,55 @@ runs:
         if [ -n "${OPERATOR_ACCOUNT_PRIVATE_KEY}" ]; then
           echo "::add-mask::${OPERATOR_ACCOUNT_PRIVATE_KEY}"
         fi
+
+    - name: Install the TCK
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund
+
+    - name: Reserve a new Solo network
+      id: managed-solo
+      if: ${{ inputs.start-solo == 'true' }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        NODE_IP: ${{ inputs.node-ip }}
+        MIRROR_NETWORK: ${{ inputs.mirror-network }}
+        MIRROR_NODE_REST_URL: ${{ inputs.mirror-node-rest-url }}
+        MIRROR_NODE_REST_JAVA_URL: ${{ inputs.mirror-node-rest-java-url }}
+      run: node scripts/action/manage-solo.mjs
+
+    - name: Prepare Hiero Solo
+      if: ${{ inputs.start-solo == 'true' }}
+      uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # v0.26.0
+      with:
+        installMirrorNode: true
+        soloVersion: ${{ inputs.solo-version }}
+        hieroVersion: ${{ inputs.consensus-node-version }}
+        mirrorNodeVersion: ${{ inputs.mirror-node-version }}
+        nodeVersion: ${{ inputs.node-version }}
+        haproxyPort: "50211"
+        mirrorNodePortRest: "5551"
+        mirrorNodePortGrpc: "5600"
+        javaRestApiPort: "8084"
+
+    - name: Start the SDK server
+      id: managed-server
+      if: ${{ inputs.server-command != '' }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SERVER_COMMAND: ${{ inputs.server-command }}
+        SERVER_WORKING_DIRECTORY: ${{ inputs.server-working-directory }}
+      run: node scripts/action/manage-server.mjs
+
+    - name: Wait for the JSON-RPC server
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        JSON_RPC_SERVER_URL: ${{ inputs.json-rpc-server-url }}
+        SERVER_TIMEOUT: ${{ inputs.server-timeout }}
+      run: node scripts/action/wait-for-server.mjs
 
     # Never fails: the exit code becomes an output and "Report the outcome"
     # fails the job after the report was collected and uploaded.
@@ -197,6 +257,29 @@ runs:
         name: ${{ inputs.artifact-name }}
         path: ${{ steps.collect.outputs.upload-path }}
         if-no-files-found: ignore
+
+    - name: Stop the managed SDK server
+      if: ${{ always() && steps.managed-server.outputs.pid != '' }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        SERVER_PID: ${{ steps.managed-server.outputs.pid }}
+      run: node scripts/action/manage-server.mjs stop
+
+    - name: Upload the managed server log
+      if: ${{ !cancelled() && steps.managed-server.outputs.log-path != '' }}
+      continue-on-error: true
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.artifact-name }}-server-log
+        path: ${{ steps.managed-server.outputs.log-path }}
+        if-no-files-found: ignore
+
+    - name: Stop the managed Solo network
+      if: ${{ always() && steps.managed-solo.outputs.owns-solo == 'true' }}
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: node scripts/action/manage-solo.mjs stop
 
     - name: Report the outcome
       if: ${{ !cancelled() }}
