@@ -127,7 +127,7 @@ jobs:
           useCloudCache: true
 
       - name: Setup VCPkg
-        uses: step-security/run-vcpkg@f4f81d0f70f2e65432e7040c9677ce85e996d8b9 # v11.5.3
+        uses: step-security/run-vcpkg@db723b9feb894bbeab0d6877e19455a6112769c4 # v11.6.0
         with:
           binaryCachePath: ${{ github.workspace }}/b/vcpkg_cache
           vcpkgDirectory: ${{ github.workspace }}/sdk-server/vcpkg
