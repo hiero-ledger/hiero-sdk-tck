@@ -190,6 +190,9 @@ jobs:
           soloVersion: ${{ inputs.solo-version || '0.91.0' }}
           mirrorNodeVersion: v0.138.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          # Since 0.20.0 the action defaults to 38081 and 35211; the TCK expects 5551 and 50211
+          mirrorNodePortRest: "5551"
+          haproxyPort: "50211"
 
       # Run the TCK through the action in this repository; `tck` is the path
       # the TCK checkout above uses. The action installs the client, waits for
