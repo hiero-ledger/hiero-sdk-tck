@@ -191,7 +191,8 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: ${{ inputs.solo-version || '0.91.0' }}
-          mirrorNodeVersion: v0.138.0
+          # v0.148.0+ returns high_volume (HIP-1313) on /api/v1/transactions
+          mirrorNodeVersion: v0.153.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
           # Since 0.20.0 the action defaults to 38081 and 35211; the TCK expects 5551 and 50211
           mirrorNodePortRest: "5551"

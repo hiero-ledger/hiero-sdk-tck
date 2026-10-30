@@ -992,5 +992,84 @@ describe("AccountCreateTransaction", function () {
     });
   });
 
+  describe("High Volume (HIP-1313)", async function () {
+    const verifyAccountCreationWithHighVolume = async (
+      accountId: string,
+      highVolume: boolean,
+    ) => {
+      expect((await consensusInfoClient.getAccountInfo(accountId)).isDeleted).to
+        .be.false;
+
+      const mirrorAccount = await mirrorNodeClient.getAccountData(accountId);
+      expect(mirrorAccount.deleted).to.be.false;
+
+      // The mirror node reads high_volume from the signed transaction body, so
+      // it shows whether the SDK actually set the flag.
+      const transaction = (
+        await mirrorNodeClient.getTransactionsByTimestamp(
+          mirrorAccount.created_timestamp as string,
+        )
+      ).transactions?.find(({ entity_id }) => entity_id === accountId);
+      expect(transaction?.high_volume).to.equal(highVolume);
+    };
+
+    it("(#2) Creates an account with commonTransactionParams.highVolume=false", async function () {
+      const key = await generateEd25519PrivateKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+        commonTransactionParams: {
+          highVolume: false,
+        },
+      });
+
+      await verifyAccountCreationWithHighVolume(response.accountId, false);
+    });
+
+    it("(#3) Omitting highVolume behaves identically to false", async function () {
+      const key = await generateEd25519PrivateKey(this);
+
+      const response = await JSONRPCRequest(this, "createAccount", {
+        key,
+      });
+
+      await verifyAccountCreationWithHighVolume(response.accountId, false);
+    });
+
+    it("(#5) highVolume=true with an insufficient maxTransactionFee", async function () {
+      // Use a freshly-created non-treasury payer so fee enforcement applies
+      // deterministically. Some CI workflows hardcode the operator to the
+      // genesis treasury (0.0.2), which is exempt from fee checks; that
+      // exemption would mask INSUFFICIENT_TX_FEE if we paid from the operator.
+      const payerKey = await generateEd25519PrivateKey(this);
+      const payerResponse = await JSONRPCRequest(this, "createAccount", {
+        key: payerKey,
+        // 10 hbar -- plenty for a base AccountCreate fee, but small enough
+        // that we don't tie up operator balance unnecessarily.
+        initialBalance: "1000000000",
+      });
+      const payerId = payerResponse.accountId;
+
+      const key = await generateEd25519PrivateKey(this);
+
+      try {
+        await JSONRPCRequest(this, "createAccount", {
+          key,
+          commonTransactionParams: {
+            highVolume: true,
+            maxTransactionFee: 1,
+            transactionId: payerId,
+            signers: [payerKey],
+          },
+        });
+      } catch (err: any) {
+        assert.equal(err.data.status, "INSUFFICIENT_TX_FEE");
+        return;
+      }
+
+      assert.fail("Should throw an INSUFFICIENT_TX_FEE error");
+    });
+  });
+
   return Promise.resolve();
 });
