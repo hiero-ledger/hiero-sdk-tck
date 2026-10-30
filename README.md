@@ -328,8 +328,10 @@ which tests ran. Bump it on purpose; a new test for a feature the SDK does not
 have yet would otherwise turn the check red. `v0.14.0` is the first release
 that includes the action.
 
-The action never builds or starts the SDK server and never starts a network.
-It installs the suite, waits for the server to accept connections, runs the
+By default, the workflow builds and starts the SDK server and network. Optional
+`server-command` and `start-solo` inputs let the action manage their lifecycle;
+leaving them unset preserves the existing behavior. The SDK build remains in
+the calling workflow. The action installs the suite, waits for the server to accept connections, runs the
 suite, writes the counts to the job summary, uploads the mochawesome report as
 an artifact and fails the job last. Results are collected also when an earlier
 step failed, so the job summary always says what happened, and a failed upload
@@ -348,6 +350,12 @@ version those steps need after it.
 
 | Input                       | Default                                      | Description                                                                               |
 | --------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `server-command`           | empty                                        | Optional foreground Bash command to start the server; empty uses the caller's server       |
+| `server-working-directory` | `.`                                          | Directory inside the workflow workspace for the server command                            |
+| `start-solo`               | `false`                                      | Provision and clean up an isolated Solo network at the default TCK endpoints               |
+| `solo-version`             | `0.91.0`                                     | Solo CLI version for managed startup                                                      |
+| `consensus-node-version`   | empty                                        | Managed consensus version; empty uses the selected Solo release's default                  |
+| `mirror-node-version`      | `v0.138.0`                                   | Mirror node version for managed startup                                                   |
 | `json-rpc-server-url`       | `http://127.0.0.1:8544`                      | The SDK's JSON-RPC server, started by the workflow                                        |
 | `server-timeout`            | `120`                                        | Seconds to wait for the server to accept connections                                      |
 | `node-ip`                   | `127.0.0.1:50211`                            | Consensus node gRPC address                                                               |
@@ -367,6 +375,46 @@ version those steps need after it.
 The network defaults are the Solo values the compatibility workflows in this
 repository use (`haproxyPort: 50211`, `mirrorNodePortRest: 5551`); pass the
 inputs that differ for another network.
+
+### Optional server and Solo startup
+
+These inputs require a commit containing the orchestration change; they are not
+available in v0.14.0. After the SDK workflow has built its checkout, a JavaScript
+example is:
+
+```yaml
+- name: Run the TCK
+  uses: hiero-ledger/hiero-sdk-tck@<commit-containing-this-change>
+  with:
+    start-solo: "true"
+    solo-version: "0.91.0"
+    mirror-node-version: "v0.138.0"
+    server-working-directory: tck
+    server-command: |
+      npm install --no-save .. ../node_modules/long
+      exec npm run start
+```
+
+`server-command` is a trusted workflow shell command, run with Bash and inherited
+workflow environment. It must keep the server in the foreground and its child
+processes in the same process group, so the action can stop them. A separately
+managed container/server can still be started by the caller with this input left
+empty. The command's working directory must be inside the workflow workspace.
+The action saves the server log as `<artifact-name>-server-log` and terminates its
+managed process group on success, failure or cancellation.
+
+`start-solo` delegates deployment to the pinned `hiero-solo-action`. It requires an
+isolated, ephemeral Linux runner with Docker, uses the default TCK endpoints and
+refuses an existing `solo-e2e` cluster. Custom network endpoints remain supported
+with `start-solo: "false"`. Cleanup deletes only the cluster reserved by this call,
+including after a partial deployment failure; it does not delete caller networks
+or shared Solo CLI configuration. The action's temporary Node.js version also
+applies to the server command.
+
+The TCK maintainers own shared lifecycle and result handling. Each SDK's
+maintainers own its build/start commands and Dockerfiles in that SDK's repository.
+This action has no SDK preset inventory and does not build the SDK. The existing
+wait/run/collect/verdict implementation is used in both modes.
 
 ### Outputs
 
