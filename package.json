@@ -1,7 +1,7 @@
 {
   "version": "0.14.0",
   "dependencies": {
-    "@hashgraph/sdk": "^2.73.1",
+    "@hashgraph/sdk": "^2.81.0",
     "axios": "^1.20.0",
     "chai": "^6.3.0",
     "dotenv": "^18.0.5",
