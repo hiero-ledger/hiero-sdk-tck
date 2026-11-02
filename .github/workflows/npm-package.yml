@@ -1,0 +1,104 @@
+name: npm Package
+
+# Smoke test for the npm package (#736): packs the TCK the way a release
+# would, installs the tarball in an empty directory and runs the CLI from
+# there, so a broken `files` list, a missing runtime dependency or an
+# unresolved path alias fails here instead of after publication.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-package-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  smoke-test:
+    name: Pack and run (Node ${{ matrix.node-version }})
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      fail-fast: false
+      matrix:
+        # Oldest version allowed by `engines` and the version the action uses.
+        node-version: ["20.19.0", "22"]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # prepack runs the build.
+      - name: Pack
+        run: npm pack --pack-destination "${RUNNER_TEMP}/pack"
+
+      - name: Check the tarball contents
+        run: |
+          tar -tzf "${RUNNER_TEMP}"/pack/*.tgz > "${RUNNER_TEMP}/contents.txt"
+          if grep -E '\.ts$|\.env|\.github/|^package/src/' "${RUNNER_TEMP}/contents.txt"; then
+            echo "::error::The package must not contain TypeScript sources, env files or workflows"
+            exit 1
+          fi
+          grep -qx 'package/dist/cli.js' "${RUNNER_TEMP}/contents.txt"
+
+      - name: Install the tarball in an empty directory
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir consumer && cd consumer
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund "${RUNNER_TEMP}"/pack/*.tgz
+
+      - name: Run the CLI
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          npx hiero-sdk-tck --help
+          npx hiero-sdk-tck --list
+          expected="$(node -p "require('${GITHUB_WORKSPACE}/package.json').version")"
+          actual="$(npx hiero-sdk-tck --version)"
+          if [ "${actual}" != "${expected}" ]; then
+            echo "::error::--version printed ${actual}, package.json has ${expected}"
+            exit 1
+          fi
+
+      # Loads every compiled test file without running it, which catches a
+      # module the package needs but does not declare.
+      - name: Load every compiled test
+        working-directory: ${{ runner.temp }}/consumer
+        run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/hiero-sdk-tck/dist/tests/**/*.js'
+
+      # No JSON-RPC server or network is running, so preflight must abort and
+      # the CLI must exit 2 (no report) rather than 0.
+      - name: Fail without a server
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          set +e
+          npx hiero-sdk-tck --server http://127.0.0.1:9 --test AccountCreate
+          code=$?
+          set -e
+          if [ "${code}" -ne 2 ]; then
+            echo "::error::Expected exit code 2 without a server, got ${code}"
+            exit 1
+          fi
