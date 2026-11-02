@@ -51,9 +51,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      # prepack runs the build.
+      # prepack runs the build. npm pack does not create the destination.
       - name: Pack
-        run: npm pack --pack-destination "${RUNNER_TEMP}/pack"
+        run: |
+          mkdir -p "${RUNNER_TEMP}/pack"
+          npm pack --pack-destination "${RUNNER_TEMP}/pack"
 
       - name: Check the tarball contents
         run: |
