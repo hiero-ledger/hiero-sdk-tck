@@ -1,5 +1,5 @@
 {
-  "name": "@hiero-ledger/hiero-sdk-tck",
+  "name": "@hiero-ledger/sdk-tck",
   "version": "0.14.0",
   "description": "Technology Compatibility Kit for Hiero SDKs: runs the conformance suite against an SDK JSON-RPC server",
   "license": "Apache-2.0",

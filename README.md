@@ -296,12 +296,12 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 ## Run the TCK with npx
 
 The TCK is published on npm as
-[`@hiero-ledger/hiero-sdk-tck`](https://www.npmjs.com/package/@hiero-ledger/hiero-sdk-tck).
+[`@hiero-ledger/sdk-tck`](https://www.npmjs.com/package/@hiero-ledger/sdk-tck).
 The package runs the suite without a clone of this repository. Its version is
 the suite version, so pin it to run a known set of tests:
 
 ```sh
-npx @hiero-ledger/hiero-sdk-tck@<version> --server http://localhost:8544 --test AccountCreate
+npx @hiero-ledger/sdk-tck@<version> --server http://localhost:8544 --test AccountCreate
 ```
 
 > The first npm release is still pending. Until then, run the same CLI from a
@@ -310,7 +310,7 @@ npx @hiero-ledger/hiero-sdk-tck@<version> --server http://localhost:8544 --test 
 Or add it to a project, where Renovate or Dependabot can keep it up to date:
 
 ```sh
-npm install --save-dev @hiero-ledger/hiero-sdk-tck
+npm install --save-dev @hiero-ledger/sdk-tck
 npx hiero-sdk-tck --test ALL
 ```
 
@@ -510,7 +510,7 @@ To release a new version of the TCK, follow these steps:
 
 **Note:** The tag also versions the GitHub Action (`uses: hiero-ledger/hiero-sdk-tck@<sha>`). After tagging, update the pinned commit in the example under "Run the TCK from an SDK repository's CI".
 
-**Note:** Pushing the tag also publishes the npm package `@hiero-ledger/hiero-sdk-tck` through `.github/workflows/npm-publish.yml`, with npm provenance. The tag must match the `version` in `package.json`, or the workflow fails without publishing.
+**Note:** Pushing the tag also publishes the npm package `@hiero-ledger/sdk-tck` through `.github/workflows/npm-publish.yml`, with npm provenance. The tag must match the `version` in `package.json`, or the workflow fails without publishing.
 
 ## Contributing
 

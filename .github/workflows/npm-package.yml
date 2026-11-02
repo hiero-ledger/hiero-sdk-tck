@@ -89,7 +89,7 @@ jobs:
       # module the package needs but does not declare.
       - name: Load every compiled test
         working-directory: ${{ runner.temp }}/consumer
-        run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/hiero-sdk-tck/dist/tests/**/*.js'
+        run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/sdk-tck/dist/tests/**/*.js'
 
       # No JSON-RPC server or network is running, so preflight must abort and
       # the CLI must exit 2 (no report) rather than 0.

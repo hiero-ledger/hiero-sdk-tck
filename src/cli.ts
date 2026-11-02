@@ -5,7 +5,7 @@
  * the suite from the installed package against a JSON-RPC server, with the
  * configuration and the report in the caller's working directory:
  *
- *   npx @hiero-ledger/hiero-sdk-tck --server http://localhost:8544 --test AccountCreate
+ *   npx @hiero-ledger/sdk-tck --server http://localhost:8544 --test AccountCreate
  *
  * Configuration precedence: CLI options > environment variables > env file
  * (`--env-file`, default ./.env) > defaults of the `--network` profile. The

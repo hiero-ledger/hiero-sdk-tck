@@ -1,6 +1,6 @@
 name: npm Publish
 
-# Publishes @hiero-ledger/hiero-sdk-tck when a release tag is pushed (#736).
+# Publishes @hiero-ledger/sdk-tck when a release tag is pushed (#736).
 # Authenticates with npm Trusted Publishing (OIDC), so there is no npm token
 # in the repository, and the package gets a provenance attestation that links
 # it to this workflow run and commit.
