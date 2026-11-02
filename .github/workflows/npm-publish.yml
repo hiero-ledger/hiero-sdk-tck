@@ -1,0 +1,66 @@
+name: npm Publish
+
+# Publishes @hiero-ledger/hiero-sdk-tck when a release tag is pushed (#736).
+# Authenticates with npm Trusted Publishing (OIDC), so there is no npm token
+# in the repository, and the package gets a provenance attestation that links
+# it to this workflow run and commit.
+#
+# One-time setup by a maintainer of the @hiero-ledger npm organization: on
+# npmjs.com, add a trusted publisher for the package with repository
+# hiero-ledger/hiero-sdk-tck and workflow file npm-publish.yml.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    name: Publish to npm
+    if: github.repository == 'hiero-ledger/hiero-sdk-tck'
+    # npm provenance requires a GitHub-hosted runner.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Trusted Publishing needs npm 11.5.1 or later, which ships with Node 24.
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Check that the tag matches package.json
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${TAG}" != "v${version}" ]; then
+            echo "::error::Tag ${TAG} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # prepack runs the build.
+      - name: Publish
+        run: npm publish --provenance --access public
