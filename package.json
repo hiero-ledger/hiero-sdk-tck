@@ -1,5 +1,27 @@
 {
+  "name": "@hiero-ledger/hiero-sdk-tck",
   "version": "0.14.0",
+  "description": "Technology Compatibility Kit for Hiero SDKs: runs the conformance suite against an SDK JSON-RPC server",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiero-ledger/hiero-sdk-tck.git"
+  },
+  "homepage": "https://hiero-ledger.github.io/hiero-sdk-tck/",
+  "bugs": {
+    "url": "https://github.com/hiero-ledger/hiero-sdk-tck/issues"
+  },
+  "bin": {
+    "hiero-sdk-tck": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "scripts/check-test-results.mjs",
+    "scripts/action/collect-results.mjs"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "dependencies": {
     "@ethersproject/rlp": "^5.8.0",
     "@hashgraph/proto": "^2.23.0",
@@ -28,6 +50,7 @@
     "test:no-node-service": "rm -rf mochawesome-report && mocha --parallel --jobs 7 --require mochawesome/register --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --ignore 'src/tests/node-service/**' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "build": "rm -rf dist && tsc -p tsconfig.json && node scripts/resolve-aliases.mjs dist",
     "prepack": "npm run build",
+    "tck": "ts-node -r tsconfig-paths/register src/cli.ts",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
     "lint": "eslint .",
