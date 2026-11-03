@@ -73,7 +73,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -127,7 +127,7 @@ jobs:
           useCloudCache: true
 
       - name: Setup VCPkg
-        uses: step-security/run-vcpkg@f4f81d0f70f2e65432e7040c9677ce85e996d8b9 # v11.5.3
+        uses: step-security/run-vcpkg@db723b9feb894bbeab0d6877e19455a6112769c4 # v11.6.0
         with:
           binaryCachePath: ${{ github.workspace }}/b/vcpkg_cache
           vcpkgDirectory: ${{ github.workspace }}/sdk-server/vcpkg
@@ -184,12 +184,15 @@ jobs:
       # Prepare Hiero Solo
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@328bc84c3b00a990a151418144fd682a4eb76ea6 # v0.19.0
+        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # v0.26.0
         with:
           installMirrorNode: true
           soloVersion: ${{ inputs.solo-version || '0.91.0' }}
           mirrorNodeVersion: v0.138.0
           hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          # Since 0.20.0 the action defaults to 38081 and 35211; the TCK expects 5551 and 50211
+          mirrorNodePortRest: "5551"
+          haproxyPort: "50211"
 
       # Run the TCK through the action in this repository; `tck` is the path
       # the TCK checkout above uses. The action installs the client, waits for
