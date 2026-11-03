@@ -702,9 +702,7 @@ describe("AccountInfoQuery", function () {
       });
 
       expect(response.stakingInfo).to.have.property("stakedNodeId");
-      if (response.stakingInfo.stakedNodeId) {
-        expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
-      }
+      expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
     });
   });
 
