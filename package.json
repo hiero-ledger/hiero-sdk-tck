@@ -43,7 +43,7 @@
     "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.0",
     "mochawesome": "^8.1.1",
-    "mochawesome-merge": "^4.4.0",
+    "mochawesome-merge": "^5.1.1",
     "mochawesome-report-generator": "^6.2.0",
     "prettier": "^3.9.10",
     "ts-node": "^10.9.2",
