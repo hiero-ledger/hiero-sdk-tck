@@ -168,9 +168,10 @@ const resolveEnvironment = (
   }
 
   // The suite's own `dotenv/config` imports read this file too; every value
-  // is already set above, so they cannot pick up a different .env.
-  env.DOTENV_CONFIG_PATH = envFile;
-  delete env.DOTENV_PATH;
+  // is already set above, so they cannot pick up a different .env. dotenv 18
+  // reads DOTENV_PATH before DOTENV_CONFIG_PATH, so this also wins over a
+  // DOTENV_CONFIG_PATH in the caller's environment.
+  env.DOTENV_PATH = envFile;
   return env;
 };
 
