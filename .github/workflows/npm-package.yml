@@ -98,15 +98,21 @@ jobs:
         run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/sdk-tck/dist/tests/**/*.js'
 
       # No JSON-RPC server or network is running, so preflight must abort and
-      # the CLI must exit 2 (no report) rather than 0.
+      # the CLI must exit 2 (no report) rather than 0. Exit 2 alone would also
+      # come from a broken dist/preflight.js or a missing module, so the step
+      # also checks that preflight ran and failed on the server check.
       - name: Fail without a server
         working-directory: ${{ runner.temp }}/consumer
         run: |
           set +e
-          npx hiero-sdk-tck --server http://127.0.0.1:9 --test AccountCreate
-          code=$?
+          npx hiero-sdk-tck --server http://127.0.0.1:9 --test AccountCreate 2>&1 | tee "${RUNNER_TEMP}/no-server.log"
+          code=${PIPESTATUS[0]}
           set -e
           if [ "${code}" -ne 2 ]; then
             echo "::error::Expected exit code 2 without a server, got ${code}"
+            exit 1
+          fi
+          if ! grep -q 'preflight:.*JSON-RPC server' "${RUNNER_TEMP}/no-server.log"; then
+            echo "::error::preflight did not report the unreachable JSON-RPC server"
             exit 1
           fi
