@@ -683,9 +683,7 @@ describe("AccountInfoQuery", function () {
       });
 
       expect(response.stakingInfo).to.have.property("stakedAccountId");
-      if (response.stakingInfo.stakedAccountId) {
-        expect(response.stakingInfo.stakedAccountId).to.equal(stakedAccountId);
-      }
+      expect(response.stakingInfo.stakedAccountId).to.equal(stakedAccountId);
     });
 
     it("(#38) Query account info and verify stakingInfo.stakedNodeId", async function () {
@@ -702,9 +700,7 @@ describe("AccountInfoQuery", function () {
       });
 
       expect(response.stakingInfo).to.have.property("stakedNodeId");
-      if (response.stakingInfo.stakedNodeId) {
-        expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
-      }
+      expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
     });
   });
 

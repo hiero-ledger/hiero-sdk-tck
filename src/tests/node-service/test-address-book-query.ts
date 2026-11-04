@@ -322,18 +322,26 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with ipAddressV4
-      const nodeWithIp = response.nodeAddresses.find((node: any) =>
-        node.serviceEndpoints.some((endpoint: any) => endpoint.ipAddressV4),
+      const ipv4Endpoints = response.nodeAddresses.flatMap((node: any) =>
+        node.serviceEndpoints.filter(
+          (endpoint: any) =>
+            endpoint.ipAddressV4 !== undefined &&
+            endpoint.ipAddressV4 !== null &&
+            endpoint.ipAddressV4 !== "",
+        ),
       );
 
-      if (nodeWithIp) {
-        const endpointWithIp = nodeWithIp.serviceEndpoints.find(
-          (endpoint: any) => endpoint.ipAddressV4,
-        );
-        expect(endpointWithIp.ipAddressV4).to.be.a("string");
-        // ipAddressV4 should be hex encoded (4 bytes = 8 hex chars)
-        expect(endpointWithIp.ipAddressV4.length).to.be.greaterThan(0);
+      // The address book belongs to the network under test. A network whose
+      // endpoints all use domain names cannot exercise this case.
+      if (ipv4Endpoints.length === 0) {
+        this.skip();
+      }
+
+      for (const endpoint of ipv4Endpoints) {
+        // 4 bytes, hex encoded
+        expect(endpoint.ipAddressV4)
+          .to.be.a("string")
+          .that.matches(/^[0-9a-fA-F]{8}$/);
       }
     });
 
