@@ -60,11 +60,17 @@ jobs:
       - name: Check the tarball contents
         run: |
           tar -tzf "${RUNNER_TEMP}"/pack/*.tgz > "${RUNNER_TEMP}/contents.txt"
-          if grep -E '\.ts$|\.env|\.github/|^package/src/' "${RUNNER_TEMP}/contents.txt"; then
+          # The two example env files are the --network profiles; no other
+          # env file (such as a developer's .env) may be packed.
+          if grep -E '\.ts$|\.env|\.github/|^package/src/' "${RUNNER_TEMP}/contents.txt" \
+            | grep -vxE 'package/\.env\.(custom_node|testnet)'; then
             echo "::error::The package must not contain TypeScript sources, env files or workflows"
             exit 1
           fi
-          grep -qx 'package/dist/cli.js' "${RUNNER_TEMP}/contents.txt"
+          for file in dist/cli.js dist/preflight.js .env.custom_node .env.testnet; do
+            grep -qx "package/${file}" "${RUNNER_TEMP}/contents.txt" \
+              || { echo "::error::package/${file} is missing"; exit 1; }
+          done
 
       - name: Install the tarball in an empty directory
         working-directory: ${{ runner.temp }}

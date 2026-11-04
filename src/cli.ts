@@ -22,12 +22,18 @@ import { join, resolve, sep } from "node:path";
 import { parseArgs } from "node:util";
 import dotenv from "dotenv";
 
-import { NETWORK_PROFILES } from "./utils/constants/network-profiles";
 import { TEST_CONFIGURATIONS } from "./utils/constants/test-paths";
 
 const PACKAGE_ROOT = resolve(__dirname, "..");
 const FROM_SOURCE = __filename.endsWith(".ts");
 const DEFAULT_JOBS = 7;
+
+// Defaults of each --network profile: the example env files of the
+// repository, which the package ships next to dist/.
+const NETWORK_PROFILES: Record<string, string> = {
+  local: ".env.custom_node",
+  testnet: ".env.testnet",
+};
 
 // Exit code for invalid options or configuration. 0, 1 and 2 are the
 // verdicts of check-test-results.mjs.
@@ -122,8 +128,8 @@ const selectSpecs = (tests: string[] | undefined): string[] => {
 const resolveEnvironment = (
   options: Pick<Options, "server" | "network" | "env-file">,
 ): NodeJS.ProcessEnv => {
-  const profile = NETWORK_PROFILES[options.network ?? "local"];
-  if (!profile) {
+  const network = options.network ?? "local";
+  if (!Object.hasOwn(NETWORK_PROFILES, network)) {
     throw new UsageError(
       `unknown network "${options.network}", expected one of: ${Object.keys(NETWORK_PROFILES).join(", ")}`,
     );
@@ -136,6 +142,9 @@ const resolveEnvironment = (
   const fromFile = existsSync(envFile)
     ? dotenv.parse(readFileSync(envFile))
     : {};
+  const profile = dotenv.parse(
+    readFileSync(join(PACKAGE_ROOT, NETWORK_PROFILES[network])),
+  );
 
   const env: NodeJS.ProcessEnv = { ...profile, ...fromFile, ...process.env };
   if (options.server !== undefined) {
