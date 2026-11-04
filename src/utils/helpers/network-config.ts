@@ -15,26 +15,44 @@ export const getNetworkConfig = (
 ): Record<string, string | undefined> => {
   if (network === "testnet") {
     dotenv.config({ path: ".env.testnet" });
+
+    // Scoped specifically to testnet
+    if (
+      process.env.OPERATOR_ACCOUNT_ID === "***" ||
+      process.env.OPERATOR_ACCOUNT_PRIVATE_KEY === "***" ||
+      !process.env.OPERATOR_ACCOUNT_ID ||
+      !process.env.OPERATOR_ACCOUNT_PRIVATE_KEY
+    ) {
+      console.log(
+        "\nOPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY must be set and configured for testnet!",
+      );
+      process.exit(1);
+    }
   } else if (network === "local") {
     dotenv.config({ path: ".env.custom_node" });
-  } else {
-    console.log("Network config not found");
-    process.exit(1);
-  }
-
-  if (
-    process.env.OPERATOR_ACCOUNT_ID === "***" ||
-    process.env.OPERATOR_ACCOUNT_PRIVATE_KEY === "***"
-  ) {
-    console.log(
-      "\n" +
-        "TESTNET_OPERATOR_ACCOUNT_ID and TESTNET_OPERATOR_ACCOUNT_PRIVATE_KEY must be set for testnet!",
+  } else if (network === "custom") {
+    const requiredVariables = [
+      "NODE_IP",
+      "NODE_ACCOUNT_ID",
+      "MIRROR_NETWORK",
+      "MIRROR_NODE_REST_URL",
+      "MIRROR_NODE_REST_JAVA_URL",
+      "OPERATOR_ACCOUNT_ID",
+      "OPERATOR_ACCOUNT_PRIVATE_KEY",
+    ];
+    const missingVariables = requiredVariables.filter(
+      (variable) => !process.env[variable],
     );
 
-    process.exit(1);
-  }
-
-  if (!["testnet", "local"].includes(network)) {
+    if (missingVariables.length > 0) {
+      console.log(
+        "\nNETWORK=custom requires the following environment variables to be set: " +
+          missingVariables.join(", "),
+      );
+      process.exit(1);
+    }
+  } else {
+    // This handles any invalid network safely right away
     console.log("invalid network config: ", network);
     process.exit(1);
   }
