@@ -254,20 +254,19 @@ describe("AddressBookQuery", function () {
       const consensusNode = consensusAddressBook.nodeAddresses.find(
         (node: any) => node.nodeId?.toString() === firstNode.nodeId.toString(),
       );
-      if (consensusNode) {
-        expect(consensusNode.accountId?.toString()).to.equal(
-          firstNode.accountId,
-        );
-      }
+      expect(consensusNode?.accountId?.toString()).to.equal(
+        firstNode.accountId,
+      );
 
       // Verify against mirror node
       await retryOnError(async () => {
         const mirrorNodeData = await mirrorNodeClient.getNodeData(
           firstNode.nodeId.toString(),
         );
-        if (mirrorNodeData.nodes && mirrorNodeData.nodes.length > 0) {
-          expect(mirrorNodeData.nodes[0].node_account_id).to.exist;
-        }
+        const mirrorNode = mirrorNodeData?.nodes?.find(
+          (node) => node.node_id?.toString() === firstNode.nodeId.toString(),
+        );
+        expect(mirrorNode?.node_account_id).to.equal(firstNode.accountId);
       });
     });
 
