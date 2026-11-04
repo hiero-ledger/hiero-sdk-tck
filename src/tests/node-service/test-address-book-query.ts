@@ -364,18 +364,46 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with domainName (if any)
-      const nodeWithDomain = response.nodeAddresses.find((node: any) =>
-        node.serviceEndpoints.some((endpoint: any) => endpoint.domainName),
+      // Take the domain-name endpoints from the reference address book, not
+      // from the response under test, so a response that drops one fails.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const domainEndpoints = consensusAddressBook.nodeAddresses.flatMap(
+        (consensusNode: any) =>
+          consensusNode.addresses
+            .filter(
+              (endpoint: any) =>
+                typeof endpoint.address === "string" && endpoint.address !== "",
+            )
+            .map((endpoint: any) => ({
+              nodeId: consensusNode.nodeId.toString(),
+              domainName: endpoint.address,
+              port: endpoint.port,
+            })),
       );
 
-      if (nodeWithDomain) {
-        const endpointWithDomain = nodeWithDomain.serviceEndpoints.find(
-          (endpoint: any) => endpoint.domainName,
+      // The address book belongs to the network under test. A network whose
+      // endpoints all use IPv4 addresses cannot exercise this case.
+      if (domainEndpoints.length === 0) {
+        this.skip();
+      }
+
+      for (const expected of domainEndpoints) {
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === expected.nodeId,
         );
-        expect(endpointWithDomain.domainName).to.be.a("string");
-        expect(endpointWithDomain.domainName.length).to.be.greaterThan(0);
-        expect(endpointWithDomain.port).to.be.a("number");
+        expect(node, `node ${expected.nodeId} missing from the response`).to
+          .exist;
+
+        const endpoint = node.serviceEndpoints.find(
+          (endpoint: any) =>
+            endpoint.domainName === expected.domainName &&
+            endpoint.port === expected.port,
+        );
+        expect(
+          endpoint,
+          `node ${expected.nodeId} has no ${expected.domainName}:${expected.port} endpoint`,
+        ).to.exist;
       }
     });
 
