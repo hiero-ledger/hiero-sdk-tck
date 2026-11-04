@@ -67,7 +67,7 @@ jobs:
             echo "::error::The package must not contain TypeScript sources, env files or workflows"
             exit 1
           fi
-          for file in dist/cli.js dist/preflight.js .env.custom_node .env.testnet; do
+          for file in lib/cli.js lib/preflight.js .env.custom_node .env.testnet; do
             grep -qx "package/${file}" "${RUNNER_TEMP}/contents.txt" \
               || { echo "::error::package/${file} is missing"; exit 1; }
           done
@@ -95,11 +95,11 @@ jobs:
       # module the package needs but does not declare.
       - name: Load every compiled test
         working-directory: ${{ runner.temp }}/consumer
-        run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/sdk-tck/dist/tests/**/*.js'
+        run: npx mocha --dry-run --reporter dot 'node_modules/@hiero-ledger/sdk-tck/lib/tests/**/*.js'
 
       # No JSON-RPC server or network is running, so preflight must abort and
       # the CLI must exit 2 (no report) rather than 0. Exit 2 alone would also
-      # come from a broken dist/preflight.js or a missing module, so the step
+      # come from a broken lib/preflight.js or a missing module, so the step
       # also checks that preflight ran and failed on the server check.
       - name: Fail without a server
         working-directory: ${{ runner.temp }}/consumer

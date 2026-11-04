@@ -118,3 +118,5 @@ mochawesome-report/
 # Node heap profiles from npm run test:ci
 heap-profiles/
 
+# Compiled npm package (npm run build)
+/lib

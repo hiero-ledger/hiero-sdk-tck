@@ -17,7 +17,7 @@ export default defineConfig([
       "@typescript-eslint": typescriptEslintPlugin,
       prettier: prettierPlugin,
     },
-    ignores: ["mochawesome-report/assets/app.js", "dist/**"],
+    ignores: ["mochawesome-report/assets/app.js", "lib/**"],
     rules: {
       "no-console": ["warn", { allow: ["warn"] }],
       "prefer-const": "error",

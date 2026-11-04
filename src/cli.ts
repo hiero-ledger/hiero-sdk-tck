@@ -242,7 +242,7 @@ function selectTestFiles(tests: string[]): string[] {
 function toSpecPath(sourcePath: string): string {
   const path = RUNNING_FROM_SOURCE
     ? sourcePath
-    : sourcePath.replace(/^src\//, "dist/").replace(/\.ts$/, ".js");
+    : sourcePath.replace(/^src\//, "lib/").replace(/\.ts$/, ".js");
 
   // mocha expands globs such as ALL's `**/*`, which need forward slashes.
   return join(PACKAGE_ROOT, path).split(sep).join("/");
@@ -353,7 +353,7 @@ function typeScriptArgs(runsInParallel: boolean): string[] {
 function suiteArgs(): string[] {
   const preflight = RUNNING_FROM_SOURCE
     ? "src/preflight.ts"
-    : "dist/preflight.js";
+    : "lib/preflight.js";
 
   return [
     ...["--require", join(PACKAGE_ROOT, preflight)],

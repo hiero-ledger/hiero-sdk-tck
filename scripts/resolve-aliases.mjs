@@ -8,13 +8,14 @@
  * The aliases are read from tsconfig.json, the single source of truth. Fails
  * when an alias points to a file that does not exist in the output.
  *
- * Usage: node scripts/resolve-aliases.mjs [outDir]   (default: dist)
+ * Usage: node scripts/resolve-aliases.mjs [outDir]
+ *   (default: compilerOptions.outDir of tsconfig.json, ./lib)
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
-const outDir = resolve(process.argv[2] ?? "dist");
 const { compilerOptions } = JSON.parse(readFileSync("tsconfig.json", "utf8"));
+const outDir = resolve(process.argv[2] ?? compilerOptions.outDir);
 const rootDir = compilerOptions.rootDir ?? "./src";
 
 // "@helpers/*": ["src/utils/helpers/*"] -> ["@helpers/", "<outDir>/utils/helpers/"]

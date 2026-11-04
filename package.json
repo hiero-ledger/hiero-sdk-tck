@@ -12,10 +12,10 @@
     "url": "https://github.com/hiero-ledger/hiero-sdk-tck/issues"
   },
   "bin": {
-    "hiero-sdk-tck": "dist/cli.js"
+    "hiero-sdk-tck": "lib/cli.js"
   },
   "files": [
-    "dist",
+    "lib",
     ".env.custom_node",
     ".env.testnet",
     "scripts/check-test-results.mjs",
@@ -50,7 +50,7 @@
     "test:ci": "rm -rf mochawesome-report && mkdir -p heap-profiles && mocha --parallel --jobs 7 --require mochawesome/register --node-option max-old-space-size=4096 --node-option heap-prof --node-option heap-prof-dir=heap-profiles --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --require src/preflight.ts --timeout 90000 --slow 30000 --reporter mochawesome --exit",
     "test:no-node-service": "rm -rf mochawesome-report && mocha --parallel --jobs 7 --require mochawesome/register --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --ignore 'src/tests/node-service/**' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
-    "build": "rm -rf dist && tsc -p tsconfig.json && node scripts/resolve-aliases.mjs dist",
+    "build": "rm -rf lib && tsc -p tsconfig.json && node scripts/resolve-aliases.mjs",
     "prepack": "npm run build",
     "tck": "ts-node -r tsconfig-paths/register src/cli.ts",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
