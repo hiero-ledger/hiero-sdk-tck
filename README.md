@@ -490,6 +490,8 @@ To release a new version of the TCK, follow these steps:
 
    - Add new tests to `test_regression.yml`
    - Register test paths in `src/utils/constants/test-paths.ts`
+   - Bump `version` in `package.json` (and `package-lock.json`) to the new
+     version, for example with `npm version <version> --no-git-tag-version`
    - Submit a pull request and merge the changes
 
 3. **Tag current version:**
