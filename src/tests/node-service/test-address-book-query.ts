@@ -486,17 +486,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without description (if any)
-      const nodeWithoutDescription = response.nodeAddresses.find(
-        (node: any) => !node.description,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutDescription =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !consensusNode.description,
+        );
 
-      if (nodeWithoutDescription) {
-        expect(
-          nodeWithoutDescription.description === null ||
-            nodeWithoutDescription.description === undefined ||
-            nodeWithoutDescription.description === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes a description cannot exercise this case.
+      if (consensusNodesWithoutDescription.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutDescription) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.description, `node ${nodeId} description`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
   });
