@@ -40,7 +40,7 @@ const NETWORK_PROFILES: Record<string, string> = {
 
 const DEFAULTS = {
   network: "local",
-  envFile: ".env",
+  configFile: ".env",
   reportDir: "mochawesome-report",
   jobs: 7,
 };
@@ -68,8 +68,8 @@ Options:
                         default http://localhost:8544/)
   --network <name>      network profile with default endpoints and operator:
                         local (default) or testnet
-  --env-file <path>     env file relative to the working directory
-                        (default ./.env, optional)
+  --config <path>       dotenv file with the configuration, relative to
+                        the working directory (default ./.env, optional)
   --test <name>         test to run, repeatable or comma-separated
                         (default ALL); see --list
   --grep <pattern>      only run tests whose title matches the pattern
@@ -80,7 +80,7 @@ Options:
   -v, --version         print the TCK version
   -h, --help            print this help
 
-Configuration precedence: options > environment variables > env file >
+Configuration precedence: options > environment variables > config file >
 network profile. Variables: OPERATOR_ACCOUNT_ID, OPERATOR_ACCOUNT_PRIVATE_KEY,
 NODE_IP, NODE_ACCOUNT_ID, NODE_TIMEOUT, MIRROR_NETWORK, MIRROR_NODE_REST_URL,
 MIRROR_NODE_REST_JAVA_URL, JSON_RPC_SERVER_URL, TCK_NODE_SWEEP,
@@ -99,7 +99,7 @@ class UsageError extends Error {}
 type RunOptions = {
   server?: string;
   network: string;
-  envFile: string;
+  configFile: string;
   tests: string[];
   grep?: string;
   reportDir: string;
@@ -147,7 +147,7 @@ function parseCommandLine() {
     options: {
       server: { type: "string" },
       network: { type: "string", default: DEFAULTS.network },
-      "env-file": { type: "string" },
+      config: { type: "string" },
       test: { type: "string", multiple: true },
       grep: { type: "string" },
       "report-dir": { type: "string", default: DEFAULTS.reportDir },
@@ -178,10 +178,12 @@ function validateRunOptions(args: CommandLine): RunOptions {
     );
   }
 
-  // The default ./.env is optional; a file named with --env-file must exist.
-  const envFile = resolve(args["env-file"] ?? DEFAULTS.envFile);
-  if (args["env-file"] !== undefined && !existsSync(envFile)) {
-    throw new UsageError(`env file not found: ${envFile}`);
+  // The default ./.env is optional; a file named with --config must exist.
+  // (Not --env-file: Node exits on that flag when the file is missing, even
+  // after the script name, before this CLI runs.)
+  const configFile = resolve(args.config ?? DEFAULTS.configFile);
+  if (args.config !== undefined && !existsSync(configFile)) {
+    throw new UsageError(`config file not found: ${configFile}`);
   }
 
   const jobs = Number(args.jobs);
@@ -207,7 +209,7 @@ function validateRunOptions(args: CommandLine): RunOptions {
   return {
     server: args.server,
     network: args.network,
-    envFile,
+    configFile,
     tests,
     grep: args.grep,
     reportDir: resolve(args["report-dir"]),
@@ -252,14 +254,14 @@ function toSpecPath(sourcePath: string): string {
 
 /**
  * Builds the environment of the test run. Later sources win:
- * network profile < env file < process environment < --server.
+ * network profile < config file < process environment < --server.
  */
 function buildEnvironment(options: RunOptions): NodeJS.ProcessEnv {
   const profileFile = join(PACKAGE_ROOT, NETWORK_PROFILES[options.network]);
 
   const env: NodeJS.ProcessEnv = {
     ...readEnvFile(profileFile),
-    ...readEnvFile(options.envFile),
+    ...readEnvFile(options.configFile),
     ...process.env,
   };
 
@@ -277,7 +279,7 @@ function buildEnvironment(options: RunOptions): NodeJS.ProcessEnv {
   // value is already set above and dotenv never overrides, so they cannot
   // pick up a different .env. dotenv 18 reads DOTENV_PATH before
   // DOTENV_CONFIG_PATH, so this also wins over one set by the caller.
-  env.DOTENV_PATH = options.envFile;
+  env.DOTENV_PATH = options.configFile;
 
   return env;
 }
@@ -297,7 +299,7 @@ function requireOperator(env: NodeJS.ProcessEnv, network: string): void {
   ) {
     throw new UsageError(
       `OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY must be set for ` +
-        `the ${network} network (in the environment or the env file)`,
+        `the ${network} network (in the environment or the config file)`,
     );
   }
 }

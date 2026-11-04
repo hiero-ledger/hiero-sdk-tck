@@ -322,7 +322,7 @@ Node.js 20.19+ or 22.12+ is required.
 | --------------------- | ------------------------------------------------------------------------------------ |
 | `--server <url>`      | JSON-RPC server URL (default `http://localhost:8544/`)                              |
 | `--network <name>`    | Network profile with default endpoints and operator: `local` (default) or `testnet` |
-| `--env-file <path>`   | Env file, relative to the working directory (default `./.env`, optional)            |
+| `--config <path>`     | Dotenv file with the configuration (default `./.env`, optional)                      |
 | `--test <name>`       | Test to run, repeatable or comma-separated (default `ALL`); see `--list`            |
 | `--grep <pattern>`    | Only run tests whose title matches the pattern                                      |
 | `--report-dir <path>` | Report directory (default `./mochawesome-report`)                                   |
@@ -333,15 +333,15 @@ Node.js 20.19+ or 22.12+ is required.
 ### Configuration
 
 The CLI reads the same variables as a run from a clone (see `.env.custom_node`
-for the full list). Precedence: CLI options > environment variables > env file
-> defaults of the `--network` profile.
+for the full list). Precedence: CLI options > environment variables > config
+file (`--config`, default `./.env`) > defaults of the `--network` profile.
 
 - `local` takes its defaults from `.env.custom_node`, shipped in the package:
   a hiero-local-node or Solo network, including its development operator
   account.
 - `testnet` takes its defaults from `.env.testnet` and needs
   `OPERATOR_ACCOUNT_ID` and `OPERATOR_ACCOUNT_PRIVATE_KEY` from the
-  environment or the env file.
+  environment or the config file.
 - A variable set to an empty value turns off the profile default, for example
   `NODE_IP=` to skip the consensus node check.
 
