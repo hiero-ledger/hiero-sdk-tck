@@ -37,7 +37,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes             |
 |-------------------------|---------------------------------------------------------|-------------------|-------------------------------|
-| fileID                  | string                                                  | optional          | The ID of the file to delete. |
+| fileId                  | string                                                  | optional          | The ID of the file to delete. |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                               |
 
 ### Output Parameters
