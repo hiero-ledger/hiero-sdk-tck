@@ -513,7 +513,11 @@ To release a new version of the TCK, follow these steps:
 
 **Note:** The tag also versions the GitHub Action (`uses: hiero-ledger/hiero-sdk-tck@<sha>`). After tagging, update the pinned commit in the example under "Run the TCK from an SDK repository's CI".
 
-**Note:** Pushing the tag also publishes the npm package `@hiero-ledger/sdk-tck` through `.github/workflows/npm-publish.yml`, with npm provenance. The tag must match the `version` in `package.json`, or the workflow fails without publishing.
+**Note:** Pushing the tag also publishes the npm package `@hiero-ledger/sdk-tck` through `.github/workflows/npm-publish.yml`, with npm provenance, as the JS SDK does:
+
+- The tag must match the `version` in `package.json`, or the workflow fails without publishing.
+- A stable tag (`v0.15.0`) publishes to the `latest` dist-tag and a beta tag (`v0.15.0-beta.1`) to `beta`, so `npx @hiero-ledger/sdk-tck` keeps running the latest stable version. Other prerelease tags are rejected.
+- To publish an existing tag again, for example after a failed run, run the workflow manually from the Actions tab with the tag. With **Dry run** checked it packs and checks the package without publishing. A version that is already on npm is skipped.
 
 ## Contributing
 

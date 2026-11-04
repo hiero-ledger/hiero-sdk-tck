@@ -1,9 +1,16 @@
 name: npm Publish
 
-# Publishes @hiero-ledger/sdk-tck when a release tag is pushed (#736).
-# Authenticates with npm Trusted Publishing (OIDC), so there is no npm token
-# in the repository, and the package gets a provenance attestation that links
-# it to this workflow run and commit.
+# Publishes @hiero-ledger/sdk-tck when a release tag is pushed (#736), in the
+# same way as the JS SDK's publish_release.yaml. Authenticates with npm
+# Trusted Publishing (OIDC), so there is no npm token in the repository; npm
+# then adds a provenance attestation that links the package to this workflow
+# run and commit.
+#
+# - A stable tag (v1.2.3) publishes to the `latest` dist-tag, a beta tag
+#   (v1.2.3-beta.1) to `beta`. Other prerelease tags are rejected.
+# - Running the workflow manually republishes an existing tag, for example
+#   after a failed run. With "Dry run" it packs and checks without publishing.
+# - A version that is already on npm is skipped, so a rerun is safe.
 #
 # One-time setup by a maintainer of the @hiero-ledger npm organization: on
 # npmjs.com, add a trusted publisher for the package with repository
@@ -13,6 +20,17 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish (e.g. v0.15.0)"
+        type: string
+        required: true
+      dry-run-enabled:
+        description: "Dry run: pack and check, but do not publish"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -30,6 +48,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      DRY_RUN: ${{ inputs.dry-run-enabled || 'false' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -39,6 +60,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.tag || '' }}
           persist-credentials: false
 
       # Trusted Publishing needs npm 11.5.1 or later, which ships with Node 24.
@@ -48,19 +70,100 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Check that the tag matches package.json
-        env:
-          TAG: ${{ github.ref_name }}
+      - name: Validate the tag
+        id: release
         run: |
+          name="$(node -p "require('./package.json').name")"
           version="$(node -p "require('./package.json').version")"
+
           if [ "${TAG}" != "v${version}" ]; then
             echo "::error::Tag ${TAG} does not match package.json version ${version}"
             exit 1
           fi
 
+          if [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            dist_tag="latest"
+          elif [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
+            dist_tag="beta"
+          else
+            echo "::error::Unsupported prerelease ${version}: only x.y.z and x.y.z-beta.n are published"
+            exit 1
+          fi
+
+          if curl -sSLf "https://registry.npmjs.org/${name}/${version}" > /dev/null 2>&1; then
+            published="true"
+          else
+            published="false"
+          fi
+
+          {
+            echo "name=${name}"
+            echo "version=${version}"
+            echo "dist-tag=${dist_tag}"
+            echo "published=${published}"
+          } >> "${GITHUB_OUTPUT}"
+
       - name: Install dependencies
+        if: steps.release.outputs.published == 'false'
         run: npm ci --no-audit --no-fund
 
-      # prepack runs the build.
+      - name: Run the script tests
+        if: steps.release.outputs.published == 'false'
+        run: npm run test:action
+
+      # prepack runs the build. The tarball checked below is the one published.
+      - name: Pack
+        id: pack
+        if: steps.release.outputs.published == 'false'
+        run: |
+          mkdir -p "${RUNNER_TEMP}/pack"
+          npm pack --pack-destination "${RUNNER_TEMP}/pack"
+          echo "tarball=$(ls "${RUNNER_TEMP}"/pack/*.tgz)" >> "${GITHUB_OUTPUT}"
+
+      - name: Check the packed CLI
+        if: steps.release.outputs.published == 'false'
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          mkdir "${RUNNER_TEMP}/consumer" && cd "${RUNNER_TEMP}/consumer"
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund "${TARBALL}"
+          actual="$(npx hiero-sdk-tck --version)"
+          if [ "${actual}" != "${VERSION}" ]; then
+            echo "::error::The packed CLI reports ${actual}, expected ${VERSION}"
+            exit 1
+          fi
+
       - name: Publish
-        run: npm publish --provenance --access public
+        if: steps.release.outputs.published == 'false'
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          DIST_TAG: ${{ steps.release.outputs.dist-tag }}
+        run: |
+          args=(--access public --tag "${DIST_TAG}")
+          if [ "${DRY_RUN}" == "true" ]; then
+            args+=(--dry-run)
+          fi
+          npm publish "${TARBALL}" "${args[@]}"
+
+      - name: Summary
+        env:
+          NAME: ${{ steps.release.outputs.name }}
+          VERSION: ${{ steps.release.outputs.version }}
+          DIST_TAG: ${{ steps.release.outputs.dist-tag }}
+          PUBLISHED: ${{ steps.release.outputs.published }}
+        run: |
+          if [ "${PUBLISHED}" == "true" ]; then
+            result="skipped, ${VERSION} is already on npm"
+          elif [ "${DRY_RUN}" == "true" ]; then
+            result="dry run, nothing published"
+          else
+            result="published"
+          fi
+          {
+            echo "## npm release"
+            echo "| Package | Version | dist-tag | Result |"
+            echo "|---------|---------|----------|--------|"
+            echo "| ${NAME} | ${VERSION} | ${DIST_TAG} | ${result} |"
+          } >> "${GITHUB_STEP_SUMMARY}"
