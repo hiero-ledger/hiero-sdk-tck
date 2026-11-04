@@ -31,7 +31,7 @@
     "test:serial": "mocha --require ts-node/register --require tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --timeout 90000 --slow 30000 --reporter mochawesome --exit"
   },
   "devDependencies": {
-    "@types/chai": "^5.2.2",
+    "@types/chai": "^5.2.3",
     "@types/jsdom": "^30.0.0",
     "@types/json-bigint": "^1.0.4",
     "@types/markdown-it": "^14.2.0",
