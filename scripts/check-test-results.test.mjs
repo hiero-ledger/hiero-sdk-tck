@@ -112,3 +112,18 @@ test("tests left out by --grep are not selected and do not fail", () => {
   });
   assert.equal(code, 0);
 });
+
+test("reads the report from the directory given as argument", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "check-test-results-"));
+  mkdirSync(join(cwd, "custom-report"));
+  writeFileSync(
+    join(cwd, "custom-report", "mochawesome.json"),
+    JSON.stringify({ stats: stats({ passes: 1, failures: 1 }), results: [] }),
+  );
+  const run = spawnSync(process.execPath, [CHECKER, "custom-report"], {
+    cwd,
+    encoding: "utf8",
+  });
+  assert.equal(run.status, 1);
+  assert.match(run.stdout + run.stderr, /1 failed/);
+});

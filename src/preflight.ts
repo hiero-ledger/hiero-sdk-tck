@@ -43,6 +43,7 @@ import { Long, NodeDeleteTransaction } from "@hashgraph/sdk";
 
 import consensusInfoClient from "./services/ConsensusInfoClient";
 import mirrorNodeClient from "./services/MirrorNodeClient";
+import { REPORT_DIR } from "./utils/constants/report-dir";
 
 // Root hook plugin: in parallel mode `afterAll` runs after each test file in
 // the worker that ran it; in serial mode it runs once at the end of the run.
@@ -156,8 +157,8 @@ const checkJsonRpcServer = async (
   }
 };
 
-const RUN_INFO_PATH = join("mochawesome-report", "run-info.json");
-const NODE_CLEANUP_PATH = join("mochawesome-report", "node-cleanup.jsonl");
+const RUN_INFO_PATH = join(REPORT_DIR, "run-info.json");
+const NODE_CLEANUP_PATH = join(REPORT_DIR, "node-cleanup.jsonl");
 
 const mirrorConfigured = (): boolean =>
   Boolean(
@@ -276,7 +277,7 @@ export async function mochaGlobalSetup(): Promise<void> {
   // Best-effort stamp next to the mochawesome report so run artifacts carry
   // the versions; the reporter only adds files to this directory.
   try {
-    mkdirSync("mochawesome-report", { recursive: true });
+    mkdirSync(REPORT_DIR, { recursive: true });
     // test:file / test:serial don't wipe the report dir like npm test does —
     // stale counters from a previous run must not leak into this run's totals.
     rmSync(NODE_CLEANUP_PATH, { force: true });

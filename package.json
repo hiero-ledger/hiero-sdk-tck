@@ -1,6 +1,32 @@
 {
+  "name": "@hiero-ledger/sdk-tck",
   "version": "0.14.0",
+  "description": "Technology Compatibility Kit for Hiero SDKs: runs the conformance suite against an SDK JSON-RPC server",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hiero-ledger/hiero-sdk-tck.git"
+  },
+  "homepage": "https://hiero-ledger.github.io/hiero-sdk-tck/",
+  "bugs": {
+    "url": "https://github.com/hiero-ledger/hiero-sdk-tck/issues"
+  },
+  "bin": {
+    "hiero-sdk-tck": "lib/cli.js"
+  },
+  "files": [
+    "lib",
+    ".env.custom_node",
+    ".env.testnet",
+    "CHANGELOG.md",
+    "scripts/check-test-results.mjs",
+    "scripts/action/collect-results.mjs"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "dependencies": {
+    "@ethersproject/rlp": "^5.8.0",
     "@hashgraph/proto": "^2.25.0",
     "@hashgraph/sdk": "^2.81.0",
     "axios": "^1.20.0",
@@ -12,6 +38,7 @@
     "json-rpc-2.0": "^1.8.1",
     "markdown-it-task-lists": "^2.1.0",
     "mocha": "^12.0.3",
+    "mochawesome": "^8.1.1",
     "rehype-sanitize": "6.0.0",
     "rehype-stringify": "10.0.1",
     "remark-gfm": "^4.0.1",
@@ -24,6 +51,9 @@
     "test:ci": "rm -rf mochawesome-report && mkdir -p heap-profiles && mocha --parallel --jobs 7 --require mochawesome/register --node-option max-old-space-size=4096 --node-option heap-prof --node-option heap-prof-dir=heap-profiles --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
     "test:file": "mocha --require ts-node/register --require tsconfig-paths/register --require src/preflight.ts --timeout 90000 --slow 30000 --reporter mochawesome --exit",
     "test:no-node-service": "rm -rf mochawesome-report && mocha --parallel --jobs 7 --require mochawesome/register --node-option require=ts-node/register --node-option require=tsconfig-paths/register --require src/preflight.ts --recursive 'src/tests/**/*.ts' --ignore 'src/tests/node-service/**' --timeout 90000 --slow 30000 --reporter mochawesome --exit; node scripts/check-test-results.mjs",
+    "build": "rm -rf lib && tsc -p tsconfig.json && node scripts/resolve-aliases.mjs",
+    "prepack": "npm run build",
+    "tck": "ts-node -r tsconfig-paths/register src/cli.ts",
     "generate-mirror-node-models": "npx openapi-typescript-codegen --input mirror-node.yaml --output src/utils/models/mirror-node-models",
     "format": "prettier --write .",
     "lint": "eslint .",
@@ -43,7 +73,6 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.0",
-    "mochawesome": "^8.1.1",
     "mochawesome-merge": "^5.1.1",
     "mochawesome-report-generator": "^6.2.0",
     "prettier": "^3.9.10",
