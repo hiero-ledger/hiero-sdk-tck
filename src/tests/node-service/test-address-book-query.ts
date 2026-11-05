@@ -494,17 +494,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without nodeCertHash (if any)
-      const nodeWithoutCert = response.nodeAddresses.find(
-        (node: any) => !node.nodeCertHash,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutCertHash =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !(consensusNode.certHash?.length > 0),
+        );
 
-      if (nodeWithoutCert) {
-        expect(
-          nodeWithoutCert.nodeCertHash === null ||
-            nodeWithoutCert.nodeCertHash === undefined ||
-            nodeWithoutCert.nodeCertHash === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes a certificate hash cannot exercise this case.
+      if (consensusNodesWithoutCertHash.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutCertHash) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.nodeCertHash, `node ${nodeId} nodeCertHash`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
 
