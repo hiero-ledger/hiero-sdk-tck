@@ -440,3 +440,45 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 }
 ```
 
+### **High Volume (HIP-1313):**
+
+- Opt-in flag (`commonTransactionParams.highVolume`) that routes the transaction through the high-volume entity creation throttle bucket and variable-rate pricing (HIP-1313). When omitted or `false`, the transaction uses the standard throttles and pricing. The tests check the flag through the `high_volume` field the mirror node returns for the transaction (GET /api/v1/transactions), which the mirror node reads from the signed transaction body.
+
+| Test no | Name                                                                   | Input                                                                                                                                                                                                                          | Expected response                                                                                                                                                                                                                           | Implemented (Y/N) |
+| ------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1       | Creates an account with `commonTransactionParams.highVolume=true`      | key=<VALID_KEY>, commonTransactionParams.highVolume=true                                                                                                                                                                       | The account creation succeeds and the mirror node returns `high_volume=true` for the transaction.                                                                                                                                           | N                 |
+| 2       | Creates an account with `commonTransactionParams.highVolume=false`     | key=<VALID_KEY>, commonTransactionParams.highVolume=false                                                                                                                                                                      | The account creation succeeds and the mirror node returns `high_volume=false` for the transaction.                                                                                                                                          | Y                 |
+| 3       | Omitting `highVolume` behaves identically to `false`                   | key=<VALID_KEY>, no `highVolume` field                                                                                                                                                                                         | The account creation succeeds and the mirror node returns `high_volume=false` for the transaction.                                                                                                                                          | Y                 |
+| 4       | `highVolume=true` with a sufficient `maxTransactionFee`                | key=<VALID_KEY>, commonTransactionParams.highVolume=true, commonTransactionParams.maxTransactionFee=1000000000                                                                                                                 | The account creation succeeds, the mirror node returns `high_volume=true` for the transaction, and its `charged_tx_fee` is `<= maxTransactionFee`.                                                                                          | N                 |
+| 5       | `highVolume=true` with an insufficient `maxTransactionFee`             | key=<VALID_KEY>, commonTransactionParams.highVolume=true, commonTransactionParams.maxTransactionFee=1, commonTransactionParams.transactionId=<CREATED_PAYER_ID>, commonTransactionParams.signers=[<CREATED_PAYER_PRIVATE_KEY>] | The account creation fails with an INSUFFICIENT_TX_FEE response code from the network. This only checks the fee limit: the network returns INSUFFICIENT_TX_FEE with or without the flag, so it does not show that the SDK set `highVolume`. | Y                 |
+| 6       | Fee with `highVolume=true` is at least the fee with `highVolume=false` | Same account params executed twice, once per `highVolume` value                                                                                                                                                                | The `highVolume=true` fee is at least the `highVolume=false` fee. The two fees can be equal, because the HIP-1313 multiplier is 1 at low utilization.                                                                                       | N                 |
+
+#### JSON Request Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "method": "createAccount",
+  "params": {
+    "key": "302a300506032b6570032100e9a0f9c81b3a2bb81a4af5fe05657aa849a3b9b0705da1fb52f331f42cf4b496",
+    "commonTransactionParams": {
+      "highVolume": true
+    }
+  }
+}
+```
+
+#### JSON Response Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 99232,
+  "result": {
+    "accountId": "0.0.12345",
+    "status": "SUCCESS"
+  }
+}
+```
+

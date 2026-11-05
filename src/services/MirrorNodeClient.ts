@@ -15,6 +15,7 @@ import {
   TopicMessagesResponse,
   NetworkNodesResponse,
   Schedule,
+  TransactionsResponse,
 } from "@models/mirror-node-models";
 
 class MirrorNodeClient {
@@ -48,6 +49,13 @@ class MirrorNodeClient {
 
   async getScheduleData(scheduleId: string): Promise<Schedule> {
     const url = `${this.mirrorNodeRestUrl}/api/v1/schedules/${scheduleId}`;
+    return retryOnError(async () => fetchData(url));
+  }
+
+  async getTransactionsByTimestamp(
+    timestamp: string,
+  ): Promise<TransactionsResponse> {
+    const url = `${this.mirrorNodeRestUrl}/api/v1/transactions?timestamp=${timestamp}`;
     return retryOnError(async () => fetchData(url));
   }
 
