@@ -520,7 +520,7 @@ To release a new version of the TCK, follow these steps:
 
 - The tag must match the `version` in `package.json`, or the workflow fails without publishing.
 - A stable tag (`v0.15.0`) publishes to the `latest` dist-tag and a beta tag (`v0.15.0-beta.1`) to `beta`, so `npx @hiero-ledger/sdk-tck` keeps running the latest stable version. Other prerelease tags are rejected.
-- To publish an existing tag again, for example after a failed run, run the workflow manually from the Actions tab with the tag. With **Dry run** checked it packs and checks the package without publishing. A version that is already on npm is skipped.
+- To publish an existing tag again, for example after a failed run, run the workflow manually from the Actions tab and choose the tag under **Use workflow from**. A manual run from a branch is rejected, so the published package and its provenance always come from the tagged commit. With **Dry run** checked it packs and checks the package without publishing. A version that is already on npm is skipped.
 
 ## Contributing
 

@@ -9,12 +9,18 @@ name: npm Publish
 # - A stable tag (v1.2.3) publishes to the `latest` dist-tag, a beta tag
 #   (v1.2.3-beta.1) to `beta`. Other prerelease tags are rejected.
 # - Running the workflow manually republishes an existing tag, for example
-#   after a failed run. With "Dry run" it packs and checks without publishing.
+#   after a failed run: choose the tag under "Use workflow from". A manual run
+#   from a branch is rejected, so the commit that is built, published and
+#   recorded in the provenance is always the tagged one. With "Dry run" it
+#   packs and checks without publishing.
 # - A version that is already on npm is skipped, so a rerun is safe.
 #
 # One-time setup by a maintainer of the @hiero-ledger npm organization: on
 # npmjs.com, add a trusted publisher for the package with repository
-# hiero-ledger/hiero-sdk-tck and workflow file npm-publish.yml.
+# hiero-ledger/hiero-sdk-tck and workflow file npm-publish.yml, and under
+# "Allowed actions" allow `npm publish`. A configuration created after
+# Sep 3, 2026 only allows `npm stage publish` by default, and this workflow
+# publishes directly.
 
 on:
   push:
@@ -22,10 +28,6 @@ on:
       - "v*.*.*"
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Existing tag to publish (e.g. v0.15.0)"
-        type: string
-        required: true
       dry-run-enabled:
         description: "Dry run: pack and check, but do not publish"
         type: boolean
@@ -49,7 +51,7 @@ jobs:
       contents: read
       id-token: write
     env:
-      TAG: ${{ inputs.tag || github.ref_name }}
+      TAG: ${{ github.ref_name }}
       DRY_RUN: ${{ inputs.dry-run-enabled || 'false' }}
     steps:
       - name: Harden Runner
@@ -60,7 +62,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || '' }}
           persist-credentials: false
 
       # Trusted Publishing needs npm 11.5.1 or later, which ships with Node 24.
@@ -73,6 +74,11 @@ jobs:
       - name: Validate the tag
         id: release
         run: |
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            echo "::error::Run this workflow from a release tag (Use workflow from > Tags), not from the branch ${TAG}"
+            exit 1
+          fi
+
           name="$(node -p "require('./package.json').name")"
           version="$(node -p "require('./package.json').version")"
 
