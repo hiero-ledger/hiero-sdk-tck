@@ -436,17 +436,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without rsaPublicKey (if any)
-      const nodeWithoutKey = response.nodeAddresses.find(
-        (node: any) => !node.rsaPublicKey,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutKey =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !consensusNode.publicKey,
+        );
 
-      if (nodeWithoutKey) {
-        expect(
-          nodeWithoutKey.rsaPublicKey === null ||
-            nodeWithoutKey.rsaPublicKey === undefined ||
-            nodeWithoutKey.rsaPublicKey === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes an RSA public key cannot exercise this case.
+      if (consensusNodesWithoutKey.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutKey) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.rsaPublicKey, `node ${nodeId} rsaPublicKey`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
 
