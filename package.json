@@ -18,6 +18,7 @@
     "lib",
     ".env.custom_node",
     ".env.testnet",
+    "CHANGELOG.md",
     "scripts/check-test-results.mjs",
     "scripts/action/collect-results.mjs"
   ],

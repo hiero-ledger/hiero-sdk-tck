@@ -492,6 +492,9 @@ To release a new version of the TCK, follow these steps:
    - Register test paths in `src/utils/constants/test-paths.ts`
    - Bump `version` in `package.json` (and `package-lock.json`) to the new
      version, for example with `npm version <version> --no-git-tag-version`
+   - In `CHANGELOG.md`, move the entries under `## [Unreleased]` to a new
+     `## [<version>] - <YYYY-MM-DD>` section and add its compare link at the
+     bottom of the file
    - Submit a pull request and merge the changes
 
 3. **Tag current version:**
@@ -524,6 +527,8 @@ To release a new version of the TCK, follow these steps:
 Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
+
+If your change affects SDK teams that run the TCK (a new or changed test, the CLI, the GitHub Action, the report or a runtime requirement), add an entry under `## [Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md). CI, documentation and dev-only changes don't need one.
 
 ## Help/Community
 
