@@ -497,6 +497,13 @@ To release a new version of the TCK, follow these steps:
      bottom of the file
    - Submit a pull request and merge the changes
 
+   > **Before the first npm release (one-time setup):** a maintainer of the
+   > `@hiero-ledger` npm organization adds a trusted publisher for
+   > `@hiero-ledger/sdk-tck` on npmjs.com with repository
+   > `hiero-ledger/hiero-sdk-tck` and workflow file `npm-publish.yml`, and
+   > under **Allowed actions** allows `npm publish`. Without it, the tag in
+   > step 3 cannot publish the package.
+
 3. **Tag current version:**
 
    ```sh
