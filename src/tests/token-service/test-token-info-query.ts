@@ -1295,6 +1295,7 @@ describe("TokenInfoQuery", function () {
 
     it("(#53) Verify metadata field when set", async function () {
       const metadata = "Hello World";
+      const metadataBytes = Buffer.from(metadata, "utf8");
 
       const tokenId = await createFtToken(this, {
         name: "TestToken",
@@ -1307,15 +1308,13 @@ describe("TokenInfoQuery", function () {
         tokenId: tokenId,
       });
 
-      expect(response.metadata).to.exist;
-      expect(response.metadata).to.be.a("string");
+      expect(response.metadata).to.equal(metadataBytes.toString("hex"));
 
       // Verify against consensus node
       const consensusInfo = await consensusInfoClient.getTokenInfo(tokenId);
-      expect(consensusInfo.metadata).to.exist;
-      if (consensusInfo.metadata) {
-        expect(consensusInfo.metadata.toString()).to.equal(metadata);
-      }
+      expect(Buffer.from(consensusInfo.metadata ?? [])).to.deep.equal(
+        metadataBytes,
+      );
     });
 
     it.skip("(#54) Verify metadata field when empty", async function () {
