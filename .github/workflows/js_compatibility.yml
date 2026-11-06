@@ -113,7 +113,7 @@ jobs:
       - name: Install Task
         uses: arduino/setup-task@c0bc642852239c2689f73f4ea6459c29405f3c52 # v3.0.0
         with:
-         version: 3.35.1
+          version: 3.35.1
 
       - name: Install PNPM
         uses: step-security/action-setup@8beec6731697ff7a074963eaa56f6d8e02e1c399 # v6.1.0
@@ -133,42 +133,6 @@ jobs:
           task -v build
         working-directory: sdk-server
 
-      # Set up and start the TCK server
-      - name: Install and Start TCK Server
-        id: start-sdk-server
-        run: |
-          # Share Long with the built SDK: its instanceof checks require one constructor.
-          npm install --no-save .. ../node_modules/long
-          node <<'NODE'
-          const assert = require('node:assert/strict');
-          const { createRequire } = require('node:module');
-          const sdk = require.resolve('@hiero-ledger/sdk');
-          assert.equal(sdk, require.resolve('..'), 'TCK must load the built SDK checkout');
-          assert.equal(require('long'), createRequire(sdk)('long'), 'TCK and SDK must share Long');
-          console.log(`TCK SDK: ${sdk}`);
-          NODE
-          nohup npm run start > tck-server.log 2>&1 &
-          server_pid=$!
-          echo "pid=${server_pid}" >> "${GITHUB_OUTPUT}"
-        working-directory: sdk-server/tck
-
-      # Wait for TCK server to be ready (nodemon stays alive after a crash, so check the port)
-      - name: Wait for TCK Server
-        run: |
-          echo "Waiting for TCK server on port 8544..."
-          for i in {1..30}; do
-            if bash -c 'exec 3>/dev/tcp/127.0.0.1/8544' 2>/dev/null; then
-              echo "TCK server is ready on port 8544!"
-              exit 0
-            fi
-            echo "Still waiting... ($i/30)"
-            sleep 2
-          done
-          echo "TCK server failed to become ready on port 8544"
-          echo "Server logs:"
-          cat sdk-server/tck/tck-server.log || echo "No server logs found"
-          exit 1
-
       # Get Latest Consensus Node Version
       - name: Get Latest Consensus Node Version
         if: ${{ !inputs.consensus-node-version }}
@@ -184,35 +148,27 @@ jobs:
           echo "Latest consensus node tag: $LATEST_TAG"
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
-      # Prepare Hiero Solo
-      - name: Prepare Hiero Solo
-        id: solo
-        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # v0.26.0
-        with:
-          installMirrorNode: true
-          soloVersion: ${{ inputs.solo-version || '0.91.0' }}
-          mirrorNodeVersion: v0.138.0
-          hieroVersion: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
-          # Since 0.20.0 the action defaults to 38081 and 35211; the TCK expects 5551 and 50211
-          mirrorNodePortRest: "5551"
-          haproxyPort: "50211"
-
-      # Run the TCK through the action in this repository; `tck` is the path
-      # the TCK checkout above uses. The action installs the client, waits for
-      # the JSON-RPC server, runs the suite, writes the job summary and
-      # uploads the report.
+      # SDK build/start knowledge stays in this caller; the shared action owns
+      # optional startup, execution, reporting and cleanup.
       - name: Run the TCK
         uses: ./tck
         with:
+          start-solo: "true"
+          solo-version: ${{ inputs.solo-version || '0.91.0' }}
+          consensus-node-version: ${{ inputs.consensus-node-version || steps.get-consensus-version.outputs.tag }}
+          mirror-node-version: v0.138.0
+          server-working-directory: sdk-server/tck
+          server-command: |
+            # Share Long with the built SDK: its instanceof checks require one constructor.
+            npm install --no-save .. ../node_modules/long
+            node <<'NODE'
+            const assert = require('node:assert/strict');
+            const { createRequire } = require('node:module');
+            const sdk = require.resolve('@hiero-ledger/sdk');
+            assert.equal(sdk, require.resolve('..'), 'TCK must load the built SDK checkout');
+            assert.equal(require('long'), createRequire(sdk)('long'), 'TCK and SDK must share Long');
+            console.log(`TCK SDK: ${sdk}`);
+            NODE
+            exec npm run start
           test-matrix: ${{ inputs.test-matrix }}
           artifact-name: ${{ inputs.artifact-name || 'tck-report-js' }}
-
-      # Stop the TCK server
-      - name: Stop tck-server
-        if: ${{ always() }}
-        run: |
-          echo ${{ steps.start-sdk-server.outputs.pid }}
-          # Check if pid exists before killing (safest for PR automated runs)
-          if [ -n "${{ steps.start-sdk-server.outputs.pid }}" ]; then
-            kill -9 ${{ steps.start-sdk-server.outputs.pid }}
-          fi
