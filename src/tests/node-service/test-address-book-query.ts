@@ -470,22 +470,37 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with nodeCertHash (if any)
-      const nodeWithCert = response.nodeAddresses.find(
-        (node: any) => node.nodeCertHash,
-      );
-
-      if (nodeWithCert) {
-        expect(nodeWithCert.nodeCertHash).to.be.a("string");
-        expect(nodeWithCert.nodeCertHash.length).to.be.greaterThan(0);
-
-        // Verify against consensus node
-        const consensusNode = await consensusInfoClient.getNodeInfo(
-          nodeWithCert.nodeId.toString(),
+      // Pick the nodes from the reference address book, not from the
+      // response under test, so a response that drops the hash fails.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithCertHash =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => consensusNode.certHash?.length > 0,
         );
-        if (consensusNode.nodeCertHash) {
-          expect(consensusNode.nodeCertHash.toString()).to.exist;
-        }
+
+      // The address book belongs to the network under test. A network that
+      // publishes no certificate hash cannot exercise this case.
+      if (consensusNodesWithCertHash.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithCertHash) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+
+        // The address book stores the SHA-384 hash as UTF-8 hex characters,
+        // so the hash string is those bytes decoded, as the mirror node REST
+        // API and NodeAddress.toJSON() report it.
+        expect(node.nodeCertHash, `node ${nodeId} nodeCertHash`)
+          .to.be.a("string")
+          .that.matches(/^[0-9a-fA-F]{96}$/);
+        expect(node.nodeCertHash.toLowerCase()).to.equal(
+          Buffer.from(consensusNode.certHash).toString("utf8").toLowerCase(),
+        );
       }
     });
 
