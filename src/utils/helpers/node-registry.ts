@@ -19,6 +19,7 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 import { JSONRPCRequest } from "@services/Client";
+import { REPORT_DIR } from "@constants/report-dir";
 
 // nodeId -> signer private keys from the createNode call. Replaying the
 // create's signers on delete always suffices: a successful create carries a
@@ -86,11 +87,11 @@ export const deleteTrackedNodes = async (
   }
 
   // Per-worker summary line; the preflight global teardown (main process)
-  // aggregates these into mochawesome-report/run-info.json.
+  // aggregates these into run-info.json in the report directory.
   try {
-    mkdirSync("mochawesome-report", { recursive: true });
+    mkdirSync(REPORT_DIR, { recursive: true });
     appendFileSync(
-      join("mochawesome-report", "node-cleanup.jsonl"),
+      join(REPORT_DIR, "node-cleanup.jsonl"),
       JSON.stringify(counters) + "\n",
     );
     counters.created = 0;

@@ -293,6 +293,72 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 
 `RunTestsInContainer.ts` is the entry point for the Docker image. It sets the network environment, maps the ports, and runs the tests. This file is specifically used for running tests within the Docker environment and does not affect how tests are run locally. For local test execution, please refer to the instructions provided in the [Install and run](#install-and-run) section above.
 
+## Run the TCK with npx
+
+The TCK is published on npm as
+[`@hiero-ledger/sdk-tck`](https://www.npmjs.com/package/@hiero-ledger/sdk-tck).
+The package runs the suite without a clone of this repository. Its version is
+the suite version, so pin it to run a known set of tests:
+
+```sh
+npx @hiero-ledger/sdk-tck@<version> --server http://localhost:8544 --test AccountCreate
+```
+
+> The first npm release is still pending. Until then, run the same CLI from a
+> clone with `npm run tck -- <options>`.
+
+Or add it to a project, where Renovate or Dependabot can keep it up to date:
+
+```sh
+npm install --save-dev @hiero-ledger/sdk-tck
+npx hiero-sdk-tck --test ALL
+```
+
+Node.js 20.19+ or 22.12+ is required.
+
+### Options
+
+| Option                | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `--server <url>`      | JSON-RPC server URL (default `http://localhost:8544/`)                              |
+| `--network <name>`    | Network profile with default endpoints and operator: `local` (default) or `testnet` |
+| `--config <path>`     | Dotenv file with the configuration (default `./.env`, optional)                      |
+| `--test <name>`       | Test to run, repeatable or comma-separated (default `ALL`); see `--list`            |
+| `--grep <pattern>`    | Only run tests whose title matches the pattern                                      |
+| `--report-dir <path>` | Report directory (default `./mochawesome-report`)                                   |
+| `--jobs <n>`          | Parallel workers when running more than one test file (default `7`)                 |
+| `--list`              | Print the available test names                                                      |
+| `--version`, `--help` | Print the TCK version or the usage                                                  |
+
+### Configuration
+
+The CLI reads the same variables as a run from a clone (see `.env.custom_node`
+for the full list). Precedence: CLI options > environment variables > config
+file (`--config`, default `./.env`) > defaults of the `--network` profile.
+
+- `local` takes its defaults from `.env.custom_node`, shipped in the package:
+  a hiero-local-node or Solo network, including its development operator
+  account.
+- `testnet` takes its defaults from `.env.testnet` and needs
+  `OPERATOR_ACCOUNT_ID` and `OPERATOR_ACCOUNT_PRIVATE_KEY` from the
+  environment or the config file.
+- A variable set to an empty value turns off the profile default, for example
+  `NODE_IP=` to skip the consensus node check.
+
+### Report and exit code
+
+The mochawesome HTML and JSON reports and `run-info.json` are written to
+`./mochawesome-report` in the working directory, or to `--report-dir`. The
+exit code follows `scripts/check-test-results.mjs`, the same verdict as the
+GitHub Action:
+
+| Exit code | Meaning                                                      |
+| --------- | ------------------------------------------------------------ |
+| `0`       | All selected tests passed                                    |
+| `1`       | A test or hook failed, or registered tests never ran         |
+| `2`       | The run crashed or preflight aborted before writing a report |
+| `3`       | Invalid options or configuration                             |
+
 ## Run the TCK from an SDK repository's CI
 
 This repository is also a composite GitHub Action. An SDK workflow builds its
@@ -424,7 +490,19 @@ To release a new version of the TCK, follow these steps:
 
    - Add new tests to `test_regression.yml`
    - Register test paths in `src/utils/constants/test-paths.ts`
+   - Bump `version` in `package.json` (and `package-lock.json`) to the new
+     version, for example with `npm version <version> --no-git-tag-version`
+   - In `CHANGELOG.md`, move the entries under `## [Unreleased]` to a new
+     `## [<version>] - <YYYY-MM-DD>` section and add its compare link at the
+     bottom of the file
    - Submit a pull request and merge the changes
+
+   > **Before the first npm release (one-time setup):** a maintainer of the
+   > `@hiero-ledger` npm organization adds a trusted publisher for
+   > `@hiero-ledger/sdk-tck` on npmjs.com with repository
+   > `hiero-ledger/hiero-sdk-tck` and workflow file `npm-publish.yml`, and
+   > under **Allowed actions** allows `npm publish`. Without it, the tag in
+   > step 3 cannot publish the package.
 
 3. **Tag current version:**
 
@@ -445,11 +523,19 @@ To release a new version of the TCK, follow these steps:
 
 **Note:** The tag also versions the GitHub Action (`uses: hiero-ledger/hiero-sdk-tck@<sha>`). After tagging, update the pinned commit in the example under "Run the TCK from an SDK repository's CI".
 
+**Note:** Pushing the tag also publishes the npm package `@hiero-ledger/sdk-tck` through `.github/workflows/npm-publish.yml`, with npm provenance, as the JS SDK does:
+
+- The tag must match the `version` in `package.json`, or the workflow fails without publishing.
+- A stable tag (`v0.15.0`) publishes to the `latest` dist-tag and a beta tag (`v0.15.0-beta.1`) to `beta`, so `npx @hiero-ledger/sdk-tck` keeps running the latest stable version. Other prerelease tags are rejected.
+- To publish an existing tag again, for example after a failed run, run the workflow manually from the Actions tab and choose the tag under **Use workflow from**. A manual run from a branch is rejected, so the published package and its provenance always come from the tagged commit. With **Dry run** checked it packs and checks the package without publishing. A version that is already on npm is skipped.
+
 ## Contributing
 
 Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
+
+If your change affects SDK teams that run the TCK (a new or changed test, the CLI, the GitHub Action, the report or a runtime requirement), add an entry under `## [Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md). CI, documentation and dev-only changes don't need one.
 
 ## Help/Community
 
