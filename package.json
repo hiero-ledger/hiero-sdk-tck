@@ -37,7 +37,7 @@
     "@types/json-bigint": "^1.0.4",
     "@types/markdown-it": "^14.2.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.15.26",
+    "@types/node": "^25.9.9",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.71.2",
     "eslint": "^10.14.0",
