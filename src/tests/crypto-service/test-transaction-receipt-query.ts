@@ -133,25 +133,57 @@ describe("TransactionReceiptQuery", function () {
     });
 
     it("(#8) Query for a receipt of a failed transaction with validateStatus=false", async function () {
-      try {
-        await JSONRPCRequest(this, "deleteAccount", {
-          deleteAccountId: "0.0.99999",
-          transferAccountId: process.env.OPERATOR_ACCOUNT_ID as string,
-        });
-      } catch (error: any) {
-        if (error.data?.transactionId) {
-          const response = await JSONRPCRequest(this, "getTransactionReceipt", {
-            transactionId: error.data.transactionId,
-            validateStatus: false,
-          });
+      // A failed transaction's ID is not part of the error the servers return,
+      // so schedule a transfer that exceeds the sender's balance. Creating the
+      // schedule returns the scheduled transaction's ID, and signing the
+      // schedule executes the transfer, which fails at consensus.
+      const senderPrivateKey = await generateEd25519PrivateKey(this);
+      const senderAccountResponse = await JSONRPCRequest(
+        this,
+        "createAccount",
+        {
+          key: senderPrivateKey,
+          initialBalance: "5",
+        },
+      );
 
-          expect(response.status).to.be.a("string");
-          expect(response.status).to.not.equal("SUCCESS");
-          return;
-        }
-        // Transaction failed at precheck — no receipt exists
-        return;
-      }
+      const scheduleResponse = await JSONRPCRequest(this, "createSchedule", {
+        scheduledTransaction: {
+          method: "transferCrypto",
+          params: {
+            transfers: [
+              {
+                hbar: {
+                  accountId: senderAccountResponse.accountId,
+                  amount: "-10",
+                },
+              },
+              {
+                hbar: {
+                  accountId: process.env.OPERATOR_ACCOUNT_ID as string,
+                  amount: "10",
+                },
+              },
+            ],
+          },
+        },
+      });
+      const transactionId = scheduleResponse.transactionId;
+      expect(transactionId).to.be.a("string").that.is.not.empty;
+
+      await JSONRPCRequest(this, "signSchedule", {
+        scheduleId: scheduleResponse.scheduleId,
+        commonTransactionParams: {
+          signers: [senderPrivateKey],
+        },
+      });
+
+      const response = await JSONRPCRequest(this, "getTransactionReceipt", {
+        transactionId,
+        validateStatus: false,
+      });
+
+      expect(response.status).to.equal("INSUFFICIENT_ACCOUNT_BALANCE");
     });
 
     it("(#9) Verify receipt status field", async function () {
