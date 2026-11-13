@@ -2,12 +2,16 @@ import { assert, expect } from "chai";
 import { ContractFunctionParameters } from "@hashgraph/sdk";
 import { JSONRPCRequest } from "@services/Client";
 import { setOperator } from "@helpers/setup-tests";
-import { AbiCoder } from 'ethers';
+import { AbiCoder } from "ethers";
 import {
   generateEd25519PrivateKey,
   generateEd25519PublicKey,
 } from "@helpers/key";
 import { toHexString } from "@helpers/verify-contract-tx";
+import {
+  getContractCallResultHex,
+  getContractCallResultPayload,
+} from "@helpers/contract-call-result";
 
 const abiCoder = AbiCoder.defaultAbiCoder();
 
@@ -130,7 +134,7 @@ describe("ContractCallQuery", function () {
       );
 
       expect(response).to.not.be.null;
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
 
     it("(#2) Fails to execute contract call query without contract ID", async function () {
@@ -183,17 +187,32 @@ describe("ContractCallQuery", function () {
       expect(parseInt(response.gasUsed)).to.be.lessThan(100000);
     });
 
-    it("(#2) Fails to execute contract call query without gas", async function () {
+    it("(#2) Executes contract call query without gas", async function () {
+      // An SDK may auto-estimate gas via the mirror node when it is omitted
+      // (e.g. JS SDK >= 2.86.0) and execute the query successfully; when the
+      // mirror node estimation endpoint (/api/v1/contracts/call, served by
+      // the mirror web3 service) is unavailable, such an SDK fails with an
+      // SDK-side "requires gas to be set" error instead. SDKs without gas
+      // estimation submit gas=0 and the network rejects the query with
+      // INSUFFICIENT_GAS.
       try {
-        await JSONRPCRequest(this, "contractCallQuery", {
+        const response = await JSONRPCRequest(this, "contractCallQuery", {
           contractId,
           functionName: "getMessage",
         });
+
+        expect(response).to.not.be.null;
+        expect(getContractCallResultPayload(response)).to.not.be.null;
       } catch (err: any) {
-        assert.equal(err.data.status, "INSUFFICIENT_GAS");
-        return;
+        if (err.data?.status) {
+          assert.equal(err.data.status, "INSUFFICIENT_GAS");
+        } else {
+          assert.include(
+            err.data?.message ?? err.message ?? "",
+            "requires gas to be set",
+          );
+        }
       }
-      assert.fail("Should throw an error");
     });
 
     it("(#3) Fails to execute contract call query with insufficient gas", async function () {
@@ -244,7 +263,7 @@ describe("ContractCallQuery", function () {
       );
 
       expect(response).to.not.be.null;
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
 
     it("(#2) Executes query with uint256 parameter", async function () {
@@ -260,8 +279,10 @@ describe("ContractCallQuery", function () {
         functionParams,
       );
 
-
-      const result = abiCoder.decode(['uint256'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint256"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
       expect(result.toString()).to.equal("300");
     });
@@ -327,8 +348,11 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getMessage"),
       );
 
-     const result = abiCoder.decode(['string'], `0x${response.rawResult}`)[0];
-     expect(result).to.equal("Hello from Hedera");
+      const result = abiCoder.decode(
+        ["string"],
+        getContractCallResultHex(response),
+      )[0];
+      expect(result).to.equal("Hello from Hedera");
     });
 
     it("(#2) Returns concatenated string value", async function () {
@@ -344,7 +368,10 @@ describe("ContractCallQuery", function () {
         functionParams,
       );
 
-      const result = abiCoder.decode(['string'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["string"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.equal("Hello World");
     });
 
@@ -358,7 +385,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getMessage"),
       );
 
-      const result = abiCoder.decode(['string'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["string"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.equal("");
     });
   });
@@ -378,7 +408,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getTrue"),
       );
 
-      const result = abiCoder.decode(['bool'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["bool"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.equal(true);
     });
 
@@ -390,7 +423,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getFalse"),
       );
 
-      const result = abiCoder.decode(['bool'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["bool"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.equal(false);
     });
 
@@ -402,7 +438,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getBool"),
       );
 
-      const result = abiCoder.decode(['bool'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["bool"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
       expect(typeof result).to.equal("boolean");
     });
@@ -423,7 +462,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt8"),
       );
 
-      const result = abiCoder.decode(['int8'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int8"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -435,7 +477,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint8"),
       );
 
-      const result = abiCoder.decode(['uint8'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint8"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -447,7 +492,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt16"),
       );
 
-      const result = abiCoder.decode(['int16'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int16"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -459,7 +507,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint16"),
       );
 
-      const result = abiCoder.decode(['uint16'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint16"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -471,7 +522,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt32"),
       );
 
-      const result = abiCoder.decode(['int32'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int32"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -483,7 +537,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint32"),
       );
 
-      const result = abiCoder.decode(['uint32'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint32"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -495,7 +552,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt64"),
       );
 
-      const result = abiCoder.decode(['int64'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int64"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -507,7 +567,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint64"),
       );
 
-      const result = abiCoder.decode(['uint64'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint64"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -519,8 +582,11 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt256"),
       );
 
-       const result = abiCoder.decode(['int256'], `0x${response.rawResult}`)[0];
-       expect(result).to.not.be.null;
+      const result = abiCoder.decode(
+        ["int256"],
+        getContractCallResultHex(response),
+      )[0];
+      expect(result).to.not.be.null;
     });
 
     it("(#10) Returns uint256 value", async function () {
@@ -531,7 +597,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint256"),
       );
 
-      const result = abiCoder.decode(['uint256'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint256"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -548,7 +617,10 @@ describe("ContractCallQuery", function () {
         functionParams,
       );
 
-      const result = abiCoder.decode(['uint256'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint256"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result.toString()).to.equal("300");
     });
 
@@ -560,7 +632,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt24"),
       );
 
-      const result = abiCoder.decode(['int24'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int24"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -572,7 +647,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint24"),
       );
 
-      const result = abiCoder.decode(['uint24'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint24"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -584,7 +662,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt40"),
       );
 
-      const result = abiCoder.decode(['int40'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int40"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -596,7 +677,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint40"),
       );
 
-      const result = abiCoder.decode(['uint40'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint40"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -608,7 +692,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt48"),
       );
 
-      const result = abiCoder.decode(['int48'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int48"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -620,7 +707,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint48"),
       );
 
-      const result = abiCoder.decode(['uint48'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint48"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -632,7 +722,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getInt56"),
       );
 
-      const result = abiCoder.decode(['int56'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["int56"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -644,7 +737,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint56"),
       );
 
-      const result = abiCoder.decode(['uint56'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint56"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
   });
@@ -664,7 +760,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getAddress"),
       );
 
-      const result = abiCoder.decode(['address'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["address"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
       expect(result).to.match(/^0x[a-fA-F0-9]{40}$/);
     });
@@ -677,7 +776,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getSenderAddress"),
       );
 
-      const result = abiCoder.decode(['address'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["address"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
       expect(result).to.match(/^0x[a-fA-F0-9]{40}$/);
     });
@@ -698,7 +800,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getBytes32"),
       );
 
-      const result = abiCoder.decode(['bytes32'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["bytes32"],
+        getContractCallResultHex(response),
+      )[0];
       expect(result).to.not.be.null;
     });
 
@@ -710,7 +815,7 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getFixedBytes"),
       );
 
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
 
     it("(#3) Returns dynamic bytes value", async function () {
@@ -721,7 +826,7 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getDynamicBytes"),
       );
 
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
   });
 
@@ -740,7 +845,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint256Array"),
       );
 
-      const result = abiCoder.decode(['uint256[]'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint256[]"],
+        getContractCallResultHex(response),
+      )[0];
       expect(response).to.not.be.null;
       expect(result).to.not.be.null;
     });
@@ -753,8 +861,10 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getAddressArray"),
       );
 
-
-      const result = abiCoder.decode(['address[]'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["address[]"],
+        getContractCallResultHex(response),
+      )[0];
       expect(response).to.not.be.null;
       expect(result).to.not.be.null;
     });
@@ -776,7 +886,7 @@ describe("ContractCallQuery", function () {
       );
 
       expect(response).to.not.be.null;
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
 
     it("(#2) Returns multiple integer values", async function () {
@@ -788,7 +898,7 @@ describe("ContractCallQuery", function () {
       );
 
       expect(response).to.not.be.null;
-      expect(response.rawResult).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.not.be.null;
     });
   });
 
@@ -979,8 +1089,8 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getMessage"),
       );
 
-      expect(response.rawResult).to.not.be.null;
-      expect(response.rawResult).to.be.a("string");
+      expect(getContractCallResultPayload(response)).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.be.a("string");
     });
 
     it("(#2) Bytes field contains valid hex data", async function () {
@@ -991,9 +1101,15 @@ describe("ContractCallQuery", function () {
         new ContractFunctionParameters()._build("getUint256"),
       );
 
-      const result = abiCoder.decode(['uint256'], `0x${response.rawResult}`)[0];
+      const result = abiCoder.decode(
+        ["uint256"],
+        getContractCallResultHex(response),
+      )[0];
       expect(response).to.not.be.null;
-      expect(response.rawResult).to.match(/^[a-fA-F0-9]+$/);
+      expect(result).to.not.be.null;
+      expect(getContractCallResultPayload(response)).to.match(
+        /^(0x)?[a-fA-F0-9]+$/,
+      );
     });
   });
 });

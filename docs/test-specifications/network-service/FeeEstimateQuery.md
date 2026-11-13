@@ -96,6 +96,26 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 }
 ```
 
+## Acceptance status
+
+The driver requires an implemented `executeFeeEstimateQuery` method. Missing
+methods fail rather than silently marking the suite pending. CI needs mirror
+node v0.153.0; a bounded INTRINSIC self-transfer probe waits for its initial fee
+schedule before running the scenarios below.
+
+The following scenarios from issue #647 remain unimplemented and block full
+acceptance. The current adapter contract does not expose the required
+transaction builders, fee conversion/reference result, or isolated mirror HTTP
+endpoint override. They must be added with the SDK adapter changes rather than
+recorded as passing coverage:
+
+| Scenario | Implemented (Y/N) |
+| --- | --- |
+| Estimate ScheduleCreate fees | N |
+| Estimate ConsensusUpdateTopic fees | N |
+| Compare STATE estimate in tinycents with actual fee using its exchange rate | N |
+| Surface an unavailable mirror HTTP endpoint in an isolated test session | N |
+
 ## Properties
 
 ### **Mode:**
@@ -126,7 +146,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 | 13      | Aggregate fees for `TopicMessageSubmit` with multiple chunks                                             | transactionType=`"TopicMessageSubmit"`, large message, small `chunkSize`           | The query succeeds with `total >= 0`; aggregated subtotal reflects multi-chunk submission                                          | Y                 |
 | 14      | Missing `transactionType`                                                                                 | request omits the `transactionType` field                                          | The query fails with an error indicating `transactionType` is required                                                            | Y                 |
 | 15      | Unsupported `transactionType`                                                                             | transactionType=`"UnknownTx"`                                                      | The query fails with an error indicating the transaction type is not supported                                                    | Y                 |
-| 16      | Malformed inner transaction                                                                              | transactionType=`"TransferCrypto"`, empty transactionParams                        | Either the SDK rejects locally or the mirror node returns an error — both are acceptable per HIP-1261                              | Y                 |
+| 16      | Malformed inner transaction                                                                              | transactionType=`"TransferCrypto"`, empty transactionParams                        | The query fails with JSON-RPC internal error (`-32603`); a successful estimate fails the test                              | Y                 |
 | 17      | `network.subtotal == (node.base + Σ(node.extras.subtotal)) × network.multiplier`                       | mode=`"STATE"`, valid transfer                                                     | The returned `networkFee.subtotal` equals the aggregated node total multiplied by `networkFee.multiplier`                          | Y                 |
 | 18      | `total == networkFee.subtotal + node-component + service-component`                                    | mode=`"STATE"`, valid transfer                                                     | The returned `total` equals the sum of network subtotal, node component (base + extras), and service component (base + extras)     | Y                 |
 

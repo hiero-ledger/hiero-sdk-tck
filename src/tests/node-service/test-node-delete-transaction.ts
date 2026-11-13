@@ -8,6 +8,7 @@ import {
   setOperatorForExistingSession,
 } from "@helpers/setup-tests";
 import { generateEd25519PrivateKey } from "@helpers/key";
+import { deleteTrackedNodes } from "@helpers/node-registry";
 
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 import { toHexString } from "@helpers/verify-contract-tx";
@@ -29,6 +30,9 @@ describe("NodeDeleteTransaction", function () {
   });
 
   after(async function () {
+    // Delete surviving fixture nodes — happy-path deletes untrack themselves,
+    // so this only cleans up after failed delete assertions (issue #667).
+    await deleteTrackedNodes(this);
     await JSONRPCRequest(this, "reset", {
       sessionId: this.sessionId,
     });

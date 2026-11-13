@@ -2,6 +2,8 @@ import { JSONRPC, JSONRPCClient, CreateID } from "json-rpc-2.0";
 import axios from "axios";
 import "dotenv/config";
 
+import { trackNode, untrackNode } from "@helpers/node-registry";
+
 let nextID = 0;
 const createID: CreateID = () => nextID++;
 
@@ -129,6 +131,20 @@ export const JSONRPCRequest = async (
       jsonRPCResponse.result.error === "NOT_IMPLEMENTED"
     ) {
       mochaTestContext.skip();
+    }
+    // Nodes created on the network under test are real address-book entries
+    // and must be deleted again (issue #667). Tracking lives here so every
+    // suite gets it without per-test bookkeeping.
+    if (
+      method === "createNode" &&
+      jsonRPCResponse.result.nodeId !== undefined
+    ) {
+      trackNode(
+        String(jsonRPCResponse.result.nodeId),
+        params?.commonTransactionParams?.signers ?? [],
+      );
+    } else if (method === "deleteNode" && params?.nodeId !== undefined) {
+      untrackNode(String(params.nodeId));
     }
     return jsonRPCResponse.result;
   }

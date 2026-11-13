@@ -1,11 +1,10 @@
 import { assert, expect } from "chai";
+import { PublicKey } from "@hashgraph/sdk";
 import { setOperator } from "@helpers/setup-tests";
 import { JSONRPCRequest } from "@services/Client";
 import {
-  generateEcdsaSecp256k1PrivateKey,
   generateEd25519PrivateKey,
   generateEd25519PublicKey,
-  generateEvmAddress,
 } from "@helpers/key";
 import { createAccount } from "@helpers/account";
 import { createFtToken, createNftToken } from "@helpers/token";
@@ -339,6 +338,9 @@ describe("AccountInfoQuery", function () {
     });
 
     it("(#19) Query account info and verify liveHashes is returned", async function () {
+      // Live hashes are a retired network feature. SDKs that removed the
+      // deprecated live hash API (e.g. JS SDK >= 2.87.0) omit the field from
+      // the response; SDKs that still expose it must return an array.
       const accountPrivateKey = await generateEd25519PrivateKey(this);
       const accountResponse = await JSONRPCRequest(this, "createAccount", {
         key: accountPrivateKey,
@@ -349,8 +351,9 @@ describe("AccountInfoQuery", function () {
         accountId: accountId,
       });
 
-      expect(response).to.have.property("liveHashes");
-      expect(response.liveHashes).to.be.an("array");
+      if ("liveHashes" in response) {
+        expect(response.liveHashes).to.be.an("array");
+      }
     });
 
     it("(#20) Query account info and verify tokenRelationships is returned", async function () {
@@ -524,33 +527,34 @@ describe("AccountInfoQuery", function () {
     });
 
     it("(#29) Query account info and verify aliasKey with alias", async function () {
-      // Generate a valid key for the account.
-      const key = await generateEcdsaSecp256k1PrivateKey(this);
+      const privateKey = await generateEd25519PrivateKey(this);
+      const publicKey = await generateEd25519PublicKey(this, privateKey);
+      const aliasAccountId = PublicKey.fromString(publicKey)
+        .toAccountId(0, 0)
+        .toString();
 
-      // Generate the ECDSAsecp256k1 private key of the alias for the account.
-      //prettier-ignore
-      const ecdsaSecp256k1PrivateKey = await generateEcdsaSecp256k1PrivateKey(this);
-
-      // Generate the EVM address associated with the private key, which will then be used as the alias for the account.
-      const alias = await generateEvmAddress(this, ecdsaSecp256k1PrivateKey);
-
-      const accountResponse = await JSONRPCRequest(this, "createAccount", {
-        key: key,
-        alias: alias,
-        commonTransactionParams: {
-          signers: [ecdsaSecp256k1PrivateKey],
-        },
+      await JSONRPCRequest(this, "transferCrypto", {
+        transfers: [
+          {
+            hbar: {
+              accountId: process.env.OPERATOR_ACCOUNT_ID,
+              amount: "-100",
+            },
+          },
+          {
+            hbar: {
+              accountId: aliasAccountId,
+              amount: "100",
+            },
+          },
+        ],
       });
-      const accountId = accountResponse.accountId;
 
       const response = await JSONRPCRequest(this, "getAccountInfo", {
-        accountId: accountId,
+        accountId: aliasAccountId,
       });
 
-      // If alias is set, aliasKey should match the public key
-      if (response.aliasKey) {
-        expect(response.aliasKey).to.equal(alias);
-      }
+      expect(response.aliasKey).to.equal(publicKey);
     });
 
     it("(#30) Query account info and verify ledgerId is returned", async function () {
@@ -679,9 +683,7 @@ describe("AccountInfoQuery", function () {
       });
 
       expect(response.stakingInfo).to.have.property("stakedAccountId");
-      if (response.stakingInfo.stakedAccountId) {
-        expect(response.stakingInfo.stakedAccountId).to.equal(stakedAccountId);
-      }
+      expect(response.stakingInfo.stakedAccountId).to.equal(stakedAccountId);
     });
 
     it("(#38) Query account info and verify stakingInfo.stakedNodeId", async function () {
@@ -698,9 +700,7 @@ describe("AccountInfoQuery", function () {
       });
 
       expect(response.stakingInfo).to.have.property("stakedNodeId");
-      if (response.stakingInfo.stakedNodeId) {
-        expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
-      }
+      expect(response.stakingInfo.stakedNodeId).to.equal(stakedNodeId);
     });
   });
 

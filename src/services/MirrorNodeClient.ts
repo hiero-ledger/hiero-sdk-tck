@@ -118,6 +118,63 @@ class MirrorNodeClient {
       fetchData(url).catch(() => fetchData(legacyUrl)),
     );
   }
+
+  /**
+   * Counts successful transactions of the given type (e.g. "NODECREATE")
+   * with a consensus timestamp at or after `sinceSeconds`, following
+   * pagination. Used by the post-run node-pollution check (issue #667):
+   * /network/nodes only reflects the address book file, which regenerates on
+   * upgrades, so freshly created nodes are invisible there — the transaction
+   * stream is the only prompt REST view of node churn.
+   */
+  async countSuccessfulTransactions(
+    transactionType: string,
+    sinceSeconds: number,
+  ): Promise<number> {
+    const baseUrl = this.mirrorNodeRestUrl!;
+    // Promise<any> because retryOnError's fn parameter is typed () => Promise<void>.
+    return retryOnError(async (): Promise<any> => {
+      // count/path live inside the closure so a retry restarts from scratch
+      let count = 0;
+      let path: string | null =
+        `/api/v1/transactions?transactiontype=${transactionType}&result=success&timestamp=gte:${sinceSeconds}&limit=100`;
+      while (path) {
+        const page: any = await fetchData(new URL(path, baseUrl).toString());
+        count += page.transactions.length;
+        path = page.links?.next ?? null;
+      }
+      return count;
+    });
+  }
+
+  /**
+   * Returns the node IDs of every node in the network's address book,
+   * following pagination. Used for the informational baseline stamp in
+   * run-info.json (issue #667). NOTE: reflects the address book file only —
+   * nodes created since the last upgrade/freeze do not appear here.
+   */
+  async getAllNetworkNodeIds(): Promise<string[]> {
+    const baseUrl = this.mirrorNodeRestJavaUrl ?? this.mirrorNodeRestUrl;
+    const legacyBaseUrl = this.mirrorNodeRestUrl;
+
+    // Promise<any> because retryOnError's fn parameter is typed () => Promise<void>.
+    const listFrom = async (base: string): Promise<any> => {
+      const nodeIds: string[] = [];
+      let path: string | null = "/api/v1/network/nodes?limit=100";
+      while (path) {
+        const page: NetworkNodesResponse = await fetchData(
+          new URL(path, base).toString(),
+        );
+        nodeIds.push(...page.nodes.map((node) => String(node.node_id)));
+        path = page.links?.next ?? null;
+      }
+      return nodeIds;
+    };
+
+    return retryOnError(async () =>
+      listFrom(baseUrl!).catch(() => listFrom(legacyBaseUrl!)),
+    );
+  }
 }
 
 export default new MirrorNodeClient();

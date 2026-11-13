@@ -8,6 +8,8 @@ import {
   generateEd25519PublicKey,
 } from "@helpers/key";
 import { getNewFungibleTokenId } from "@helpers/token";
+import { retryOnError } from "@helpers/retry-on-error";
+import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
  * Sum a fee component (base + extras subtotals). All values arrive as
@@ -45,6 +47,17 @@ const expectEstimateShape = (response: any) => {
   expectComponentShape(response.serviceFee);
 };
 
+// Missing implementations must fail this suite instead of appearing green as pending.
+const requestFeeEstimate = (context: Mocha.Context, params: object) => {
+  const requiredContext = Object.create(context);
+  requiredContext.skip = () => {
+    throw Object.assign(new Error("executeFeeEstimateQuery is required"), {
+      code: -32601,
+    });
+  };
+  return JSONRPCRequest(requiredContext, "executeFeeEstimateQuery", params);
+};
+
 /**
  * Tests for FeeEstimateQuery (HIP-1261).
  */
@@ -52,11 +65,30 @@ describe("FeeEstimateQuery", function () {
   this.timeout(60000);
 
   before(async function () {
+    this.timeout(650000);
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
       process.env.OPERATOR_ACCOUNT_PRIVATE_KEY as string,
     );
+    const probe = () =>
+      requestFeeEstimate(this, {
+        mode: "INTRINSIC",
+        transactionType: "TransferCrypto",
+        transactionParams: validTransferParams(),
+      });
+    try {
+      await probe();
+    } catch (error: any) {
+      // A fresh mirror can lack the genesis fee schedule until its refresh runs.
+      if (
+        error.code !== ErrorStatusCodes.INTERNAL_ERROR ||
+        !/Unknown transaction type/i.test(error.data?.message ?? error.message)
+      ) {
+        throw error;
+      }
+      await retryOnError(probe, 120, 5000);
+    }
   });
 
   after(async function () {
@@ -85,7 +117,7 @@ describe("FeeEstimateQuery", function () {
 
   describe("FeeEstimateQuery", function () {
     it("(#1) Estimate fees with STATE mode", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
@@ -97,7 +129,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#2) Estimate fees with INTRINSIC mode", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "INTRINSIC",
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
@@ -108,24 +140,16 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#3) Omit mode — defaults to INTRINSIC", async function () {
-      const defaultResponse = await JSONRPCRequest(
-        this,
-        "executeFeeEstimateQuery",
-        {
-          transactionType: "TransferCrypto",
-          transactionParams: validTransferParams(),
-        },
-      );
+      const defaultResponse = await requestFeeEstimate(this, {
+        transactionType: "TransferCrypto",
+        transactionParams: validTransferParams(),
+      });
 
-      const intrinsicResponse = await JSONRPCRequest(
-        this,
-        "executeFeeEstimateQuery",
-        {
-          mode: "INTRINSIC",
-          transactionType: "TransferCrypto",
-          transactionParams: validTransferParams(),
-        },
-      );
+      const intrinsicResponse = await requestFeeEstimate(this, {
+        mode: "INTRINSIC",
+        transactionType: "TransferCrypto",
+        transactionParams: validTransferParams(),
+      });
 
       expectEstimateShape(defaultResponse);
       expect(defaultResponse.total).to.equal(intrinsicResponse.total);
@@ -133,38 +157,30 @@ describe("FeeEstimateQuery", function () {
 
     it("(#4) Invalid mode string", async function () {
       try {
-        await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+        await requestFeeEstimate(this, {
           mode: "INVALID",
           transactionType: "TransferCrypto",
           transactionParams: validTransferParams(),
         });
       } catch (error: any) {
-        expect(error).to.exist;
+        expect(error.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
       assert.fail("Should throw an error for invalid mode");
     });
 
     it("(#5) STATE total >= INTRINSIC × 0.9", async function () {
-      const stateResponse = await JSONRPCRequest(
-        this,
-        "executeFeeEstimateQuery",
-        {
-          mode: "STATE",
-          transactionType: "TransferCrypto",
-          transactionParams: validTransferParams(),
-        },
-      );
+      const stateResponse = await requestFeeEstimate(this, {
+        mode: "STATE",
+        transactionType: "TransferCrypto",
+        transactionParams: validTransferParams(),
+      });
 
-      const intrinsicResponse = await JSONRPCRequest(
-        this,
-        "executeFeeEstimateQuery",
-        {
-          mode: "INTRINSIC",
-          transactionType: "TransferCrypto",
-          transactionParams: validTransferParams(),
-        },
-      );
+      const intrinsicResponse = await requestFeeEstimate(this, {
+        mode: "INTRINSIC",
+        transactionType: "TransferCrypto",
+        transactionParams: validTransferParams(),
+      });
 
       // STATE typically equals or exceeds INTRINSIC because it can include
       // state-dependent costs. Allow a small downward variance.
@@ -176,7 +192,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#6) Estimate fees for TokenCreate", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TokenCreate",
         transactionParams: {
@@ -194,7 +210,7 @@ describe("FeeEstimateQuery", function () {
     it("(#7) Estimate fees for TokenMint", async function () {
       const tokenId = await getNewFungibleTokenId(this);
 
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TokenMint",
         transactionParams: {
@@ -208,7 +224,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#8) Estimate fees for TopicCreate", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TopicCreate",
         transactionParams: {
@@ -222,7 +238,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#9) Estimate fees for ContractCreate", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "ContractCreate",
         transactionParams: {
@@ -240,7 +256,7 @@ describe("FeeEstimateQuery", function () {
       const privateKey = await generateEd25519PrivateKey(this);
       const publicKey = await generateEd25519PublicKey(this, privateKey);
 
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "FileCreate",
         transactionParams: {
@@ -270,7 +286,7 @@ describe("FeeEstimateQuery", function () {
       // Append ~5 KB of content with a small chunk size, forcing multiple chunks.
       const contents = "x".repeat(5 * 1024);
 
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "FileAppend",
         transactionParams: {
@@ -295,7 +311,7 @@ describe("FeeEstimateQuery", function () {
       });
       const topicId = topicResponse.topicId;
 
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TopicMessageSubmit",
         transactionParams: {
@@ -320,7 +336,7 @@ describe("FeeEstimateQuery", function () {
       // ~2 KB message with 256-byte chunks → 8 chunks.
       const message = "y".repeat(2048);
 
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TopicMessageSubmit",
         transactionParams: {
@@ -337,12 +353,12 @@ describe("FeeEstimateQuery", function () {
 
     it("(#14) Missing transactionType", async function () {
       try {
-        await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+        await requestFeeEstimate(this, {
           mode: "STATE",
           transactionParams: validTransferParams(),
         });
       } catch (error: any) {
-        expect(error).to.exist;
+        expect(error.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
       assert.fail("Should throw an error when transactionType is missing");
@@ -350,36 +366,34 @@ describe("FeeEstimateQuery", function () {
 
     it("(#15) Unsupported transactionType", async function () {
       try {
-        await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+        await requestFeeEstimate(this, {
           mode: "STATE",
           transactionType: "UnknownTx",
           transactionParams: {},
         });
       } catch (error: any) {
-        expect(error).to.exist;
+        expect(error.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
       assert.fail("Should throw an error for unsupported transactionType");
     });
 
     it("(#16) Malformed inner transaction", async function () {
-      // An empty TransferCrypto has no transfers — it should either be
-      // rejected locally or surfaced as an error by the mirror node.
       try {
-        const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+        await requestFeeEstimate(this, {
           mode: "STATE",
           transactionType: "TransferCrypto",
           transactionParams: {},
         });
-        // If the SDK + mirror node accepted it, the shape must still be valid.
-        expectEstimateShape(response);
       } catch (error: any) {
-        expect(error).to.exist;
+        expect(error.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
+        return;
       }
+      assert.fail("Should throw an error for a malformed transaction");
     });
 
     it("(#17) network.subtotal == (node.base + sum(node.extras.subtotal)) * network.multiplier", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
@@ -395,7 +409,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#18) total == network.subtotal + node component + service component", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
@@ -412,7 +426,7 @@ describe("FeeEstimateQuery", function () {
     });
 
     it("(#19) highVolumeThrottle=5000 surfaces highVolumeMultiplier", async function () {
-      const response = await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+      const response = await requestFeeEstimate(this, {
         mode: "STATE",
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
@@ -425,14 +439,14 @@ describe("FeeEstimateQuery", function () {
 
     it("(#20) highVolumeThrottle out of range", async function () {
       try {
-        await JSONRPCRequest(this, "executeFeeEstimateQuery", {
+        await requestFeeEstimate(this, {
           mode: "STATE",
           transactionType: "TransferCrypto",
           transactionParams: validTransferParams(),
           highVolumeThrottle: 99999,
         });
       } catch (error: any) {
-        expect(error).to.exist;
+        expect(error.code).to.equal(ErrorStatusCodes.INTERNAL_ERROR);
         return;
       }
       assert.fail("Should throw an error for out-of-range highVolumeThrottle");
