@@ -24,11 +24,8 @@ function loadSuite(request) {
     "@enums/error-status-codes": {
       ErrorStatusCodes: { INTERNAL_ERROR: -32603 },
     },
-    "@helpers/retry-on-error": {
-      retryOnError: async (probe, attempts, delay) => {
-        retries.push({ attempts, delay });
-        return probe();
-      },
+    "node:timers/promises": {
+      setTimeout: async (delay) => retries.push(delay),
     },
   };
   const source = readFileSync(
@@ -113,7 +110,7 @@ test("only the known startup race gets the bounded readiness retry", async () =>
   });
   await suite.prepare();
   assert.equal(attempts, 2);
-  assert.deepEqual(suite.retries, [{ attempts: 120, delay: 5000 }]);
+  assert.deepEqual(suite.retries, [5000]);
 });
 
 test("unrelated failures and missing adapters fail readiness immediately", async () => {
@@ -127,4 +124,38 @@ test("unrelated failures and missing adapters fail readiness immediately", async
     await assert.rejects(suite.prepare(), (error) => error === failure);
     assert.equal(suite.retries.length, 0);
   }
+});
+
+test("a different error after the startup race stops readiness immediately", async () => {
+  for (const failure of [
+    { code: -32603, message: "bad input" },
+    { code: -32601 },
+  ]) {
+    let attempts = 0;
+    const suite = loadSuite(async () => {
+      if (attempts++ === 0) {
+        throw { code: -32603, data: { message: "Unknown transaction type" } };
+      }
+      throw failure;
+    });
+    await assert.rejects(suite.prepare(), (error) => error === failure);
+    assert.equal(attempts, 2);
+    assert.deepEqual(suite.retries, [5000]);
+  }
+});
+
+test("the startup race exhausts its bounded attempt budget", async () => {
+  let attempts = 0;
+  const failure = {
+    code: -32603,
+    data: { message: "Unknown transaction type" },
+  };
+  const suite = loadSuite(async () => {
+    attempts++;
+    throw failure;
+  });
+  await assert.rejects(suite.prepare(), (error) => error === failure);
+  assert.equal(attempts, 120);
+  assert.equal(suite.retries.length, 119);
+  assert.ok(suite.retries.every((delay) => delay === 5000));
 });

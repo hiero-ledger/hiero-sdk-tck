@@ -8,7 +8,7 @@ import {
   generateEd25519PublicKey,
 } from "@helpers/key";
 import { getNewFungibleTokenId } from "@helpers/token";
-import { retryOnError } from "@helpers/retry-on-error";
+import { setTimeout as delay } from "node:timers/promises";
 import { ErrorStatusCodes } from "@enums/error-status-codes";
 
 /**
@@ -77,17 +77,23 @@ describe("FeeEstimateQuery", function () {
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
       });
-    try {
-      await probe();
-    } catch (error: any) {
-      // A fresh mirror can lack the genesis fee schedule until its refresh runs.
-      if (
-        error.code !== ErrorStatusCodes.INTERNAL_ERROR ||
-        !/Unknown transaction type/i.test(error.data?.message ?? error.message)
-      ) {
-        throw error;
+    for (let attempt = 0; attempt < 120; attempt++) {
+      try {
+        await probe();
+        return;
+      } catch (error: any) {
+        // Retry only the fresh mirror's missing genesis fee schedule, on every attempt.
+        if (
+          attempt === 119 ||
+          error.code !== ErrorStatusCodes.INTERNAL_ERROR ||
+          !/Unknown transaction type/i.test(
+            error.data?.message ?? error.message,
+          )
+        ) {
+          throw error;
+        }
+        await delay(5000);
       }
-      await retryOnError(probe, 120, 5000);
     }
   });
 
