@@ -85,6 +85,9 @@ export const TEST_CONFIGURATIONS: Record<string, string> = {
   TokenUpdate: "src/tests/token-service/test-token-update-transaction.ts",
   TokenWipe: "src/tests/token-service/test-token-wipe-transaction.ts",
 
+  // Network Service Tests
+  FeeEstimateQuery: "src/tests/network-service/test-fee-estimate-query.ts",
+
   // Ethereum Tests
   EthereumTransaction: "src/tests/ethereum/test-ethereum-transaction.ts",
 
