@@ -15,11 +15,21 @@ consensus.getAccountInfo = async () => ({ tokenRelationships: new Map() });
 
 test("mirror balance checks the token before accepting an expected zero", async () => {
   mirror.getAccountData = async () => ({
-    balance: { tokens: [{ token_id: "0.0.7", balance: 9 }] },
+    balance: {
+      tokens: [
+        { token_id: "0.0.8", balance: 0 },
+        { token_id: "0.0.7", balance: 9 },
+      ],
+    },
   });
   await assert.rejects(verifyTokenBalance("0.0.2", "0.0.7", 0));
   mirror.getAccountData = async () => ({
-    balance: { tokens: [{ token_id: "0.0.7", balance: 0 }] },
+    balance: {
+      tokens: [
+        { token_id: "0.0.8", balance: 9 },
+        { token_id: "0.0.7", balance: 0 },
+      ],
+    },
   });
   await verifyTokenBalance("0.0.2", "0.0.7", 0);
   mirror.getAccountData = async () => ({
@@ -36,7 +46,12 @@ test("mirror balance validates present and absent nonzero values", async () => {
     ]),
   });
   mirror.getAccountData = async () => ({
-    balance: { tokens: [{ token_id: "0.0.7", balance: 5 }] },
+    balance: {
+      tokens: [
+        { token_id: "0.0.8", balance: 9 },
+        { token_id: "0.0.7", balance: 5 },
+      ],
+    },
   });
   await verifyTokenBalance("0.0.2", "0.0.7", 5);
   mirror.getAccountData = async () => ({ balance: { tokens: [] } });
