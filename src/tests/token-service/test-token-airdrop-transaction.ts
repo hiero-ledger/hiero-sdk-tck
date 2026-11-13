@@ -1,6 +1,7 @@
 import { assert } from "chai";
 
 import { JSONRPCRequest } from "@services/Client";
+import ConsensusInfoClient from "@services/ConsensusInfoClient";
 
 import { createAccount, deleteAccount } from "@helpers/account";
 import {
@@ -1850,13 +1851,13 @@ describe("TokenAirdropTransaction", function () {
       });
 
       await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId, tokenId, 0),
+        verifyTokenBalance(senderAccountId, tokenId, amount),
       );
       await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId2, tokenId, 0),
+        verifyTokenBalance(senderAccountId2, tokenId, amount),
       );
       await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId3, tokenId, 0),
+        verifyTokenBalance(senderAccountId3, tokenId, amount),
       );
       await retryOnError(async () =>
         verifyTokenBalance(receiverAccountId, tokenId, 0),
@@ -2466,15 +2467,27 @@ describe("TokenAirdropTransaction", function () {
         },
       });
 
-      await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId, tokenId, 0),
-      );
-      await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId2, tokenId, 0),
-      );
-      await retryOnError(async () =>
-        verifyTokenBalance(senderAccountId3, tokenId, 0),
-      );
+      await retryOnError(async () => {
+        const senderIds = [senderAccountId, senderAccountId2, senderAccountId3];
+        const balances = await Promise.all(
+          senderIds.map(async (accountId) => {
+            const info = await ConsensusInfoClient.getAccountInfo(accountId);
+            return (
+              info.tokenRelationships.get(tokenId)?.balance.toNumber() ?? 0
+            );
+          }),
+        );
+        // Pending tokens remain with their senders until claimed (HIP-904).
+        assert.equal(
+          balances.reduce((sum, balance) => sum + balance, 0),
+          amount,
+        );
+        await Promise.all(
+          senderIds.map((accountId, index) =>
+            verifyTokenBalance(accountId, tokenId, balances[index]),
+          ),
+        );
+      });
       await retryOnError(async () =>
         verifyTokenBalance(receiverAccountId, tokenId, receiverAmount),
       );
