@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "types": ["node", "mocha"],
+    "ignoreDeprecations": "6.0",
+    "noUncheckedSideEffectImports": false,
     "target": "ES2021",
     "module": "CommonJS",
     "strict": true,

@@ -254,20 +254,19 @@ describe("AddressBookQuery", function () {
       const consensusNode = consensusAddressBook.nodeAddresses.find(
         (node: any) => node.nodeId?.toString() === firstNode.nodeId.toString(),
       );
-      if (consensusNode) {
-        expect(consensusNode.accountId?.toString()).to.equal(
-          firstNode.accountId,
-        );
-      }
+      expect(consensusNode?.accountId?.toString()).to.equal(
+        firstNode.accountId,
+      );
 
       // Verify against mirror node
       await retryOnError(async () => {
         const mirrorNodeData = await mirrorNodeClient.getNodeData(
           firstNode.nodeId.toString(),
         );
-        if (mirrorNodeData.nodes && mirrorNodeData.nodes.length > 0) {
-          expect(mirrorNodeData.nodes[0].node_account_id).to.exist;
-        }
+        const mirrorNode = mirrorNodeData?.nodes?.find(
+          (node) => node.node_id?.toString() === firstNode.nodeId.toString(),
+        );
+        expect(mirrorNode?.node_account_id).to.equal(firstNode.accountId);
       });
     });
 
@@ -322,18 +321,26 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with ipAddressV4
-      const nodeWithIp = response.nodeAddresses.find((node: any) =>
-        node.serviceEndpoints.some((endpoint: any) => endpoint.ipAddressV4),
+      const ipv4Endpoints = response.nodeAddresses.flatMap((node: any) =>
+        node.serviceEndpoints.filter(
+          (endpoint: any) =>
+            endpoint.ipAddressV4 !== undefined &&
+            endpoint.ipAddressV4 !== null &&
+            endpoint.ipAddressV4 !== "",
+        ),
       );
 
-      if (nodeWithIp) {
-        const endpointWithIp = nodeWithIp.serviceEndpoints.find(
-          (endpoint: any) => endpoint.ipAddressV4,
-        );
-        expect(endpointWithIp.ipAddressV4).to.be.a("string");
-        // ipAddressV4 should be hex encoded (4 bytes = 8 hex chars)
-        expect(endpointWithIp.ipAddressV4.length).to.be.greaterThan(0);
+      // The address book belongs to the network under test. A network whose
+      // endpoints all use domain names cannot exercise this case.
+      if (ipv4Endpoints.length === 0) {
+        this.skip();
+      }
+
+      for (const endpoint of ipv4Endpoints) {
+        // 4 bytes, hex encoded
+        expect(endpoint.ipAddressV4)
+          .to.be.a("string")
+          .that.matches(/^[0-9a-fA-F]{8}$/);
       }
     });
 
@@ -356,18 +363,46 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with domainName (if any)
-      const nodeWithDomain = response.nodeAddresses.find((node: any) =>
-        node.serviceEndpoints.some((endpoint: any) => endpoint.domainName),
+      // Take the domain-name endpoints from the reference address book, not
+      // from the response under test, so a response that drops one fails.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const domainEndpoints = consensusAddressBook.nodeAddresses.flatMap(
+        (consensusNode: any) =>
+          consensusNode.addresses
+            .filter(
+              (endpoint: any) =>
+                typeof endpoint.address === "string" && endpoint.address !== "",
+            )
+            .map((endpoint: any) => ({
+              nodeId: consensusNode.nodeId.toString(),
+              domainName: endpoint.address,
+              port: endpoint.port,
+            })),
       );
 
-      if (nodeWithDomain) {
-        const endpointWithDomain = nodeWithDomain.serviceEndpoints.find(
-          (endpoint: any) => endpoint.domainName,
+      // The address book belongs to the network under test. A network whose
+      // endpoints all use IPv4 addresses cannot exercise this case.
+      if (domainEndpoints.length === 0) {
+        this.skip();
+      }
+
+      for (const expected of domainEndpoints) {
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === expected.nodeId,
         );
-        expect(endpointWithDomain.domainName).to.be.a("string");
-        expect(endpointWithDomain.domainName.length).to.be.greaterThan(0);
-        expect(endpointWithDomain.port).to.be.a("number");
+        expect(node, `node ${expected.nodeId} missing from the response`).to
+          .exist;
+
+        const endpoint = node.serviceEndpoints.find(
+          (endpoint: any) =>
+            endpoint.domainName === expected.domainName &&
+            endpoint.port === expected.port,
+        );
+        expect(
+          endpoint,
+          `node ${expected.nodeId} has no ${expected.domainName}:${expected.port} endpoint`,
+        ).to.exist;
       }
     });
 
@@ -400,17 +435,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without rsaPublicKey (if any)
-      const nodeWithoutKey = response.nodeAddresses.find(
-        (node: any) => !node.rsaPublicKey,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutKey =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !consensusNode.publicKey,
+        );
 
-      if (nodeWithoutKey) {
-        expect(
-          nodeWithoutKey.rsaPublicKey === null ||
-            nodeWithoutKey.rsaPublicKey === undefined ||
-            nodeWithoutKey.rsaPublicKey === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes an RSA public key cannot exercise this case.
+      if (consensusNodesWithoutKey.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutKey) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.rsaPublicKey, `node ${nodeId} rsaPublicKey`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
 
@@ -443,17 +493,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without nodeCertHash (if any)
-      const nodeWithoutCert = response.nodeAddresses.find(
-        (node: any) => !node.nodeCertHash,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutCertHash =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !(consensusNode.certHash?.length > 0),
+        );
 
-      if (nodeWithoutCert) {
-        expect(
-          nodeWithoutCert.nodeCertHash === null ||
-            nodeWithoutCert.nodeCertHash === undefined ||
-            nodeWithoutCert.nodeCertHash === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes a certificate hash cannot exercise this case.
+      if (consensusNodesWithoutCertHash.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutCertHash) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.nodeCertHash, `node ${nodeId} nodeCertHash`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
 
@@ -462,14 +527,30 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with description (if any)
-      const nodeWithDescription = response.nodeAddresses.find(
-        (node: any) => node.description,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, so a response that drops the description fails.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithDescription =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => consensusNode.description,
+        );
 
-      if (nodeWithDescription) {
-        expect(nodeWithDescription.description).to.be.a("string");
-        expect(nodeWithDescription.description.length).to.be.greaterThan(0);
+      // The address book belongs to the network under test. A network that
+      // publishes no node description cannot exercise this case.
+      if (consensusNodesWithDescription.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithDescription) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.description, `node ${nodeId} description`).to.equal(
+          consensusNode.description,
+        );
       }
     });
 
@@ -478,17 +559,32 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node without description (if any)
-      const nodeWithoutDescription = response.nodeAddresses.find(
-        (node: any) => !node.description,
-      );
+      // Pick the nodes from the reference address book, not from the
+      // response under test, which is what this test validates.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithoutDescription =
+        consensusAddressBook.nodeAddresses.filter(
+          (consensusNode: any) => !consensusNode.description,
+        );
 
-      if (nodeWithoutDescription) {
-        expect(
-          nodeWithoutDescription.description === null ||
-            nodeWithoutDescription.description === undefined ||
-            nodeWithoutDescription.description === "",
-        ).to.be.true;
+      // The address book belongs to the network under test. A network where
+      // every node publishes a description cannot exercise this case.
+      if (consensusNodesWithoutDescription.length === 0) {
+        this.skip();
+      }
+
+      for (const consensusNode of consensusNodesWithoutDescription) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
+        );
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+        expect(node.description, `node ${nodeId} description`).to.be.oneOf([
+          null,
+          undefined,
+          "",
+        ]);
       }
     });
   });

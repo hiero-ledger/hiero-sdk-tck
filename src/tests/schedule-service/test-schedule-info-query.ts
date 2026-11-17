@@ -1,5 +1,6 @@
 import { assert, expect } from "chai";
 import { JSONRPCRequest } from "@services/Client";
+import consensusInfoClient from "@services/ConsensusInfoClient";
 import { setOperator } from "@helpers/setup-tests";
 import {
   generateEd25519PrivateKey,
@@ -343,14 +344,19 @@ describe("ScheduleInfoQuery", function () {
         },
       });
 
+      // The sender's signature is the last one the transfer needs, so the
+      // schedule must have executed.
+      const consensusInfo =
+        await consensusInfoClient.getScheduleInfo(scheduleId);
+      expect(consensusInfo.executed).to.not.be.null;
+
       const response = await JSONRPCRequest(this, "getScheduleInfo", {
         scheduleId,
       });
 
-      // If the schedule executed, executedAt should be set
-      if (response.executedAt) {
-        expect(response.executedAt).to.be.a("string");
-      }
+      expect(response).to.have.property("executedAt");
+      expect(response.executedAt).to.be.a("string");
+      expect(response.executedAt).to.not.be.empty;
     });
 
     it("(#16) Query schedule info and verify deletedAt is null", async function () {

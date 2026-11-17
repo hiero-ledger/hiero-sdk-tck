@@ -34,14 +34,12 @@ export const verifyTokenBalance = async (
   }
 
   const tokens = accountMirrorInfo.balance.tokens;
-  const foundTokenMirror = tokens.some(
-    (token) => token.token_id === tokenId && token.balance === balance,
-  );
+  const foundTokenMirror = tokens.find((token) => token.token_id === tokenId);
 
-  if (!foundTokenMirror) {
-    expect(balance).to.equal(0);
+  if (foundTokenMirror) {
+    expect(foundTokenMirror.balance).to.equal(balance);
   } else {
-    expect(foundTokenMirror).to.be.true;
+    expect(balance).to.equal(0);
   }
 };
 
