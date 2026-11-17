@@ -6,11 +6,13 @@
  * Environment:
  *   JSON_RPC_SERVER_URL  default http://127.0.0.1:8544
  *   SERVER_TIMEOUT       seconds to wait, default 120
+ *   SERVER_PID           optional managed server process-group ID
  *
  * Exits 1 with a one-line error when the server is not reachable in time.
  */
 import { createConnection } from "node:net";
 import { pathToFileURL } from "node:url";
+import { signalGroup } from "./manage-server.mjs";
 
 const DEFAULT_URL = "http://127.0.0.1:8544";
 const DEFAULT_TIMEOUT_SECONDS = 120;
@@ -48,6 +50,7 @@ export async function waitForServer({
   host,
   port,
   timeoutMs,
+  serverPid,
   intervalMs = INTERVAL_MS,
   connect = tryConnect,
   now = Date.now,
@@ -56,6 +59,9 @@ export async function waitForServer({
   const deadline = now() + timeoutMs;
   let attempts = 0;
   for (;;) {
+    if (serverPid !== undefined && !signalGroup(serverPid, 0)) {
+      throw new Error("The managed SDK server exited before it was ready.");
+    }
     attempts += 1;
     if (await connect({ host, port })) {
       return attempts;
@@ -84,6 +90,9 @@ async function main() {
     host,
     port,
     timeoutMs: seconds * 1000,
+    serverPid: process.env.SERVER_PID
+      ? Number(process.env.SERVER_PID)
+      : undefined,
   });
   console.log(
     `JSON-RPC server at ${formatTarget(host, port)} accepts connections (attempt ${attempts}).`,

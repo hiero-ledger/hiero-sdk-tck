@@ -9,8 +9,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { startServer, stopServer } from "./manage-server.mjs";
-import { tryConnect } from "./wait-for-server.mjs";
+import { signalGroup, startServer, stopServer } from "./manage-server.mjs";
+import { tryConnect, waitForServer } from "./wait-for-server.mjs";
 
 test("starts a caller command, captures logs and stops its descendants", async (t) => {
   const workspace = mkdtempSync(join(tmpdir(), "tck-server-test-"));
@@ -52,6 +52,10 @@ test("starts a caller command, captures logs and stops its descendants", async (
     port: Number(readFileSync(join(workspace, "port"), "utf8")),
   };
   assert.equal(await tryConnect(target), true);
+  assert.equal(
+    await waitForServer({ ...target, timeoutMs: 1000, serverPid: managed.pid }),
+    1,
+  );
   assert.match(readFileSync(managed.logPath, "utf8"), /server ready/);
   await stopServer(managed.pid, 100);
   assert.equal(
@@ -75,8 +79,23 @@ test("a failing startup command is recorded in its log and can be cleaned up", a
     assert.ok(Date.now() < deadline);
     await new Promise((done) => setTimeout(done, 20));
   }
-  await stopServer(managed.pid, 0);
+  while (signalGroup(managed.pid, 0)) {
+    assert.ok(Date.now() < deadline, "failing startup command did not exit");
+    await new Promise((done) => setTimeout(done, 20));
+  }
   assert.match(readFileSync(managed.logPath, "utf8"), /startup failed/);
+  await assert.rejects(
+    waitForServer({
+      host: "127.0.0.1",
+      port: 9,
+      timeoutMs: 120_000,
+      serverPid: managed.pid,
+      connect: async () => {
+        assert.fail("an exited server must fail before polling TCP");
+      },
+    }),
+    /managed SDK server exited before it was ready/,
+  );
 });
 
 test("rejects an empty command, escaping working directory and unsafe PID", async () => {
@@ -90,4 +109,6 @@ test("rejects an empty command, escaping working directory and unsafe PID", asyn
   );
   await assert.rejects(stopServer(0), /Invalid/);
   await assert.rejects(stopServer(-123), /Invalid/);
+  assert.throws(() => signalGroup(0, 0), /Invalid/);
+  assert.throws(() => signalGroup(Number.NaN, 0), /Invalid/);
 });

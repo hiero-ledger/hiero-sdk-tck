@@ -51,7 +51,10 @@ export async function startServer({
   }
 }
 
-function signalGroup(pid, signal) {
+export function signalGroup(pid, signal) {
+  if (!Number.isSafeInteger(pid) || pid <= 1) {
+    throw new Error("Invalid managed server PID");
+  }
   try {
     process.kill(-pid, signal);
     return true;
@@ -64,9 +67,6 @@ function signalGroup(pid, signal) {
 }
 
 export async function stopServer(pid, graceMs = 2000) {
-  if (!Number.isSafeInteger(pid) || pid <= 1) {
-    throw new Error("Invalid managed server PID");
-  }
   if (!signalGroup(pid, "SIGTERM")) {
     return;
   }
