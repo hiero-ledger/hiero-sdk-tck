@@ -295,7 +295,7 @@ Then run it using the [same commands](#local-network-default) as above, replacin
 
 ## Run the TCK with npx
 
-The TCK is published on npm as
+The TCK CLI package is
 [`@hiero-ledger/sdk-tck`](https://www.npmjs.com/package/@hiero-ledger/sdk-tck).
 The package runs the suite without a clone of this repository. Its version is
 the suite version, so pin it to run a known set of tests:
