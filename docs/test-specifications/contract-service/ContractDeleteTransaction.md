@@ -20,7 +20,7 @@ Error codes are derived from the Hedera `ResponseCode.proto` definitions and wil
 
 **Transaction Properties:**
 
-- [https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/delete-a-smart-contract](https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/delete-a-smart-contract)
+- [https://docs.hedera.com/native/smart-contracts/delete](https://docs.hedera.com/native/smart-contracts/delete)
 
 **Response Codes:**
 

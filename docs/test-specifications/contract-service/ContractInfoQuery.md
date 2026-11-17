@@ -16,7 +16,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Query properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/get-contract-info
+https://docs.hedera.com/native/smart-contracts/get-info
 
 **ContractGetInfo protobufs:**
 
@@ -28,7 +28,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 

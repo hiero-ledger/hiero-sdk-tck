@@ -17,7 +17,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 
 **Transaction Properties:**
 
-- https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
+- https://docs.hedera.com/native/smart-contracts/create
 
 **Response Codes:**
 
@@ -33,8 +33,8 @@ A successful contract creation transaction (i.e., the transaction reached consen
 - Create results: [https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContractResultsByContractId](https://mainnet.mirrornode.hedera.com/api/v1/docs/#/contracts/getContractResultsByContractId)
 
 **Smart Contracts:**
-- contracts: https://github.com/hashgraph/hedera-smart-contracts/tree/main/contracts
-- system contracts: https://github.com/hashgraph/hedera-smart-contracts/tree/main/contracts/system-contracts
+- contracts: https://github.com/hiero-ledger/hiero-contracts/tree/main/contracts
+- system contracts: https://docs.hedera.com/evm/hedera-services/system-contracts
  
 
 ## JSON-RPC API Endpoint Documentation

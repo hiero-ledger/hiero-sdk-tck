@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/delete-a-schedule-transaction
+https://docs.hedera.com/native/scheduled/delete
 
 **ScheduleDelete protobufs:**
 

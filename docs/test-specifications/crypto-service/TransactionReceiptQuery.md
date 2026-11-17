@@ -16,7 +16,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Query properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/get-a-transaction-receipt
+https://docs.hedera.com/native/transactions/receipt
 
 **TransactionGetReceipt protobufs:**
 
