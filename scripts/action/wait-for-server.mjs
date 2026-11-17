@@ -6,13 +6,12 @@
  * Environment:
  *   JSON_RPC_SERVER_URL  default http://127.0.0.1:8544
  *   SERVER_TIMEOUT       seconds to wait, default 120
- *   SERVER_PID           optional managed server process-group ID
+ *   SERVER_PID           optional managed server process ID
  *
  * Exits 1 with a one-line error when the server is not reachable in time.
  */
 import { createConnection } from "node:net";
 import { pathToFileURL } from "node:url";
-import { signalGroup } from "./manage-server.mjs";
 
 const DEFAULT_URL = "http://127.0.0.1:8544";
 const DEFAULT_TIMEOUT_SECONDS = 120;
@@ -56,11 +55,23 @@ export async function waitForServer({
   now = Date.now,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 }) {
+  if (
+    serverPid !== undefined &&
+    (!Number.isSafeInteger(serverPid) || serverPid <= 1)
+  ) {
+    throw new Error("Invalid managed server PID");
+  }
   const deadline = now() + timeoutMs;
   let attempts = 0;
   for (;;) {
-    if (serverPid !== undefined && !signalGroup(serverPid, 0)) {
-      throw new Error("The managed SDK server exited before it was ready.");
+    if (serverPid !== undefined) {
+      try {
+        // Readiness tracks the foreground command; cleanup targets its group.
+        process.kill(serverPid, 0);
+      } catch (error) {
+        if (error.code !== "ESRCH") throw error;
+        throw new Error("The managed SDK server exited before it was ready.");
+      }
     }
     attempts += 1;
     if (await connect({ host, port })) {

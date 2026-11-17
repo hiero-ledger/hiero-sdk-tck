@@ -9,8 +9,22 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { signalGroup, startServer, stopServer } from "./manage-server.mjs";
+import { startServer, stopServer } from "./manage-server.mjs";
 import { tryConnect, waitForServer } from "./wait-for-server.mjs";
+
+async function waitForExit(pid) {
+  const deadline = Date.now() + 5000;
+  for (;;) {
+    try {
+      process.kill(pid, 0);
+    } catch (error) {
+      if (error.code === "ESRCH") return;
+      throw error;
+    }
+    assert.ok(Date.now() < deadline, "failing startup command did not exit");
+    await new Promise((done) => setTimeout(done, 20));
+  }
+}
 
 test("starts a caller command, captures logs and stops its descendants", async (t) => {
   const workspace = mkdtempSync(join(tmpdir(), "tck-server-test-"));
@@ -79,10 +93,7 @@ test("a failing startup command is recorded in its log and can be cleaned up", a
     assert.ok(Date.now() < deadline);
     await new Promise((done) => setTimeout(done, 20));
   }
-  while (signalGroup(managed.pid, 0)) {
-    assert.ok(Date.now() < deadline, "failing startup command did not exit");
-    await new Promise((done) => setTimeout(done, 20));
-  }
+  await waitForExit(managed.pid);
   assert.match(readFileSync(managed.logPath, "utf8"), /startup failed/);
   await assert.rejects(
     waitForServer({
@@ -93,6 +104,47 @@ test("a failing startup command is recorded in its log and can be cleaned up", a
       connect: async () => {
         assert.fail("an exited server must fail before polling TCP");
       },
+    }),
+    /managed SDK server exited before it was ready/,
+  );
+});
+
+test("readiness fails when the managed server exits but a descendant survives", async (t) => {
+  const workspace = mkdtempSync(join(tmpdir(), "tck-server-worker-"));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  writeFileSync(
+    join(workspace, "crash.mjs"),
+    `import { spawn } from 'node:child_process';
+     import { writeFileSync } from 'node:fs';
+     const worker = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'inherit' });
+     writeFileSync('worker-pid', String(worker.pid));
+     process.exit(7);`,
+  );
+  const managed = await startServer({
+    command: "exec node crash.mjs",
+    workspace,
+    temp: workspace,
+  });
+  let workerPid;
+  t.after(() => {
+    if (workerPid === undefined) return;
+    try {
+      process.kill(workerPid, "SIGKILL");
+    } catch (error) {
+      if (error.code !== "ESRCH") throw error;
+    }
+  });
+  await waitForExit(managed.pid);
+  workerPid = Number(readFileSync(join(workspace, "worker-pid"), "utf8"));
+  process.kill(-managed.pid, 0);
+  await assert.rejects(
+    waitForServer({
+      host: "127.0.0.1",
+      port: 9,
+      timeoutMs: 120_000,
+      serverPid: managed.pid,
+      connect: async () =>
+        assert.fail("a surviving worker must not mask the crash"),
     }),
     /managed SDK server exited before it was ready/,
   );
@@ -109,6 +161,10 @@ test("rejects an empty command, escaping working directory and unsafe PID", asyn
   );
   await assert.rejects(stopServer(0), /Invalid/);
   await assert.rejects(stopServer(-123), /Invalid/);
-  assert.throws(() => signalGroup(0, 0), /Invalid/);
-  assert.throws(() => signalGroup(Number.NaN, 0), /Invalid/);
+  for (const serverPid of [0, -123, Number.NaN]) {
+    await assert.rejects(
+      waitForServer({ serverPid, timeoutMs: 1000 }),
+      /Invalid managed server PID/,
+    );
+  }
 });
