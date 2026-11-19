@@ -56,7 +56,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
 | autoRenewAccountId           | string                                                  | optional          | Account to fund contract renewals                                   |
 | memo                         | string                                                  | optional          | UTF‑8 memo for contract                                             |
 | stakedAccountId              | string                                                  | optional          | Account to stake the contract account to                            |
-| stakedNodeId                 | string                                                  | optional          | Node to stake to the contract account to                            |
+| stakedNodeId                 | string                                                  | optional          | Node to stake to the contract account to (string-encoded int64)     |
 | declineStakingReward         | bool                                                    | optional          | Decline  reward on staking the contract account                     |
 | maxAutomaticTokenAssociations | int32                                                   | optional          | The number of automatic token associations for the contract account |
 | initcode                     | string                                                  | optional          | The source for the smart contract EVM bytecode                      |
@@ -303,7 +303,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
   "params": {
     "bytecodeFileId": "0.0.1234",
     "adminKey":  "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8",
-    "gas": "2000000000000000000000",
+    "gas": "900000",
     "initialBalance": "100",
     "commonTransactionParams": {
       "signers": [
