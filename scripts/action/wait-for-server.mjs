@@ -69,7 +69,9 @@ export async function waitForServer({
         // Readiness tracks the foreground command; cleanup targets its group.
         process.kill(serverPid, 0);
       } catch (error) {
-        if (error.code !== "ESRCH") throw error;
+        if (error.code !== "ESRCH") {
+          throw error;
+        }
         throw new Error("The managed SDK server exited before it was ready.");
       }
     }

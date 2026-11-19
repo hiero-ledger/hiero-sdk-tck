@@ -18,7 +18,9 @@ async function waitForExit(pid) {
     try {
       process.kill(pid, 0);
     } catch (error) {
-      if (error.code === "ESRCH") return;
+      if (error.code === "ESRCH") {
+        return;
+      }
       throw error;
     }
     assert.ok(Date.now() < deadline, "failing startup command did not exit");
@@ -125,17 +127,17 @@ test("readiness fails when the managed server exits but a descendant survives", 
     workspace,
     temp: workspace,
   });
-  let workerPid;
+  await waitForExit(managed.pid);
+  const workerPid = Number(readFileSync(join(workspace, "worker-pid"), "utf8"));
   t.after(() => {
-    if (workerPid === undefined) return;
     try {
       process.kill(workerPid, "SIGKILL");
     } catch (error) {
-      if (error.code !== "ESRCH") throw error;
+      if (error.code !== "ESRCH") {
+        throw error;
+      }
     }
   });
-  await waitForExit(managed.pid);
-  workerPid = Number(readFileSync(join(workspace, "worker-pid"), "utf8"));
   process.kill(-managed.pid, 0);
   await assert.rejects(
     waitForServer({
