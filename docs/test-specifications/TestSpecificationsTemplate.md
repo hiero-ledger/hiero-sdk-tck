@@ -18,7 +18,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 

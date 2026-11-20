@@ -16,11 +16,11 @@ Each test within the test specification is linked to one of the properties withi
 
 **Query properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/network-service/get-address-book
+https://docs.hedera.com/native/fundamentals/address-book
 
 **AddressBookQuery protobufs:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/address_book_query.proto
+https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/mirror/mirror_network_service.proto
 
 **Response codes:**
 
@@ -28,7 +28,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 
@@ -57,7 +57,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 | accountId         | string | The account ID associated with the node (also known as nodeAccountId).   |
 | serviceEndpoints  | array  | Array of service endpoint objects with ipAddressV4/domainName and port.  |
 | rsaPublicKey      | string | The RSA public key for the node (optional).                              |
-| nodeCertHash      | string | The hash of the node's TLS certificate (optional).                       |
+| nodeCertHash      | string | The SHA-384 hash of the node's TLS certificate as 96 hex characters, which the address book stores as UTF-8 bytes (optional). |
 | description       | string | A description or memo associated with the address book entry (optional).|
 
 ### ServiceEndpoint Object Fields
@@ -148,7 +148,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Test no | Name                                    | Input                    | Expected response                                                          | Implemented (Y/N) |
 | ------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------- | ----------------- |
-| 24      | Verify nodeCertHash when present        | Query node with cert hash| Returns valid certificate hash string when set                             |  Y                |
+| 24      | Verify nodeCertHash when present        | Query node with cert hash| Returns the certificate hash as 96 hex characters, matching the address book, when set |  Y                |
 | 25      | Verify nodeCertHash when not set        | Query node without hash  | Returns null, undefined, or empty string when not set                       |  Y                |
 
 ### **Description:**

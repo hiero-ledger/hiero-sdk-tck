@@ -1,7 +1,7 @@
 # Hiero SDK TCK
 
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-tck/badge)](https://scorecard.dev/viewer/?uri=github.com/hiero-ledger/hiero-sdk-tck)
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
+[![CII Best Practices](https://www.bestpractices.dev/projects/10697/badge)](https://www.bestpractices.dev/en/projects/10697/passing)
 [![License](https://img.shields.io/badge/license-apache2-blue.svg)](LICENSE)
 
 A Technology Compatibility Kit (TCK) is a set of tools, documentation, and test suites used to verify whether a software implementation conforms to a specific technology standard or specification.
@@ -18,7 +18,7 @@ First you need to clone the repository
 git clone git@github.com:hiero-ledger/hiero-sdk-tck.git
 ```
 
-The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/hedera/networks) or [hiero-local-node](https://github.com/hiero-ledger/hiero-local-node).
+The TCK provides ready-to-use configurations to run tests against the [Hedera testnet](https://docs.hedera.com/networks) or [hiero-local-node](https://github.com/hiero-ledger/hiero-local-node).
 
 ### Configure usage of Hedera Testnet
 
@@ -450,10 +450,6 @@ To release a new version of the TCK, follow these steps:
 Whether you're fixing bugs, enhancing features, or improving documentation, your contributions are important — let's build something great together!
 
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
-
-## Help/Community
-
-Join our [community discussions](https://discord.lfdecentralizedtrust.org/) on discord.
 
 ## About Users and Maintainers
 

@@ -16,7 +16,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Query properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts-and-hbar/get-account-info
+https://docs.hedera.com/native/accounts/get-info
 
 **CryptoGetInfo protobufs:**
 
