@@ -411,22 +411,31 @@ describe("AddressBookQuery", function () {
         fileId: "0.0.102",
       });
 
-      // Find a node with rsaPublicKey (if any)
-      const nodeWithKey = response.nodeAddresses.find(
-        (node: any) => node.rsaPublicKey,
+      // Pick the nodes from the reference address book, not from the
+      // response under test, so a response that drops the key fails.
+      const consensusAddressBook =
+        await consensusInfoClient.getAddressBook("0.0.102");
+      const consensusNodesWithKey = consensusAddressBook.nodeAddresses.filter(
+        (consensusNode: any) => consensusNode.publicKey,
       );
 
-      if (nodeWithKey) {
-        expect(nodeWithKey.rsaPublicKey).to.be.a("string");
-        expect(nodeWithKey.rsaPublicKey.length).to.be.greaterThan(0);
+      // The address book belongs to the network under test. A network that
+      // publishes no RSA public key cannot exercise this case.
+      if (consensusNodesWithKey.length === 0) {
+        this.skip();
+      }
 
-        // Verify against consensus node
-        const consensusNode = await consensusInfoClient.getNodeInfo(
-          nodeWithKey.nodeId.toString(),
+      for (const consensusNode of consensusNodesWithKey) {
+        const nodeId = consensusNode.nodeId.toString();
+        const node = response.nodeAddresses.find(
+          (node: any) => node.nodeId?.toString() === nodeId,
         );
-        if (consensusNode.rsaPublicKey) {
-          expect(consensusNode.rsaPublicKey.toString()).to.exist;
-        }
+        expect(node, `node ${nodeId} missing from the response`).to.exist;
+
+        // The address book holds the key as a hex-encoded string.
+        expect(node.rsaPublicKey, `node ${nodeId} rsaPublicKey`).to.equal(
+          consensusNode.publicKey,
+        );
       }
     });
 
