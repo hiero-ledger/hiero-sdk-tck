@@ -6,6 +6,7 @@
  * Environment:
  *   JSON_RPC_SERVER_URL  default http://127.0.0.1:8544
  *   SERVER_TIMEOUT       seconds to wait, default 120
+ *   SERVER_PID           optional managed server process ID
  *
  * Exits 1 with a one-line error when the server is not reachable in time.
  */
@@ -48,14 +49,32 @@ export async function waitForServer({
   host,
   port,
   timeoutMs,
+  serverPid,
   intervalMs = INTERVAL_MS,
   connect = tryConnect,
   now = Date.now,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 }) {
+  if (
+    serverPid !== undefined &&
+    (!Number.isSafeInteger(serverPid) || serverPid <= 1)
+  ) {
+    throw new Error("Invalid managed server PID");
+  }
   const deadline = now() + timeoutMs;
   let attempts = 0;
   for (;;) {
+    if (serverPid !== undefined) {
+      try {
+        // Readiness tracks the foreground command; cleanup targets its group.
+        process.kill(serverPid, 0);
+      } catch (error) {
+        if (error.code !== "ESRCH") {
+          throw error;
+        }
+        throw new Error("The managed SDK server exited before it was ready.");
+      }
+    }
     attempts += 1;
     if (await connect({ host, port })) {
       return attempts;
@@ -84,6 +103,9 @@ async function main() {
     host,
     port,
     timeoutMs: seconds * 1000,
+    serverPid: process.env.SERVER_PID
+      ? Number(process.env.SERVER_PID)
+      : undefined,
   });
   console.log(
     `JSON-RPC server at ${formatTarget(host, port)} accepts connections (attempt ${attempts}).`,
