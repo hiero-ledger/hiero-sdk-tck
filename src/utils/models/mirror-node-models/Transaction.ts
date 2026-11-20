@@ -12,6 +12,7 @@ export type Transaction = {
   charged_tx_fee?: number;
   consensus_timestamp?: Timestamp;
   entity_id?: EntityId;
+  high_volume?: boolean;
   max_fee?: string;
   memo_base64?: string | null;
   name?: TransactionTypes;
