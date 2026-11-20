@@ -49,16 +49,16 @@ A successful contract creation transaction (i.e., the transaction reached consen
 |------------------------------|---------------------------------------------------------|-------------------|---------------------------------------------------------------------|
 | bytecodeFileId               | string                                                  | optional          | ID of file containing contract bytecode                             |
 | adminKey                     | string                                                  | optional          | Key controlling contract (updatable/delete)                         |
-| gas                          | int64                                                   | optional          | Gas limit for contract creation                                     |
-| initialBalance               | string                                                  | optional          | Tinybar amount to send to the contract account at creation          |
+| gas                          | string                                                  | optional          | Gas limit for contract creation (string-encoded int64)              |
+| initialBalance               | string                                                  | optional          | Tinybar amount to send to the contract account at creation (string-encoded int64) |
 | constructorParameters        | hex string                                              | optional          | ABI‑encoded constructor params                                      |
-| autoRenewPeriod              | string                                                  | optional          | Seconds until the contract is renewed                               |
+| autoRenewPeriod              | string                                                  | optional          | Seconds until the contract is renewed (string-encoded int64)        |
 | autoRenewAccountId           | string                                                  | optional          | Account to fund contract renewals                                   |
 | memo                         | string                                                  | optional          | UTF‑8 memo for contract                                             |
 | stakedAccountId              | string                                                  | optional          | Account to stake the contract account to                            |
-| stakedNodeId                 | string                                                  | optional          | Node to stake to the contract account to                            |
+| stakedNodeId                 | string                                                  | optional          | Node to stake to the contract account to (string-encoded int64)     |
 | declineStakingReward         | bool                                                    | optional          | Decline  reward on staking the contract account                     |
-| maxAutomaticTokenAssociation | int32                                                   | optional          | The number of automatic token associations for the contract account |
+| maxAutomaticTokenAssociations | int32                                                   | optional          | The number of automatic token associations for the contract account |
 | initcode                     | string                                                  | optional          | The source for the smart contract EVM bytecode                      |
 | commonTransactionParams      | [json object](../common/commonTransactionParameters.md) | optional          | Standard fields: payer, signers, maxFee, etc.                       |
 
@@ -299,12 +299,12 @@ A successful contract creation transaction (i.e., the transaction reached consen
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "conractCreate",
+  "method": "createContract",
   "params": {
-    "byteCodeFileId": "0.0.1234",
+    "bytecodeFileId": "0.0.1234",
     "adminKey":  "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8",
-    "gas": "2000000000000000000000",
-    "initialBalance": 100,
+    "gas": "900000",
+    "initialBalance": "100",
     "commonTransactionParams": {
       "signers": [
         "302E020100300506032B657004220420DE6788D0A09F20DED806F446C02FB929D8CD8D17022374AFB3739A1D50BA72C8"
@@ -322,7 +322,7 @@ A successful contract creation transaction (i.e., the transaction reached consen
   "id": 1,
   "result": {
     "status": "SUCCESS",
-    "contractId": "0.0.1234",
+    "contractId": "0.0.1234"
   }
 }
 ```
