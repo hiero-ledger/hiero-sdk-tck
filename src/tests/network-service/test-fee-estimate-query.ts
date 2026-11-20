@@ -65,7 +65,11 @@ describe("FeeEstimateQuery", function () {
   this.timeout(60000);
 
   before(async function () {
-    this.timeout(650000);
+    // The mirror's rest-java rebuilds its fee calculator 10 minutes after it
+    // starts, and this suite can start about a minute after it. 12 minutes of
+    // probing covers that boot gap; 10 minutes ended right at the refresh.
+    const probeAttempts = 144;
+    this.timeout(780000);
     await setOperator(
       this,
       process.env.OPERATOR_ACCOUNT_ID as string,
@@ -77,19 +81,25 @@ describe("FeeEstimateQuery", function () {
         transactionType: "TransferCrypto",
         transactionParams: validTransferParams(),
       });
-    for (let attempt = 0; attempt < 120; attempt++) {
+    for (let attempt = 0; attempt < probeAttempts; attempt++) {
       try {
         await probe();
         return;
       } catch (error: any) {
         // Retry only the fresh mirror's missing genesis fee schedule, on every attempt.
         if (
-          attempt === 119 ||
+          attempt === probeAttempts - 1 ||
           error.code !== ErrorStatusCodes.INTERNAL_ERROR ||
           !/Unknown transaction type/i.test(
             error.data?.message ?? error.message,
           )
         ) {
+          // Mocha prints only `message`; the server's reason is in `data.message`.
+          if (error.data?.message) {
+            error.message = error.message
+              ? `${error.message}: ${error.data.message}`
+              : error.data.message;
+          }
           throw error;
         }
         await delay(5000);

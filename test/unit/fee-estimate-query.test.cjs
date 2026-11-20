@@ -148,6 +148,7 @@ test("the startup race exhausts its bounded attempt budget", async () => {
   let attempts = 0;
   const failure = {
     code: -32603,
+    message: "Internal error",
     data: { message: "Unknown transaction type" },
   };
   const suite = loadSuite(async () => {
@@ -155,7 +156,9 @@ test("the startup race exhausts its bounded attempt budget", async () => {
     throw failure;
   });
   await assert.rejects(suite.prepare(), (error) => error === failure);
-  assert.equal(attempts, 120);
-  assert.equal(suite.retries.length, 119);
+  // Mocha prints only `message`, so it must carry the server's reason.
+  assert.equal(failure.message, "Internal error: Unknown transaction type");
+  assert.equal(attempts, 144);
+  assert.equal(suite.retries.length, 143);
   assert.ok(suite.retries.every((delay) => delay === 5000));
 });
