@@ -7,13 +7,17 @@
 // tests, failed hooks and registered tests that never ran fail the run; tests
 // left out by --grep do not. Exit codes: 2 = report missing or unreadable,
 // 1 = any other failure, 0 = success.
+//
+// Usage: node scripts/check-test-results.mjs [reportDir]
+// The report directory defaults to mochawesome-report; the CLI passes its
+// --report-dir.
 import {
   decide,
   readReport,
   summarizeStats,
 } from "./action/collect-results.mjs";
 
-const report = readReport();
+const report = readReport(process.argv[2]);
 const { outcome, reason } = decide({ report });
 
 if (!report) {
