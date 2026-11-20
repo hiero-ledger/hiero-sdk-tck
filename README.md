@@ -314,7 +314,7 @@ npm install --save-dev @hiero-ledger/sdk-tck
 npx hiero-sdk-tck --test ALL
 ```
 
-Node.js 20.19+ or 22.12+ is required.
+Use Node.js 22.12 or later.
 
 ### Options
 

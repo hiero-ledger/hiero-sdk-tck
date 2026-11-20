@@ -29,8 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Oldest version allowed by `engines` and the version the action uses.
-        node-version: ["20.19.0", "22"]
+        node-version: ["22", "24"]
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3

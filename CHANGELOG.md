@@ -16,7 +16,7 @@ Entries are written for SDK teams that run the TCK. A test that now checks more,
 ### Changed
 
 - The runtime dependencies are declared in full: `@hashgraph/proto` and `@ethersproject/rlp` were imported by the suite but only resolved because npm hoisted them from `@hashgraph/sdk`, and `mochawesome` moved from `devDependencies` to `dependencies`. [#858](https://github.com/hiero-ledger/hiero-sdk-tck/pull/858)
-- The suite now runs on mocha 12 and chai 6 and needs Node.js 20.19+ or 22.12+ (`engines` in `package.json`). Other runtime updates: `@hashgraph/sdk` 2.81.0, `dotenv` 18.0.9, `axios` 1.20.0. [#773](https://github.com/hiero-ledger/hiero-sdk-tck/pull/773) [#776](https://github.com/hiero-ledger/hiero-sdk-tck/pull/776) [#789](https://github.com/hiero-ledger/hiero-sdk-tck/pull/789) [#868](https://github.com/hiero-ledger/hiero-sdk-tck/pull/868) [#750](https://github.com/hiero-ledger/hiero-sdk-tck/pull/750)
+- The suite now runs on mocha 12 and chai 6. Other runtime updates: `@hashgraph/sdk` 2.81.0, `dotenv` 18.0.9, `axios` 1.20.0. [#773](https://github.com/hiero-ledger/hiero-sdk-tck/pull/773) [#776](https://github.com/hiero-ledger/hiero-sdk-tck/pull/776) [#789](https://github.com/hiero-ledger/hiero-sdk-tck/pull/789) [#868](https://github.com/hiero-ledger/hiero-sdk-tck/pull/868) [#750](https://github.com/hiero-ledger/hiero-sdk-tck/pull/750)
 
 ### Fixed
 
