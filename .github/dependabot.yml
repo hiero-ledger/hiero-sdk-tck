@@ -9,7 +9,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # Stays on the Node 22 major used by CI and the TCK action runtime; move types and CI together.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # The image stays on the Node 22 major used by CI; move the base image and CI together.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
