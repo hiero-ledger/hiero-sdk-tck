@@ -16,11 +16,11 @@ Each test within the test specification is linked to one of the properties withi
 
 **Query properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/network-service/get-address-book
+https://docs.hedera.com/native/fundamentals/address-book
 
 **AddressBookQuery protobufs:**
 
-https://github.com/hashgraph/hedera-protobufs/blob/main/services/address_book_query.proto
+https://github.com/hiero-ledger/hiero-consensus-node/blob/main/hapi/hedera-protobuf-java-api/src/main/proto/mirror/mirror_network_service.proto
 
 **Response codes:**
 
@@ -28,7 +28,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 

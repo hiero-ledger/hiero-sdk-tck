@@ -16,7 +16,7 @@ Each test within this specification will map to a property or behavior of `Ether
 
 **Transaction properties:**
 
-- https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/ethereum-transaction
+- https://docs.hedera.com/native/smart-contracts/ethereum-transaction
 
 **EthereumTransaction protobufs:**
 

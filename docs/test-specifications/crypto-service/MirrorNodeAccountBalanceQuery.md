@@ -25,7 +25,7 @@ https://github.com/hiero-ledger/sdk-collaboration-hub/blob/main/proposals/accoun
 
 **Mirror node balances endpoint:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api/balances
+https://docs.hedera.com/reference/rest-api/balances
 
 ## JSON-RPC API Endpoint Documentation
 
