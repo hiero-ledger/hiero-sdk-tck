@@ -28,7 +28,7 @@ https://github.com/hiero-ledger/sdk-collaboration-hub/pull/286
 
 **Mirror node account tokens endpoint:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api/accounts
+https://docs.hedera.com/reference/rest-api/accounts
 
 ## JSON-RPC API Endpoint Documentation
 

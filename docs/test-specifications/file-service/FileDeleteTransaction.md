@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service/delete-a-file
+https://docs.hedera.com/native/files/delete
 
 **FileDelete protobufs:**
 
@@ -25,7 +25,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 
@@ -37,7 +37,7 @@ https://docs.hedera.com/hedera/sdks-and-apis/rest-api
 
 | Parameter Name          | Type                                                    | Required/Optional | Description/Notes             |
 |-------------------------|---------------------------------------------------------|-------------------|-------------------------------|
-| fileID                  | string                                                  | optional          | The ID of the file to delete. |
+| fileId                  | string                                                  | optional          | The ID of the file to delete. |
 | commonTransactionParams | [json object](../common/CommonTransactionParameters.md) | optional          |                               |
 
 ### Output Parameters
