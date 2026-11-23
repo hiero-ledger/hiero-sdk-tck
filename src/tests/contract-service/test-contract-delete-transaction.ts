@@ -181,14 +181,16 @@ describe("ContractDeleteTransaction", function () {
           contractId: "0.0.9999999",
           transferAccountId: transferAccount.accountId,
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "INVALID_CONTRACT_ID",
           "Invalid contract ID error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#4) Attempt to delete a contract that has no adminKey set", async function () {
@@ -200,14 +202,16 @@ describe("ContractDeleteTransaction", function () {
           contractId,
           transferAccountId: transferAccount.accountId,
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "MODIFYING_IMMUTABLE_CONTRACT",
           "Immutable contract error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#5) Attempt to delete a contract with a deleted ContractId", async function () {
@@ -236,14 +240,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "CONTRACT_DELETED",
           "Contract already deleted error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#6) Attempt to delete a contract with a malformed ContractId", async function () {
@@ -254,14 +260,16 @@ describe("ContractDeleteTransaction", function () {
           contractId: "invalid-id",
           transferAccountId: transferAccount.accountId,
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.code,
           ErrorStatusCodes.INTERNAL_ERROR,
           "Internal error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#7) Delete a contract with a valid ContractId but without the adminKey signature", async function () {
@@ -278,14 +286,16 @@ describe("ContractDeleteTransaction", function () {
           transferAccountId: transferAccount.accountId,
           // No signers provided
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "INVALID_SIGNATURE",
           "Invalid signature error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
   });
 
@@ -382,14 +392,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "OBTAINER_REQUIRED",
           "Receiver required error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#4) Attempt to delete a contract with a non-existent transferAccountId", async function () {
@@ -407,14 +419,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "INVALID_TRANSFER_ACCOUNT_ID",
           "Invalid transfer account ID error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#5) Attempt to delete a contract with a non-existent transferContractId", async function () {
@@ -432,14 +446,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "INVALID_CONTRACT_ID",
           "Invalid contract ID error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#6) Attempt to delete a contract with a deleted transferAccountId", async function () {
@@ -467,14 +483,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "OBTAINER_DOES_NOT_EXIST",
           "Obtainer does not exist error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#7) Delete a contract with a deleted transferContractId", async function () {
@@ -506,7 +524,6 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
@@ -515,6 +532,8 @@ describe("ContractDeleteTransaction", function () {
         );
         return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#8) Delete a contract where the transferAccountId has receiver_sig_required set but the transaction is not signed", async function () {
@@ -537,14 +556,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey], // Only admin key, not receiver key
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "INVALID_SIGNATURE",
           "Invalid signature error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#9) Delete a contract where the transferAccountId has receiver_sig_required set and the transaction is signed", async function () {
@@ -625,14 +646,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.code,
           ErrorStatusCodes.INTERNAL_ERROR,
           "Internal error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#12) Attempt to delete a contract with an invalid transferContractId format", async function () {
@@ -650,14 +673,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.code,
           ErrorStatusCodes.INTERNAL_ERROR,
           "Internal error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
   });
 
@@ -679,14 +704,16 @@ describe("ContractDeleteTransaction", function () {
             signers: [adminPrivateKey],
           },
         });
-        assert.fail("Should throw an error");
       } catch (err: any) {
         assert.equal(
           err.data.status,
           "PERMANENT_REMOVAL_REQUIRES_SYSTEM_INITIATION",
           "Permanent removal system only error",
         );
+        return;
       }
+
+      assert.fail("Should throw an error");
     });
 
     it("(#2) Attempt to set permanentRemoval to false in a user transaction", async function () {
