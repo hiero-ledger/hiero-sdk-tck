@@ -406,10 +406,10 @@ managed process group on success, failure or cancellation.
 `start-solo` delegates deployment to the pinned `hiero-solo-action`. It requires an
 isolated, ephemeral Linux runner with Docker, uses the default TCK endpoints and
 refuses an existing `solo-e2e` cluster. Custom network endpoints remain supported
-with `start-solo: "false"`. Cleanup deletes only the cluster reserved by this call,
-including after a partial deployment failure; it does not delete caller networks
-or shared Solo CLI configuration. The action's temporary Node.js version also
-applies to the server command.
+with `start-solo: "false"`. The pinned Solo installer clears `~/.solo` at startup,
+even when no `solo-e2e` cluster exists. Cleanup targets the cluster reserved by
+this call, including after a partial deployment failure. The action's temporary
+Node.js version also applies to the server command.
 
 The TCK maintainers own shared lifecycle and result handling. Each SDK's
 maintainers own its build/start commands and Dockerfiles in that SDK's repository.

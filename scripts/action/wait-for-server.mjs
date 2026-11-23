@@ -45,6 +45,21 @@ export function tryConnect({ host, port, timeoutMs = ATTEMPT_TIMEOUT_MS }) {
   });
 }
 
+function assertManagedServerRunning(serverPid) {
+  if (serverPid === undefined) {
+    return;
+  }
+  try {
+    // Readiness tracks the foreground command; cleanup targets its group.
+    process.kill(serverPid, 0);
+  } catch (error) {
+    if (error.code !== "ESRCH") {
+      throw error;
+    }
+    throw new Error("The managed SDK server exited before it was ready.");
+  }
+}
+
 export async function waitForServer({
   host,
   port,
@@ -64,19 +79,10 @@ export async function waitForServer({
   const deadline = now() + timeoutMs;
   let attempts = 0;
   for (;;) {
-    if (serverPid !== undefined) {
-      try {
-        // Readiness tracks the foreground command; cleanup targets its group.
-        process.kill(serverPid, 0);
-      } catch (error) {
-        if (error.code !== "ESRCH") {
-          throw error;
-        }
-        throw new Error("The managed SDK server exited before it was ready.");
-      }
-    }
+    assertManagedServerRunning(serverPid);
     attempts += 1;
     if (await connect({ host, port })) {
+      assertManagedServerRunning(serverPid);
       return attempts;
     }
     if (now() >= deadline) {
