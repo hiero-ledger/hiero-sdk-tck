@@ -137,7 +137,7 @@ https://docs.hedera.com/reference/rest-api
 | 50      | Verify customFees field with fixed fee             | Token with fixed fee                      | Returns the correct fixed fee in customFees array                             | N                 |
 | 51      | Verify customFees field with fractional fee        | Token with fractional fee                 | Returns the correct fractional fee in customFees array                        | N                 |
 | 52      | Verify customFees field with multiple fees         | Token with multiple custom fees           | Returns all custom fees in the customFees array                               | N                 |
-| 53      | Verify metadata field when set                     | Token with metadata                       | Returns the correct metadata (hex encoded)                                    | N                 |
+| 53      | Verify metadata field when set                     | Token with metadata                       | Returns the correct metadata (hex encoded)                                    | Y                 |
 | 54      | Verify metadata field when empty                   | Token without metadata                    | Returns empty buffer or null for metadata                                     | N                 |
 | 55      | Verify ledgerId field                              | Any valid token                           | Returns the correct ledger ID                                                 | N                 |
 
