@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
 import { createServer } from "node:net";
 import { test } from "node:test";
 
@@ -36,6 +38,30 @@ test("waitForServer returns once a connection succeeds", async () => {
     },
   });
   assert.equal(attempts, 3);
+});
+
+test("waitForServer rejects a connection if the managed process has exited", async (t) => {
+  const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"]);
+  t.after(() => {
+    child.kill();
+  });
+  await once(child, "spawn");
+
+  await assert.rejects(
+    waitForServer({
+      host: "127.0.0.1",
+      port: 9,
+      timeoutMs: 1000,
+      serverPid: child.pid,
+      connect: async () => {
+        const exited = once(child, "exit");
+        child.kill();
+        await exited;
+        return true;
+      },
+    }),
+    /managed SDK server exited before it was ready/,
+  );
 });
 
 test("waitForServer fails with a clear message when the deadline passes", async () => {
