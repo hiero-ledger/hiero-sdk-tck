@@ -19,7 +19,10 @@ function loadSuite(request) {
     chai: require("chai"),
     "@services/Client": { JSONRPCRequest: request },
     "@helpers/setup-tests": { setOperator: async () => {} },
-    "@helpers/key": {},
+    "@helpers/key": {
+      generateEd25519PrivateKey: async () => "privateKey",
+      generateEd25519PublicKey: async () => "publicKey",
+    },
     "@helpers/token": {},
     "@enums/error-status-codes": {
       ErrorStatusCodes: { INTERNAL_ERROR: -32603 },
@@ -73,6 +76,48 @@ const estimate = {
   serviceFee: { base: "1", extras: [] },
   total: "3",
 };
+
+test("chunked estimates must include more than the first chunk", async () => {
+  for (const [number, transactionType, payloadField, chunkCount] of [
+    [11, "FileAppend", "contents", 5],
+    [13, "TopicMessageSubmit", "message", 8],
+  ]) {
+    const loadChunkTest = (aggregate) => {
+      const estimates = [];
+      const suite = loadSuite(async (_context, method, params) => {
+        if (method === "createFile") {
+          return { fileId: "0.0.1001" };
+        }
+        if (method === "createTopic") {
+          return { topicId: "0.0.1002" };
+        }
+
+        assert.equal(method, "executeFeeEstimateQuery");
+        assert.equal(params.transactionType, transactionType);
+        const { chunkSize, [payloadField]: payload } = params.transactionParams;
+        estimates.push(payload.length / chunkSize);
+        return estimates.length === 1 ? estimate : aggregate;
+      });
+      return { suite, estimates };
+    };
+
+    const { suite: firstChunkOnly } = loadChunkTest(estimate);
+    await assert.rejects(firstChunkOnly.run(number), /multiple chunks/);
+
+    const { suite, estimates } = loadChunkTest({
+      ...estimate,
+      networkFee: { multiplier: 1, subtotal: String(chunkCount) },
+      nodeFee:
+        transactionType === "FileAppend"
+          ? { base: String(chunkCount), extras: [] }
+          : { base: "1", extras: [{ subtotal: String(chunkCount - 1) }] },
+      serviceFee: { base: String(chunkCount), extras: [] },
+      total: String(3 * chunkCount),
+    });
+    await suite.run(number);
+    assert.deepEqual(estimates, [1, chunkCount]);
+  }
+});
 
 test("malformed transactions must fail even when the server returns an estimate", async () => {
   const suite = loadSuite(async () => estimate);

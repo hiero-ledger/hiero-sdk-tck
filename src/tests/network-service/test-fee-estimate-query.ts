@@ -47,6 +47,24 @@ const expectEstimateShape = (response: any) => {
   expectComponentShape(response.serviceFee);
 };
 
+const expectChunkedEstimate = (single: any, chunked: any) => {
+  expectEstimateShape(single);
+  expectEstimateShape(chunked);
+
+  const nodeTotal = componentTotal(chunked.nodeFee);
+  assert.isTrue(
+    nodeTotal > componentTotal(single.nodeFee),
+    "Expected a higher node fee for multiple chunks",
+  );
+
+  const networkTotal = nodeTotal * BigInt(chunked.networkFee.multiplier);
+  assert.strictEqual(BigInt(chunked.networkFee.subtotal), networkTotal);
+  assert.strictEqual(
+    BigInt(chunked.total),
+    nodeTotal + networkTotal + componentTotal(chunked.serviceFee),
+  );
+};
+
 // Missing implementations must fail this suite instead of appearing green as pending.
 const requestFeeEstimate = (context: Mocha.Context, params: object) => {
   const requiredContext = Object.create(context);
@@ -299,25 +317,26 @@ describe("FeeEstimateQuery", function () {
       });
       const fileId = fileResponse.fileId;
 
-      // Append ~5 KB of content with a small chunk size, forcing multiple chunks.
-      const contents = "x".repeat(5 * 1024);
-
-      const response = await requestFeeEstimate(this, {
-        mode: "STATE",
-        transactionType: "FileAppend",
-        transactionParams: {
-          fileId,
-          contents,
-          chunkSize: 1024,
-          maxChunks: 100,
-          commonTransactionParams: {
-            signers: [privateKey],
+      const chunkSize = 1024;
+      const chunk = "x".repeat(chunkSize);
+      const estimateAppend = (contents: string, maxChunks: number) =>
+        requestFeeEstimate(this, {
+          mode: "STATE",
+          transactionType: "FileAppend",
+          transactionParams: {
+            fileId,
+            contents,
+            chunkSize,
+            maxChunks,
+            commonTransactionParams: {
+              signers: [privateKey],
+            },
           },
-        },
-      });
+        });
 
-      expectEstimateShape(response);
-      expect(toNumber(response.total)).to.be.at.least(0);
+      const single = await estimateAppend(chunk, 1);
+      const chunked = await estimateAppend(chunk.repeat(5), 5);
+      expectChunkedEstimate(single, chunked);
     });
 
     it("(#12) Aggregate fees for TopicMessageSubmit with single chunk", async function () {
@@ -349,22 +368,18 @@ describe("FeeEstimateQuery", function () {
       });
       const topicId = topicResponse.topicId;
 
-      // ~2 KB message with 256-byte chunks → 8 chunks.
-      const message = "y".repeat(2048);
+      const chunkSize = 256;
+      const chunk = "y".repeat(chunkSize);
+      const estimateMessage = (message: string, maxChunks: number) =>
+        requestFeeEstimate(this, {
+          mode: "STATE",
+          transactionType: "TopicMessageSubmit",
+          transactionParams: { topicId, message, chunkSize, maxChunks },
+        });
 
-      const response = await requestFeeEstimate(this, {
-        mode: "STATE",
-        transactionType: "TopicMessageSubmit",
-        transactionParams: {
-          topicId,
-          message,
-          chunkSize: 256,
-          maxChunks: 100,
-        },
-      });
-
-      expectEstimateShape(response);
-      expect(toNumber(response.total)).to.be.at.least(0);
+      const single = await estimateMessage(chunk, 1);
+      const chunked = await estimateMessage(chunk.repeat(8), 8);
+      expectChunkedEstimate(single, chunked);
     });
 
     it("(#14) Missing transactionType", async function () {
