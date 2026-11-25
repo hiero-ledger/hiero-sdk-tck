@@ -165,6 +165,8 @@ describe("MirrorNodeTokenBalanceQuery", function () {
 
     await mintToken(this, tokenId, ["1234", "5678", "90ab"], supplyKey);
 
+    // PROVISIONAL decimals: released SDKs and the mirror node report 0 for an
+    // NFT; sdk-collaboration-hub#281 proposes null (hiero-sdk-tck#716).
     await expectTokenBalance(this, accountId, tokenId, "3", 0);
   });
 
@@ -191,7 +193,8 @@ describe("MirrorNodeTokenBalanceQuery", function () {
     const accountId = await createAccount(this, privateKey);
     const tokenId = await createFtToken(this, { decimals: 3 });
 
-    // PROVISIONAL: current SDK behaviour, to be aligned by a follow-up issue.
+    // PROVISIONAL: released SDK behaviour. The shared contract does not settle
+    // the no-relationship result yet (hiero-sdk-tck#716, sdk-collaboration-hub#281).
     await expectTokenBalance(this, accountId, tokenId, "0", 0);
   });
 
