@@ -3,7 +3,7 @@
   "dependencies": {
     "@hashgraph/proto": "^2.25.0",
     "@hashgraph/sdk": "^2.81.0",
-    "axios": "^1.20.0",
+    "axios": "^1.21.1",
     "chai": "^6.3.0",
     "dotenv": "^18.0.9",
     "ethers": "^6.17.0",
