@@ -5,6 +5,7 @@ package-lock.json
 
 # Ignore compiled code
 dist
+lib
 build
 
 # Ignore environment variables
