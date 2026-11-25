@@ -30,7 +30,7 @@ on:
         required: false
         type: string
       consensus-node-version:
-        description: "Consensus node version (defaults to latest stable)"
+        description: "Consensus node version (defaults to latest stable with published Solo artifacts)"
         required: false
         type: string
       js-sdk-version:
