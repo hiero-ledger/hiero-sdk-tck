@@ -17,6 +17,7 @@ Entries are written for SDK teams that run the TCK. A test that now checks more,
 
 - The runtime dependencies are declared in full: `@hashgraph/proto` and `@ethersproject/rlp` were imported by the suite but only resolved because npm hoisted them from `@hashgraph/sdk`, and `mochawesome` moved from `devDependencies` to `dependencies`. [#858](https://github.com/hiero-ledger/hiero-sdk-tck/pull/858)
 - The suite now runs on mocha 12 and chai 6. Other runtime updates: `@hashgraph/sdk` 2.81.0, `dotenv` 18.0.9, `axios` 1.20.0. [#773](https://github.com/hiero-ledger/hiero-sdk-tck/pull/773) [#776](https://github.com/hiero-ledger/hiero-sdk-tck/pull/776) [#789](https://github.com/hiero-ledger/hiero-sdk-tck/pull/789) [#868](https://github.com/hiero-ledger/hiero-sdk-tck/pull/868) [#750](https://github.com/hiero-ledger/hiero-sdk-tck/pull/750)
+- The TCK requires Node.js `^22.22.2 || ^24.15.0 || >=26.0.0`, the range of `jsdom` 31, and declares it in `engines`. Node.js 20 is not supported. [#858](https://github.com/hiero-ledger/hiero-sdk-tck/pull/858)
 
 ### Fixed
 
@@ -26,6 +27,7 @@ Entries are written for SDK teams that run the TCK. A test that now checks more,
 - `ScheduleInfoQuery` test #15 requires `executedAt`. [#861](https://github.com/hiero-ledger/hiero-sdk-tck/pull/861)
 - `TransactionReceiptQuery` test #8 queries the receipt of a failed transaction. [#862](https://github.com/hiero-ledger/hiero-sdk-tck/pull/862)
 - `AddressBookQuery` tests check more of each node entry: every IPv4 endpoint (#19), domain-name endpoints (#21), an unset `rsaPublicKey` (#23), an unset `nodeCertHash` (#25), the `description` (#26) and an unset `description` (#27). [#863](https://github.com/hiero-ledger/hiero-sdk-tck/pull/863) [#871](https://github.com/hiero-ledger/hiero-sdk-tck/pull/871) [#873](https://github.com/hiero-ledger/hiero-sdk-tck/pull/873) [#874](https://github.com/hiero-ledger/hiero-sdk-tck/pull/874) [#875](https://github.com/hiero-ledger/hiero-sdk-tck/pull/875) [#876](https://github.com/hiero-ledger/hiero-sdk-tck/pull/876)
+- Mirror node token balance checks look up the entry for the token under test. When a test expects a zero balance, an existing nonzero entry now fails; a missing entry still passes. This tightens the zero-balance checks in the `TransferTransaction` and `TokenAirdropTransaction` tests. The `TokenAirdropTransaction` tests that leave an airdrop pending expect the tokens to stay with the senders until it is claimed (HIP-904). [#857](https://github.com/hiero-ledger/hiero-sdk-tck/pull/857) [#881](https://github.com/hiero-ledger/hiero-sdk-tck/pull/881)
 
 ## 0.14.0 and earlier
 

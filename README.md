@@ -314,7 +314,7 @@ npm install --save-dev @hiero-ledger/sdk-tck
 npx hiero-sdk-tck --test ALL
 ```
 
-Use Node.js 22.12 or later.
+Use Node.js 22.22.2 or later, 24.15 or later, or 26 and later (the range of `jsdom`, which the suite depends on). Node.js 20 is not supported.
 
 ### Options
 
