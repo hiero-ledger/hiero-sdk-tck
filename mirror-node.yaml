@@ -413,7 +413,7 @@ paths:
       description:
         Returns a result from EVM execution such as cost-free execution of read-only smart contract queries, gas estimation, and transient simulation of read-write operations. If the `estimate` field is set to true gas estimation is executed. However, gas estimation only supports the `latest` block.
         When `estimate` is false, it can process calls against the `earliest` block and specific historical blocks when a hexadecimal or decimal block number is provided in the `block` field for `eth_call` operations.
-        [Link to Supported/Unsupported Operations Table](https://github.com/hashgraph/hedera-mirror-node/blob/main/docs/web3/README.md#supported/unsupported-operations)
+        [Link to Supported/Unsupported Operations Table](https://github.com/hiero-ledger/hiero-mirror-node/blob/main/docs/web3/README.md#supported-operations)
 
         The operations types which are not currently supported should return 501 error status.
 
@@ -1376,11 +1376,11 @@ tags:
   - name: accounts
     description: The accounts object represents the information associated with an account entity and returns a list of account information.The accounts list endpoint is cached and not updated as frequently as the account lookup by a specific ID endpoint.
     externalDocs:
-      url: https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#accounts
+      url: https://docs.hedera.com/reference/rest-api/accounts
   - name: balances
     description: The balance object represents the balance of accounts on the Hedera network.
     externalDocs:
-      url: https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#balances
+      url: https://docs.hedera.com/reference/rest-api/balances
   - name: contracts
     description: The contracts objects represents the information associated with contract entities.The contracts list endpoint is cached and not updated as frequently as the contract lookup by a specific ID endpoint.
   - name: schedules
@@ -1388,11 +1388,11 @@ tags:
   - name: transactions
     description: The transaction object represents the transactions processed on the Hedera network.
     externalDocs:
-      url: https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#transactions
+      url: https://docs.hedera.com/reference/rest-api/transactions
   - name: topics
     description: The topics object represents the information associated with a topic entity and returns topic messages information.
     externalDocs:
-      url: https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#topic-messages
+      url: https://docs.hedera.com/reference/rest-api/topics
   - name: tokens
     description: The tokens object represents the information associated with a token entity and returns a list of token information.The tokens list endpoint is cached and not updated as frequently as the token lookup by a specific ID.
 info:
@@ -1405,10 +1405,10 @@ info:
   contact:
     name: Hedera Mirror Node Team
     email: mirrornode@hedera.com
-    url: "https://github.com/hashgraph/hedera-mirror-node"
+    url: "https://github.com/hiero-ledger/hiero-mirror-node"
 externalDocs:
   description: Hedera REST API Docs
-  url: "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api"
+  url: "https://docs.hedera.com/reference/rest-api"
 servers:
   - description: The current REST API server
     url: ""

@@ -13,7 +13,7 @@ Each test within the test specification is linked to one of the properties withi
 
 **Transaction properties:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/cancel-a-token
+https://docs.hedera.com/native/tokens/cancel
 
 **TokenAirdropCancel protobufs:**
 
@@ -25,7 +25,7 @@ https://github.com/hashgraph/hedera-protobufs/blob/main/services/response_code.p
 
 **Mirror Node APIs:**
 
-https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+https://docs.hedera.com/reference/rest-api
 
 ## JSON-RPC API Endpoint Documentation
 

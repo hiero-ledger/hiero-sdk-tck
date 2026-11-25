@@ -19,7 +19,7 @@ A successful schedule sign transaction (i.e., the transaction reached consensus 
 
 **Transaction Properties:**
 
-- https://docs.hedera.com/hedera/sdks-and-apis/hedera-api/schedule-service/schedulesign
+- https://docs.hedera.com/reference/protobuf/schedule/schedulesign
 
 **Response Codes:**
 
